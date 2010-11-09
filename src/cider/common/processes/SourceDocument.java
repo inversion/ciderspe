@@ -13,7 +13,7 @@ public class SourceDocument
 {
     private TreeMap<Double, TypingEvent> localText;
     private Double caretPosition = 0.0;
-    private Double endNumber = 1.0;
+    private Double endNumber = 1000.0;
 
     public SourceDocument()
     {
@@ -35,7 +35,8 @@ public class SourceDocument
      */
     public static String test()
     {
-        String testLog = singleThreadTest();
+        String testLog = singleThreadTest() + "\n";
+        testLog += lengthTest();
         // TODO: When concurrent merging is ready I'll write a test for that,
         // probably by having two threads representing two different users
         // editing a document at the same time.
@@ -83,6 +84,32 @@ public class SourceDocument
         else
             return "fail: did not pass singleThreadTest where result should be '"
                     + expected + "', instead it is '" + result + "'.";
+    }
+
+    public static String lengthTest()
+    {
+        SourceDocument doc = new SourceDocument();
+        doc.setAbsoluptCaretPosition(0);
+        String expected = "";
+
+        int j = 0;
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+
+        for (int i = 0; i < 10000; i++)
+        {
+            expected = expected + alphabet.charAt(j);
+            doc.type(0.0, alphabet.charAt(j));
+            j++;
+            if (j >= alphabet.length())
+                j = 0;
+        }
+
+        String result = doc.toString();
+        if (result.equals(expected))
+            return "pass";
+        else
+            return "fail: did not pass length test where result should be '"
+                    + expected + "' instead it is '" + result + "'.";
     }
 
     public void setCaretPosition(Double caretPosition)
@@ -135,13 +162,13 @@ public class SourceDocument
         Double higherKey = this.localText.higherKey(this.caretPosition);
         if (higherKey == null)
             higherKey = endNumber;
-        this.caretPosition = (this.caretPosition + higherKey) / 2.0f;
+        this.caretPosition = this.caretPosition + higherKey;
     }
 
     public void typeOvr(TypingEvent typingEvent)
     {
         Double higherKey = this.localText.higherKey(this.caretPosition);
-        this.caretPosition = (this.caretPosition + higherKey) / 2.0f;
+        this.caretPosition = this.caretPosition + higherKey;
         this.localText.put(this.caretPosition, typingEvent);
         if (higherKey == null)
             higherKey = endNumber;
