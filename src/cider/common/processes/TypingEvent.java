@@ -8,10 +8,21 @@ package cider.common.processes;
 public class TypingEvent
 {
     public char chr;
-    public double time;
+    public long time;
     public TypingEventMode mode;
 
-    public TypingEvent(char chr, double time, TypingEventMode mode)
+    /**
+     * backspace
+     * 
+     * @param time
+     */
+    public TypingEvent(long time)
+    {
+        this.time = time;
+        this.mode = TypingEventMode.backspace;
+    }
+
+    public TypingEvent(char chr, long time, TypingEventMode mode)
     {
         this.chr = chr;
         this.time = time;

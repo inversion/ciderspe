@@ -1,6 +1,7 @@
 package cider.common.processes;
 
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
@@ -98,7 +99,7 @@ public class SourceDocument
         for (int i = 0; i < 10000; i++)
         {
             expected = expected + alphabet.charAt(j);
-            doc.type(0.0, alphabet.charAt(j));
+            doc.type(0, alphabet.charAt(j));
             j++;
             if (j >= alphabet.length())
                 j = 0;
@@ -149,29 +150,54 @@ public class SourceDocument
         this.localText.put(position, typingEvent);
     }
 
-    public void type(double time, char chr)
+    public void type(long time, char chr)
     {
         TypingEvent te = new TypingEvent(chr, time, TypingEventMode.insert);
         te.chr = chr;
         this.type(te);
     }
 
-    public void type(TypingEvent typingEvent)
+    public double higherKey()
     {
-        this.localText.put(this.caretPosition, typingEvent);
         Double higherKey = this.localText.higherKey(this.caretPosition);
         if (higherKey == null)
             higherKey = endNumber;
-        this.caretPosition = this.caretPosition + higherKey;
+        return higherKey;
     }
 
-    public void typeOvr(TypingEvent typingEvent)
+    public void type(TypingEvent typingEvent)
     {
-        Double higherKey = this.localText.higherKey(this.caretPosition);
-        this.caretPosition = this.caretPosition + higherKey;
-        this.localText.put(this.caretPosition, typingEvent);
-        if (higherKey == null)
-            higherKey = endNumber;
+        Double upperBound = this.caretPosition + 1.0 - Double.MIN_VALUE;
+        Entry<Double, TypingEvent> existingEntry = this.localText
+                .floorEntry(upperBound);
+
+        Double nextValue;
+
+        if (existingEntry == null)
+            nextValue = this.caretPosition;
+        else
+        {
+            while (existingEntry.getValue().time > typingEvent.time)
+                existingEntry = this.localText.floorEntry(existingEntry
+                        .getKey());
+
+            Double greatestLowerBound = existingEntry.getKey();
+            Double lowestUpperBound = this.localText
+                    .higherKey(greatestLowerBound);
+
+            if (lowestUpperBound == null)
+                lowestUpperBound = this.caretPosition + 1.0;
+
+            nextValue = (greatestLowerBound + lowestUpperBound) / 2.0;
+        }
+
+        this.localText.put(nextValue, typingEvent);
+
+        if (typingEvent.mode == TypingEventMode.insert
+                || typingEvent.mode == TypingEventMode.overwrite)
+            this.caretPosition++;
+        else
+            this.caretPosition--;
     }
 
     public TypingEvent backspace()
