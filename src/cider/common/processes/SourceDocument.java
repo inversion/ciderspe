@@ -1,0 +1,205 @@
+package cider.common.processes;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Random;
+import java.util.TreeMap;
+
+/**
+ * Experimental work: Real-time merging (unfinished) TODO: concurrent editing
+ * where the time field of TypingEvent indicates what time the edit occurred.
+ * 
+ * @author Lawrence
+ */
+public class SourceDocument
+{
+    private TreeMap<Long, TypingEvent> typingEvents;
+
+    public SourceDocument()
+    {
+        this.typingEvents = new TreeMap<Long, TypingEvent>();
+    }
+
+    public static void main(String[] args)
+    {
+        System.out.println(test());
+    }
+
+    /**
+     * No we probably wont write tests all that often, but in this case it was
+     * actually the quickest way of trying my code out. It's not a particularly
+     * rigorous test.
+     * 
+     * @author Lawrence
+     * @return
+     */
+    public static String test()
+    {
+        String testLog = shuffledEventsTest() + "\n";
+        return testLog;
+    }
+
+    public static String shuffledEventsTest()
+    {
+        String expected = "the quick muddled fox jumped over the lazy dog";
+
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.addAll(generateEvents(0, 100, 0,
+                "the quick brown fox jumped over the lazy dog",
+                TypingEventMode.insert));
+        tes.addAll(generateEvents(200, 500, 10, "muddled",
+                TypingEventMode.overwrite));
+        // tes.addAll(generateEvents(600, 700, 17, " f",
+        // TypingEventMode.insert));
+        // tes.addAll(generateEvents(800, 1000, 28, "jumped",
+        // TypingEventMode.backspace));
+        // tes.addAll(generateEvents(2000, 3000, 22, "bounced",
+        // TypingEventMode.insert));
+
+        tes = shuffledEvents(tes, new Date().getTime());
+
+        SourceDocument testDoc = new SourceDocument();
+        for (TypingEvent event : tes)
+            testDoc.putEvent(event);
+        String result = testDoc.toString();
+        return expected.equals(result) ? "pass"
+                : "fail: did not pass shuffled events test since toString returned '"
+                        + result
+                        + "', where as it should of been '"
+                        + expected
+                        + "'.";
+    }
+
+    public static ArrayList<TypingEvent> shuffledEvents(
+            ArrayList<TypingEvent> typingEvents, long seed)
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        ArrayList<TypingEvent> source = new ArrayList<TypingEvent>();
+        source.addAll(typingEvents);
+        Random generator = new Random(seed);
+        TypingEvent event;
+
+        while (source.size() > 0)
+        {
+            event = source.get(generator.nextInt(source.size()));
+            tes.add(event);
+            source.remove(event);
+        }
+
+        return tes;
+    }
+
+    public static long t(long startTime, long stepSize, int i)
+    {
+        return startTime + stepSize * i;
+    }
+
+    public static long stepSize(long startTime, long endTime, int n)
+    {
+        return (endTime - startTime) / n;
+    }
+
+    public static ArrayList<TypingEvent> generateEvents(long startTime,
+            long endTime, int startingPosition, String text,
+            TypingEventMode mode)
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        final int n = text.length();
+        final long stepSize = stepSize(startTime, endTime, n);
+        int cp = startingPosition;
+        int i = 0;
+        while (i < n)
+        {
+            if (mode == TypingEventMode.backspace)
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
+                        '\0'));
+                cp--;
+            }
+            else
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
+                        text.charAt(i)));
+                cp++;
+            }
+            i++;
+        }
+        return tes;
+    }
+
+    public void putEvent(TypingEvent typingEvent)
+    {
+        this.typingEvents.put(typingEvent.time, typingEvent);
+    }
+
+    public TreeMap<Double, TypingEvent> playOutEvents()
+    {
+        double eventNumber;
+        TreeMap<Double, TypingEvent> survived = new TreeMap<Double, TypingEvent>();
+        // survived.put(-1.0, new TypingEvent(-1, TypingEventMode.insert, -1,
+        // '>'));
+
+        for (TypingEvent event : this.typingEvents.values())
+        {
+            System.out.println(event);
+            eventNumber = event.eventNumber;
+            double cp = eventNumber - 1;
+            TypingEvent selectedEvent = null;
+            for (TypingEvent currentSelection : survived.values())
+            {
+                System.out.printf("" + currentSelection.chr);
+                selectedEvent = currentSelection;
+                if (cp == 0)
+                    break;
+                else
+                    cp--;
+            }
+            System.out.printf("\n");
+
+            switch (event.mode)
+            {
+            case insert:
+            {
+                if (selectedEvent == null)
+                    survived.put(eventNumber, event);
+                else
+                {
+                    Double next = survived.higherKey(selectedEvent.eventNumber);
+                    if (next == null || next > eventNumber)
+                        survived.put(eventNumber, event);
+                    else
+                        survived.put((selectedEvent.eventNumber + next) / 2.0,
+                                event);
+                }
+            }
+                break;
+            case overwrite:
+            {
+                survived.put(selectedEvent.eventNumber, event);
+                break;
+            }
+            case backspace:
+            {
+                survived.remove(selectedEvent.eventNumber);
+                break;
+            }
+            }
+        }
+
+        return survived;
+    }
+
+    public static String treeToString(TreeMap<Double, TypingEvent> survived)
+    {
+        String str = "";
+        for (TypingEvent event : survived.values())
+            str += event.chr;
+        return str;
+    }
+
+    @Override
+    public String toString()
+    {
+        return treeToString(this.playOutEvents());
+    }
+}
