@@ -2,6 +2,7 @@ package cider.common.processes;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -41,7 +42,7 @@ public class SourceDocument
 
     public static String shuffledEventsTest()
     {
-        String expected = "the quick muddled fox jumped over the lazy dog";
+        String expected = "the quick muddled fox bounced over the lazy dog";
 
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
         tes.addAll(generateEvents(0, 100, 0,
@@ -49,12 +50,11 @@ public class SourceDocument
                 TypingEventMode.insert));
         tes.addAll(generateEvents(200, 500, 10, "muddled",
                 TypingEventMode.overwrite));
-        // tes.addAll(generateEvents(600, 700, 17, " f",
-        // TypingEventMode.insert));
-        // tes.addAll(generateEvents(800, 1000, 28, "jumped",
-        // TypingEventMode.backspace));
-        // tes.addAll(generateEvents(2000, 3000, 22, "bounced",
-        // TypingEventMode.insert));
+        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert));
+        tes.addAll(generateEvents(800, 1000, 27, "jumped",
+                TypingEventMode.backspace));
+        tes.addAll(generateEvents(2000, 3000, 21, "bounced",
+                TypingEventMode.insert));
 
         tes = shuffledEvents(tes, new Date().getTime());
 
@@ -132,61 +132,64 @@ public class SourceDocument
         this.typingEvents.put(typingEvent.time, typingEvent);
     }
 
+    public static Double keyAt(TreeMap<Double, TypingEvent> string,
+            int caretPosition)
+    {
+        Double result = 0.0;
+        for (Entry<Double, TypingEvent> entry : string.entrySet())
+        {
+            if (caretPosition == -1)
+                break;
+            else
+            {
+                caretPosition--;
+                result = entry.getKey();
+            }
+        }
+        return result;
+    }
+
+    public static Double smallestAfter(TreeMap<Double, TypingEvent> string,
+            int caretPosition)
+    {
+        Double result = keyAt(string, caretPosition);
+        Double higher = string.higherKey(result);
+        result += higher == null ? result + 2.0 : higher;
+        result /= 2.0;
+        return result;
+    }
+
     public TreeMap<Double, TypingEvent> playOutEvents()
     {
-        double eventNumber;
-        TreeMap<Double, TypingEvent> survived = new TreeMap<Double, TypingEvent>();
-        // survived.put(-1.0, new TypingEvent(-1, TypingEventMode.insert, -1,
-        // '>'));
+        Double key;
+        TreeMap<Double, TypingEvent> string = new TreeMap<Double, TypingEvent>();
 
         for (TypingEvent event : this.typingEvents.values())
         {
-            System.out.println(event);
-            eventNumber = event.eventNumber;
-            double cp = eventNumber - 1;
-            TypingEvent selectedEvent = null;
-            for (TypingEvent currentSelection : survived.values())
-            {
-                System.out.printf("" + currentSelection.chr);
-                selectedEvent = currentSelection;
-                if (cp == 0)
-                    break;
-                else
-                    cp--;
-            }
-            System.out.printf("\n");
-
             switch (event.mode)
             {
             case insert:
             {
-                if (selectedEvent == null)
-                    survived.put(eventNumber, event);
-                else
-                {
-                    Double next = survived.higherKey(selectedEvent.eventNumber);
-                    if (next == null || next > eventNumber)
-                        survived.put(eventNumber, event);
-                    else
-                        survived.put((selectedEvent.eventNumber + next) / 2.0,
-                                event);
-                }
+                key = smallestAfter(string, event.caretPosition);
+                string.put(key, event);
             }
                 break;
             case overwrite:
             {
-                survived.put(selectedEvent.eventNumber, event);
+                key = keyAt(string, event.caretPosition);
+                string.put(key, event);
                 break;
             }
             case backspace:
             {
-                survived.remove(selectedEvent.eventNumber);
+                key = keyAt(string, event.caretPosition);
+                string.remove(key);
                 break;
             }
             }
         }
 
-        return survived;
+        return string;
     }
 
     public static String treeToString(TreeMap<Double, TypingEvent> survived)
