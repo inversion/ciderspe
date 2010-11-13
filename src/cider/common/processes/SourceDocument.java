@@ -40,7 +40,7 @@ public class SourceDocument
         return testLog;
     }
 
-    public static String shuffledEventsTest()
+    protected static String shuffledEventsTest()
     {
         String expected = "the quick muddled fox bounced over the lazy dog";
 
@@ -70,7 +70,7 @@ public class SourceDocument
                         + "'.";
     }
 
-    public static ArrayList<TypingEvent> shuffledEvents(
+    protected static ArrayList<TypingEvent> shuffledEvents(
             ArrayList<TypingEvent> typingEvents, long seed)
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
@@ -99,7 +99,7 @@ public class SourceDocument
         return (endTime - startTime) / n;
     }
 
-    public static ArrayList<TypingEvent> generateEvents(long startTime,
+    protected static ArrayList<TypingEvent> generateEvents(long startTime,
             long endTime, int startingPosition, String text,
             TypingEventMode mode)
     {
@@ -132,7 +132,7 @@ public class SourceDocument
         this.typingEvents.put(typingEvent.time, typingEvent);
     }
 
-    public static Double keyAt(TreeMap<Double, TypingEvent> string,
+    protected static Double keyAt(TreeMap<Double, TypingEvent> string,
             int caretPosition)
     {
         Double result = 0.0;
@@ -149,7 +149,7 @@ public class SourceDocument
         return result;
     }
 
-    public static Double smallestAfter(TreeMap<Double, TypingEvent> string,
+    protected static Double smallestAfter(TreeMap<Double, TypingEvent> string,
             int caretPosition)
     {
         Double result = keyAt(string, caretPosition);
@@ -159,13 +159,16 @@ public class SourceDocument
         return result;
     }
 
-    public TreeMap<Double, TypingEvent> playOutEvents()
+    public TreeMap<Double, TypingEvent> playOutEvents(Long endTime)
     {
         Double key;
         TreeMap<Double, TypingEvent> string = new TreeMap<Double, TypingEvent>();
 
         for (TypingEvent event : this.typingEvents.values())
         {
+            if (event.time > endTime)
+                break;
+
             switch (event.mode)
             {
             case insert:
@@ -192,7 +195,7 @@ public class SourceDocument
         return string;
     }
 
-    public static String treeToString(TreeMap<Double, TypingEvent> survived)
+    protected static String treeToString(TreeMap<Double, TypingEvent> survived)
     {
         String str = "";
         for (TypingEvent event : survived.values())
@@ -203,6 +206,11 @@ public class SourceDocument
     @Override
     public String toString()
     {
-        return treeToString(this.playOutEvents());
+        return treeToString(this.playOutEvents(Long.MAX_VALUE));
+    }
+
+    public String timeTravel(Long endTime)
+    {
+        return treeToString(this.playOutEvents(endTime));
     }
 }
