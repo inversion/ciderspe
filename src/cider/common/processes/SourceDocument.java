@@ -1,7 +1,8 @@
 package cider.common.processes;
 
-import java.util.Iterator;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Random;
 import java.util.TreeMap;
 
 /**
@@ -12,13 +13,11 @@ import java.util.TreeMap;
  */
 public class SourceDocument
 {
-    private TreeMap<Double, TypingEvent> localText;
-    private Double caretPosition = 0.0;
-    private Double endNumber = 1000.0;
+    private TreeMap<Long, TypingEvent> typingEvents;
 
     public SourceDocument()
     {
-        this.localText = new TreeMap<Double, TypingEvent>();
+        this.typingEvents = new TreeMap<Long, TypingEvent>();
     }
 
     public static void main(String[] args)
@@ -36,182 +35,171 @@ public class SourceDocument
      */
     public static String test()
     {
-        String testLog = singleThreadTest() + "\n";
-        testLog += lengthTest();
-        // TODO: When concurrent merging is ready I'll write a test for that,
-        // probably by having two threads representing two different users
-        // editing a document at the same time.
+        String testLog = shuffledEventsTest() + "\n";
         return testLog;
     }
 
-    public static String singleThreadTest()
+    public static String shuffledEventsTest()
     {
-        final String str1 = "the quick brown fox jumped over the lazy dog.";
-        final String str2 = "Jackdaws love my sphinx of black quartz.";
-        SourceDocument doc = new SourceDocument();
-        doc.setAbsoluptCaretPosition(0);
+        String expected = "the quick muddled fox jumped over the lazy dog";
+
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.addAll(generateEvents(0, 100, 0,
+                "the quick brown fox jumped over the lazy dog",
+                TypingEventMode.insert));
+        tes.addAll(generateEvents(200, 500, 10, "muddled",
+                TypingEventMode.overwrite));
+        // tes.addAll(generateEvents(600, 700, 17, " f",
+        // TypingEventMode.insert));
+        // tes.addAll(generateEvents(800, 1000, 28, "jumped",
+        // TypingEventMode.backspace));
+        // tes.addAll(generateEvents(2000, 3000, 22, "bounced",
+        // TypingEventMode.insert));
+
+        tes = shuffledEvents(tes, new Date().getTime());
+
+        SourceDocument testDoc = new SourceDocument();
+        for (TypingEvent event : tes)
+            testDoc.putEvent(event);
+        String result = testDoc.toString();
+        return expected.equals(result) ? "pass"
+                : "fail: did not pass shuffled events test since toString returned '"
+                        + result
+                        + "', where as it should of been '"
+                        + expected
+                        + "'.";
+    }
+
+    public static ArrayList<TypingEvent> shuffledEvents(
+            ArrayList<TypingEvent> typingEvents, long seed)
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        ArrayList<TypingEvent> source = new ArrayList<TypingEvent>();
+        source.addAll(typingEvents);
+        Random generator = new Random(seed);
+        TypingEvent event;
+
+        while (source.size() > 0)
+        {
+            event = source.get(generator.nextInt(source.size()));
+            tes.add(event);
+            source.remove(event);
+        }
+
+        return tes;
+    }
+
+    public static long t(long startTime, long stepSize, int i)
+    {
+        return startTime + stepSize * i;
+    }
+
+    public static long stepSize(long startTime, long endTime, int n)
+    {
+        return (endTime - startTime) / n;
+    }
+
+    public static ArrayList<TypingEvent> generateEvents(long startTime,
+            long endTime, int startingPosition, String text,
+            TypingEventMode mode)
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        final int n = text.length();
+        final long stepSize = stepSize(startTime, endTime, n);
+        int cp = startingPosition;
         int i = 0;
-        int j = 0;
-
-        for (; i < 4; i++)
-            // the
-            doc.type(0, str1.charAt(i));
-        for (; j < 9; j++)
-            // Jackdaws
-            doc.type(0, str2.charAt(j));
-        for (; i < 10; i++)
-            // quick
-            doc.type(0, str1.charAt(i));
-        for (; j < 14; j++)
-            // love
-            doc.type(0, str2.charAt(j));
-        for (; i < 16; i++)
-            // brown
-            doc.type(0, str1.charAt(i));
-        for (; j < 16; j++)
-            // my
-            doc.type(0, str2.charAt(j));
-
-        // replace love
-        doc.setAbsoluptCaretPosition(23);
-
-        for (int z = 0; z < 5; z++)
-            doc.backspace();
-
-        final String result = doc.toString();
-        final String expected = "the Jackdaws quick brown my";
-        if (result.equals(expected))
-            return "pass";
-        else
-            return "fail: did not pass singleThreadTest where result should be '"
-                    + expected + "', instead it is '" + result + "'.";
+        while (i < n)
+        {
+            if (mode == TypingEventMode.backspace)
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
+                        '\0'));
+                cp--;
+            }
+            else
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
+                        text.charAt(i)));
+                cp++;
+            }
+            i++;
+        }
+        return tes;
     }
 
-    public static String lengthTest()
+    public void putEvent(TypingEvent typingEvent)
     {
-        SourceDocument doc = new SourceDocument();
-        doc.setAbsoluptCaretPosition(0);
-        String expected = "";
+        this.typingEvents.put(typingEvent.time, typingEvent);
+    }
 
-        int j = 0;
-        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+    public TreeMap<Double, TypingEvent> playOutEvents()
+    {
+        double eventNumber;
+        TreeMap<Double, TypingEvent> survived = new TreeMap<Double, TypingEvent>();
+        // survived.put(-1.0, new TypingEvent(-1, TypingEventMode.insert, -1,
+        // '>'));
 
-        for (int i = 0; i < 10000; i++)
+        for (TypingEvent event : this.typingEvents.values())
         {
-            expected = expected + alphabet.charAt(j);
-            doc.type(0, alphabet.charAt(j));
-            j++;
-            if (j >= alphabet.length())
-                j = 0;
+            System.out.println(event);
+            eventNumber = event.eventNumber;
+            double cp = eventNumber - 1;
+            TypingEvent selectedEvent = null;
+            for (TypingEvent currentSelection : survived.values())
+            {
+                System.out.printf("" + currentSelection.chr);
+                selectedEvent = currentSelection;
+                if (cp == 0)
+                    break;
+                else
+                    cp--;
+            }
+            System.out.printf("\n");
+
+            switch (event.mode)
+            {
+            case insert:
+            {
+                if (selectedEvent == null)
+                    survived.put(eventNumber, event);
+                else
+                {
+                    Double next = survived.higherKey(selectedEvent.eventNumber);
+                    if (next == null || next > eventNumber)
+                        survived.put(eventNumber, event);
+                    else
+                        survived.put((selectedEvent.eventNumber + next) / 2.0,
+                                event);
+                }
+            }
+                break;
+            case overwrite:
+            {
+                survived.put(selectedEvent.eventNumber, event);
+                break;
+            }
+            case backspace:
+            {
+                survived.remove(selectedEvent.eventNumber);
+                break;
+            }
+            }
         }
 
-        String result = doc.toString();
-        if (result.equals(expected))
-            return "pass";
-        else
-            return "fail: did not pass length test where result should be '"
-                    + expected + "' instead it is '" + result + "'.";
+        return survived;
     }
 
-    public void setCaretPosition(Double caretPosition)
+    public static String treeToString(TreeMap<Double, TypingEvent> survived)
     {
-        this.caretPosition = caretPosition;
-    }
-
-    public boolean setAbsoluptCaretPosition(int absoluptPosition)
-    {
-        Iterator<Double> iterator = this.localText.descendingKeySet()
-                .descendingIterator();
-
-        for (int i = 0; i < absoluptPosition; i++)
-            iterator.next();
-
-        if (iterator.hasNext())
-        {
-            this.caretPosition = iterator.next();
-            return true;
-        }
-        else
-            return false;
-    }
-
-    public Double getCaretPosition()
-    {
-        return this.caretPosition;
-    }
-
-    public int absoluptCaretPosition()
-    {
-        return this.localText.headMap(this.caretPosition).size();
-    }
-
-    public void insertCharacter(Double position, TypingEvent typingEvent)
-    {
-        this.localText.put(position, typingEvent);
-    }
-
-    public void type(long time, char chr)
-    {
-        TypingEvent te = new TypingEvent(chr, time, TypingEventMode.insert);
-        te.chr = chr;
-        this.type(te);
-    }
-
-    public double higherKey()
-    {
-        Double higherKey = this.localText.higherKey(this.caretPosition);
-        if (higherKey == null)
-            higherKey = endNumber;
-        return higherKey;
-    }
-
-    public void type(TypingEvent typingEvent)
-    {
-        Double upperBound = this.caretPosition + 1.0 - Double.MIN_VALUE;
-        Entry<Double, TypingEvent> existingEntry = this.localText
-                .floorEntry(upperBound);
-
-        Double nextValue;
-
-        if (existingEntry == null)
-            nextValue = this.caretPosition;
-        else
-        {
-            while (existingEntry.getValue().time > typingEvent.time)
-                existingEntry = this.localText.floorEntry(existingEntry
-                        .getKey());
-
-            Double greatestLowerBound = existingEntry.getKey();
-            Double lowestUpperBound = this.localText
-                    .higherKey(greatestLowerBound);
-
-            if (lowestUpperBound == null)
-                lowestUpperBound = this.caretPosition + 1.0;
-
-            nextValue = (greatestLowerBound + lowestUpperBound) / 2.0;
-        }
-
-        this.localText.put(nextValue, typingEvent);
-
-        if (typingEvent.mode == TypingEventMode.insert
-                || typingEvent.mode == TypingEventMode.overwrite)
-            this.caretPosition++;
-        else
-            this.caretPosition--;
-    }
-
-    public TypingEvent backspace()
-    {
-        Double lowerKey = this.localText.lowerKey(this.caretPosition);
-        return this.localText.remove(lowerKey);
+        String str = "";
+        for (TypingEvent event : survived.values())
+            str += event.chr;
+        return str;
     }
 
     @Override
     public String toString()
     {
-        String result = "";
-        for (TypingEvent typingEvent : this.localText.values())
-            result += typingEvent;
-        return result;
+        return treeToString(this.playOutEvents());
     }
 }
