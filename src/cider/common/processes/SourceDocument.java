@@ -7,8 +7,7 @@ import java.util.Random;
 import java.util.TreeMap;
 
 /**
- * Experimental work: Real-time merging (unfinished) TODO: concurrent editing
- * where the time field of TypingEvent indicates what time the edit occurred.
+ * Experimental work: Real-time merging (unfinished)
  * 
  * @author Lawrence
  */
