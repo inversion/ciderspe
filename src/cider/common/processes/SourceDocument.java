@@ -172,19 +172,19 @@ public class SourceDocument
             {
             case insert:
             {
-                key = smallestAfter(string, event.caretPosition);
+                key = smallestAfter(string, event.position);
                 string.put(key, event);
             }
                 break;
             case overwrite:
             {
-                key = keyAt(string, event.caretPosition);
+                key = keyAt(string, event.position);
                 string.put(key, event);
                 break;
             }
             case backspace:
             {
-                key = keyAt(string, event.caretPosition);
+                key = keyAt(string, event.position);
                 string.remove(key);
                 break;
             }

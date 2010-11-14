@@ -10,21 +10,20 @@ public class TypingEvent
     public char chr;
     public long time;
     public TypingEventMode mode;
-    public int caretPosition; // only set if caret position changed
+    public int position;
 
-    public TypingEvent(long time, TypingEventMode mode, int caretPosition,
-            char chr)
+    public TypingEvent(long time, TypingEventMode mode, int position, char chr)
     {
         this.time = time;
         this.mode = mode;
-        this.caretPosition = caretPosition;
+        this.position = position;
         this.chr = chr;
     }
 
     @Override
     public String toString()
     {
-        return this.time + "\t" + this.caretPosition + "\t" + mode.toString()
-                + " " + chr;
+        return this.time + "\t" + this.position + "\t" + mode.toString() + " "
+                + chr;
     }
 }
