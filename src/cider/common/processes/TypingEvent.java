@@ -7,10 +7,10 @@ package cider.common.processes;
  */
 public class TypingEvent
 {
-    public char chr;
-    public long time;
-    public TypingEventMode mode;
-    public int position;
+    public final char chr;
+    public final long time;
+    public final TypingEventMode mode;
+    public final int position;
 
     public TypingEvent(long time, TypingEventMode mode, int position, char chr)
     {
