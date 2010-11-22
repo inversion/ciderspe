@@ -1,4 +1,4 @@
-package src.cider.common.processes;
+package cider.common.processes;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -68,7 +68,8 @@ public class SourceDocument
                         + expected
                         + "'.";
     }
-    //TODO: pushtest :3
+
+    // TODO: pushtest :3
     protected static ArrayList<TypingEvent> shuffledEvents(
             ArrayList<TypingEvent> typingEvents, long seed)
     {
@@ -148,8 +149,8 @@ public class SourceDocument
         return result;
     }
 
-    protected static Double smallestAfter(TreeMap<Double, TypingEvent> string,
-            int caretPosition)
+    protected static Double generateKeyJustAfter(
+            TreeMap<Double, TypingEvent> string, int caretPosition)
     {
         Double result = keyAt(string, caretPosition);
         Double higher = string.higherKey(result);
@@ -172,7 +173,7 @@ public class SourceDocument
             {
             case insert:
             {
-                key = smallestAfter(string, event.position);
+                key = generateKeyJustAfter(string, event.position);
                 string.put(key, event);
             }
                 break;
