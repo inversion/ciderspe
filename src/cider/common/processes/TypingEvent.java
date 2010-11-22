@@ -1,4 +1,4 @@
-package src.cider.common.processes;
+package cider.common.processes;
 
 /**
  * 
