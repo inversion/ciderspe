@@ -1,4 +1,4 @@
-package cider.client.gui;
+package src.cider.client.gui;
 
 import javax.swing.JFrame;
 

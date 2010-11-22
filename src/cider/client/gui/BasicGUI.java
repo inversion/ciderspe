@@ -1,4 +1,4 @@
-package cider.client.gui;
+package src.cider.client.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -17,7 +17,7 @@ public class BasicGUI extends JPanel implements ActionListener
 		quickPush.setBounds(300,300,50,50);
         add(quickPush);
         
-        JTextArea text = new JTextArea("class Hello{\n\tpublic static void main(String[] args) {\n\t\tSystem.out.println(\"hello\");\n\t}\n}");
+        JTextArea text = new JTextArea("class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}");
         text.setRows(20);
         add(text);
 	}
