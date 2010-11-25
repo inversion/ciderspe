@@ -1,8 +1,10 @@
 package cider.common.processes;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -13,11 +15,12 @@ import java.util.TreeMap;
  */
 public class SourceDocument
 {
-    private TreeMap<Long, TypingEvent> typingEvents;
+    private PriorityQueue<TypingEvent> typingEvents;
 
     public SourceDocument()
     {
-        this.typingEvents = new TreeMap<Long, TypingEvent>();
+        this.typingEvents = new PriorityQueue<TypingEvent>(1000,
+                new EventComparer());
     }
 
     public static void main(String[] args)
@@ -69,7 +72,6 @@ public class SourceDocument
                         + "'.";
     }
 
-    // TODO: pushtest :3
     protected static ArrayList<TypingEvent> shuffledEvents(
             ArrayList<TypingEvent> typingEvents, long seed)
     {
@@ -113,13 +115,13 @@ public class SourceDocument
             if (mode == TypingEventMode.backspace)
             {
                 tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
-                        '\0'));
+                        "\0"));
                 cp--;
             }
             else
             {
-                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
-                        text.charAt(i)));
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, ""
+                        + text.charAt(i)));
                 cp++;
             }
             i++;
@@ -129,7 +131,7 @@ public class SourceDocument
 
     public void putEvent(TypingEvent typingEvent)
     {
-        this.typingEvents.put(typingEvent.time, typingEvent);
+        this.typingEvents.add(typingEvent);
     }
 
     protected static Double keyAt(TreeMap<Double, TypingEvent> string,
@@ -163,9 +165,13 @@ public class SourceDocument
     {
         Double key;
         TreeMap<Double, TypingEvent> string = new TreeMap<Double, TypingEvent>();
-
-        for (TypingEvent event : this.typingEvents.values())
+        PriorityQueue<TypingEvent> q = new PriorityQueue<TypingEvent>(
+                this.typingEvents.size(), new EventComparer());
+        q.addAll(this.typingEvents);
+        TypingEvent event;
+        while (!q.isEmpty())
         {
+            event = q.poll();
             if (event.time > endTime)
                 break;
 
@@ -189,6 +195,10 @@ public class SourceDocument
                 string.remove(key);
                 break;
             }
+            case deleteAll:
+            {
+                string.clear();
+            }
             }
         }
 
@@ -199,7 +209,7 @@ public class SourceDocument
     {
         String str = "";
         for (TypingEvent event : survived.values())
-            str += event.chr;
+            str += event.text;
         return str;
     }
 
@@ -212,5 +222,18 @@ public class SourceDocument
     public String timeTravel(Long endTime)
     {
         return treeToString(this.playOutEvents(endTime));
+    }
+
+    class EventComparer implements Comparator<TypingEvent>
+    {
+        public int compare(TypingEvent e1, TypingEvent e2)
+        {
+            if (e1.time > e2.time)
+                return 1;
+            else if (e1.time < e2.time)
+                return -1;
+            else
+                return 0;
+        }
     }
 }

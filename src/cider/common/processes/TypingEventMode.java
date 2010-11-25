@@ -7,5 +7,5 @@ package cider.common.processes;
  */
 public enum TypingEventMode
 {
-    insert, overwrite, backspace
+    insert, overwrite, backspace, deleteAll
 }
