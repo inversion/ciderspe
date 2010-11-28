@@ -32,6 +32,12 @@ public class LocalCodeFile implements ICodeLocation
         System.out.println(testfile());
     }
 
+    /**
+     * 
+     * The LocalCodeFile doesn't work at all yet btw :P
+     * 
+     * @return
+     */
     public static String testfile()
     {
         Date date = new Date();
