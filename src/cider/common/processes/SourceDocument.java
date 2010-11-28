@@ -1,10 +1,12 @@
 package cider.common.processes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Random;
 import java.util.TreeMap;
 
@@ -13,9 +15,10 @@ import java.util.TreeMap;
  * 
  * @author Lawrence
  */
-public class SourceDocument
+public class SourceDocument implements ICodeLocation
 {
     private PriorityQueue<TypingEvent> typingEvents;
+    private double latestTime;
 
     public SourceDocument()
     {
@@ -132,6 +135,14 @@ public class SourceDocument
     public void putEvent(TypingEvent typingEvent)
     {
         this.typingEvents.add(typingEvent);
+        if (this.latestTime > typingEvent.time)
+            this.latestTime = typingEvent.time;
+    }
+
+    public void putEvents(Collection<TypingEvent> values)
+    {
+        for (TypingEvent typingEvent : values)
+            this.putEvent(typingEvent);
     }
 
     protected static Double keyAt(TreeMap<Double, TypingEvent> string,
@@ -235,5 +246,41 @@ public class SourceDocument
             else
                 return 0;
         }
+    }
+
+    @Override
+    public void push(Queue<TypingEvent> typingEvents)
+    {
+        while (!typingEvents.isEmpty())
+        {
+            TypingEvent typingEvent = typingEvents.poll();
+            Collection<TypingEvent> fragments = typingEvent.explode().values();
+            this.putEvents(fragments);
+        }
+    }
+
+    @Override
+    public Queue<TypingEvent> events()
+    {
+        return this.typingEvents;
+    }
+
+    @Override
+    public Queue<TypingEvent> eventsSince(long time)
+    {
+        TypingEvent[] events = new TypingEvent[this.typingEvents.size()];
+        this.typingEvents.toArray(events);
+        int i = 0;
+        int len = events.length;
+        while (events[i++].time < time)
+            ;
+
+        PriorityQueue<TypingEvent> latestEvents = new PriorityQueue<TypingEvent>(
+                this.typingEvents.size() - i, new EventComparer());
+
+        while (i < len)
+            latestEvents.add(events[i++]);
+
+        return latestEvents;
     }
 }
