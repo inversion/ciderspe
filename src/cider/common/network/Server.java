@@ -3,6 +3,7 @@ package cider.common.network;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ChatManagerListener;
+import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
@@ -23,9 +24,16 @@ public class Server implements ChatManagerListener {
 			try
 			{
 				// Connect and login to the XMPP server
-				connection = new XMPPConnection( Common.DOMAIN );
+				ConnectionConfiguration config = new ConnectionConfiguration( Common.HOST, Common.PORT, Common.SERVICE_NAME );
+				connection = new XMPPConnection( config );
 				connection.connect();
 				connection.login( Common.BOT_USERNAME, Common.BOT_PASSWORD );
+				
+				if( Common.DEBUG )
+				{
+					System.out.println( "Server connected=" + connection.isConnected() );
+					System.out.println( "Server username=" + connection.getUser() );
+				}
 				
 				// Listen for new chats being initiated
 				chatmanager = connection.getChatManager();

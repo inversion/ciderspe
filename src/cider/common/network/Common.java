@@ -1,5 +1,7 @@
 package cider.common.network;
 
+import java.io.IOException;
+
 /**
  * This class just ties together the client and server
  * for testing at the moment. All it does is get the Client.java file from the server
@@ -13,12 +15,14 @@ public class Common {
 	
 		public static final boolean DEBUG = true;
 	
-		public static final String DOMAIN = "192.168.0.2";
-		public static final String BOT_USERNAME = "bot";
-		public static final String BOT_PASSWORD = "password";
-		public static final String CLIENT_USERNAME = "andrew";
-		public static final String CLIENT_PASSWORD = "password";
-		public static final String SRCPATH = "src";
+		public static final String HOST = "talk.google.com";
+		public static final int PORT = 5222;
+		public static final String SERVICE_NAME = "mossage.co.uk";
+		public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
+		public static final String BOT_PASSWORD = "botpassword";
+		public static final String CLIENT_USERNAME = "ciderclient@mossage.co.uk";
+		public static final String CLIENT_PASSWORD = "clientpw";
+		public static final String SRCPATH = ".";
 		
 		public static void main( String[] args )
 		{
@@ -27,6 +31,12 @@ public class Common {
 			Client client = new Client();
 			client.getFileList();
 			//client.getFile( SRCPATH + "\\cider\\common\\network\\Client.java" );
+			try {
+				System.in.read();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 }
