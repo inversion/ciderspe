@@ -28,6 +28,7 @@ public class ServerMessageListener implements MessageListener {
 				chat.sendMessage( "file=" + fh.getFileContents( body.substring( 8, body.length() ) ) );
 			else if( body.equals( "getfilelist" ) )
 				chat.sendMessage( "filelist=" + fh.getDirListXML( Common.SRCPATH ) );
+				
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
