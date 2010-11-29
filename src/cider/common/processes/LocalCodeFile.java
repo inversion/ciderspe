@@ -21,6 +21,8 @@ public class LocalCodeFile implements ICodeLocation
     private File file;
     private BufferedReader in;
     private BufferedWriter out;
+    private String oldFileContentString = null;
+    private TypingEvent oldFileContent;
 
     public LocalCodeFile(File file)
     {
@@ -53,11 +55,13 @@ public class LocalCodeFile implements ICodeLocation
             e.printStackTrace();
         }
         LocalCodeFile lcf = new LocalCodeFile(file);
-        SourceDocument sd = new SourceDocument();
-        sd.push(lcf.events());
-        sd.putEvents(new TypingEvent(date.getTime(), TypingEventMode.insert, sd
-                .toString().length() + 1, testStr).explode().values());
-        lcf.push(sd.eventsSince(date.getTime()));
+        lcf.events();
+        TypingEvent timestamp = new TypingEvent(date.getTime(),
+                TypingEventMode.insert, lcf.oldFileContentString.length(),
+                "Test text: " + date.toString());
+        Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+        typingEvents.addAll(timestamp.explode().values());
+        lcf.push(typingEvents);
         return lcf.read();
     }
 
@@ -68,7 +72,7 @@ public class LocalCodeFile implements ICodeLocation
         {
             this.out = new BufferedWriter(new FileWriter(this.file));
             SourceDocument sd = new SourceDocument();
-            sd.push(this.events());
+            sd.putEvent(this.oldFileContent);
             sd.push(typingEvents);
             this.out.write(sd.toString());
             this.out.close();
@@ -82,12 +86,15 @@ public class LocalCodeFile implements ICodeLocation
     @Override
     public Queue<TypingEvent> events()
     {
-        Queue<TypingEvent> inBox = new LinkedList<TypingEvent>();
-        long currentTime = this.file.lastModified();
-        inBox.add(new TypingEvent(currentTime, TypingEventMode.deleteAll, 0, ""));
-        inBox.add(new TypingEvent(currentTime + 1, TypingEventMode.overwrite,
-                0, this.read()));
-        return inBox;
+        long currentTime = 0;
+        // this.oldFileContent.add(new TypingEvent(currentTime,
+        // TypingEventMode.deleteAll, 0, ""));
+        this.oldFileContent = new TypingEvent(currentTime + 1,
+                TypingEventMode.overwrite, 0,
+                this.oldFileContentString = this.read());
+        Queue<TypingEvent> result = new LinkedList<TypingEvent>();
+        result.add(this.oldFileContent);
+        return result;
     }
 
     public String read()
