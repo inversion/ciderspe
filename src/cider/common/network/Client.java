@@ -38,7 +38,6 @@ public class Client {
 				System.out.println( "Client connected=" + connection.isConnected() );
 				System.out.println( "Client username=" + connection.getUser() );
 			}
-				
 			
 			chatmanager = connection.getChatManager();
 			listener = new ClientMessageListener( );
@@ -50,10 +49,10 @@ public class Client {
 		}
 	}
 	
-	public void getFile( String filename )
+	public void getFile( String path )
 	{
 		try {
-			chat.sendMessage( "getfile " + filename );
+			chat.sendMessage( "getfile=" + path );
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
