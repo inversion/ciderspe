@@ -9,4 +9,6 @@ public interface ICodeLocation
     public Queue<TypingEvent> events();
 
     public Queue<TypingEvent> eventsSince(long time);
+
+    public long lastUpdateTime();
 }

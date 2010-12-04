@@ -35,9 +35,6 @@ public class LocalCodeFile implements ICodeLocation
     }
 
     /**
-     * 
-     * The LocalCodeFile doesn't work at all yet btw :P
-     * 
      * @return
      */
     public static String testfile()
@@ -123,5 +120,11 @@ public class LocalCodeFile implements ICodeLocation
             return this.events();
         else
             return new LinkedList<TypingEvent>();
+    }
+
+    @Override
+    public long lastUpdateTime()
+    {
+        return this.file.lastModified();
     }
 }

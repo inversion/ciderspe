@@ -63,7 +63,7 @@ public class TypingEvent
         else
         {
             final double inc = amountOfTime / this.text.length();
-            int pos = 0;
+            int pos = this.position;
             double t;
             for (char c : this.text.toCharArray())
             {
@@ -79,7 +79,7 @@ public class TypingEvent
     @Override
     public String toString()
     {
-        return this.time + "\t" + this.position + "\t" + mode.toString() + " "
-                + text;
+        return "time " + this.time + "\t" + this.position + "\t"
+                + mode.toString() + "\t" + text;
     }
 }
