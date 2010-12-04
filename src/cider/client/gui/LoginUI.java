@@ -1,29 +1,47 @@
-import javax.swing.*;
-import javax.swing.border.*;
-import javax.swing.event.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.net.*;
+package cider.client.gui;
 
-public class LoginUI {
+import java.awt.Component;
+import java.awt.Insets;
+import java.net.URL;
 
-	private JFrame login;
-	
-	
-	void displayLogin() {
-		
-		// Setup JFrame
-		login = new JFrame();
-		login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.UIManager;
+
+public class LoginUI
+{
+
+    private JFrame login;
+
+    void displayLogin()
+    {
+
+        // Setup JFrame
+        login = new JFrame();
+        login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
-        try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());}
-        catch (Exception e) { }
-        
+        try
+        {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e)
+        {
+        }
+
         JPanel main = new JPanel();
         main.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
         Box box = Box.createVerticalBox();
-        
+
         // CIDEr Image
         URL u = this.getClass().getResource("loginimage.png");
         ImageIcon image = new ImageIcon(u);
@@ -31,7 +49,7 @@ public class LoginUI {
         lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         box.add(lblImage);
-        
+
         // Username, Password, Address, Port Labels/Textboxes
         JPanel infoPanel = new JPanel();
         infoPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
@@ -39,7 +57,7 @@ public class LoginUI {
         infoPanel.setLayout(infoLayout);
         infoLayout.setAutoCreateGaps(true);
         infoLayout.setAutoCreateContainerGaps(true);
-        
+
         JLabel lblUser = new JLabel("Username:");
         JLabel lblPass = new JLabel("Password:");
         JLabel lblHost = new JLabel("Host Address:  ");
@@ -49,21 +67,24 @@ public class LoginUI {
         JTextField txtHost = new JTextField(13);
         JTextField txtPort = new JTextField(13);
 
-        GroupLayout.SequentialGroup leftToRight = infoLayout.createSequentialGroup();
+        GroupLayout.SequentialGroup leftToRight = infoLayout
+                .createSequentialGroup();
         GroupLayout.ParallelGroup leftColumn = infoLayout.createParallelGroup();
         leftColumn.addComponent(lblUser);
         leftColumn.addComponent(lblPass);
         leftColumn.addComponent(lblHost);
         leftColumn.addComponent(lblPort);
-        GroupLayout.ParallelGroup rightColumn = infoLayout.createParallelGroup();
+        GroupLayout.ParallelGroup rightColumn = infoLayout
+                .createParallelGroup();
         rightColumn.addComponent(txtUsername);
         rightColumn.addComponent(txtPassword);
         rightColumn.addComponent(txtHost);
         rightColumn.addComponent(txtPort);
         leftToRight.addGroup(leftColumn);
         leftToRight.addGroup(rightColumn);
-        
-        GroupLayout.SequentialGroup topToBottom = infoLayout.createSequentialGroup();
+
+        GroupLayout.SequentialGroup topToBottom = infoLayout
+                .createSequentialGroup();
         GroupLayout.ParallelGroup row1 = infoLayout.createParallelGroup();
         row1.addComponent(lblUser);
         row1.addComponent(txtUsername);
@@ -80,11 +101,11 @@ public class LoginUI {
         topToBottom.addGroup(row2);
         topToBottom.addGroup(row3);
         topToBottom.addGroup(row4);
-        
+
         infoLayout.setHorizontalGroup(leftToRight);
         infoLayout.setVerticalGroup(topToBottom);
         box.add(infoPanel);
-        
+
         // Remember Server Checkbox
         JCheckBox chkRemember = new JCheckBox("Remember Server Details");
         chkRemember.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
@@ -96,19 +117,20 @@ public class LoginUI {
         btnSubmit.setMargin(new Insets(7, 30, 7, 30));
         btnSubmit.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(btnSubmit);
-        
+
         // Finalise JFrame
         main.add(box);
         login.add(main);
         login.pack();
         login.setLocationByPlatform(true);
         login.setVisible(true);
-	}
-	
-	public static void main(String[] args) {
-		
-		LoginUI ui = new LoginUI();
-		ui.displayLogin();
-		
-	}
+    }
+
+    public static void main(String[] args)
+    {
+
+        LoginUI ui = new LoginUI();
+        ui.displayLogin();
+
+    }
 }
