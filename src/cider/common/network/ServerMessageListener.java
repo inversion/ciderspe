@@ -15,23 +15,18 @@ import org.jivesoftware.smack.packet.Message;
  */
 
 public class ServerMessageListener implements MessageListener {
-
-	private FileHandler fh = new FileHandler();
 	
 	@Override
 	public void processMessage(Chat chat, Message message) {
 		String body;
-		// TODO Auto-generated method stub
-		try {
-			body = message.getBody();
-			if( body.startsWith( "getfile=" ) )
-				chat.sendMessage( "file=" + fh.getFileContents( body.substring( 8, body.length() ) ) );
-			else if( body.equals( "getfilelist" ) )
-				chat.sendMessage( "filelist=" + fh.getDirListXML( Common.SRCPATH ) );
-				
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		body = message.getBody();
+		if( body.startsWith( "getfile=" ) )
+		{
+			//chat.sendMessage( "file=" + fh.getFileContents( body.substring( 8, body.length() ) ) );
+		}
+		else if( body.equals( "getfilelist" ) )
+		{
+			//chat.sendMessage( "filelist=" + fh.getDirListXML( Common.SRCPATH ) );
 		}
 	}
 	
