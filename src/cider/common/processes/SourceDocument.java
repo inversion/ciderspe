@@ -18,7 +18,8 @@ import java.util.TreeMap;
 public class SourceDocument implements ICodeLocation
 {
     private PriorityQueue<TypingEvent> typingEvents;
-    private double latestTime;
+
+    private long latestTime;
 
     public SourceDocument()
     {
@@ -176,9 +177,33 @@ public class SourceDocument implements ICodeLocation
     {
         Double key;
         TreeMap<Double, TypingEvent> string = new TreeMap<Double, TypingEvent>();
+
+        int initialCapacity = this.typingEvents.size();
+        if (initialCapacity < 2)
+            initialCapacity++;
+
         PriorityQueue<TypingEvent> q = new PriorityQueue<TypingEvent>(
-                this.typingEvents.size(), new EventComparer());
-        q.addAll(this.typingEvents);
+                initialCapacity, new EventComparer());
+
+        // deadlock quick-fix
+        boolean success = false;
+        int attempts = 10;
+        while (!success && attempts > 0)
+        {
+            try
+            {
+                q.addAll(this.typingEvents);
+                success = true;
+            }
+            catch (Exception e)
+            {
+                attempts--;
+
+                if (attempts == 0)
+                    e.printStackTrace();
+            }
+        }
+
         TypingEvent event;
         while (!q.isEmpty())
         {
@@ -191,6 +216,7 @@ public class SourceDocument implements ICodeLocation
             case insert:
             {
                 key = generateKeyJustAfter(string, event.position);
+                // System.out.println(event.position);
                 string.put(key, event);
             }
                 break;
@@ -268,19 +294,23 @@ public class SourceDocument implements ICodeLocation
     @Override
     public Queue<TypingEvent> eventsSince(long time)
     {
-        TypingEvent[] events = new TypingEvent[this.typingEvents.size()];
-        this.typingEvents.toArray(events);
-        int i = 0;
-        int len = events.length;
-        while (events[i++].time < time)
-            ;
+        int initialCapacity = this.typingEvents.size();
+        if (initialCapacity < 2)
+            initialCapacity++;
 
         PriorityQueue<TypingEvent> latestEvents = new PriorityQueue<TypingEvent>(
-                this.typingEvents.size() - i, new EventComparer());
+                initialCapacity, new EventComparer());
 
-        while (i < len)
-            latestEvents.add(events[i++]);
+        for (TypingEvent te : this.typingEvents)
+            if (te.time > time)
+                latestEvents.add(te);
 
         return latestEvents;
+    }
+
+    @Override
+    public long lastUpdateTime()
+    {
+        return this.latestTime;
     }
 }
