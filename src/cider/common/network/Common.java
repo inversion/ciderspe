@@ -22,7 +22,7 @@ public class Common {
 		public static final String BOT_PASSWORD = "botpassword";
 		public static final String CLIENT_USERNAME = "ciderclient@mossage.co.uk";
 		public static final String CLIENT_PASSWORD = "clientpw";
-		public static final String SRCPATH = ".";
+		public static final String SRCPATH = "src";
 		
 		public static void main( String[] args )
 		{
@@ -30,7 +30,7 @@ public class Common {
 			Server server = new Server();
 			Client client = new Client();
 			client.getFileList();
-			//client.getFile( SRCPATH + "\\cider\\common\\network\\Client.java" );
+			client.getFile( "src\\cider\\common\\network\\Server.java" );
 			try {
 				System.in.read();
 			} catch (IOException e) {
