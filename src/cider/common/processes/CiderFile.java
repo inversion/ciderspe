@@ -1,51 +1,52 @@
 package cider.common.processes;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Preliminary class for a file in CIDER. Serialized versions
- * of these will be sent through the XMPP server in dir listings.
+ * Class to represent a source file in CIDER
  * 
- * TODO: Add handling of case when file doesn't exist
+ * When a file is created by a client a serialized version
+ * of it can be sent to the server to be propagated to other clients.
+ * 
+ * TODO: Add handling of opened by list
+ * TODO: Think how to handle deletion of a file
  * 
  * @author Andrew
  *
  */
 
-public class CiderFile {
-
+public class CiderFile implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private String path;
+	private boolean isDir;
 	private long modified;
-	// TODO: Eventually this arraylist will be of type 'User'
-	private ArrayList opened_by;
 	private boolean open;
 	
-/*	Define whether this file is a directory 
-	and give a list of its children
+	// TODO: Eventually this arraylist will be of type 'User'
+	private ArrayList opened_by;
 	
-	TODO: Is this the best way to store children? I think it would probably be better to use some external data structure.
-*/
-	private boolean isDir;
-	public ArrayList<CiderFile> children;
-	
-	public CiderFile( File f )
+	public CiderFile( String path ) throws IOException
 	{
-		File[] list = f.listFiles();
-		modified = f.lastModified();
-		open = false;
+		File f = new File( path );
+		
+		if( !f.exists() )
+			throw new IOException("File " + path + " doesn't exist.");
+		
+		this.path = path;
+		this.modified = f.lastModified();
+		this.open = false;
 		if( f.isDirectory() )
-		{
-			isDir = true;
-			children = new ArrayList<CiderFile>();
-		}
+			this.isDir = true;
 		else
-			isDir = false;
-	}
-	
-	public CiderFile( String path )
-	{
-		this( new File( path ) );
+			this.isDir = false;
 	}
 	
 	public boolean isOpen()
@@ -63,6 +64,9 @@ public class CiderFile {
 		return modified;
 	}
 	
-	
+	public String getPath()
+	{
+		return path;
+	}
 	
 }
