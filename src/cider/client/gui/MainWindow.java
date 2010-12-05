@@ -7,13 +7,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -34,7 +39,9 @@ import cider.common.network.Server;
 
 class MainWindow implements Runnable
 {
+	JTabbedPane tabbedPane = new JTabbedPane();
     JFrame w;
+    public String currentDir = "\\.";
     public String currentFileName = "newfile.java";
     public String currentFileContents =
     	"class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}";
@@ -58,6 +65,63 @@ class MainWindow implements Runnable
         menu.add(menuItem);
     }
     
+    public void openFile()
+    {
+    	JFileChooser fc = new JFileChooser();
+    	int rVal = fc.showOpenDialog(null);
+    	if (rVal == JFileChooser.APPROVE_OPTION)
+    	{
+    		String temp;
+    		currentDir = fc.getSelectedFile().getAbsolutePath();
+    		currentFileName = fc.getSelectedFile().getName();
+    		try
+    		{
+	    		FileInputStream fis = new FileInputStream(currentDir);
+	    		BufferedInputStream bis = new BufferedInputStream(fis);
+	    		BufferedReader br = new BufferedReader(new InputStreamReader(bis));
+	    		currentFileContents = "";
+	    		while ((temp = br.readLine()) != null)
+	    		{
+	    			currentFileContents = currentFileContents + temp + "\n";
+	    		}
+    		}
+    		catch (IOException e)
+    		{
+    			System.err.println("Error: " + e.getMessage());
+    			System.exit(0);
+    		}
+	    		
+    		tabbedPane.addTab(currentFileName, sourceEditor());
+    		tabbedPane.setSelectedIndex(++currentTab);
+    	}
+    }
+    
+    public void saveFile(String action) {
+		JFileChooser fc = new JFileChooser();
+		if (currentFileName.equals("newfile.java") || action.equals("Save As"))
+		{
+			int watdo = fc.showSaveDialog(null);
+			if (watdo != JFileChooser.APPROVE_OPTION)
+			{
+				return;
+			}
+			currentFileName = fc.getSelectedFile().getName();
+			currentDir = fc.getSelectedFile().getAbsolutePath();
+		}
+		try
+		{
+            FileWriter fstream = new FileWriter(currentDir);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(currentFileContents);
+            out.close();
+		}
+		catch (IOException e1)
+		{
+			System.err.println("Error: " + e1.getMessage());
+		}
+		tabbedPane.setTitleAt(currentTab, currentFileName);
+	}
+    
     public ActionListener newAction()
     {
     	ActionListener AL = new ActionListener() {
@@ -73,33 +137,14 @@ class MainWindow implements Runnable
 		            	System.exit(0);
 					
 				}
+				else if (action.equals("Open"))
+				{
+					openFile();
+				}
 				else if (action.equals("Save file locally") || action.equals("Save") || action.equals("Save As"))
 				{
-					if (currentFileName.equals("newfile.java") || action.equals("Save As"))
-					{
-						String response = JOptionPane.showInputDialog(null,
-							  "Enter new file name",
-							  currentFileName,
-							  JOptionPane.QUESTION_MESSAGE);
-						currentFileName = response;
-					}
-		            File f = new File (currentFileName);
-		            if (!f.exists())
-		            {
-						try 
-						{
-							f.createNewFile();
-				            FileWriter fstream = new FileWriter(currentFileName);
-				            BufferedWriter out = new BufferedWriter(fstream);
-				            out.write(currentFileContents);
-				            out.close();
-						} 
-						catch (IOException e1) 
-						{
-							e1.printStackTrace();
-						}
-		            }
-				}
+					saveFile(action);
+		        }
 
 			}
     	};
@@ -178,8 +223,6 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Get file list from server (NYI)", -1, aL);
         addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
         
-        
-
         return menuBar;
     }
 
@@ -200,7 +243,6 @@ class MainWindow implements Runnable
 
     public JPanel sourceEditorSection()
     {
-        JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(currentFileName, sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
