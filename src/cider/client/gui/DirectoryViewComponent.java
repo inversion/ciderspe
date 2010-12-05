@@ -98,6 +98,9 @@ public class DirectoryViewComponent extends JPanel
 		Pattern pattern = Pattern.compile( "(.+)\\\\(.+)$" );
 		Matcher matcher = null;
 		
+		// Purge current directory tree to prevent duplicates
+		top.removeAllChildren();
+		
 		for( int i = 0; i < files.length; i++ )
 		{
 			if( list.table.get( files[i] ).isDir() )
