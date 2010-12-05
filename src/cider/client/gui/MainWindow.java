@@ -88,7 +88,7 @@ class MainWindow implements Runnable
         scrollPane.setPreferredSize(new Dimension(250, 250));
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
-        panel.add(textArea);
+        panel.add(scrollPane);
         return panel;
     }
 
