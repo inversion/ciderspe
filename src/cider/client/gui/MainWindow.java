@@ -1,4 +1,4 @@
-package cider.client;
+package cider.client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -25,13 +25,13 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-class CIDER implements Runnable
+class MainWindow implements Runnable
 {
     JFrame w;
 
     public static void main(String[] args)
     {
-        CIDER program = new CIDER();
+        MainWindow program = new MainWindow();
         SwingUtilities.invokeLater(program);
     }
 
