@@ -46,7 +46,7 @@ public class CiderFileList implements Serializable{
 		root = path;
 		constructTable( root );
 	}
-	
+
 	private void constructTable( String path )
 	{
 		// TODO: Make this throw the exceptions instead
@@ -73,6 +73,5 @@ public class CiderFileList implements Serializable{
 				constructTable( list[i].getPath() );
 			}
 		}
-	}
-	
+	}	
 }

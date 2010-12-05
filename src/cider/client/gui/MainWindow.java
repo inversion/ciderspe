@@ -29,11 +29,16 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import cider.common.network.Client;
+import cider.common.network.Server;
+
 class MainWindow implements Runnable
 {
     JFrame w;
     public String currentFileName = "newfile.java";
     public String currentFileContents;
+    Client client;
+    Server server;
     
     public static void main(String[] args)
     {
@@ -206,10 +211,15 @@ class MainWindow implements Runnable
 
     public JPanel mainArea()
     {
+    	DirectoryViewComponent dirView = new DirectoryViewComponent();
+		server = new Server();
+		client = new Client( dirView );
+		client.getFileList();
+    	
         JPanel panel = new JPanel(new BorderLayout());
         JSplitPane splitPane;
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new DirectoryViewComponent()/* label */,
+                dirView/* label */,
                 this.sourceEditorSection());// textArea/*label2*/);
         JSplitPane splitPane2;
         splitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, splitPane,

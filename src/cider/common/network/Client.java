@@ -6,6 +6,9 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
+import cider.client.gui.DirectoryViewComponent;
+import cider.common.processes.CiderFileList;
+
 /**
  * 
  * This implements the client side of the XMPP layer, it has methods
@@ -22,8 +25,8 @@ public class Client {
 	private ChatManager chatmanager;
 	private ClientMessageListener listener;
 	private Chat chat;
-	
-	Client()
+
+	public Client( DirectoryViewComponent dirView )
 	{
 		try
 		{
@@ -40,7 +43,7 @@ public class Client {
 			}
 			
 			chatmanager = connection.getChatManager();
-			listener = new ClientMessageListener( );
+			listener = new ClientMessageListener( dirView );
 			chat = chatmanager.createChat( Common.BOT_USERNAME, listener );
 		}
 		catch( XMPPException e )

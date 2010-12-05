@@ -26,7 +26,7 @@ public class Server implements ChatManagerListener
      * this.connection.login(username, password) }
      */
 
-    Server()
+    public Server()
     {
         try
         {

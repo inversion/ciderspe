@@ -1,11 +1,13 @@
 package cider.common.network;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 
+import cider.client.gui.DirectoryViewComponent;
 import cider.common.processes.CiderFile;
 import cider.common.processes.CiderFileList;
 import cider.specialcomponents.Base64;
@@ -15,14 +17,18 @@ import cider.specialcomponents.Base64;
  * on its chat session with the server.
  * 
  * 
- * 
- *
  * @author Andrew
  *
  */
 
-public class ClientMessageListener implements MessageListener {
+public class ClientMessageListener implements MessageListener {	
 	
+	public DirectoryViewComponent dirView;
+	
+	public ClientMessageListener( DirectoryViewComponent dirView ) {
+		this.dirView = dirView;
+	}
+
 	@Override
 	public void processMessage(Chat chat, Message message) {
 		if( message.getBody().startsWith( "file=" ) )
@@ -37,11 +43,9 @@ public class ClientMessageListener implements MessageListener {
 		}
 		else if( message.getBody().startsWith( "filelist=" ) )
 		{
+			//TODO: getting filelist more than once will add loads of duplicates!
 			try {
-				CiderFileList filelist = (CiderFileList) Base64.decodeToObject( message.getBody().substring( 9, message.getBody().length() ) );
-				Object[] files = filelist.table.keySet().toArray();
-				for( int i = 0; i < files.length; i++ ) 
-					System.out.println( files[i] );
+				dirView.constructTree( (CiderFileList) Base64.decodeToObject( message.getBody().substring( 9, message.getBody().length() ) ) );
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -51,5 +55,4 @@ public class ClientMessageListener implements MessageListener {
 			}
 		}
 	}
-
 }
