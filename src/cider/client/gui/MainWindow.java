@@ -8,7 +8,6 @@ import java.awt.event.KeyEvent;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -101,10 +100,9 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    public void run()
+    public JPanel mainArea()
     {
-        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
-
+        JPanel panel = new JPanel(new BorderLayout());
         JSplitPane splitPane;
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                 new DirectoryViewComponent()/* label */,
@@ -120,12 +118,12 @@ class MainWindow implements Runnable
 
         // Provide minimum sizes for the two components in the split pane
         Dimension minimumSize = new Dimension(100, 50);
-        // label.setMinimumSize(minimumSize);
-        // label2.setMinimumSize(minimumSize);
+        panel.add(splitPane2);
+        return panel;
+    }
 
-        JButton button = new JButton("Click Me");
-        // button.addActionListener(new MyAction());
-
+    public void run()
+    {
         w = new JFrame("CIDEr");
         w.setDefaultCloseOperation(w.EXIT_ON_CLOSE);
 
@@ -136,13 +134,7 @@ class MainWindow implements Runnable
 
         JPanel p = new JPanel(new BorderLayout());
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
-        p.add(splitPane2);
-
-        // w.add(new JLabel("Hello World"));
-        // w.add(menuBar);
-        // w.add(splitPane2);
-        // w.add(textArea);
-        // w.add(button);
+        p.add(this.mainArea());
 
         w.add(p);
 
@@ -151,10 +143,6 @@ class MainWindow implements Runnable
         w.setVisible(true);
     }
 
-    /*
-     * public class MyAction implements ActionListener{ public void
-     * actionPerformed(ActionEvent e){
-     */
     public class Error
     {
         public void errorMessage(String message, String title)
