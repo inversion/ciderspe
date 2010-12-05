@@ -18,12 +18,12 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
-public class BasicGUI extends JPanel implements ActionListener, KeyListener
+public class ExampleBasicGUI extends JPanel implements ActionListener, KeyListener
 {
 	public static String fileName = "NewFile.java";
 	public static String fileContents;
 	
-    public BasicGUI()
+    public ExampleBasicGUI()
     {
     	super(new GridLayout(1,2));
     	

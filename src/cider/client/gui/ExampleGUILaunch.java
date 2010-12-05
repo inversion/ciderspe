@@ -3,18 +3,18 @@ package cider.client.gui;
 import javax.swing.JFrame;
 
 @SuppressWarnings("serial")
-public class Launch extends JFrame
+public class ExampleGUILaunch extends JFrame
 {
     // just throwing this together because nobody else has
     public static void main(String[] args)
     {
-        new Launch();
+        new ExampleGUILaunch();
     }
 
-    Launch()
+    ExampleGUILaunch()
     {
         JFrame f = new JFrame("CIDEr - A Collaborative Coding Experience :)");
-        BasicGUI g = new BasicGUI();
+        ExampleBasicGUI g = new ExampleBasicGUI();
         g.setOpaque(true);
         f.add(g);
         f.setContentPane(g);

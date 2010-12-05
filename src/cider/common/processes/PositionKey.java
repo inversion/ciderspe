@@ -18,19 +18,6 @@ public class PositionKey
     {
         public int value = 0;
         Level next = null;
-
-        LevelPair whereDifferenceBegins(Level other)
-        {
-            if (this.value != other.value)
-                return new LevelPair(this, other);
-            else
-            {
-                if (this.next == null || other.next == null)
-                    return new LevelPair(this.next, other.next);
-                else
-                    return this.next.whereDifferenceBegins(other.next);
-            }
-        }
     }
 
     private Level topLevel = new Level();
