@@ -43,7 +43,6 @@ public class ClientMessageListener implements MessageListener {
 		}
 		else if( message.getBody().startsWith( "filelist=" ) )
 		{
-			//TODO: getting filelist more than once will add loads of duplicates!
 			try {
 				dirView.constructTree( (CiderFileList) Base64.decodeToObject( message.getBody().substring( 9, message.getBody().length() ) ) );
 			} catch (IOException e) {
