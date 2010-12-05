@@ -10,6 +10,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -29,6 +30,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -174,6 +176,35 @@ class MainWindow implements Runnable
 			}
     	};
     	return AL;
+    } 
+    
+    private void tabClicked(MouseEvent e)
+    {
+    	if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1) {   // if is right-click
+
+    		// create popup with Close menuitem
+    		JPopupMenu popupMenu = new JPopupMenu();
+    		JMenuItem closeBtn = new JMenuItem("Close");
+    		closeBtn.addActionListener(new ActionListener() 
+    		{
+    			public void actionPerformed(ActionEvent e) 
+    			{
+    				SwingUtilities.invokeLater(new Runnable() 
+    				{
+    					public void run() 
+    					{
+    						closeFile("Close File");
+    					}
+    				}
+    				);
+    			}
+    		}
+    		);
+    		popupMenu.add(closeBtn);
+
+    		// display popup near location of mouse click
+    		popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+    	}
     }
     
 
