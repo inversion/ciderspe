@@ -33,7 +33,8 @@ class MainWindow implements Runnable
 {
     JFrame w;
     public String currentFileName = "newfile.java";
-    public String currentFileContents;
+    public String currentFileContents =
+    	"class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}";
     
     public static void main(String[] args)
     {
@@ -106,7 +107,6 @@ class MainWindow implements Runnable
 
 			@Override
 			public void keyTyped(KeyEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
@@ -123,7 +123,6 @@ class MainWindow implements Runnable
 
 			@Override
 			public void keyReleased(KeyEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
     		
@@ -181,8 +180,7 @@ class MainWindow implements Runnable
     {
         JPanel panel = new JPanel(new BorderLayout());
         // text area
-        JTextArea textArea = new JTextArea(
-        		"class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}");
+        JTextArea textArea = new JTextArea(currentFileContents);
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setPreferredSize(new Dimension(250, 250));
