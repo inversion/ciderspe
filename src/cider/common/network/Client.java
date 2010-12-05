@@ -7,13 +7,13 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.client.gui.DirectoryViewComponent;
-import cider.common.processes.CiderFileList;
+import cider.specialcomponents.Base64;
 
 /**
  * 
  * This implements the client side of the XMPP layer, it has methods
  * to get a file from the server and return its contents as a String.
- * 
+ *
  * 
  * @author Andrew
  *
@@ -55,7 +55,7 @@ public class Client {
 	public void getFile( String path )
 	{
 		try {
-			chat.sendMessage( "getfile=" + path );
+			chat.sendMessage( "getfile=" + Base64.encodeBytes( path.getBytes() ) );
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -66,6 +66,16 @@ public class Client {
 	{
 		try {
 			chat.sendMessage( "getfilelist" );
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void putFile( String path, String contents )
+	{
+		try {
+			chat.sendMessage("<putfile><path>" + Base64.encodeBytes( path.getBytes() ) + "</path><contents>" + Base64.encodeBytes( contents.getBytes() ) + "</contents></putfile>" );
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
