@@ -1,27 +1,36 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTree;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import cider.common.processes.CiderFile;
+import cider.common.network.Client;
 import cider.common.processes.CiderFileList;
 
 public class DirectoryViewComponent extends JPanel
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private DefaultMutableTreeNode top;
+	//TODO type checking?
+	private Hashtable nodePaths;
+	private Client client;
+	private JTree tree;
+	
 	
 /*    public static void main(String[] args)
     {
@@ -39,7 +48,7 @@ public class DirectoryViewComponent extends JPanel
                 "root");
         //createNodes(top);
 
-        JTree tree = new JTree(top);
+        tree = new JTree(top);
         // tree.setModel(model);
 
         JScrollPane scrollpane = new JScrollPane(tree);
@@ -56,6 +65,11 @@ public class DirectoryViewComponent extends JPanel
 
         this.setLayout(new BorderLayout());
         this.add(scrollpane, BorderLayout.CENTER);
+    }
+    
+    public void setClient( Client client )
+    {
+    	this.client = client;
     }
 
     public void createNodes(DefaultMutableTreeNode top)
@@ -91,11 +105,12 @@ public class DirectoryViewComponent extends JPanel
 	{
 		// TODO: Dirs without children are displayed with the same icon as files
 		// TODO: This is pretty incomprehensible, I need to add comments (Andrew)
+		
 		Object[] files = list.table.keySet().toArray();
 		Arrays.sort( files );
 		
-		// Table of directories and their nodes, keyed by path
-		Hashtable<String,DefaultMutableTreeNode> dirs = new Hashtable<String,DefaultMutableTreeNode>();
+		// Table of files/dirs and their nodes, keyed by path
+		Hashtable<String,DefaultMutableTreeNode> nodes = new Hashtable<String,DefaultMutableTreeNode>();
 		DefaultMutableTreeNode cur = null;
 		Pattern pattern = Pattern.compile( "(.+)\\\\(.+)$" );
 		Matcher matcher = null;
@@ -115,11 +130,11 @@ public class DirectoryViewComponent extends JPanel
 				if( matcher.matches() )
 					cur = new DefaultMutableTreeNode( matcher.group(2) );
 				
-				if( dirs.containsKey( matcher.group(1) ) )
-					dirs.get( matcher.group(1) ).add( cur );
+				if( nodes.containsKey( matcher.group(1) ) )
+					nodes.get( matcher.group(1) ).add( cur );
 				else
 					top.add( cur );
-				dirs.put( (String)files[i], cur );
+				nodes.put( (String)files[i], cur );
 			}
 			else
 			{
@@ -129,9 +144,38 @@ public class DirectoryViewComponent extends JPanel
 					matcher = pattern.matcher( (String)files[i] );
 				
 				if( matcher.matches() )
-					dirs.get( matcher.group(1) ).add( new DefaultMutableTreeNode( matcher.group(2) ) );
-			}
-				
+				{
+					cur = new DefaultMutableTreeNode( matcher.group(2) );
+					nodes.get( matcher.group(1) ).add( cur );
+					nodes.put( (String)files[i], cur );					
+				}
+			}		
 		}
+		// TODO: Can see a potential problem with this method if people click on nodes before this method finishes, change approach to make both hashes on the fly?
+		Object[] keys = nodes.keySet().toArray();
+		nodePaths = new Hashtable( keys.length );
+		
+		for( int i = 0; i < keys.length; i++ )
+			nodePaths.put( nodes.get( keys[i] ), keys[i] );
+		
+        // Listen for changes in the selected node
+		//TODO : Bit messy just removing current listeners atm
+		TreeSelectionListener[] listeners = tree.getTreeSelectionListeners();
+		for( int i = 0; i < listeners.length; i++ )
+			tree.removeTreeSelectionListener(listeners[i]);
+		
+        tree.addTreeSelectionListener( new DirectoryViewSelectionListener( tree, nodePaths, client ) );
 	}
+	
+/*	// Flip the keys and values of a hash and return a new one
+	private Hashtable flipHash( Hashtable h )
+	{
+		Object[] keys = h.keySet().toArray();
+		Hashtable newHash = new Hashtable( keys.length );
+		
+		for( int i = 0; i < keys.length; i++ )
+			newHash.put( h.get( keys[i] ), keys[i] );
+		
+		return newHash;
+	}*/
 }

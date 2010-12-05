@@ -34,12 +34,19 @@ public class ServerMessageListener implements MessageListener {
 	
 	@Override
 	public void processMessage(Chat chat, Message message) {
-		String body;
-		body = message.getBody();
+		String body = message.getBody();
+		// TODO: XML-ize this and get filelist??
 		if( body.startsWith( "getfile=" ) ) 
 		{
 			try {
-				chat.sendMessage( "file=" + Base64.encodeBytes( filelist.table.get( Base64.decode( body.substring( 8, body.length() ).getBytes() ) ).getFileContents().getBytes() ) );
+				// TODO: Error checking if file doesn't exist??
+				String encPath = body.substring( 8, body.length() );
+				String path = new String( Base64.decode( encPath.getBytes() ) );
+				String contents = filelist.table.get( path ).getFileContents();
+				String encContents = Base64.encodeBytes( contents.getBytes() );
+		
+				chat.sendMessage( "<file><path>" + encPath + "</path><contents>" + encContents + "</contents></file>" );
+				
 			} catch (XMPPException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
