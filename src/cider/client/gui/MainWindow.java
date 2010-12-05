@@ -3,11 +3,8 @@ package cider.client.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.BufferedInputStream;
@@ -45,8 +42,9 @@ class MainWindow implements Runnable
 	JTabbedPane tabbedPane = new JTabbedPane();
     JFrame w;
     public String currentDir = "\\.";
-    public String currentFileName = "Unsaved Document 1";
-    public String currentFileContents = "";
+    public String currentFileName = "newfile.java";
+    public String currentFileContents =
+    	"class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}";
     public int currentTab = 0;
     Client client;
     Server server;
@@ -93,14 +91,14 @@ class MainWindow implements Runnable
     			System.exit(0);
     		}
 	    		
-    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
+    		tabbedPane.addTab(currentFileName, sourceEditor());
     		tabbedPane.setSelectedIndex(++currentTab);
     	}
     }
     
     public void saveFile(String action) {
 		JFileChooser fc = new JFileChooser();
-		if (currentFileName.equals("Unsaved Document 1") || action.equals("Save As"))
+		if (currentFileName.equals("newfile.java") || action.equals("Save As"))
 		{
 			int watdo = fc.showSaveDialog(null);
 			if (watdo != JFileChooser.APPROVE_OPTION)
@@ -124,6 +122,12 @@ class MainWindow implements Runnable
 		tabbedPane.setTitleAt(currentTab, currentFileName);
 	}
     
+    public void closeFile()
+    {
+    	tabbedPane.remove(currentTab); //tabbedPane.indexOfTabComponent(this.tabbedPane));
+    	tabbedPane.setSelectedIndex(--currentTab);
+    }
+    
     public ActionListener newAction()
     {
     	ActionListener AL = new ActionListener() {
@@ -143,17 +147,51 @@ class MainWindow implements Runnable
 				{
 					openFile();
 				}
-				else if (action.equals("Save") || action.equals("Save As"))
+				else if (action.equals("Save file locally") || action.equals("Save") || action.equals("Save As"))
 				{
 					saveFile(action);
 		        }
+				else if(action.equals("Close File"))
+				{
+					//System.out.println("horrah");
+					closeFile();
+				}
 
 			}
     	};
     	return AL;
     }
     
+    public KeyListener newKeyListener()
+    {
+    	KeyListener k;
+    	k = new KeyListener(){
 
+			@Override
+			public void keyTyped(KeyEvent e) {
+				
+			}
+
+			@Override
+			//on every keypress, the string containing the document in its entirety updates
+			public void keyPressed(KeyEvent e) {
+//				int key = e.getKeyCode();
+//				if (key == KeyEvent.VK_SPACE || key == KeyEvent.VK_ENTER)
+//				{
+				JTextArea temp = (JTextArea) e.getSource();
+				currentFileContents = temp.getText();
+				System.out.println(currentFileContents);
+//				}		
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				
+			}
+    		
+    	};
+    	return k;
+    }
 
     public JMenuBar mainMenuBar()
     {
@@ -170,6 +208,7 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
         addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
         addMenuItem(menu, "Save As", -1, aL);
+        addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
         // menu 2
@@ -190,7 +229,8 @@ class MainWindow implements Runnable
         //NYI = not yet implemented
         menu = new JMenu("DEV");
         menuBar.add(menu);
-
+        
+        addMenuItem(menu, "Save file locally", -1, aL);
         addMenuItem(menu, "Push file to server (NYI)", -1, aL);
         addMenuItem(menu, "Get file list from server (NYI)", -1, aL);
         addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
@@ -198,10 +238,24 @@ class MainWindow implements Runnable
         return menuBar;
     }
 
+    public JPanel sourceEditor()
+    {
+        JPanel panel = new JPanel(new BorderLayout());
+        // text area
+        JTextArea textArea = new JTextArea(currentFileContents);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        scrollPane.setPreferredSize(new Dimension(250, 250));
+        textArea.addKeyListener(newKeyListener());
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        panel.add(scrollPane);
+        return panel;
+    }
 
     public JPanel sourceEditorSection()
     {
-        tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
+        tabbedPane.addTab(currentFileName, sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
@@ -226,7 +280,7 @@ class MainWindow implements Runnable
                 new JLabel("chat"));
 
         splitPane.setOneTouchExpandable(true);
-        // splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(150);
         splitPane2.setOneTouchExpandable(true);
         // splitPane2.setDividerLocation(150);
 
