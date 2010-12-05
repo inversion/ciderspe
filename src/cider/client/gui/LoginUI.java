@@ -2,6 +2,11 @@ package cider.client.gui;
 
 import java.awt.Component;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 
 import javax.swing.BorderFactory;
@@ -12,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -19,8 +25,11 @@ import javax.swing.UIManager;
 
 public class LoginUI
 {
+	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
 
     private JFrame login;
+    
+    JCheckBox chkRemember ;
 
     void displayLogin()
     {
@@ -41,6 +50,9 @@ public class LoginUI
         JPanel main = new JPanel();
         main.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
         Box box = Box.createVerticalBox();
+        
+        
+        ActionListener aL = newAction();
 
         // CIDEr Image
         URL u = this.getClass().getResource("loginimage.png");
@@ -107,13 +119,14 @@ public class LoginUI
         box.add(infoPanel);
 
         // Remember Server Checkbox
-        JCheckBox chkRemember = new JCheckBox("Remember Server Details");
+        chkRemember = new JCheckBox("Remember Server Details");
         chkRemember.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         chkRemember.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(chkRemember);
 
         // Submit Button
         JButton btnSubmit = new JButton("Submit");
+        btnSubmit.addActionListener(aL);
         btnSubmit.setMargin(new Insets(7, 30, 7, 30));
         btnSubmit.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(btnSubmit);
@@ -124,6 +137,47 @@ public class LoginUI
         login.pack();
         login.setLocationByPlatform(true);
         login.setVisible(true);
+    }
+    
+    public ActionListener newAction()
+    {
+    	ActionListener AL = new ActionListener() 
+    	{
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			String action = e.getActionCommand();
+    			if (chkRemember.isSelected() == true)
+    			{
+    				saveLoginDetails("string", "2", "blah", "troll");
+        			//saveLoginDetails(txtUsername, txtPassword, txtHost, txtPort)
+    			}
+    			else
+    			{
+    				System.out.println("Don't save");
+    			}
+    		}
+    	};
+    	return AL;
+    } 
+
+    void saveLoginDetails(String txtUsername, String txtPassword, String txtHost, String txtPort)
+    {
+    	// TODO password encryption / encrypt everything
+    	System.out.println(txtUsername);
+    	System.out.println(currentDir);
+    	
+    	try
+    	{
+    		FileWriter fstream = new FileWriter(currentDir + "login.txt");
+    		BufferedWriter out = new BufferedWriter(fstream);
+    		out.write(txtUsername + txtPassword + txtHost + txtPort);
+    		out.close();
+    	}
+    	catch (IOException e)
+    	{
+    		System.err.println("Error: " + e.getMessage());
+    		System.exit(0);
+    	}
     }
 
     public static void main(String[] args)
