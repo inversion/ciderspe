@@ -20,10 +20,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
 
 class MainWindow implements Runnable
 {
@@ -92,40 +90,28 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    public void run()
+    public JPanel sourceEditorSection()
     {
-
-        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
-
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Tab 1", sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(640, 480));
+        panel.add(tabbedPane);
+        return panel;
+    }
 
-        DefaultMutableTreeNode top = new DefaultMutableTreeNode(
-                "Some root folder");
-        createNodes(top);
-
-        JTree tree = new JTree(top);
-        // tree.setModel(model);
-
-        JScrollPane scrollpane = new JScrollPane(tree);
-
-        // split pane
-        JLabel label;
-        label = new JLabel("directory tree");
-
-        JLabel label2;
-        label2 = new JLabel("code");
-
-        JLabel label3;
-        label3 = new JLabel("chat, oh hai");
+    public void run()
+    {
+        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
 
         JSplitPane splitPane;
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                scrollpane/* label */, tabbedPane);// textArea/*label2*/);
+                new DirectoryViewComponent()/* label */,
+                this.sourceEditorSection());// textArea/*label2*/);
         JSplitPane splitPane2;
         splitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, splitPane,
-                label3);
+                new JLabel("chat"));
 
         splitPane.setOneTouchExpandable(true);
         // splitPane.setDividerLocation(150);
@@ -134,8 +120,8 @@ class MainWindow implements Runnable
 
         // Provide minimum sizes for the two components in the split pane
         Dimension minimumSize = new Dimension(100, 50);
-        label.setMinimumSize(minimumSize);
-        label2.setMinimumSize(minimumSize);
+        // label.setMinimumSize(minimumSize);
+        // label2.setMinimumSize(minimumSize);
 
         JButton button = new JButton("Click Me");
         // button.addActionListener(new MyAction());
@@ -163,35 +149,6 @@ class MainWindow implements Runnable
         w.pack();
         w.setLocationByPlatform(true);
         w.setVisible(true);
-    }
-
-    public void createNodes(DefaultMutableTreeNode top)
-    {
-        /* Creates some objects to simulate files and folders etc */
-        DefaultMutableTreeNode category = null;
-        DefaultMutableTreeNode book = null;
-
-        category = new DefaultMutableTreeNode("Folder 1");
-        top.add(category);
-
-        // book = new DefaultMutableTreeNode(new BookInfo
-        // ("The Java Tutorial: A Short Course on the Basics",
-        // "tutorial.html"));
-        for (int i = 0; i < 50; i++)
-        {
-            book = new DefaultMutableTreeNode("File 1");
-            category.add(book);
-        }
-        /*
-         * DefaultMutableTreeNode sub = null; sub = new
-         * DefaultMutableTreeNode("SubFile 1"); book.add(sub);
-         */
-
-        category = new DefaultMutableTreeNode("Folder 2");
-        top.add(category);
-
-        book = new DefaultMutableTreeNode("File 2");
-        category.add(book);
     }
 
     /*
