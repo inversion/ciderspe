@@ -268,7 +268,7 @@ class MainWindow implements Runnable
                 new JLabel("chat"));
 
         splitPane.setOneTouchExpandable(true);
-        // splitPane.setDividerLocation(150);
+        splitPane.setDividerLocation(150);
         splitPane2.setOneTouchExpandable(true);
         // splitPane2.setDividerLocation(150);
 

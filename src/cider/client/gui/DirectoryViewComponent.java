@@ -1,5 +1,6 @@
 package cider.client.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +54,8 @@ public class DirectoryViewComponent extends JPanel
         JLabel label3;
         label3 = new JLabel("chat, oh hai");
 
-        this.add(scrollpane);
+        this.setLayout(new BorderLayout());
+        this.add(scrollpane, BorderLayout.CENTER);
     }
 
     public void createNodes(DefaultMutableTreeNode top)
