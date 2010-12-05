@@ -124,6 +124,12 @@ class MainWindow implements Runnable
 		tabbedPane.setTitleAt(currentTab, currentFileName);
 	}
     
+    public void closeFile()
+    {
+    	tabbedPane.remove(currentTab); //tabbedPane.indexOfTabComponent(this.tabbedPane));
+    	tabbedPane.setSelectedIndex(--currentTab);
+    }
+    
     public ActionListener newAction()
     {
     	ActionListener AL = new ActionListener() {
@@ -147,6 +153,11 @@ class MainWindow implements Runnable
 				{
 					saveFile(action);
 		        }
+				else if(action.equals("Close File"))
+				{
+					//System.out.println("horrah");
+					closeFile();
+				}
 
 			}
     	};
@@ -170,6 +181,7 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
         addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
         addMenuItem(menu, "Save As", -1, aL);
+        addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
         // menu 2
