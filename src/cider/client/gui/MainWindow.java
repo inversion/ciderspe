@@ -34,6 +34,7 @@ import cider.common.network.Server;
 
 class MainWindow implements Runnable
 {
+	JTabbedPane tabbedPane = new JTabbedPane();
     JFrame w;
     public String currentFileName = "newfile.java";
     public String currentFileContents =
@@ -71,6 +72,10 @@ class MainWindow implements Runnable
 		            response = JOptionPane.showConfirmDialog(null, "Are you sure you wish to quit without saving?");
 		            if (response == 0)
 		            	System.exit(0);
+					
+				}
+				else if (action.equals("Open"))
+				{
 					
 				}
 				else if (action.equals("Save file locally") || action.equals("Save") || action.equals("Save As"))
@@ -200,7 +205,7 @@ class MainWindow implements Runnable
 
     public JPanel sourceEditorSection()
     {
-        JTabbedPane tabbedPane = new JTabbedPane();
+        
         tabbedPane.addTab(currentFileName, sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
