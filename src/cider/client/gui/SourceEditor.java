@@ -11,6 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import cider.common.network.Client;
+
 /**
  * This class basically means that the TextAreas can constantly update 
  * and hold lots of data (which is easier than using an ArrayList in
@@ -22,6 +24,7 @@ import javax.swing.JTextArea;
 public class SourceEditor extends JPanel {
 	String fileContents;
 	String fileDirectory;
+	Client client;
 	
     public KeyListener newKeyListener()
     {
@@ -50,8 +53,10 @@ public class SourceEditor extends JPanel {
     	return k;
     }
 	
-	public SourceEditor (String input){
+	public SourceEditor (String input, String directory, Client c){
 		super (new BorderLayout());
+		fileDirectory = directory;
+		client = c;
 		// text area
 	    final JTextArea textArea = new JTextArea(input);
 	    JScrollPane scrollPane = new JScrollPane(textArea);
@@ -76,6 +81,7 @@ public class SourceEditor extends JPanel {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				fileContents = textArea.getText();
+				System.out.println(fileDirectory);
 			}
 	
 			@Override

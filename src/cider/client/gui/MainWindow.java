@@ -93,14 +93,14 @@ class MainWindow implements Runnable
     			System.exit(0);
     		}
 	    		
-    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents));
+    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
     		tabbedPane.setSelectedIndex(++currentTab);
     	}
     }
     
     public void saveFile(String action) {
 		JFileChooser fc = new JFileChooser();
-		if (currentFileName.equals("newfile.java") || action.equals("Save As"))
+		if (currentFileName.equals("Unsaved Document 1") || action.equals("Save As"))
 		{
 			int watdo = fc.showSaveDialog(null);
 			if (watdo != JFileChooser.APPROVE_OPTION)
@@ -201,7 +201,7 @@ class MainWindow implements Runnable
 
     public JPanel sourceEditorSection()
     {
-        tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents));
+        tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
