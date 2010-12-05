@@ -139,6 +139,14 @@ public class PositionKey implements Comparable<PositionKey>
                     return this.next.compareTo(other.next);
             }
         }
+
+        @Override
+        public String toString()
+        {
+            // TODO Auto-generated method stub
+            return super.toString();
+        }
+
     }
 
     private Level root;
@@ -165,6 +173,11 @@ public class PositionKey implements Comparable<PositionKey>
     {
         LevelPair levelPair = new LevelPair(0, k1.root, k2.root);
         this.init(levelPair);
+    }
+
+    int getTopLevelValue()
+    {
+        return this.root.value;
     }
 
     @Override
@@ -194,4 +207,11 @@ public class PositionKey implements Comparable<PositionKey>
         else
             return true;
     }
+
+    @Override
+    public String toString()
+    {
+        return this.root.toString();
+    }
+
 }

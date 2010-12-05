@@ -171,11 +171,11 @@ public class SourceDocument implements ICodeLocation
             this.putEvent(typingEvent);
     }
 
-    protected static Double keyAt(TreeMap<Double, TypingEvent> string,
-            int caretPosition)
+    protected static PositionKey keyAt(
+            TreeMap<PositionKey, TypingEvent> string, int caretPosition)
     {
-        Double result = 0.0;
-        for (Entry<Double, TypingEvent> entry : string.entrySet())
+        PositionKey result = new PositionKey(0);
+        for (Entry<PositionKey, TypingEvent> entry : string.entrySet())
         {
             if (caretPosition == -1)
                 break;
@@ -188,21 +188,24 @@ public class SourceDocument implements ICodeLocation
         return result;
     }
 
-    protected static Double generateKeyJustAfter(
-            TreeMap<Double, TypingEvent> string, int caretPosition)
+    protected static PositionKey generateKeyJustAfter(
+            TreeMap<PositionKey, TypingEvent> string, int caretPosition)
     {
-        Double result = keyAt(string, caretPosition);
-        Double higher = string.higherKey(result);
-        result += higher == null ? result + 2.0 : higher;
-        result /= 2.0;
-        System.out.println(result);
+        PositionKey result = keyAt(string, caretPosition);
+        PositionKey higher = string.higherKey(result);
+        if (higher == null)
+            result = new PositionKey(result, new PositionKey(
+                    result.getTopLevelValue() + 1));
+        else
+            result = new PositionKey(result, higher);
+        // System.out.println(result);
         return result;
     }
 
-    public TreeMap<Double, TypingEvent> playOutEvents(Long endTime)
+    public TreeMap<PositionKey, TypingEvent> playOutEvents(Long endTime)
     {
-        Double key;
-        TreeMap<Double, TypingEvent> string = new TreeMap<Double, TypingEvent>();
+        PositionKey key;
+        TreeMap<PositionKey, TypingEvent> string = new TreeMap<PositionKey, TypingEvent>();
 
         int initialCapacity = this.typingEvents.size();
         if (initialCapacity < 2)
@@ -268,7 +271,8 @@ public class SourceDocument implements ICodeLocation
         return string;
     }
 
-    protected static String treeToString(TreeMap<Double, TypingEvent> survived)
+    protected static String treeToString(
+            TreeMap<PositionKey, TypingEvent> survived)
     {
         String str = "";
         for (TypingEvent event : survived.values())
