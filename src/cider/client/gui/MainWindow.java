@@ -76,11 +76,9 @@ class MainWindow implements Runnable
         return menuBar;
     }
 
-    public void run()
+    public JPanel sourceEditor()
     {
-
-        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
-
+        JPanel panel = new JPanel(new BorderLayout());
         // text area
         JTextArea textArea;
         textArea = new JTextArea();
@@ -90,37 +88,18 @@ class MainWindow implements Runnable
         scrollPane.setPreferredSize(new Dimension(250, 250));
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
+        panel.add(textArea);
+        return panel;
+    }
 
-        // tabs
-        // http://download.oracle.com/javase/tutorial/uiswing/examples/components/TabbedPaneDemoProject/src/components/TabbedPaneDemo.java
+    public void run()
+    {
+
+        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
+
         JTabbedPane tabbedPane = new JTabbedPane();
-        // ImageIcon icon = createImageIcon("icon.png");
-
-        // JComponent panel1 = makeTextPanel("Panel #1");
-        tabbedPane.addTab("Tab 1", textArea);
+        tabbedPane.addTab("Tab 1", sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
-        /*
-         * //JComponent panel2 = makeTextPanel("Panel #2");
-         * tabbedPane.addTab("Tab 2", textArea); tabbedPane.setMnemonicAt(1,
-         * KeyEvent.VK_2);
-         * 
-         * //JComponent panel3 = makeTextPanel("Panel #3");
-         * tabbedPane.addTab("Tab 3", textArea); tabbedPane.setMnemonicAt(2,
-         * KeyEvent.VK_3);
-         * 
-         * //JComponent panel4 = makeTextPanel(
-         * "Panel #4 (has a preferred size of 410 x 50).");
-         * //panel4.setPreferredSize(new Dimension(410, 50));
-         * tabbedPane.addTab("Tab 4", textArea); tabbedPane.setMnemonicAt(3,
-         * KeyEvent.VK_4);
-         */
-
-        // file tree
-        // http://www.java2s.com/Code/Java/File-Input-Output/FileTreeDemo.htm
-        /*
-         * File root = new File("C"); FileTreeModel model= new
-         * FileTreeModel(root);
-         */
 
         DefaultMutableTreeNode top = new DefaultMutableTreeNode(
                 "Some root folder");
