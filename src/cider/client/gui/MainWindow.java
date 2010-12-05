@@ -35,6 +35,7 @@ class MainWindow implements Runnable
     public String currentFileName = "newfile.java";
     public String currentFileContents =
     	"class Hello{\n\tpublic static void main(String[] args) \n\t{\n\t\tSystem.out.println(\"hello\");\n\t}\n}";
+    public int currentTab = 0;
     
     public static void main(String[] args)
     {
@@ -111,14 +112,15 @@ class MainWindow implements Runnable
 			}
 
 			@Override
+			//on every keypress, the string containing the document in its entirety updates
 			public void keyPressed(KeyEvent e) {
-				int key = e.getKeyCode();
-				if (key == KeyEvent.VK_ENTER)
-				{
-					JTextArea temp = (JTextArea) e.getSource();
-					currentFileContents = temp.getText();
-					System.out.println(currentFileContents);
-				}		
+//				int key = e.getKeyCode();
+//				if (key == KeyEvent.VK_SPACE || key == KeyEvent.VK_ENTER)
+//				{
+				JTextArea temp = (JTextArea) e.getSource();
+				currentFileContents = temp.getText();
+				System.out.println(currentFileContents);
+//				}		
 			}
 
 			@Override
@@ -194,7 +196,7 @@ class MainWindow implements Runnable
     public JPanel sourceEditorSection()
     {
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Tab 1", sourceEditor());
+        tabbedPane.addTab(currentFileName, sourceEditor());
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
