@@ -53,10 +53,9 @@ public class SourceEditor extends JPanel {
     	return k;
     }
 	
-	public SourceEditor (String input, String directory, Client c){
+	public SourceEditor (String input, String directory ){
 		super (new BorderLayout());
 		fileDirectory = directory;
-		client = c;
 		// text area
 	    final JTextArea textArea = new JTextArea(input);
 	    JScrollPane scrollPane = new JScrollPane(textArea);

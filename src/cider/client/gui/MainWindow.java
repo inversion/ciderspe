@@ -93,7 +93,7 @@ class MainWindow implements Runnable
     			System.exit(0);
     		}
 	    		
-    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
+    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir ));
     		tabbedPane.setSelectedIndex(++currentTab);
     	}
     }
@@ -135,7 +135,7 @@ class MainWindow implements Runnable
     public void newFile()
     {
 	    //closes tab regardless of save or cancel
-	    tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\.", client));
+	    tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\."));
 	    tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
     }
     
@@ -225,7 +225,7 @@ class MainWindow implements Runnable
 
     public JPanel sourceEditorSection()
     {
-        tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir, client));
+        tabbedPane.addTab(currentFileName, new SourceEditor( currentFileContents, currentDir ));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
@@ -237,7 +237,8 @@ class MainWindow implements Runnable
     {
     	DirectoryViewComponent dirView = new DirectoryViewComponent();
 		server = new Server();
-		client = new Client( dirView );
+		client = new Client( dirView, tabbedPane );
+		dirView.setClient( client );
 		client.getFileList();
     	
         JPanel panel = new JPanel(new BorderLayout());

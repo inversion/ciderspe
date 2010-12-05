@@ -1,5 +1,7 @@
 package cider.common.network;
 
+import javax.swing.JTabbedPane;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -26,7 +28,7 @@ public class Client {
 	private ClientMessageListener listener;
 	private Chat chat;
 
-	public Client( DirectoryViewComponent dirView )
+	public Client( DirectoryViewComponent dirView, JTabbedPane tabbedPane )
 	{
 		try
 		{
@@ -43,7 +45,7 @@ public class Client {
 			}
 			
 			chatmanager = connection.getChatManager();
-			listener = new ClientMessageListener( dirView );
+			listener = new ClientMessageListener( dirView, tabbedPane );
 			chat = chatmanager.createChat( Common.BOT_USERNAME, listener );
 		}
 		catch( XMPPException e )
