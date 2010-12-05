@@ -1,13 +1,9 @@
 package cider.common.processes;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Hashtable;
-
-import cider.specialcomponents.Base64;
 
 /**
  * Holds a list of all the source files available to CIDER
@@ -22,9 +18,7 @@ import cider.specialcomponents.Base64;
  * TODO: Handling synchronization for example if a file is created at the client end
  * while CIDER is offline especially and needs to be synched to the server when the
  * client program is next loaded.
- * 
- * TODO: Read file list from XML string and construct a cider file list
- * TODO: Create JTree from CiderFileList
+ * TODO: Hash table shouldn't really be public, add interface methods to it 
  * 
  * @author Andrew
  *
