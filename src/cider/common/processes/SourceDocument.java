@@ -43,6 +43,7 @@ public class SourceDocument implements ICodeLocation
     public static String test()
     {
         String testLog = shuffledEventsTest() + "\n";
+        testLog += lengthTest();
         return testLog;
     }
 
@@ -74,6 +75,30 @@ public class SourceDocument implements ICodeLocation
                         + "', where as it should of been '"
                         + expected
                         + "'.";
+    }
+
+    protected static String lengthTest()
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, "<"));
+        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, ">"));
+
+        String bigString = "";
+        final String alphabet = "10";
+        final char[] alphaChars = alphabet.toCharArray();
+        final int l = alphabet.length();
+        for (int i = 0; i < 100; i++)
+            bigString += alphaChars[i % l];
+
+        tes.addAll(generateEvents(0, 10000, 0, bigString,
+                TypingEventMode.insert));
+
+        SourceDocument testDoc = new SourceDocument();
+        for (TypingEvent event : tes)
+            testDoc.putEvent(event);
+        String result = testDoc.toString();
+        return (result.startsWith("<") && result.endsWith(">")) ? "pass"
+                : "fail: did not pass the length test.";
     }
 
     protected static ArrayList<TypingEvent> shuffledEvents(
@@ -170,6 +195,7 @@ public class SourceDocument implements ICodeLocation
         Double higher = string.higherKey(result);
         result += higher == null ? result + 2.0 : higher;
         result /= 2.0;
+        System.out.println(result);
         return result;
     }
 

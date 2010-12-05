@@ -35,63 +35,51 @@ class CIDER implements Runnable
         SwingUtilities.invokeLater(program);
     }
 
-    public void run()
+    public static void addMenuItem(JMenu menu, String name, int keyEvent)
     {
-        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
-        JMenuBar menuBar;
-        JMenu menu, submenu;
-        JMenuItem menuItem;
+        JMenuItem menuItem = new JMenuItem(name);
+        if (keyEvent != -1)
+            menuItem.setAccelerator(KeyStroke.getKeyStroke(keyEvent,
+                    ActionEvent.CTRL_MASK));
+        menu.add(menuItem);
+    }
 
-        menuBar = new JMenuBar();
+    public JMenuBar mainMenuBar()
+    {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu;
 
         // menu 1
         menu = new JMenu("File");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("New");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
-                ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Open");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O,
-                ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Save");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S,
-                ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Save As");
-        // menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,
-        // ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Quit");
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q,
-                ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
+        addMenuItem(menu, "New", KeyEvent.VK_N);
+        addMenuItem(menu, "Open", KeyEvent.VK_O);
+        addMenuItem(menu, "Save", KeyEvent.VK_S);
+        addMenuItem(menu, "Save As", -1);
+        addMenuItem(menu, "Quit", KeyEvent.VK_Q);
 
         // menu 2
         menu = new JMenu("Edit");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("Cut");
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Copy");
-        menu.add(menuItem);
-
-        menuItem = new JMenuItem("Paste");
-        menu.add(menuItem);
+        addMenuItem(menu, "Cut", KeyEvent.VK_X);
+        addMenuItem(menu, "Copy", KeyEvent.VK_C);
+        addMenuItem(menu, "Paste", KeyEvent.VK_V);
 
         // menu 3
         menu = new JMenu("Help");
         menuBar.add(menu);
 
-        menuItem = new JMenuItem("About");
-        menu.add(menuItem);
+        addMenuItem(menu, "About", -1);
+
+        return menuBar;
+    }
+
+    public void run()
+    {
+
+        // http://java.sun.com/products/jlf/ed1/dg/higk.htm
 
         // text area
         JTextArea textArea;
@@ -182,7 +170,7 @@ class CIDER implements Runnable
         w.setIconImage(test3);
 
         JPanel p = new JPanel(new BorderLayout());
-        p.add(menuBar, BorderLayout.PAGE_START);
+        p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
         p.add(splitPane2);
 
         // w.add(new JLabel("Hello World"));
