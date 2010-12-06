@@ -1,14 +1,18 @@
 package cider.client.gui;
 
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.GroupLayout;
@@ -28,6 +32,7 @@ public class LoginUI
 	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
 
     private JFrame login;
+    private JFrame connecting;
     
     JCheckBox chkRemember ;
 
@@ -155,6 +160,7 @@ public class LoginUI
     			{
     				System.out.println("Don't save");
     			}
+    			showConnectBox();
     		}
     	};
     	return AL;
@@ -179,7 +185,59 @@ public class LoginUI
     		System.exit(0);
     	}
     }
+    
+    void showConnectBox()
+    {
+    	login.setVisible(false);
+    	
+    	// Create New JFrame
+    	connecting = new JFrame();
+        connecting.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
+        connecting.setTitle("CIDEr - Connecting");
+        connecting.setResizable(false);
+        
+        JPanel panel = new JPanel();
+        try
+        {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (Exception e)
+        {
+        }
+        
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        Box box = Box.createHorizontalBox();
+        
+        // Connecting Image
+        URL u = this.getClass().getResource("connectingimage.gif");
+        ImageIcon image = new ImageIcon(u);
+        JLabel lblImage = new JLabel(image);
+        lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
+        box.add(lblImage);
+        
+        // Status Text
+        JLabel lblStatus = new JLabel("Connecting to the server...");
+        box.add(lblStatus);
+        
+        // Finalise JFrame
+        panel.add(box);
+        connecting.add(panel);
+        connecting.pack();
+        int x = (int) (login.getX() + login.getWidth()/2);
+        int y = (int) (login.getY() + login.getHeight()/2);
+        connecting.setLocation(x - connecting.getWidth()/2, y - connecting.getHeight()/3);
+        connecting.setVisible(true);
+        
+        connect();
+    }
 
+    void connect()
+    {
+    	// TODO Connection Code
+    	// On connect, close login and connect JFrames, run MainWindow
+    }
+    
     public static void main(String[] args)
     {
 
