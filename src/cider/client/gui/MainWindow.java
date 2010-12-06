@@ -3,18 +3,13 @@ package cider.client.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -31,11 +26,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -44,22 +36,23 @@ import cider.common.network.Server;
 
 class MainWindow implements Runnable
 {
-	JTabbedPane tabbedPane = new JTabbedPane();
+    JTabbedPane tabbedPane = new JTabbedPane();
     JFrame w;
-    public String currentDir = "\\.";
+    public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
     public String currentFileContents = "";
     public int currentTab = 0;
     Client client;
     Server server;
-    
+
     public static void main(String[] args)
     {
         MainWindow program = new MainWindow();
         SwingUtilities.invokeLater(program);
     }
 
-    public static void addMenuItem(JMenu menu, String name, int keyEvent, ActionListener a)
+    public static void addMenuItem(JMenu menu, String name, int keyEvent,
+            ActionListener a)
     {
         JMenuItem menuItem = new JMenuItem(name);
         menuItem.addActionListener(a);
@@ -68,146 +61,150 @@ class MainWindow implements Runnable
                     ActionEvent.CTRL_MASK));
         menu.add(menuItem);
     }
-    
+
     public void openFile()
     {
-    	JFileChooser fc = new JFileChooser();
-    	int rVal = fc.showOpenDialog(null);
-    	if (rVal == JFileChooser.APPROVE_OPTION)
-    	{
-    		String temp;
-    		currentDir = fc.getSelectedFile().getAbsolutePath();
-    		currentFileName = fc.getSelectedFile().getName();
-    		try
-    		{
-	    		FileInputStream fis = new FileInputStream(currentDir);
-	    		BufferedInputStream bis = new BufferedInputStream(fis);
-	    		BufferedReader br = new BufferedReader(new InputStreamReader(bis));
-	    		currentFileContents = "";
-	    		while ((temp = br.readLine()) != null)
-	    		{
-	    			currentFileContents = currentFileContents + temp + "\n";
-	    		}
-    		}
-    		catch (IOException e)
-    		{
-    			System.err.println("Error: " + e.getMessage());
-    			System.exit(0);
-    		}
-	    		
-    		tabbedPane.addTab(currentFileName, new SourceEditor(currentFileContents, currentDir ));
-    		tabbedPane.setSelectedIndex(++currentTab);
-    	}
+        JFileChooser fc = new JFileChooser();
+        int rVal = fc.showOpenDialog(null);
+        if (rVal == JFileChooser.APPROVE_OPTION)
+        {
+            String temp;
+            currentDir = fc.getSelectedFile().getAbsolutePath();
+            currentFileName = fc.getSelectedFile().getName();
+            try
+            {
+                FileInputStream fis = new FileInputStream(currentDir);
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        bis));
+                currentFileContents = "";
+                while ((temp = br.readLine()) != null)
+                {
+                    currentFileContents = currentFileContents + temp + "\n";
+                }
+            }
+            catch (IOException e)
+            {
+                System.err.println("Error: " + e.getMessage());
+                System.exit(0);
+            }
+
+            tabbedPane.addTab(currentFileName, new SourceEditor(
+                    currentFileContents, currentDir));
+            tabbedPane.setSelectedIndex(++currentTab);
+        }
     }
-    
-    public void saveFile(String action) {
-		JFileChooser fc = new JFileChooser();
-		if (currentFileName.equals("Unsaved Document 1") || action.equals("Save As"))
-		{
-			int watdo = fc.showSaveDialog(null);
-			if (watdo != JFileChooser.APPROVE_OPTION)
-			{
-				return;
-			}
-			currentFileName = fc.getSelectedFile().getName();
-			currentDir = fc.getSelectedFile().getAbsolutePath();
-		}
-		try
-		{
+
+    public void saveFile(String action)
+    {
+        JFileChooser fc = new JFileChooser();
+        if (currentFileName.equals("Unsaved Document 1")
+                || action.equals("Save As"))
+        {
+            int watdo = fc.showSaveDialog(null);
+            if (watdo != JFileChooser.APPROVE_OPTION)
+            {
+                return;
+            }
+            currentFileName = fc.getSelectedFile().getName();
+            currentDir = fc.getSelectedFile().getAbsolutePath();
+        }
+        try
+        {
             FileWriter fstream = new FileWriter(currentDir);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(currentFileContents);
             out.close();
-		}
-		catch (IOException e1)
-		{
-			System.err.println("Error: " + e1.getMessage());
-		}
-		tabbedPane.setTitleAt(currentTab, currentFileName);
-	}
-    
+        }
+        catch (IOException e1)
+        {
+            System.err.println("Error: " + e1.getMessage());
+        }
+        tabbedPane.setTitleAt(currentTab, currentFileName);
+    }
+
     public void closeFile(String action)
     {
-	    saveFile(action); 
-	    //closes tab regardless of save or cancel
-	    tabbedPane.remove(tabbedPane.getSelectedIndex());
-	    tabbedPane.setSelectedIndex(--currentTab);
+        saveFile(action);
+        // closes tab regardless of save or cancel
+        tabbedPane.remove(tabbedPane.getSelectedIndex());
+        tabbedPane.setSelectedIndex(--currentTab);
     }
-    
+
     public void newFile()
     {
-	    //closes tab regardless of save or cancel
-	    tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\."));
-	    tabbedPane.setSelectedIndex(tabbedPane.getTabCount()-1);
+        // closes tab regardless of save or cancel
+        tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\."));
+        tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
     }
-    
+
     public ActionListener newAction()
     {
-    	ActionListener AL = new ActionListener() {
+        ActionListener AL = new ActionListener()
+        {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String action = e.getActionCommand();
-				if (action.equals("Quit"))
-				{
-					int response;
-		            response = JOptionPane.showConfirmDialog(null, "Are you sure you wish to quit without saving?");
-		            if (response == 0)
-		            	System.exit(0);
-					
-				}
-				else if(action.equals("Close File"))
-			    {
-					closeFile(action);
-			    }
-				else if (action.equals("Open"))
-				{
-					openFile();
-				}
-				else if (action.equals("New"))
-				{
-					newFile();
-				}
-				else if (action.equals("Save") || action.equals("Save As"))
-				{
-					saveFile(action);
-		        }
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                String action = e.getActionCommand();
+                if (action.equals("Quit"))
+                {
+                    int response;
+                    response = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you wish to quit without saving?");
+                    if (response == 0)
+                        System.exit(0);
 
-			}
-    	};
-    	return AL;
-    } 
-    
+                }
+                else if (action.equals("Close File"))
+                {
+                    closeFile(action);
+                }
+                else if (action.equals("Open"))
+                {
+                    openFile();
+                }
+                else if (action.equals("New"))
+                {
+                    newFile();
+                }
+                else if (action.equals("Save") || action.equals("Save As"))
+                {
+                    saveFile(action);
+                }
+
+            }
+        };
+        return AL;
+    }
+
     private void tabClicked(MouseEvent e)
     {
-    	if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1) {   // if is right-click
+        if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1)
+        { // if is right-click
 
-    		// create popup with Close menuitem
-    		JPopupMenu popupMenu = new JPopupMenu();
-    		JMenuItem closeBtn = new JMenuItem("Close");
-    		closeBtn.addActionListener(new ActionListener() 
-    		{
-    			public void actionPerformed(ActionEvent e) 
-    			{
-    				SwingUtilities.invokeLater(new Runnable() 
-    				{
-    					public void run() 
-    					{
-    						closeFile("Close File");
-    					}
-    				}
-    				);
-    			}
-    		}
-    		);
-    		popupMenu.add(closeBtn);
+            // create popup with Close menuitem
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem closeBtn = new JMenuItem("Close");
+            closeBtn.addActionListener(new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    SwingUtilities.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            closeFile("Close File");
+                        }
+                    });
+                }
+            });
+            popupMenu.add(closeBtn);
 
-    		// display popup near location of mouse click
-    		popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
-    	}
+            // display popup near location of mouse click
+            popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+        }
     }
-    
-
 
     public JMenuBar mainMenuBar()
     {
@@ -217,7 +214,7 @@ class MainWindow implements Runnable
         // menu 1
         menu = new JMenu("File");
         menuBar.add(menu);
-        
+
         ActionListener aL = newAction();
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
@@ -240,23 +237,24 @@ class MainWindow implements Runnable
         menuBar.add(menu);
 
         addMenuItem(menu, "About", -1, aL);
-        
-        //the DEV(eloper) menu is for us to test back-end things such as saving and pushing
-        //NYI = not yet implemented
+
+        // the DEV(eloper) menu is for us to test back-end things such as saving
+        // and pushing
+        // NYI = not yet implemented
         menu = new JMenu("DEV");
         menuBar.add(menu);
 
         addMenuItem(menu, "Push file to server (NYI)", -1, aL);
         addMenuItem(menu, "Get file list from server (NYI)", -1, aL);
         addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
-        
+
         return menuBar;
     }
 
-
     public JPanel sourceEditorSection()
     {
-        tabbedPane.addTab(currentFileName, new SourceEditor( currentFileContents, currentDir ));
+        tabbedPane.addTab(currentFileName, new SourceEditor(
+                currentFileContents, currentDir));
         tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
@@ -266,17 +264,16 @@ class MainWindow implements Runnable
 
     public JPanel mainArea()
     {
-    	DirectoryViewComponent dirView = new DirectoryViewComponent();
-		server = new Server();
-		client = new Client( dirView, tabbedPane );
-		dirView.setClient( client );
-		client.getFileList();
-    	
+        DirectoryViewComponent dirView = new DirectoryViewComponent();
+        server = new Server();
+        client = new Client(dirView, tabbedPane);
+        dirView.setClient(client);
+        client.getFileList();
+
         JPanel panel = new JPanel(new BorderLayout());
         JSplitPane splitPane;
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                dirView/* label */,
-                this.sourceEditorSection());// textArea/*label2*/);
+                dirView/* label */, this.sourceEditorSection());// textArea/*label2*/);
         JSplitPane splitPane2;
         splitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, splitPane,
                 new JLabel("chat"));
