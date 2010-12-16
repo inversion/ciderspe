@@ -88,7 +88,7 @@ public class SourceDocument implements ICodeLocation
         for (int i = 0; i < 300; i++)
             bigString += alphaChars[i % l];
 
-        tes.addAll(generateEvents(0, 10, 0, bigString, TypingEventMode.insert));
+        tes.addAll(generateEvents(0, 300, 0, bigString, TypingEventMode.insert));
 
         SourceDocument testDoc = new SourceDocument();
         for (TypingEvent event : tes)
