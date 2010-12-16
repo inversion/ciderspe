@@ -4,11 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
-import java.util.TreeMap;
 
 /**
  * Experimental work: Real-time merging (unfinished)
@@ -87,11 +85,10 @@ public class SourceDocument implements ICodeLocation
         final String alphabet = "10";
         final char[] alphaChars = alphabet.toCharArray();
         final int l = alphabet.length();
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 300; i++)
             bigString += alphaChars[i % l];
 
-        tes.addAll(generateEvents(0, 10000, 0, bigString,
-                TypingEventMode.insert));
+        tes.addAll(generateEvents(0, 10, 0, bigString, TypingEventMode.insert));
 
         SourceDocument testDoc = new SourceDocument();
         for (TypingEvent event : tes)
@@ -171,41 +168,10 @@ public class SourceDocument implements ICodeLocation
             this.putEvent(typingEvent);
     }
 
-    protected static PositionKey keyAt(
-            TreeMap<PositionKey, TypingEvent> string, int caretPosition)
+    public TypingEventList playOutEvents(Long endTime)
     {
-        PositionKey result = new PositionKey(0);
-        for (Entry<PositionKey, TypingEvent> entry : string.entrySet())
-        {
-            if (caretPosition == -1)
-                break;
-            else
-            {
-                caretPosition--;
-                result = entry.getKey();
-            }
-        }
-        return result;
-    }
-
-    protected static PositionKey generateKeyJustAfter(
-            TreeMap<PositionKey, TypingEvent> string, int caretPosition)
-    {
-        PositionKey result = keyAt(string, caretPosition);
-        PositionKey higher = string.higherKey(result);
-        if (higher == null)
-            result = new PositionKey(result, new PositionKey(
-                    result.getTopLevelValue() + 1));
-        else
-            result = new PositionKey(result, higher);
-        // System.out.println(result);
-        return result;
-    }
-
-    public TreeMap<PositionKey, TypingEvent> playOutEvents(Long endTime)
-    {
-        PositionKey key;
-        TreeMap<PositionKey, TypingEvent> string = new TreeMap<PositionKey, TypingEvent>();
+        // PositionKey key;
+        TypingEventList string = new TypingEventList();
 
         int initialCapacity = this.typingEvents.size();
         if (initialCapacity < 2)
@@ -244,21 +210,17 @@ public class SourceDocument implements ICodeLocation
             {
             case insert:
             {
-                key = generateKeyJustAfter(string, event.position);
-                // System.out.println(event.position);
-                string.put(key, event);
+                string.insert(event);
             }
                 break;
             case overwrite:
             {
-                key = keyAt(string, event.position);
-                string.put(key, event);
+                string.overwrite(event);
                 break;
             }
             case backspace:
             {
-                key = keyAt(string, event.position);
-                string.remove(key);
+                string.backspace(event.position);
                 break;
             }
             case deleteAll:
@@ -271,13 +233,9 @@ public class SourceDocument implements ICodeLocation
         return string;
     }
 
-    protected static String treeToString(
-            TreeMap<PositionKey, TypingEvent> survived)
+    protected static String treeToString(TypingEventList tel)
     {
-        String str = "";
-        for (TypingEvent event : survived.values())
-            str += event.text;
-        return str;
+        return tel.toString();
     }
 
     @Override
