@@ -47,7 +47,7 @@ public class SourceDocument implements ICodeLocation
 
     protected static String shuffledEventsTest()
     {
-        String expected = "the quick muddled fox bounced over the lazy dog";
+        String expected = "..........................................the quick muddled fox bounced over the lazy dog";
 
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
         tes.addAll(generateEvents(0, 100, 0,
@@ -58,7 +58,10 @@ public class SourceDocument implements ICodeLocation
         tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert));
         tes.addAll(generateEvents(800, 1000, 27, "jumped",
                 TypingEventMode.backspace));
-        tes.addAll(generateEvents(2000, 3000, 21, "bounced",
+        tes.addAll(generateEvents(2000, 2500, 21, "bounced",
+                TypingEventMode.insert));
+        tes.addAll(generateEvents(2600, 3000, -1,
+                "..........................................",
                 TypingEventMode.insert));
 
         tes = shuffledEvents(tes, new Date().getTime());
@@ -85,10 +88,11 @@ public class SourceDocument implements ICodeLocation
         final String alphabet = "10";
         final char[] alphaChars = alphabet.toCharArray();
         final int l = alphabet.length();
-        for (int i = 0; i < 300; i++)
+        for (int i = 0; i < 10000; i++)
             bigString += alphaChars[i % l];
 
-        tes.addAll(generateEvents(0, 300, 0, bigString, TypingEventMode.insert));
+        tes.addAll(generateEvents(0, 10000, 0, bigString,
+                TypingEventMode.insert));
 
         SourceDocument testDoc = new SourceDocument();
         for (TypingEvent event : tes)
@@ -289,10 +293,18 @@ public class SourceDocument implements ICodeLocation
         PriorityQueue<TypingEvent> latestEvents = new PriorityQueue<TypingEvent>(
                 initialCapacity, new EventComparer());
 
-        for (TypingEvent te : this.typingEvents)
-            if (te.time > time)
-                latestEvents.add(te);
+        try
+        {
+            for (TypingEvent te : this.typingEvents)
+            {
+                if (te.time >= time)
+                    latestEvents.add(te);
+            }
+        }
+        catch (Exception e)
+        {
 
+        }
         return latestEvents;
     }
 
