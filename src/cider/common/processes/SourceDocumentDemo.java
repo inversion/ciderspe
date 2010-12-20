@@ -11,7 +11,8 @@ import java.util.TimerTask;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+
+import cider.specialcomponents.EditorTypingArea;
 
 /**
  * Not ready for alpha yet, multiple likely problems. Part of the problem is we
@@ -42,7 +43,8 @@ public class SourceDocumentDemo
         JFrame w = new JFrame();
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
-        SDDemoPanel panel = new SDDemoPanel(w.getSize(), this.server);
+        SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
+                this.server.timer);
         w.add(panel);
         w.pack();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -56,9 +58,9 @@ public class SourceDocumentDemo
         private SourceDocument sourceDocument = new SourceDocument();
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
-        private long delay = 100;
-        private long period = 1;
-        private long currentTime = period;
+        private long delay = 1;
+        private long period = 500;
+        private long currentTime = System.currentTimeMillis();
         private long lastPush = 0;
 
         public PseudoServer()
@@ -67,21 +69,29 @@ public class SourceDocumentDemo
             {
                 public void run()
                 {
-                    currentTime += period;
-                    // System.out.println(currentTime);
-                    Queue<TypingEvent> recentEvents = sourceDocument
-                            .eventsSince(lastPush);
-
-                    if (recentEvents != null && recentEvents.size() > 0)
+                    try
                     {
-                        for (ICodeLocation client : clients)
+                        currentTime = System.currentTimeMillis();
+                        // System.out.println(currentTime);
+                        Queue<TypingEvent> recentEvents = sourceDocument
+                                .eventsSince(lastPush);
+
+                        if (recentEvents != null && recentEvents.size() > 0)
                         {
-                            Queue<TypingEvent> pushQueue = new LinkedList<TypingEvent>();
-                            pushQueue.addAll(recentEvents);
-                            client.push(pushQueue);
+                            for (ICodeLocation client : clients)
+                            {
+                                Queue<TypingEvent> pushQueue = new LinkedList<TypingEvent>();
+                                pushQueue.addAll(recentEvents);
+                                client.push(pushQueue);
+                            }
                         }
+                        lastPush = currentTime;
                     }
-                    lastPush = currentTime - 1;
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
                 }
             }, this.delay, this.period);
         }
@@ -122,8 +132,8 @@ public class SourceDocumentDemo
         long lastUpdateTime;
         SDDemoPanel panel;
         private Timer timer = new Timer();
-        private long delay = 300;
-        private long period = 1;
+        private long delay = 0;
+        private long period = 100;
 
         public PseudoClient(final SDDemoPanel panel, final int id)
         {
@@ -132,8 +142,16 @@ public class SourceDocumentDemo
             {
                 public void run()
                 {
-                    panel.updateText(sourceDocument.toString());
-                    // System.out.println(id + " : " + sourceDocument);
+                    try
+                    {
+                        panel.updateText(sourceDocument.toString());
+                    }// System.out.println(id + " : " + sourceDocument);
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+
                 }
             }, this.delay, this.period);
         }
@@ -168,26 +186,28 @@ public class SourceDocumentDemo
 
     public class SDDemoPanel extends JPanel
     {
-        JTextArea textArea = new JTextArea();
+        EditorTypingArea eta = new EditorTypingArea();
         ICodeLocation server;
-        int caretPosition = 0;
 
-        public SDDemoPanel(Dimension size, final ICodeLocation server)
+        public SDDemoPanel(JFrame w, Dimension size,
+                final ICodeLocation server, final Timer timer)
         {
             this.setSize(size);
-            this.textArea.setPreferredSize(size);
-            this.add(this.textArea);
+            this.eta.setPreferredSize(size);
+            this.add(this.eta);
             this.server = server;
-            this.textArea.addKeyListener(new KeyListener()
+            w.addKeyListener(new KeyListener()
             {
                 @Override
                 public void keyPressed(KeyEvent ke)
                 {
                     if (ke.getKeyCode() == KeyEvent.VK_LEFT)
                     {
-                        if (caretPosition > 0)
-                            caretPosition--;
-                        tryCaretPosition();
+                        eta.moveLeft();
+                    }
+                    else if (ke.getKeyCode() == KeyEvent.VK_RIGHT)
+                    {
+                        eta.moveRight();
                     }
                 }
 
@@ -201,64 +221,57 @@ public class SourceDocumentDemo
                 @Override
                 public void keyTyped(KeyEvent ke)
                 {
-                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                    // System.out.println(server.lastUpdateTime());
-                    TypingEventMode mode = TypingEventMode.insert;
-                    int position = textArea.getCaretPosition();
-                    switch (ke.getKeyChar())
+                    try
                     {
-                    case '\u0008':
-                    {
-                        mode = TypingEventMode.backspace;
-                        if (caretPosition > 0)
-                            caretPosition--;
-                    }
-                        break;
-                    // case '\u0027':
-                    // tryCaretPosition(position + 1);
-                    // break;
-                    default:
-                    {
-                        caretPosition++;
-                    }
-                    }
+                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                        // System.out.println(server.lastUpdateTime());
+                        TypingEventMode mode = TypingEventMode.insert;
+                        switch (ke.getKeyChar())
+                        {
+                        case '\u0008':
+                        {
+                            mode = TypingEventMode.backspace;
+                            eta.moveLeft();
+                        }
+                            break;
+                        // case '\u0027':
+                        // tryCaretPosition(position + 1);
+                        // break;
+                        default:
+                        {
+                            eta.moveRight();
+                        }
+                        }
 
-                    TypingEvent te = new TypingEvent(server.lastUpdateTime(),
-                            mode, textArea.getCaretPosition(), String
-                                    .valueOf(ke.getKeyChar()));
-                    System.out.println("push to server: " + te);
-                    outgoingEvents.add(te);
-                    server.push(outgoingEvents);
+                        TypingEvent te = new TypingEvent(System
+                                .currentTimeMillis(), mode, eta
+                                .getCaretPosition(), String.valueOf(ke
+                                .getKeyChar()));
+                        System.out.println("push to server: " + te);
+                        outgoingEvents.add(te);
+                        server.push(outgoingEvents);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        timer.cancel();
+                        System.exit(1);
+                    }
                 }
-
             });
-        }
-
-        public boolean tryCaretPosition()
-        {
-            try
-            {
-                this.textArea.setCaretPosition(this.caretPosition);
-                return true;
-            }
-            catch (Exception e)
-            {
-                if (this.caretPosition > 0)
-                {
-                    this.caretPosition--;
-                    return tryCaretPosition();
-                }
-                else
-                    return false;
-            }
         }
 
         public void updateText(String string)
         {
-            this.textArea.setText(string);
-            // int newPosition = (int) Math.min(caretPosition, this.textArea
-            // .getText().length());
-            tryCaretPosition();
+            try
+            {
+                this.eta.setText(string);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+                System.exit(1);
+            }
         }
     }
 }
