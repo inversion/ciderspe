@@ -16,8 +16,15 @@ import java.util.Random;
 public class SourceDocument implements ICodeLocation
 {
     private PriorityQueue<TypingEvent> typingEvents;
-
+    public String name = "untitled";
     private long latestTime;
+
+    public SourceDocument(String name)
+    {
+        this.name = name;
+        this.typingEvents = new PriorityQueue<TypingEvent>(1000,
+                new EventComparer());
+    }
 
     public SourceDocument()
     {
