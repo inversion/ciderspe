@@ -67,10 +67,10 @@ public class TypingEvent
             double t;
             for (char c : this.text.toCharArray())
             {
-                pos++;
                 t = this.time + inc * pos;
                 result.put(t,
                         new TypingEvent(this.time, this.mode, pos, "" + c));
+                pos++;
             }
         }
         return result;
