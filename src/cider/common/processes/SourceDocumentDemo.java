@@ -59,7 +59,7 @@ public class SourceDocumentDemo
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;
-        private long period = 500;
+        private long period = 50;
         private long currentTime = System.currentTimeMillis();
         private long lastPush = 0;
 
@@ -142,15 +142,11 @@ public class SourceDocumentDemo
             {
                 public void run()
                 {
-                    try
-                    {
-                        panel.updateText(sourceDocument.toString());
-                    }// System.out.println(id + " : " + sourceDocument);
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
+                    /*
+                     * try { panel.updateText(sourceDocument.toString()); }//
+                     * System.out.println(id + " : " + sourceDocument); catch
+                     * (Exception e) { e.printStackTrace(); System.exit(1); }
+                     */
 
                 }
             }, this.delay, this.period);
@@ -161,7 +157,38 @@ public class SourceDocumentDemo
         {
             if (typingEvents.size() > 0)
             {
+                TypingEvent[] events = new TypingEvent[typingEvents.size()];
+                typingEvents.toArray(events);
                 this.sourceDocument.push(typingEvents);
+
+                try
+                {
+                    panel.updateText(sourceDocument.toString());
+                }// System.out.println(id + " : " + sourceDocument);
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+
+                for (TypingEvent te : events)
+                {
+                    switch (te.mode)
+                    {
+                    case insert:
+                        if (te.position >= panel.eta.getCaretPosition())
+                            panel.eta.moveRight();
+                        break;
+                    case overwrite:
+                        if (te.position >= panel.eta.getCaretPosition())
+                            panel.eta.moveRight();
+                        break;
+                    case backspace:
+                        if (te.position >= panel.eta.getCaretPosition())
+                            panel.eta.moveLeft();
+                        break;
+                    }
+                }
             }
         }
 
@@ -231,7 +258,7 @@ public class SourceDocumentDemo
                         case '\u0008':
                         {
                             mode = TypingEventMode.backspace;
-                            eta.moveLeft();
+                            // eta.moveLeft();
                         }
                             break;
                         // case '\u0027':
@@ -239,7 +266,7 @@ public class SourceDocumentDemo
                         // break;
                         default:
                         {
-                            eta.moveRight();
+                            // eta.moveRight();
                         }
                         }
 

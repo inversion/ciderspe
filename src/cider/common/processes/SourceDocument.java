@@ -47,7 +47,7 @@ public class SourceDocument implements ICodeLocation
 
     protected static String shuffledEventsTest()
     {
-        String expected = "..........................................the quick muddled fox bounced over the lazy dog";
+        String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
 
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
         tes.addAll(generateEvents(0, 100, 0,
@@ -60,9 +60,8 @@ public class SourceDocument implements ICodeLocation
                 TypingEventMode.backspace));
         tes.addAll(generateEvents(2000, 2500, 21, "bounced",
                 TypingEventMode.insert));
-        tes.addAll(generateEvents(2600, 3000, -1,
-                "..........................................",
-                TypingEventMode.insert));
+        tes.addAll(generateEvents(2600, 3000, 9,
+                "123123123123123123123123123 ", TypingEventMode.insert));
 
         tes = shuffledEvents(tes, new Date().getTime());
 
