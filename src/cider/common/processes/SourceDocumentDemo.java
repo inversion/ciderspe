@@ -15,14 +15,6 @@ import javax.swing.JPanel;
 import cider.specialcomponents.EditorTypingArea;
 
 /**
- * Not ready for alpha yet, multiple likely problems. Part of the problem is we
- * may need to create our own TextArea component instead of hacking the library
- * version and also there's likely to be an issue with SourceEditArea to do with
- * the differences between keys getting too small once a lot of text is inserted
- * in between other text. The solution is to make our own data structure to deal
- * with the correct ordering of characters. There is also concurrent
- * modification problems with this particular experiment.
- * 
  * @author Lawrence
  * 
  */
