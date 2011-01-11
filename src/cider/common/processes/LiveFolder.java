@@ -40,12 +40,23 @@ public class LiveFolder
     public String xml(String indent)
     {
         String str = "";
+        boolean root = indent.equals("");
+        if (root)
+        {
+            str += "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n";
+            str += "<Tree>\n";
+            indent += "\t";
+        }
+
         for (SourceDocument doc : this.documents.values())
-            str += indent + "<doc>" + doc.name + "<\\doc>\n";
+            str += indent + "<Doc>" + doc.name + "</Doc>\n";
         for (LiveFolder folder : this.folders.values())
-            str += indent + "<sub>\n" + indent + "\t" + "<folder>"
-                    + folder.name + "<\\folder>\n" + folder.xml(indent + "\t")
-                    + indent + "<\\sub>\n";
+            str += indent + "<Sub>\n" + indent + "\t" + "<Folder>"
+                    + folder.name + "</Folder>\n" + folder.xml(indent + "\t")
+                    + indent + "</Sub>\n";
+
+        if (root)
+            str += "</Tree>\n";
         return str;
     }
 
@@ -55,5 +66,15 @@ public class LiveFolder
         folder.makeDocument("t1");
         folder.makeFolder("testFolder").makeDocument("t2");
         System.out.println(folder.xml(""));
+    }
+
+    public SourceDocument path(String dest)
+    {
+        String[] split = dest.split("\\");
+        if (split[0].endsWith(".SourceDocument"))
+            return this.getDocument(split[0].split(".")[0]);
+        else
+            return this.getFolder(split[0]).path(
+                    dest.substring(split[0].length()));
     }
 }

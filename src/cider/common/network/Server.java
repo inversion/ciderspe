@@ -7,6 +7,8 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
+import cider.common.processes.LiveFolder;
+
 /**
  * This is the class that implements the bot that connects to the XMPP server
  * and listens for new chats.
@@ -19,6 +21,8 @@ public class Server implements ChatManagerListener
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
+    private LiveFolder liveFolder;
+    private ServerMessageListener messageListener;
 
     /*
      * Server(String username, String password) { this.connection = new
@@ -30,9 +34,17 @@ public class Server implements ChatManagerListener
     {
         try
         {
+            this.liveFolder = new LiveFolder("root");
+            this.liveFolder.makeDocument("t1.SourceDocument");
+            this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+                    .makeDocument("test2Doc");
+
+            System.out.println(this.liveFolder.xml(""));
+
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(
                     Common.HOST, Common.PORT, Common.SERVICE_NAME);
+            this.messageListener = new ServerMessageListener(this);
             connection = new XMPPConnection(config);
             connection.connect();
             connection.login(Common.BOT_USERNAME, Common.BOT_PASSWORD);
@@ -54,14 +66,18 @@ public class Server implements ChatManagerListener
         }
     }
 
+    public LiveFolder getRootFolder()
+    {
+        return this.liveFolder;
+    }
+
     @Override
     public void chatCreated(Chat chat, boolean createdLocally)
     {
-
         if (Common.DEBUG)
             System.out.println(chat.getParticipant() + " connected...");
 
-        chat.addMessageListener(new ServerMessageListener());
+        chat.addMessageListener(this.messageListener);
     }
 
 }
