@@ -75,7 +75,7 @@ public class Client
     {
         this.connection.disconnect();
         while (this.connection.isConnected())
-            ;
+            System.out.printf(".");
         try
         {
             Thread.sleep(1000);
@@ -85,6 +85,7 @@ public class Client
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        System.out.println("Client disconnected");
     }
 
     public boolean updatesAutomatically()
@@ -130,6 +131,7 @@ public class Client
             EditorTypingArea eta = new EditorTypingArea(doc);
             eta.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, eta);
+            this.pullEventsSince(0);
         }
     }
 
@@ -194,6 +196,7 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         EditorTypingArea eta = this.openTabs.get(dest);
+        eta.getCodeLocation().push(typingEvents);
         if (eta != null)
             eta.updateText();
     }

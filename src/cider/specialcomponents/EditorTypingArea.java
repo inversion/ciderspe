@@ -3,11 +3,14 @@ package cider.specialcomponents;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.JPanel;
 
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TypingEvent;
 
 public class EditorTypingArea extends JPanel
 {
@@ -35,11 +38,21 @@ public class EditorTypingArea extends JPanel
     {
         if (this.codeLocation != null)
         {
-            this.doc.push(this.codeLocation.eventsSince(this.lastUpdateTime));
+
+            Queue<TypingEvent> events = new LinkedList<TypingEvent>();
+            long latest = this.lastUpdateTime;
+            for (TypingEvent te : this.codeLocation
+                    .eventsSince(this.lastUpdateTime))
+            {
+                events.add(te);
+                if (latest <= te.time)
+                    latest = te.time + 1;
+            }
+            this.doc.push(events);
             this.str = this.doc.toString();
             this.updateUI();
+            this.lastUpdateTime = latest;
         }
-        this.lastUpdateTime = System.currentTimeMillis();
     }
 
     public void setText(String text) throws Throwable
@@ -112,5 +125,10 @@ public class EditorTypingArea extends JPanel
     public Component getTabHandle()
     {
         return this.tabHandle;
+    }
+
+    public ICodeLocation getCodeLocation()
+    {
+        return this.codeLocation;
     }
 }

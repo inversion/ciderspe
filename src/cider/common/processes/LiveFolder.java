@@ -96,8 +96,7 @@ public class LiveFolder
         LocalisedTypingEvents ltes;
         for (SourceDocument document : this.documents.values())
         {
-            ltes = new LocalisedTypingEvents(local + "\\" + document.name
-                    + ".SourceDocument");
+            ltes = new LocalisedTypingEvents(local + "\\" + document.name);
             ltes.typingEvents.addAll(document.eventsSince(time));
             events.add(ltes);
         }
