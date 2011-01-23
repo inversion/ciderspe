@@ -11,4 +11,6 @@ public interface ICodeLocation
     public Queue<TypingEvent> eventsSince(long time);
 
     public long lastUpdateTime();
+
+    public void clearAll();
 }

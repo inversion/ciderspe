@@ -1,22 +1,43 @@
 package cider.specialcomponents;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import cider.common.processes.ICodeLocation;
+import cider.common.processes.SourceDocument;
+
 public class EditorTypingArea extends JPanel
 {
-    String str = "";
-    int caretPosition = -1;
-    Font font = new Font("monospaced", Font.PLAIN, 11);
+    private String str = "";
+    private int caretPosition = -1;
+    private Font font = new Font("monospaced", Font.PLAIN, 11);
+    private ICodeLocation codeLocation = null;
+    private SourceDocument doc = null;
+    private Component tabHandle = null;
 
     public EditorTypingArea()
     {
     }
 
+    public EditorTypingArea(ICodeLocation codeLocation)
+    {
+        this.codeLocation = codeLocation;
+        this.doc = new SourceDocument();
+        this.doc.push(this.codeLocation.events());
+        this.str = this.doc.toString();
+    }
+
     public void setText(String text)
     {
+        if (this.codeLocation != null)
+        {
+            this.doc = new SourceDocument();
+            this.codeLocation.clearAll();
+        }
+
         this.str = text;
         this.updateUI();
     }
@@ -72,5 +93,15 @@ public class EditorTypingArea extends JPanel
         if (this.caretPosition < this.str.length())
             this.caretPosition++;
         this.updateUI();
+    }
+
+    public void setTabHandle(Component tabHandle)
+    {
+        this.tabHandle = tabHandle;
+    }
+
+    public Component getTabHandle()
+    {
+        return this.tabHandle;
     }
 }
