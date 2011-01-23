@@ -38,6 +38,7 @@ public class Client
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
     private Hashtable<String, EditorTypingArea> openTabs = new Hashtable<String, EditorTypingArea>();
+    private long lastUpdate = 0;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane)
     {
@@ -197,7 +198,13 @@ public class Client
     {
         EditorTypingArea eta = this.openTabs.get(dest);
         eta.getCodeLocation().push(typingEvents);
-        if (eta != null)
-            eta.updateText();
+        eta.updateText();
+        if (eta.getLastUpdate() >= this.lastUpdate)
+            this.lastUpdate = eta.getLastUpdate();
+    }
+
+    public long getLastUpdate()
+    {
+        return this.lastUpdate;
     }
 }

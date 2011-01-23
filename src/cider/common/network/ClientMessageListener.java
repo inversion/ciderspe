@@ -32,7 +32,6 @@ public class ClientMessageListener implements MessageListener
     private Pattern fileMatch = Pattern
             .compile("<file><path>(.+)</path><contents>(.+)</contents></file>");
     private Matcher matcher = null;
-    private long lastUpdate = 0;
     private Client client;
 
     public ClientMessageListener(DirectoryViewComponent dirView, Client client)
@@ -96,9 +95,9 @@ public class ClientMessageListener implements MessageListener
                 typingEvents.add(new TypingEvent(preAndAfter[1]));
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
                 this.client.push(typingEvents, dest);
-                if (client.updatesAutomatically())
-                    this.client.pullEventsSince(this.lastUpdate);
             }
+            if (client.updatesAutomatically())
+                this.client.pullEventsSince(this.client.getLastUpdate());
         }
     }
 }
