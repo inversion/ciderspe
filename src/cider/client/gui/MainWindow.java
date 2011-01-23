@@ -44,6 +44,8 @@ class MainWindow implements Runnable
     public int currentTab = 0;
     Client client;
     Server server;
+    private JSplitPane dirSourceEditorSeletionSplit;
+    private JSplitPane editorChatSplit;
 
     public static void main(String[] args)
     {
@@ -271,21 +273,20 @@ class MainWindow implements Runnable
         client.getFileList();
 
         JPanel panel = new JPanel(new BorderLayout());
-        JSplitPane splitPane;
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                dirView/* label */, this.sourceEditorSection());// textArea/*label2*/);
-        JSplitPane splitPane2;
-        splitPane2 = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, splitPane,
-                new JLabel("chat"));
+        dirSourceEditorSeletionSplit = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT, dirView/* label */, this
+                        .sourceEditorSection());// textArea/*label2*/);
+        editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                dirSourceEditorSeletionSplit, new JLabel("chat"));
 
-        splitPane.setOneTouchExpandable(true);
+        dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
         // splitPane.setDividerLocation(150);
-        splitPane2.setOneTouchExpandable(true);
+        editorChatSplit.setOneTouchExpandable(true);
+        this.editorChatSplit.setResizeWeight(1.0);
         // splitPane2.setDividerLocation(150);
 
         // Provide minimum sizes for the two components in the split pane
-        Dimension minimumSize = new Dimension(100, 50);
-        panel.add(splitPane2);
+        panel.add(editorChatSplit);
         return panel;
     }
 
@@ -302,11 +303,12 @@ class MainWindow implements Runnable
         JPanel p = new JPanel(new BorderLayout());
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
         p.add(this.mainArea());
-
         w.add(p);
-
         w.pack();
+        this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
+        this.editorChatSplit.setDividerLocation(0.8);
         w.setLocationByPlatform(true);
+        w.setExtendedState(JFrame.MAXIMIZED_BOTH);
         w.setVisible(true);
     }
 
