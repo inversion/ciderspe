@@ -303,6 +303,11 @@ public class SourceDocumentDemo
                 e.printStackTrace();
                 System.exit(1);
             }
+            catch (Throwable e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 }

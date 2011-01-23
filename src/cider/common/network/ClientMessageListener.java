@@ -82,15 +82,17 @@ public class ClientMessageListener implements MessageListener
             this.dirView.constructTree(xml);
             this.client.setLiveFolder(this.dirView.getLiveFolder());
             this.client.setUpdatesAutomatically(true);
+            this.client.pullEventsSince(0);
         }
         else if (body.startsWith("pushto("))
         {
-            String[] preAndAfter = body.split(") ");
-            String[] pre = preAndAfter[0].split("(");
+            String[] preAndAfter = body.split("\\) ");
+            String[] pre = preAndAfter[0].split("\\(");
             String dest = pre[1];
+            dest = dest.replace("root\\", "");
             Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
             typingEvents.add(new TypingEvent(preAndAfter[1]));
-            this.client.getLiveFolder().path(dest).push(typingEvents);
+            this.client.push(typingEvents, dest);
             if (client.updatesAutomatically())
                 this.client.pullEventsSince(System.currentTimeMillis());
         }
