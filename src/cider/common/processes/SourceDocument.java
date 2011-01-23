@@ -319,4 +319,10 @@ public class SourceDocument implements ICodeLocation
     {
         return this.latestTime;
     }
+
+    @Override
+    public void clearAll()
+    {
+        this.typingEvents.clear();
+    }
 }

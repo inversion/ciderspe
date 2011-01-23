@@ -27,6 +27,7 @@ import org.w3c.dom.Node;
 
 import cider.common.network.Client;
 import cider.common.processes.CiderFileList;
+import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
 {
@@ -37,9 +38,10 @@ public class DirectoryViewComponent extends JPanel
 
     private DefaultMutableTreeNode top;
     // TODO type checking?
-    private Hashtable nodePaths;
+    private Hashtable<String, DefaultMutableTreeNode> nodePaths;
     private Client client;
     private JTree tree;
+    private LiveFolder rootFolder = new LiveFolder("root");
 
     /*
      * public static void main(String[] args) { JFrame w = new JFrame();
@@ -106,6 +108,7 @@ public class DirectoryViewComponent extends JPanel
         category.add(book);
     }
 
+    @Deprecated
     public void constructTree(CiderFileList list)
     {
         // TODO: Dirs without children are displayed with the same icon as files
@@ -160,11 +163,11 @@ public class DirectoryViewComponent extends JPanel
         // TODO: Can see a potential problem with this method if people click on
         // nodes before this method finishes, change approach to make both
         // hashes on the fly?
-        Object[] keys = nodes.keySet().toArray();
-        nodePaths = new Hashtable(keys.length);
-
-        for (int i = 0; i < keys.length; i++)
-            nodePaths.put(nodes.get(keys[i]), keys[i]);
+        // String[] keys = nodes.keySet().toArray();
+        this.nodePaths = new Hashtable<String, DefaultMutableTreeNode>();
+        this.nodePaths.putAll(nodes);
+        // for (int i = 0; i < keys.length; i++)
+        // nodePaths.put(nodes.get(keys[i]), keys[i]);
 
         // Listen for changes in the selected node
         // TODO : Bit messy just removing current listeners atm
@@ -172,17 +175,18 @@ public class DirectoryViewComponent extends JPanel
         for (int i = 0; i < listeners.length; i++)
             tree.removeTreeSelectionListener(listeners[i]);
 
-        tree.addTreeSelectionListener(new DirectoryViewSelectionListener(tree,
-                nodePaths, client));
+        this.tree.addTreeSelectionListener(new DirectoryViewSelectionListener(
+                tree, client));
     }
 
     public void constructTree(String xml)
     {
-        top.removeAllChildren();
+        this.top.removeAllChildren();
+        this.rootFolder.removeAllChildren();
+
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try
         {
-
             // Using factory get an instance of document builder
             DocumentBuilder db = dbf.newDocumentBuilder();
 
@@ -199,8 +203,10 @@ public class DirectoryViewComponent extends JPanel
 
                 Element docEle = xmlDoc.getDocumentElement();
 
-                this.subFolders(docEle, this.top);
-                this.parseDocs(docEle, this.top);
+                this.subFolders(docEle, this.top, this.rootFolder);
+                this.parseDocs(docEle, this.top, this.rootFolder);
+                System.out.println("Reconstructed Tree: ");
+                System.out.println(this.rootFolder.xml(""));
             }
             catch (UnsupportedEncodingException e)
             {
@@ -216,6 +222,14 @@ public class DirectoryViewComponent extends JPanel
         {
             pce.printStackTrace();
         }
+
+        this.tree.addTreeSelectionListener(new DirectoryViewSelectionListener(
+                this.tree, this.client));
+    }
+
+    public LiveFolder getLiveFolder()
+    {
+        return this.rootFolder;
     }
 
     public static List<Element> getChildrenByTagName(Element parent, String name)
@@ -234,7 +248,8 @@ public class DirectoryViewComponent extends JPanel
         return nodeList;
     }
 
-    private void subFolders(Element docEle, DefaultMutableTreeNode parent)
+    private void subFolders(Element docEle, DefaultMutableTreeNode parent,
+            LiveFolder parentFolder)
     {
         List<Element> subFolder = getChildrenByTagName(docEle, "Sub");
         if (subFolder != null && subFolder.size() > 0)
@@ -249,14 +264,16 @@ public class DirectoryViewComponent extends JPanel
                 DefaultMutableTreeNode newFolder = new DefaultMutableTreeNode(
                         folderName);
                 parent.add(newFolder);
-                this.subFolders(el, newFolder);
-                this.parseDocs(el, newFolder);
+                LiveFolder liveFolder = parentFolder.makeFolder(folderName);
+                this.subFolders(el, newFolder, liveFolder);
+                this.parseDocs(el, newFolder, liveFolder);
 
             }
         }
     }
 
-    private void parseDocs(Element docEle, DefaultMutableTreeNode folder)
+    private void parseDocs(Element docEle, DefaultMutableTreeNode folder,
+            LiveFolder parentFolder)
     {
         List<Element> docs = getChildrenByTagName(docEle, "Doc");
         if (docs != null && docs.size() > 0)
@@ -267,6 +284,7 @@ public class DirectoryViewComponent extends JPanel
                 String docName = el.getChildNodes().item(0).getNodeValue()
                         .trim();
                 folder.add(new DefaultMutableTreeNode(docName));
+                parentFolder.makeDocument(docName);
             }
         }
     }

@@ -1,6 +1,8 @@
 package cider.common.processes;
 
 import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class LiveFolder
 {
@@ -65,16 +67,42 @@ public class LiveFolder
         LiveFolder folder = new LiveFolder("root");
         folder.makeDocument("t1");
         folder.makeFolder("testFolder").makeDocument("t2");
-        System.out.println(folder.xml(""));
+        // System.out.println(folder.xml(""));
     }
 
     public SourceDocument path(String dest)
     {
-        String[] split = dest.split("\\");
+        String[] split = dest.split("\\\\");
         if (split[0].endsWith(".SourceDocument"))
-            return this.getDocument(split[0].split(".")[0]);
+            return this.getDocument(split[0]);// .split("\\.")[0]);
         else
-            return this.getFolder(split[0]).path(
-                    dest.substring(split[0].length()));
+        {
+            LiveFolder folder = this.getFolder(split[0]);
+            String newPath = dest.substring(split[0].length() + 1);
+            return folder.path(newPath);
+        }
+    }
+
+    public void removeAllChildren()
+    {
+        this.folders.clear();
+        this.documents.clear();
+    }
+
+    public Queue<LocalisedTypingEvents> eventsSince(long time, String path)
+    {
+        Queue<LocalisedTypingEvents> events = new LinkedList<LocalisedTypingEvents>();
+        String local = path + this.name;
+        LocalisedTypingEvents ltes;
+        for (SourceDocument document : this.documents.values())
+        {
+            ltes = new LocalisedTypingEvents(local + "\\" + document.name
+                    + ".SourceDocument");
+            ltes.typingEvents.addAll(document.eventsSince(time));
+            events.add(ltes);
+        }
+        for (LiveFolder folder : this.folders.values())
+            events.addAll(folder.eventsSince(time, local + "\\"));
+        return events;
     }
 }

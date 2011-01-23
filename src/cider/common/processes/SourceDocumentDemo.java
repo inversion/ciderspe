@@ -116,6 +116,12 @@ public class SourceDocumentDemo
         {
             return currentTime;
         }
+
+        @Override
+        public void clearAll()
+        {
+            this.sourceDocument.clearAll();
+        }
     }
 
     public class PseudoClient implements ICodeLocation
@@ -200,6 +206,12 @@ public class SourceDocumentDemo
         public long lastUpdateTime()
         {
             return this.sourceDocument.lastUpdateTime();
+        }
+
+        @Override
+        public void clearAll()
+        {
+            this.sourceDocument.clearAll();
         }
     }
 

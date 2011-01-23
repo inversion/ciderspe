@@ -87,8 +87,8 @@ public class LocalCodeFile implements ICodeLocation
         // this.oldFileContent.add(new TypingEvent(currentTime,
         // TypingEventMode.deleteAll, 0, ""));
         this.oldFileContent = new TypingEvent(currentTime + 1,
-                TypingEventMode.overwrite, 0,
-                this.oldFileContentString = this.read());
+                TypingEventMode.overwrite, 0, this.oldFileContentString = this
+                        .read());
         Queue<TypingEvent> result = new LinkedList<TypingEvent>();
         result.add(this.oldFileContent);
         return result;
@@ -126,5 +126,23 @@ public class LocalCodeFile implements ICodeLocation
     public long lastUpdateTime()
     {
         return this.file.lastModified();
+    }
+
+    @Override
+    public void clearAll()
+    {
+        if (this.file.exists())
+        {
+            this.file.delete();
+            try
+            {
+                this.file.createNewFile();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
     }
 }

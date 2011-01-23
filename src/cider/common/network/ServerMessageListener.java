@@ -11,6 +11,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.processes.CiderFileList;
+import cider.common.processes.LocalisedTypingEvents;
 import cider.common.processes.TypingEvent;
 import cider.specialcomponents.Base64;
 
@@ -89,6 +90,28 @@ public class ServerMessageListener implements MessageListener
             // TODO Auto-generated catch block
             // e.printStackTrace();
             // }
+        }
+        else if (body.startsWith("pullEventsSince("))
+        {
+            String arg = body.split("(")[1];
+            arg = arg.split(")")[0];
+            long t = Long.parseLong(arg);
+
+            Queue<LocalisedTypingEvents> events = this.source.getRootFolder()
+                    .eventsSince(t, "");
+            try
+            {
+                for (LocalisedTypingEvents ltes : events)
+                    for (TypingEvent te : ltes.typingEvents)
+                        chat.sendMessage("pushto(" + ltes.path + ") "
+                                + te.pack());
+            }
+            catch (XMPPException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
         }
         else if (body.startsWith("pushto("))
         {
