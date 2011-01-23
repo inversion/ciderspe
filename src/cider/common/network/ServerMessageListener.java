@@ -99,12 +99,14 @@ public class ServerMessageListener implements MessageListener
 
             Queue<LocalisedTypingEvents> events = this.source.getRootFolder()
                     .eventsSince(t, "");
+            String instructions = "";
+            for (LocalisedTypingEvents ltes : events)
+                for (TypingEvent te : ltes.typingEvents)
+                    instructions += "pushto(" + ltes.path + ") " + te.pack()
+                            + "\n";
             try
             {
-                for (LocalisedTypingEvents ltes : events)
-                    for (TypingEvent te : ltes.typingEvents)
-                        chat.sendMessage("pushto(" + ltes.path + ") "
-                                + te.pack());
+                chat.sendMessage(instructions);
             }
             catch (XMPPException e)
             {

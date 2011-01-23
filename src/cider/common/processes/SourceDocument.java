@@ -137,7 +137,7 @@ public class SourceDocument implements ICodeLocation
         return (endTime - startTime) / n;
     }
 
-    protected static ArrayList<TypingEvent> generateEvents(long startTime,
+    public static ArrayList<TypingEvent> generateEvents(long startTime,
             long endTime, int startingPosition, String text,
             TypingEventMode mode)
     {

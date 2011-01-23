@@ -337,7 +337,7 @@ class MainWindow implements Runnable
             @Override
             public void windowClosing(WindowEvent arg0)
             {
-                System.out.println("disconnecting...");
+                System.out.println("disconnecting");
                 client.disconnect();
                 server.disconnect();
             }

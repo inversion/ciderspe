@@ -41,8 +41,8 @@ public class Server implements ChatManagerListener
         this.liveFolder = new LiveFolder("root");
         SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
         Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.add(new TypingEvent(System.currentTimeMillis(),
-                TypingEventMode.insert, 0, "This was a triumph!"));
+        tes.addAll(SourceDocument.generateEvents(0, 1000, 0,
+                "This was a triumph!", TypingEventMode.insert));
         t1.push(tes);
         this.liveFolder.makeFolder("testFolder").makeFolder("test2")
                 .makeDocument("test2Doc.SourceDocument");
