@@ -93,8 +93,8 @@ public class ServerMessageListener implements MessageListener
         }
         else if (body.startsWith("pullEventsSince("))
         {
-            String arg = body.split("(")[1];
-            arg = arg.split(")")[0];
+            String arg = body.split("\\(")[1];
+            arg = arg.split("\\)")[0];
             long t = Long.parseLong(arg);
 
             Queue<LocalisedTypingEvents> events = this.source.getRootFolder()

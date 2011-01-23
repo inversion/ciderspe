@@ -11,6 +11,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.common.processes.LiveFolder;
+import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
 
@@ -35,18 +36,23 @@ public class Server implements ChatManagerListener
      * this.connection.login(username, password) }
      */
 
+    public void testTree()
+    {
+        this.liveFolder = new LiveFolder("root");
+        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        tes.add(new TypingEvent(System.currentTimeMillis(),
+                TypingEventMode.insert, 0, "This was a triumph!"));
+        t1.push(tes);
+        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+                .makeDocument("test2Doc.SourceDocument");
+    }
+
     public Server()
     {
         try
         {
-            this.liveFolder = new LiveFolder("root");
-            this.liveFolder.makeDocument("t1.SourceDocument");
-            Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-            tes.add(new TypingEvent(System.currentTimeMillis(),
-                    TypingEventMode.insert, 0, "This was a triumph!"));
-            this.liveFolder.makeFolder("testFolder").makeFolder("test2")
-                    .makeDocument("test2Doc.SourceDocument");
-
+            this.testTree();
             System.out.println(this.liveFolder.xml(""));
 
             // Connect and login to the XMPP server
@@ -72,6 +78,11 @@ public class Server implements ChatManagerListener
         {
             e.printStackTrace();
         }
+    }
+
+    public void disconnect()
+    {
+        this.connection.disconnect();
     }
 
     public LiveFolder getRootFolder()

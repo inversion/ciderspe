@@ -17,6 +17,7 @@ public class EditorTypingArea extends JPanel
     private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private Component tabHandle = null;
+    private long lastUpdateTime = 0;
 
     public EditorTypingArea()
     {
@@ -30,14 +31,22 @@ public class EditorTypingArea extends JPanel
         this.str = this.doc.toString();
     }
 
-    public void setText(String text)
+    public void updateText()
     {
         if (this.codeLocation != null)
         {
-            this.doc = new SourceDocument();
-            this.codeLocation.clearAll();
+            this.doc.push(this.codeLocation.eventsSince(this.lastUpdateTime));
+            this.str = this.doc.toString();
+            this.updateUI();
         }
+        this.lastUpdateTime = System.currentTimeMillis();
+    }
 
+    public void setText(String text) throws Throwable
+    {
+        if (this.codeLocation != null)
+            throw new Exception(
+                    "Cannot set text directly as this EditorTypingArea is tied to an ICodeLocation");
         this.str = text;
         this.updateUI();
     }

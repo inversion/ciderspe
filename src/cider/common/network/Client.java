@@ -1,6 +1,7 @@
 package cider.common.network;
 
 import java.util.Hashtable;
+import java.util.Queue;
 
 import javax.swing.JTabbedPane;
 
@@ -13,6 +14,7 @@ import org.jivesoftware.smack.XMPPException;
 import cider.client.gui.DirectoryViewComponent;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TypingEvent;
 import cider.specialcomponents.Base64;
 import cider.specialcomponents.EditorTypingArea;
 
@@ -65,6 +67,22 @@ public class Client
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
+        }
+    }
+
+    public void disconnect()
+    {
+        this.connection.disconnect();
+        while (this.connection.isConnected())
+            ;
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -171,5 +189,12 @@ public class Client
     public void setLiveFolder(LiveFolder liveFolder)
     {
         this.liveFolder = liveFolder;
+    }
+
+    public void push(Queue<TypingEvent> typingEvents, String dest)
+    {
+        EditorTypingArea eta = this.openTabs.get(dest);
+        if (eta != null)
+            eta.updateText();
     }
 }
