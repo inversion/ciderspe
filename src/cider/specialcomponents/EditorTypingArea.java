@@ -131,4 +131,9 @@ public class EditorTypingArea extends JPanel
     {
         return this.codeLocation;
     }
+
+    public long getLastUpdate()
+    {
+        return this.lastUpdateTime;
+    }
 }
