@@ -64,6 +64,7 @@ class MainWindow implements Runnable
         menu.add(menuItem);
     }
 
+    @Deprecated
     public void openFile()
     {
         JFileChooser fc = new JFileChooser();
@@ -97,6 +98,7 @@ class MainWindow implements Runnable
         }
     }
 
+    @Deprecated
     public void saveFile(String action)
     {
         JFileChooser fc = new JFileChooser();
@@ -125,6 +127,7 @@ class MainWindow implements Runnable
         tabbedPane.setTitleAt(currentTab, currentFileName);
     }
 
+    @Deprecated
     public void closeFile(String action)
     {
         saveFile(action);
@@ -133,11 +136,12 @@ class MainWindow implements Runnable
         tabbedPane.setSelectedIndex(--currentTab);
     }
 
+    @Deprecated
     public void newFile()
     {
         // closes tab regardless of save or cancel
-        tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\."));
-        tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+        // tabbedPane.addTab("Unsaved Document 1", new SourceEditor("", "\\."));
+        // tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
     }
 
     public ActionListener newAction()
@@ -255,9 +259,9 @@ class MainWindow implements Runnable
 
     public JPanel sourceEditorSection()
     {
-        tabbedPane.addTab(currentFileName, new SourceEditor(
-                currentFileContents, currentDir));
-        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        // tabbedPane.addTab(currentFileName, new SourceEditor(
+        // currentFileContents, currentDir));
+        // tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
         panel.add(tabbedPane);
