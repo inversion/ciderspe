@@ -107,7 +107,7 @@ public class Client
         String strPath = this.getPathToSourceDocument(path, 1);
         System.out.println(strPath);
         SourceDocument doc = this.liveFolder.path(strPath);
-        if (!this.openTabs.containsKey(path))
+        if (!this.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(doc);
             eta.setTabHandle(this.tabbedPane.add(strPath, eta));
