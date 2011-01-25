@@ -24,7 +24,6 @@ import cider.common.processes.TypingEventMode;
 
 public class Server implements ChatManagerListener
 {
-
     private XMPPConnection connection;
     private ChatManager chatmanager;
     private LiveFolder liveFolder;
@@ -48,6 +47,15 @@ public class Server implements ChatManagerListener
                 .makeDocument("test2Doc.SourceDocument");
     }
 
+    public static void main( String[] args )
+    {
+    	Server server = new Server();
+    	while( true )
+    	{
+    	
+    	}
+    }
+    
     public Server()
     {
         try
