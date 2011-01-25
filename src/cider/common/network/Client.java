@@ -21,15 +21,15 @@ import cider.specialcomponents.EditorTypingArea;
 /**
  * 
  * This implements the client side of the XMPP layer, it has methods to get a
- * file from the server and return its contents as a String. 
+ * file from the server and return its contents as a String.
  * 
  * @author Andrew + Lawrence
  */
 
 public class Client
 {
-	public static final boolean DEBUG = true;
-	
+    public static final boolean DEBUG = true;
+
     // Google apps configuration
     public static final String HOST = "talk.google.com";
     public static final int PORT = 5222;
@@ -37,7 +37,6 @@ public class Client
     public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
     public static final String CLIENT_USERNAME = "ciderclient@mossage.co.uk";
     public static final String CLIENT_PASSWORD = "clientpw";
-    
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -54,12 +53,11 @@ public class Client
         try
         {
             // Connect and login to the XMPP server
-            ConnectionConfiguration config = new ConnectionConfiguration(
-                    HOST, PORT, SERVICE_NAME);
+            ConnectionConfiguration config = new ConnectionConfiguration(HOST,
+                    PORT, SERVICE_NAME);
             this.connection = new XMPPConnection(config);
             this.connection.connect();
-            this.connection.login( CLIENT_USERNAME,
-                    CLIENT_PASSWORD);
+            this.connection.login(CLIENT_USERNAME, CLIENT_PASSWORD);
 
             if (DEBUG)
             {
@@ -71,8 +69,7 @@ public class Client
 
             this.chatmanager = this.connection.getChatManager();
             this.listener = new ClientMessageListener(dirView, this);
-            this.chat = this.chatmanager.createChat(BOT_USERNAME,
-                    listener);
+            this.chat = this.chatmanager.createChat(BOT_USERNAME, listener);
             this.tabbedPane = tabbedPane;
         }
         catch (XMPPException e)
@@ -127,6 +124,7 @@ public class Client
             EditorTypingArea eta = new EditorTypingArea(doc);
             eta.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, eta);
+            System.out.println("Pull since 0 since a new tab is being opened");
             this.pullEventsSince(0);
         }
     }
@@ -135,6 +133,7 @@ public class Client
     {
         try
         {
+            // System.out.println("pull since " + time);
             chat.sendMessage("pullEventsSince(" + String.valueOf(time) + ")");
         }
         catch (XMPPException e)

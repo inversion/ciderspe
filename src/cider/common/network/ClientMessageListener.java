@@ -1,10 +1,14 @@
 package cider.common.network;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.swing.Timer;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
@@ -23,7 +27,7 @@ import cider.specialcomponents.Base64;
  * 
  */
 
-public class ClientMessageListener implements MessageListener
+public class ClientMessageListener implements MessageListener, ActionListener
 {
 
     // TODO: These probably shouldn't be public
@@ -33,11 +37,13 @@ public class ClientMessageListener implements MessageListener
             .compile("<file><path>(.+)</path><contents>(.+)</contents></file>");
     private Matcher matcher = null;
     private Client client;
+    private Timer timer;
 
     public ClientMessageListener(DirectoryViewComponent dirView, Client client)
     {
         this.client = client;
         this.dirView = dirView;
+        timer = new Timer(100, this);
     }
 
     @Deprecated
@@ -96,8 +102,15 @@ public class ClientMessageListener implements MessageListener
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
                 this.client.push(typingEvents, dest);
             }
-            if (client.updatesAutomatically())
-                this.client.pullEventsSince(this.client.getLastUpdate());
+            if (!timer.isRunning() && client.updatesAutomatically())
+                timer.start();
+
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae)
+    {
+        this.client.pullEventsSince(this.client.getLastUpdate());
     }
 }
