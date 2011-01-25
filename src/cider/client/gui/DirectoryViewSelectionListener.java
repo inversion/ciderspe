@@ -41,6 +41,7 @@ public class DirectoryViewSelectionListener implements TreeSelectionListener
         if (node != null && node.isLeaf())
         {
             client.openTabFor(node.getUserObjectPath());
+            // client.directKeyboardInputTo(node.getUserObjectPath());
         }
         // client.getFile(path);
     }

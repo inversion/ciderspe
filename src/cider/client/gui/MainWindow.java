@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.Hashtable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -34,7 +35,6 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
 import cider.common.network.Client;
-import cider.common.network.Server;
 
 class MainWindow implements Runnable
 {
@@ -47,6 +47,7 @@ class MainWindow implements Runnable
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
+    private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
 
     public static void main(String[] args)
     {
@@ -93,8 +94,8 @@ class MainWindow implements Runnable
                 System.exit(0);
             }
 
-            tabbedPane.addTab(currentFileName, new SourceEditor(
-                    currentFileContents, currentDir));
+            // tabbedPane.addTab(currentFileName, new SourceEditor(
+            // currentFileContents, currentDir));
             tabbedPane.setSelectedIndex(++currentTab);
         }
     }
@@ -265,14 +266,14 @@ class MainWindow implements Runnable
         // tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
-        panel.add(tabbedPane);
+        panel.add(this.tabbedPane);
         return panel;
     }
 
     public JPanel mainArea()
     {
         DirectoryViewComponent dirView = new DirectoryViewComponent();
-        client = new Client(dirView, tabbedPane);
+        client = new Client(dirView, this.tabbedPane, this.openTabs);
         dirView.setClient(client);
         client.getFileList();
 
@@ -297,7 +298,7 @@ class MainWindow implements Runnable
     public void run()
     {
         w = new JFrame("CIDEr");
-        w.setDefaultCloseOperation(w.EXIT_ON_CLOSE);
+        w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");
         ImageIcon image3 = new ImageIcon(x);
@@ -314,7 +315,6 @@ class MainWindow implements Runnable
         w.setLocationByPlatform(true);
         w.setExtendedState(JFrame.MAXIMIZED_BOTH);
         w.setVisible(true);
-
         w.addWindowListener(new WindowListener()
         {
 
