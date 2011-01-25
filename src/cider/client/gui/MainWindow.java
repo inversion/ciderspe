@@ -45,7 +45,6 @@ class MainWindow implements Runnable
     public String currentFileContents = "";
     public int currentTab = 0;
     Client client;
-    Server server;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
 
@@ -273,7 +272,6 @@ class MainWindow implements Runnable
     public JPanel mainArea()
     {
         DirectoryViewComponent dirView = new DirectoryViewComponent();
-        server = new Server();
         client = new Client(dirView, tabbedPane);
         dirView.setClient(client);
         client.getFileList();
@@ -339,7 +337,6 @@ class MainWindow implements Runnable
             {
                 System.out.println("disconnecting");
                 client.disconnect();
-                server.disconnect();
             }
 
             @Override
