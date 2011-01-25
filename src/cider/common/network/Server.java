@@ -24,16 +24,21 @@ import cider.common.processes.TypingEventMode;
 
 public class Server implements ChatManagerListener
 {
+	public static final boolean DEBUG = true;
+	public static final String SRCPATH = "src";
+	
+    // Google apps configuration
+    public static final String HOST = "talk.google.com";
+    public static final int PORT = 5222;
+    public static final String SERVICE_NAME = "mossage.co.uk";
+    public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
+    public static final String BOT_PASSWORD = "botpassword";
+    
+    
     private XMPPConnection connection;
     private ChatManager chatmanager;
     private LiveFolder liveFolder;
     private ServerMessageListener messageListener;
-
-    /*
-     * Server(String username, String password) { this.connection = new
-     * XMPPConnection(config); this.connection.connect();
-     * this.connection.login(username, password) }
-     */
 
     public void testTree()
     {
@@ -65,13 +70,13 @@ public class Server implements ChatManagerListener
 
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(
-                    Common.HOST, Common.PORT, Common.SERVICE_NAME);
-            this.messageListener = new ServerMessageListener(this);
-            connection = new XMPPConnection(config);
+                    HOST, PORT, SERVICE_NAME);
+            this.messageListener = new ServerMessageListener( this );
+            connection = new XMPPConnection( config );
             connection.connect();
-            connection.login(Common.BOT_USERNAME, Common.BOT_PASSWORD);
+            connection.login( BOT_USERNAME, BOT_PASSWORD );
 
-            if (Common.DEBUG)
+            if ( DEBUG )
             {
                 System.out.println("Server connected="
                         + connection.isConnected());
@@ -101,7 +106,7 @@ public class Server implements ChatManagerListener
     @Override
     public void chatCreated(Chat chat, boolean createdLocally)
     {
-        if (Common.DEBUG)
+        if (DEBUG)
             System.out.println(chat.getParticipant() + " connected...");
 
         chat.addMessageListener(this.messageListener);

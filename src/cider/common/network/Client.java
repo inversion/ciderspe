@@ -21,14 +21,23 @@ import cider.specialcomponents.EditorTypingArea;
 /**
  * 
  * This implements the client side of the XMPP layer, it has methods to get a
- * file from the server and return its contents as a String.
- * 
+ * file from the server and return its contents as a String. 
  * 
  * @author Andrew + Lawrence
  */
 
 public class Client
 {
+	public static final boolean DEBUG = true;
+	
+    // Google apps configuration
+    public static final String HOST = "talk.google.com";
+    public static final int PORT = 5222;
+    public static final String SERVICE_NAME = "mossage.co.uk";
+    public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
+    public static final String CLIENT_USERNAME = "ciderclient@mossage.co.uk";
+    public static final String CLIENT_PASSWORD = "clientpw";
+    
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -46,13 +55,13 @@ public class Client
         {
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(
-                    Common.HOST, Common.PORT, Common.SERVICE_NAME);
+                    HOST, PORT, SERVICE_NAME);
             this.connection = new XMPPConnection(config);
             this.connection.connect();
-            this.connection.login(Common.CLIENT_USERNAME,
-                    Common.CLIENT_PASSWORD);
+            this.connection.login( CLIENT_USERNAME,
+                    CLIENT_PASSWORD);
 
-            if (Common.DEBUG)
+            if (DEBUG)
             {
                 System.out.println("Client connected="
                         + this.connection.isConnected());
@@ -62,7 +71,7 @@ public class Client
 
             this.chatmanager = this.connection.getChatManager();
             this.listener = new ClientMessageListener(dirView, this);
-            this.chat = this.chatmanager.createChat(Common.BOT_USERNAME,
+            this.chat = this.chatmanager.createChat(BOT_USERNAME,
                     listener);
             this.tabbedPane = tabbedPane;
         }
@@ -92,20 +101,6 @@ public class Client
     public boolean updatesAutomatically()
     {
         return this.autoUpdate;
-    }
-
-    @Deprecated
-    public void getFile(String path)
-    {
-        try
-        {
-            chat.sendMessage("getfile=" + Base64.encodeBytes(path.getBytes()));
-        }
-        catch (XMPPException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     public String getPathToSourceDocument(Object[] path, int skip)
