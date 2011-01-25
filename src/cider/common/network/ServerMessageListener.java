@@ -29,7 +29,7 @@ import cider.specialcomponents.Base64;
 public class ServerMessageListener implements MessageListener
 {
 
-    private CiderFileList filelist = new CiderFileList(Common.SRCPATH);
+    private CiderFileList filelist = new CiderFileList( Server.SRCPATH );
     // private Pattern putFileMatch = Pattern
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
     private Matcher matcher = null;
