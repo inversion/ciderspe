@@ -1,6 +1,5 @@
 package cider.specialcomponents;
 
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.util.LinkedList;
@@ -19,11 +18,11 @@ public class EditorTypingArea extends JPanel
     private Font font = new Font("monospaced", Font.PLAIN, 11);
     private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
-    private Component tabHandle = null;
     private long lastUpdateTime = 0;
 
     public EditorTypingArea()
     {
+        this.setFocusable(true);
     }
 
     public EditorTypingArea(ICodeLocation codeLocation)
@@ -32,13 +31,13 @@ public class EditorTypingArea extends JPanel
         this.doc = new SourceDocument();
         this.doc.push(this.codeLocation.events());
         this.str = this.doc.toString();
+        this.setFocusable(true);
     }
 
     public void updateText()
     {
         if (this.codeLocation != null)
         {
-
             Queue<TypingEvent> events = new LinkedList<TypingEvent>();
             long latest = this.lastUpdateTime;
             for (TypingEvent te : this.codeLocation
@@ -115,16 +114,6 @@ public class EditorTypingArea extends JPanel
         if (this.caretPosition < this.str.length())
             this.caretPosition++;
         this.updateUI();
-    }
-
-    public void setTabHandle(Component tabHandle)
-    {
-        this.tabHandle = tabHandle;
-    }
-
-    public Component getTabHandle()
-    {
-        return this.tabHandle;
     }
 
     public ICodeLocation getCodeLocation()

@@ -12,6 +12,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.client.gui.DirectoryViewComponent;
+import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
@@ -45,10 +46,11 @@ public class Client
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
-    private Hashtable<String, EditorTypingArea> openTabs = new Hashtable<String, EditorTypingArea>();
     private long lastUpdate = 0;
+    Hashtable<String, SourceEditor> openTabs;
 
-    public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane)
+    public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
+            Hashtable<String, SourceEditor> openTabs)
     {
         try
         {
@@ -71,6 +73,7 @@ public class Client
             this.listener = new ClientMessageListener(dirView, this);
             this.chat = this.chatmanager.createChat(BOT_USERNAME, listener);
             this.tabbedPane = tabbedPane;
+            this.openTabs = openTabs;
         }
         catch (XMPPException e)
         {
@@ -122,8 +125,9 @@ public class Client
         if (!this.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(doc);
-            eta.setTabHandle(this.tabbedPane.add(strPath, eta));
-            this.openTabs.put(strPath, eta);
+            SourceEditor sourceEditor = new SourceEditor(eta, this);
+            sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
+            this.openTabs.put(strPath, sourceEditor);
             System.out.println("Pull since 0 since a new tab is being opened");
             this.pullEventsSince(0);
         }
@@ -141,6 +145,12 @@ public class Client
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public void pushToServer(Queue<TypingEvent> outgoingEvents)
+    {
+        // TODO
+        System.out.println("TODO: Send those outgoing events to the server");
     }
 
     public void getFileList()
@@ -190,7 +200,7 @@ public class Client
 
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
-        EditorTypingArea eta = this.openTabs.get(dest);
+        EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
         eta.getCodeLocation().push(typingEvents);
         eta.updateText();
         if (eta.getLastUpdate() >= this.lastUpdate)
