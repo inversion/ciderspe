@@ -3,10 +3,13 @@ package cider.client.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
+import java.awt.TextField;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
@@ -17,9 +20,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Hashtable;
 
+import javax.swing.Box;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -31,6 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
@@ -48,6 +57,8 @@ class MainWindow implements Runnable
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
     private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+    
+    JTextField messageSendBox;
 
     public static void main(String[] args)
     {
@@ -180,6 +191,15 @@ class MainWindow implements Runnable
                 {
                     saveFile(action);
                 }
+                else if (action.equals("Send"))
+                {
+                	messageSendBox.setText("boogaloo");
+                }
+                else if (action.equals("Logout"))
+                {
+                	LoginUI.login.setVisible(true);
+                	w.setVisible(false);
+                }
 
             }
         };
@@ -230,6 +250,7 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
         addMenuItem(menu, "Save As", -1, aL);
         addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
+        addMenuItem(menu, "Logout", -1, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
         // menu 2
@@ -276,13 +297,69 @@ class MainWindow implements Runnable
         client = new Client(dirView, this.tabbedPane, this.openTabs);
         dirView.setClient(client);
         client.getFileList();
+        
+        /*Chat panel stuffs- Alex*/
+        JPanel chat = new JPanel(new BorderLayout());
+        
+        Box box = Box.createVerticalBox();
+        
+        JTextField messageReceiveBox = new JTextField();
+        Font receiveFont = new Font("Dialog", 2, 12);
+        messageReceiveBox.setFont(receiveFont);
+        //messageReceiveBox.addActionListener(); TODO 
+        /*Format of output:
+         *[bold]username[/bold] timestamp: message*/
+        box.add(messageReceiveBox);
+        
+        /*Text field for message text*/
+        final String initialMessage = "Enter your message...";
+        messageSendBox = new JTextField(initialMessage);
+        Font sendFont = new Font("Dialog", 1, 12);
+        messageSendBox.setFont(sendFont);
+        //ActionListener aL = newAction(); //TODO - Alex doesn't know what he be doing with action listeners
+        //messageSendBox.setActionCommand("Send");
+        messageSendBox.addMouseListener(new MouseAdapter()
+        {
+            public void mouseClicked(MouseEvent  e)
+            {
+            	if (messageSendBox.getText().equals(initialMessage)) //TODO could use an edited flag instead
+            	{
+            		messageSendBox.setText("boogaloo");
+            		messageSendBox.setText("");
+            	}
+            }
+        });
+        box.add(messageSendBox);
+        
+        JButton btnSend = new JButton("Send");
+        btnSend.setToolTipText("Click to send you message");
+        //btnSend.addActionListener(); TODO need an action listener for the enter key
+        btnSend.addMouseListener(new MouseAdapter()
+        {
+            public void mouseClicked(MouseEvent  e)
+            {
+            	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                Date date = new Date();
+
+            	System.out.println(messageSendBox.getText());
+            	System.out.println(dateFormat.format(date));
+            	//TODO
+            	//user
+            	//chat.send.message(USER, dateFormat.format(date), messageSendBox.getText());
+            }
+        });
+        box.add(btnSend);        
+        
+        chat.add(box);
+        /*End of Chat panel stuffs*/
+        
 
         JPanel panel = new JPanel(new BorderLayout());
         dirSourceEditorSeletionSplit = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, dirView/* label */, this
                         .sourceEditorSection());// textArea/*label2*/);
         editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                dirSourceEditorSeletionSplit, new JLabel("chat"));
+                dirSourceEditorSeletionSplit, chat/*new JLabel("chat")*/);
 
         dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
         // splitPane.setDividerLocation(150);
