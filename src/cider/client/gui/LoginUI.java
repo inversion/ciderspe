@@ -25,13 +25,14 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public class LoginUI
 {
 	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
 
-    private JFrame login;
+    static JFrame login; // TODO changed from private to static?
     private JFrame connecting;
     
     JCheckBox chkRemember ;
@@ -229,6 +230,16 @@ public class LoginUI
         connecting.setLocation(x - connecting.getWidth()/2, y - connecting.getHeight()/3);
         connecting.setVisible(true);
         
+        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
+    	try
+    	{
+    		thisThread.sleep(2000);
+    	}
+    	catch (InterruptedException e)
+    	{
+    		e.printStackTrace();
+    	}
+        
         connect();
     }
 
@@ -236,6 +247,9 @@ public class LoginUI
     {
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
+    	connecting.setVisible(false);
+    	MainWindow program = new MainWindow();
+        SwingUtilities.invokeLater(program);
     }
     
     public static void main(String[] args)
