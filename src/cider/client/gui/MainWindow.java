@@ -1,7 +1,9 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.TextField;
 import java.awt.Font;
@@ -175,6 +177,35 @@ class MainWindow implements Runnable
                         System.exit(0);
 
                 }
+                else if (action.equals("My Profile"))
+                {
+                	JFrame profileFrame = new JFrame("My Profile");
+                	Container content = profileFrame.getContentPane();
+                	content.setLayout(new GridLayout(10, 2));
+                	
+                	profileFrame.setBounds(100, 100, 400, 350);
+                	profileFrame.setResizable(false);
+                	//profileFrame.pack();
+                	profileFrame.show();
+                	profileFrame.setLocationRelativeTo(null);
+                	
+                	JLabel uName = new JLabel("Username: " + client.CLIENT_USERNAME);
+                	uName.setHorizontalAlignment(JLabel.LEFT);
+                	uName.setVerticalAlignment(JLabel.TOP);
+                	content.add(uName);
+                	
+                	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
+                	uPwd.setHorizontalAlignment(JLabel.LEFT);
+                	uPwd.setVerticalAlignment(JLabel.TOP);
+                	content.add(uPwd);
+                	
+                	JLabel chars = new JLabel("Characters pressed: ");
+                	chars.setHorizontalAlignment(JLabel.LEFT);
+                	chars.setVerticalAlignment(JLabel.TOP);
+                	content.add(chars);
+                	
+                	profileFrame.setVisible(true);
+                }
                 else if (action.equals("Close File"))
                 {
                     closeFile(action);
@@ -266,7 +297,14 @@ class MainWindow implements Runnable
         menuBar.add(menu);
 
         addMenuItem(menu, "About", -1, aL);
-
+        
+        //menu 4
+        menu = new JMenu("Profile");
+        menuBar.add(menu);
+        
+        addMenuItem(menu, "My Profile", -1, aL);
+        addMenuItem(menu, "Reset My Profile", -1, aL);
+        
         // the DEV(eloper) menu is for us to test back-end things such as saving
         // and pushing
         // NYI = not yet implemented
