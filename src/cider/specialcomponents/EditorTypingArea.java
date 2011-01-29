@@ -22,7 +22,7 @@ public class EditorTypingArea extends JPanel
 
     public EditorTypingArea()
     {
-        this.setFocusable(true);
+        // this.setFocusable(true);
     }
 
     public EditorTypingArea(ICodeLocation codeLocation)
@@ -31,7 +31,7 @@ public class EditorTypingArea extends JPanel
         this.doc = new SourceDocument();
         this.doc.push(this.codeLocation.events());
         this.str = this.doc.toString();
-        this.setFocusable(true);
+        // this.setFocusable(true);
     }
 
     public void updateText()
