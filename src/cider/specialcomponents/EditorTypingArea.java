@@ -5,18 +5,22 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 
 import javax.swing.JPanel;
 
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventMode;
 
-public class EditorTypingArea extends JPanel
+public class EditorTypingArea extends JPanel implements MouseListener
 {
     private String str = "";
     private int caretPosition = -1;
@@ -27,6 +31,7 @@ public class EditorTypingArea extends JPanel
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
     private int leftMargin = 16;
+    private TreeSet<Integer> lineStarts = new TreeSet<Integer>();
 
     public EditorTypingArea()
     {
@@ -106,15 +111,17 @@ public class EditorTypingArea extends JPanel
         this.updateUI();
     }
 
-    private void paintLine(Graphics g, String line, int lineNumber)
+    private void paintLine(Graphics g, String line, int lineNumber,
+            boolean highlighted)
     {
         g.setFont(font);
         g.setColor(Color.black);
         int sy = lineNumber * 10;
         int ry = lineNumber * 5 - 2;
+        if (highlighted)
+            g.drawRect(0, ry, this.getWidth(), 3);
         g.drawString(line, 10 + this.leftMargin, sy);
         g.setColor(new Color(0.9f, 0.9f, 0.9f));
-        // g.fillRect(0, ry, this.leftMargin, ry + 4);
         g.setColor(Color.LIGHT_GRAY);
         g.drawString("" + lineNumber, 3, sy);
     }
@@ -129,9 +136,13 @@ public class EditorTypingArea extends JPanel
         int ln = 0;
         int caretLine = 0;
         int caretLineStart = 0;
+        this.lineStarts.clear();
         for (String line : lines)
         {
-            this.paintLine(g, line, ++ln);
+            this.lineStarts.add(caretLineStart);
+            g.setColor(Color.LIGHT_GRAY);
+            boolean lockedOut = this.doc != null && this.doc.lockedOut(i);
+            this.paintLine(g, line, ++ln, lockedOut);
             if (this.caretPosition >= i)
             {
                 caretLine++;
@@ -179,5 +190,57 @@ public class EditorTypingArea extends JPanel
     public long getLastUpdate()
     {
         return this.lastUpdateTime;
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent arg0)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent arg0)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent arg0)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    public int getStartOfLineContaining(int position)
+    {
+        return this.lineStarts.lower(position);
+    }
+
+    public int getEndOfLineContaining(int position)
+    {
+        return this.lineStarts.higher(position - 1);
+    }
+
+    public int yToLineNumber(int y)
+    {
+        return (int) ((y + 2.0) / 5.0);
+    }
+
+    @Override
+    public void mousePressed(MouseEvent arg0)
+    {
+        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        tes.add(new TypingEvent(lastUpdateTime, TypingEventMode.lockRegion, 0,
+                10, "", doc.getOwner()));
+        this.codeLocation.push(tes);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent arg0)
+    {
+        // TODO Auto-generated method stub
+
     }
 }
