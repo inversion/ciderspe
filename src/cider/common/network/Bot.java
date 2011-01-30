@@ -62,8 +62,7 @@ public class Bot
             System.out.println(this.liveFolder.xml(""));
 
             // Connect and login to the XMPP server
-            ConnectionConfiguration config = new ConnectionConfiguration(HOST,
-                    PORT, SERVICE_NAME);
+            ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, SERVICE_NAME);
             connection = new XMPPConnection(config);
             connection.connect();
             connection.login(BOT_USERNAME, BOT_PASSWORD);

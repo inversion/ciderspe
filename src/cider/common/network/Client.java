@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Queue;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JTabbedPane;
 
 import org.jivesoftware.smack.Chat;
@@ -15,6 +16,8 @@ import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.Form;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.SourceEditor;
@@ -54,11 +57,14 @@ public class Client
     private ClientMessageListener botChatlistener;
     private String username;
 
-    // Listen for chat sessions with other users
+    // Listen for private chat sessions with other users
     private ClientUserChatListener userChatListener;
+    
+    // Chatroom
+    private MultiUserChat chatroom;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, String username,
+            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, String username,
             String password, String host, int port, String serviceName)
             throws XMPPException
     {
@@ -74,34 +80,46 @@ public class Client
 
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
-        userChatListener = new ClientUserChatListener();
+        userChatListener = new ClientUserChatListener( userListModel );
         chatmanager.addChatListener(userChatListener);
 
         // Establish chat session with the bot
         botChatlistener = new ClientMessageListener(dirView, this);
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
+        
+        // Set up chatroom for users
+        chatroom = new MultiUserChat( connection, "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a66" + "@" + "groupchat.google.com" );
+        try
+        {
+        	// Try and create the chatroom
+        	chatroom.create( username );
+        	chatroom.sendConfigurationForm( new Form( Form.TYPE_SUBMIT ) );
+        }
+        catch( XMPPException e )
+        {
+        	// If the chatroom already exists join it instead
+        	//System.err.println("Creating chatroom error: " + e.getMessage() );
+        	chatroom.join( username );
+        }
 
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
         this.username = username;
     }
+    
+    public void sendMessageChatroom( String message )
+    {
+    	try {
+			chatroom.sendMessage( message );
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
     public String getUsername()
     {
         return this.username;
-    }
-
-    // Print users currently connected to the XMPP server
-    public void printRoster()
-    {
-        Roster roster = connection.getRoster();
-        Collection<RosterEntry> users = roster.getEntries();
-        Iterator<RosterEntry> itr = users.iterator();
-        System.out.println("Roster:");
-        while (itr.hasNext())
-        {
-            System.out.println(itr.next().getName());
-        }
     }
 
     public void disconnect()
