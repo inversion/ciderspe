@@ -270,6 +270,16 @@ public class SourceDocument implements ICodeLocation
         return string;
     }
 
+    public LockingRegion getLockingRegion(int position)
+    {
+        return this.lockingRegions.get(position);
+    }
+
+    public String getOwner()
+    {
+        return this.owner;
+    }
+
     protected static String treeToString(TypingEventList tel)
     {
         return tel.toString();
