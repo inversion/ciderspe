@@ -74,7 +74,7 @@ class MainWindow implements Runnable
     private String username;
     
     public JList userList;
-    public DefaultListModel userListModel;
+    public DefaultListModel listModel;
     public JTextArea messageSendBox;
     public JTextArea/*JEditorPane*/ messageReceiveBox;
     
@@ -93,11 +93,9 @@ class MainWindow implements Runnable
      
     MainWindow( ) throws XMPPException
     {
-    	// Need to declare these here to pass to the client
         dirView = new DirectoryViewComponent();
-        userListModel = new DefaultListModel(); 
         username = "ciderclient@mossage.co.uk";
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
     	myProfile = new Profile (username);
         client.getFileList();
@@ -109,7 +107,7 @@ class MainWindow implements Runnable
         dirView = new DirectoryViewComponent();
         this.username = username;
         // TODO: Minor change, perhaps client should handle transforming username to include domain and @
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, username + "@" + serviceName, password, host, port, serviceName );
+        client = new Client( dirView, tabbedPane, openTabs, username + "@" + serviceName, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
         dirView.setClient(client);
         client.getFileList();
@@ -385,8 +383,14 @@ class MainWindow implements Runnable
     	JPanel pnlReceive = new JPanel(new BorderLayout());
     	JPanel pnlSend = new JPanel(new BorderLayout());
     	Border emptyBorder = BorderFactory.createEmptyBorder();
-           	
-    	userList = new JList(userListModel);
+        
+    	listModel = new DefaultListModel();
+    	//examples
+    	listModel.addElement("example_user_1");
+    	listModel.addElement("example_user_2");
+    	listModel.addElement("example_user_3");
+    	
+    	userList = new JList(listModel);
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
     	pnlUsers.add(new JLabel(" Users Online"), BorderLayout.NORTH);
