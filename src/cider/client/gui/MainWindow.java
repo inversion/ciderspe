@@ -71,8 +71,11 @@ class MainWindow implements Runnable
         // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         this.username = username;
+        // TODO: Minor change, perhaps client should handle transforming username to include domain and @
         client = new Client( dirView, tabbedPane, openTabs, username + "@" + serviceName, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
+        dirView.setClient(client);
+        client.getFileList();
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,
@@ -338,10 +341,7 @@ class MainWindow implements Runnable
     }
 
     public JPanel mainArea()
-    {
-        dirView.setClient(client);
-        client.getFileList();
-        
+    {        
         /*Chat panel stuffs- Alex*/
         JPanel chat = new JPanel(new BorderLayout());
         
