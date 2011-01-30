@@ -36,6 +36,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public EditorTypingArea()
     {
         this.setupCaretFlashing();
+        this.addMouseListener(this);
     }
 
     public EditorTypingArea(ICodeLocation codeLocation)
@@ -45,6 +46,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.doc.push(this.codeLocation.events());
         this.str = this.doc.toString();
         this.setupCaretFlashing();
+        this.addMouseListener(this);
     }
 
     private void setupCaretFlashing()
@@ -220,21 +222,33 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public int getEndOfLineContaining(int position)
     {
-        return this.lineStarts.higher(position - 1);
+        Integer ln = this.lineStarts.higher(position - 1);
+        return ln != null ? ln : this.lineStarts.size() - 1;
     }
 
     public int yToLineNumber(int y)
     {
-        return (int) ((y + 2.0) / 5.0);
+        return (int) ((y + 2.0) / 10.0) + 1;
     }
 
     @Override
-    public void mousePressed(MouseEvent arg0)
+    public void mousePressed(MouseEvent me)
     {
-        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.add(new TypingEvent(lastUpdateTime, TypingEventMode.lockRegion, 0,
-                10, "", doc.getOwner()));
-        this.codeLocation.push(tes);
+        int ln = yToLineNumber(me.getY());
+        int start = (Integer) this.lineStarts.toArray()[Math.min(
+                this.lineStarts.size() - 1, ln - 1)];
+        int end = this.getEndOfLineContaining(start + 1);
+        System.out.println("locking " + start + ", " + end + ", ln " + ln);
+
+        if (this.codeLocation != null)
+        {
+            Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+            tes.add(new TypingEvent(lastUpdateTime, TypingEventMode.lockRegion,
+                    start, end, "", doc.getOwner()));
+            this.codeLocation.push(tes);
+        }
+        else
+            System.out.println("no code location to send locking event to");
     }
 
     @Override
