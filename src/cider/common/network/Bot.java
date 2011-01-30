@@ -54,7 +54,8 @@ public class Bot implements ChatManagerListener
 
     public static void main( String[] args )
     {
-    	Bot bot = new Bot();
+    	@SuppressWarnings("unused")
+		Bot bot = new Bot();
     	try {
 			System.in.read();
 		} catch (IOException e) {
@@ -85,7 +86,7 @@ public class Bot implements ChatManagerListener
                 System.out.println("Server username=" + connection.getUser());
             }
 
-            // Listen for new chats being initiated
+            // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
             chatmanager.addChatListener(this);
         }

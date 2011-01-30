@@ -1,6 +1,8 @@
 package cider.common.network;
 
+import java.util.Collection;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.Queue;
 
 import javax.swing.JTabbedPane;
@@ -8,6 +10,8 @@ import javax.swing.JTabbedPane;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.Roster;
+import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 
@@ -20,8 +24,9 @@ import cider.specialcomponents.EditorTypingArea;
 
 /**
  * 
- * This implements the client side of the XMPP layer, it has methods to get a
- * file from the server and return its contents as a String.
+ * This implements the client side of the XMPP layer.
+ * 
+ * It also handles the networking side of user chats
  * 
  * @author Andrew + Lawrence
  */
@@ -36,14 +41,19 @@ public class Client
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
-    private ClientMessageListener listener;
-    private Chat chat;
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastPush = 0;
+    
+    // Chat session with the Bot
+    private Chat botChat;
+    private ClientMessageListener botChatlistener;
+    
+    // Listen for chat sessions with other users
+    private ClientUserChatListener userChatListener;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
             Hashtable<String, SourceEditor> openTabs, String username, String password, String host, int port, String serviceName) throws XMPPException
@@ -51,9 +61,9 @@ public class Client
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
-        this.connection = new XMPPConnection(config);
-        this.connection.connect();
-        this.connection.login( username, password );
+        connection = new XMPPConnection(config);
+        connection.connect();
+        connection.login( username, password );
 
         if (DEBUG)
         {
@@ -63,16 +73,31 @@ public class Client
                     + this.connection.getUser());
         }
 
-        this.chatmanager = this.connection.getChatManager();
-        this.listener = new ClientMessageListener(dirView, this);
-        this.chat = this.chatmanager.createChat(BOT_USERNAME, listener);
+        // Add listener for new user chats
+        chatmanager = this.connection.getChatManager();
+        userChatListener = new ClientUserChatListener();
+        chatmanager.addChatListener( userChatListener );
+        
+        // Establish chat session with the bot
+        botChatlistener = new ClientMessageListener(dirView, this);
+        botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
+
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
+        printRoster();
     }
     
+    // Print users currently connected to the XMPP server
     public void printRoster()
     {
-    	
+    	Roster roster = connection.getRoster();
+    	Collection<RosterEntry> users = roster.getEntries();
+    	Iterator<RosterEntry> itr = users.iterator();
+    	System.out.println( "Roster:" );
+    	while( itr.hasNext() )
+    	{
+    		System.out.println( itr.next().getName() );
+    	}
     }
 
     public void disconnect()
@@ -132,7 +157,7 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            chat.sendMessage("pullEventsSince(" + String.valueOf(time) + ")");
+            botChat.sendMessage("pullEventsSince(" + String.valueOf(time) + ")");
         }
         catch (XMPPException e)
         {
@@ -154,7 +179,7 @@ public class Client
             instructions += "pushto(" + path + ") " + te.pack() + "\n";
         try
         {
-            chat.sendMessage(instructions);
+            botChat.sendMessage(instructions);
         }
         catch (XMPPException e)
         {
@@ -170,7 +195,7 @@ public class Client
     {
         try
         {
-            chat.sendMessage("getfilelist");
+            botChat.sendMessage("getfilelist");
         }
         catch (XMPPException e)
         {

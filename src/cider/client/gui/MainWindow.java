@@ -66,6 +66,28 @@ class MainWindow implements Runnable
     
     JTextField messageSendBox;
     
+    // Main method and no parameter constructor for running without login box
+    public static void main( String[] args )
+    {
+    	MainWindow main = null;
+    	try {
+			main = new MainWindow();
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		SwingUtilities.invokeLater( main );
+    }
+     
+    MainWindow( ) throws XMPPException
+    {
+        dirView = new DirectoryViewComponent();
+        username = "ciderclient@mossage.co.uk";
+        client = new Client( dirView, tabbedPane, openTabs, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        dirView.setClient(client);
+        client.getFileList();
+    }
+    
     MainWindow( String username, String password, String host, int port, String serviceName ) throws XMPPException
     {
         // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess

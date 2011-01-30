@@ -18,7 +18,6 @@ import cider.common.processes.TypingEvent;
  * This class waits for a message to be received by the client on its chat
  * session with the server.
  * 
- * 
  * @author Andrew + Lawrence
  * 
  */
