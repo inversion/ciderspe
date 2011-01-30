@@ -1,0 +1,116 @@
+package cider.common.network;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.swing.Timer;
+
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.packet.Message;
+
+import cider.client.gui.DirectoryViewComponent;
+import cider.common.processes.TypingEvent;
+import cider.specialcomponents.Base64;
+
+/**
+ * This class waits for a message to be received by the client on its chat
+ * session with the server.
+ * 
+ * 
+ * @author Andrew + Lawrence
+ * 
+ */
+
+public class ClientMessageListener implements MessageListener, ActionListener
+{
+
+    // TODO: These probably shouldn't be public
+    public DirectoryViewComponent dirView;
+
+    private Pattern fileMatch = Pattern
+            .compile("<file><path>(.+)</path><contents>(.+)</contents></file>");
+    private Matcher matcher = null;
+    private Client client;
+    private Timer timer;
+
+    public ClientMessageListener(DirectoryViewComponent dirView, Client client)
+    {
+        this.client = client;
+        this.dirView = dirView;
+        timer = new Timer(100, this);
+    }
+
+    @Deprecated
+    private void mossFile(String body)
+    {
+        try
+        {
+            if (matcher != null)
+                matcher = matcher.reset(body);
+            else
+                matcher = fileMatch.matcher(body);
+
+            if (matcher.matches())
+            {
+                String path = new String(Base64.decode(matcher.group(1)));
+                String contents = new String(Base64.decode(matcher.group(2)));
+                System.out.println("got " + contents);
+                // tabbedPane.addTab(path, new SourceEditor(contents, path));
+                // tabbedPane.setSelectedIndex(++currentTab);
+            }
+
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void processMessage(Chat chat, Message message)
+    {
+        String body = message.getBody();
+        if (body.startsWith("<file>"))
+        {
+            this.mossFile(body);
+        }
+        else if (body.startsWith("filelist="))
+        {
+            String xml = body.split("filelist=")[1];
+            this.dirView.constructTree(xml);
+            this.client.setLiveFolder(this.dirView.getLiveFolder());
+            this.client.setUpdatesAutomatically(true);
+        }
+        else if (body.startsWith("pushto("))
+        {
+            String[] instructions = body.split("\\n");
+            for (String instruction : instructions)
+            {
+                String[] preAndAfter = instruction.split("\\) ");
+                String[] pre = preAndAfter[0].split("\\(");
+                String dest = pre[1];
+                dest = dest.replace("root\\", "");
+                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+                typingEvents.add(new TypingEvent(preAndAfter[1]));
+                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                this.client.push(typingEvents, dest);
+            }
+            if (!timer.isRunning() && client.updatesAutomatically())
+                timer.start();
+
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae)
+    {
+        this.client.pullEventsSince(this.client.getLastUpdate());
+    }
+}
