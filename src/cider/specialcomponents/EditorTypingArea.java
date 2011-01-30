@@ -1,5 +1,6 @@
 package cider.specialcomponents;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.FocusEvent;
@@ -137,7 +138,9 @@ public class EditorTypingArea extends JPanel
             // g.drawString("" + localCP, 400, 400);
             int x = (localCP + 2) * 7;
             int y = (caretLine == 0 ? 0 : caretLine - 1) * 10;
+            g.setColor(Color.BLUE);
             g.drawLine(x + 10, y, x + 10, y + 11);
+            g.setColor(Color.BLACK);
         }
     }
 
