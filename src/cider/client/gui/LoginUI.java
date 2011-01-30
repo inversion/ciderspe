@@ -301,7 +301,7 @@ public class LoginUI
 	        // TODO: Display alert box with xmpp exception message if it failed
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
-			System.err.println(e.getMessage());
+			System.err.println("Couldn't login: " + e.getMessage());
 			displayLogin();
 		}
 		connecting.setVisible(false);

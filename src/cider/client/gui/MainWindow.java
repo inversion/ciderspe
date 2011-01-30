@@ -73,7 +73,7 @@ class MainWindow implements Runnable
     public JList userList;
     public DefaultListModel userListModel = new DefaultListModel();
     public JTextArea messageSendBox;
-    public JTextArea/*JEditorPane*/ messageReceiveBox;
+    public JTextArea/*JEditorPane*/ messageReceiveBox = new JTextArea();
     
     // Main method and no parameter constructor for running without login box
     public static void main( String[] args )
@@ -92,7 +92,7 @@ class MainWindow implements Runnable
     {
         dirView = new DirectoryViewComponent();
         username = "ciderclient@mossage.co.uk";
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
     	myProfile = new Profile (username);
         client.getFileList();
@@ -104,7 +104,7 @@ class MainWindow implements Runnable
         dirView = new DirectoryViewComponent();
         this.username = username;
         // TODO: Minor change, perhaps client should handle transforming username to include domain and @
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, username + "@" + serviceName, password, host, port, serviceName );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username + "@" + serviceName, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
         dirView.setClient(client);
         client.getFileList();
@@ -435,7 +435,6 @@ class MainWindow implements Runnable
     	/*panel for the chat conversation*/
     	JPanel panel = new JPanel(new BorderLayout());
     	
-    	 messageReceiveBox = new JTextArea();//new JEditorPane();
          messageReceiveBox.setLineWrap(true);
          messageReceiveBox.setWrapStyleWord(true);
          Font receiveFont = new Font("Dialog", 2, 12);
@@ -501,9 +500,10 @@ class MainWindow implements Runnable
 
                 	System.out.println(dateFormat.format(date) + " " + message);
                 	
-                	updateChatLog(username, date, message);
+                	client.updateChatLog(username, date, message);
                 	messageSendBox.setText("");
             	}
+            	client.sendMessageChatroom( messageSendBox.getText() );
             }
         });
         panel.add(btnSend, BorderLayout.EAST);  
@@ -541,19 +541,7 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    public void updateChatLog(String username, Date date, String message)
-    {
-    	//TODO format the text nicely i.e. bold and not bold
-    	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-
-    	//messageReceiveBox.setContentType("text/html");
-    	String oldText = messageReceiveBox.getText();
-    	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
-    	
-    	messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
-        messageReceiveBox.append(message + "\n");
-    }
-    
+    // TODO: Update chatlog moved to Client for now    
     
     public void run()
     {
