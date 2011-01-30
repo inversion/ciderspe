@@ -12,4 +12,10 @@ public class LockingRegion
         this.start = start;
         this.end = end;
     }
+
+    public boolean coversOver(String self, int position)
+    {
+        return position >= this.start && position <= this.end
+                && !this.owner.equals(self);
+    }
 }
