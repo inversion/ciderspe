@@ -55,7 +55,7 @@ public class LoginUI
 
     void displayLogin()
     {
-
+    	// TODO: Can we make it connect when you press enter on one of the textFields
         // Setup JFrame
         login = new JFrame();
         login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
