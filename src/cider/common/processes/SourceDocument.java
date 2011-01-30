@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
+import java.util.TreeMap;
 
 /**
  * Experimental work: Real-time merging (unfinished)
@@ -18,7 +19,7 @@ public class SourceDocument implements ICodeLocation
     private PriorityQueue<TypingEvent> typingEvents;
     public String name = "untitled";
     private long latestTime;
-    private ArrayList<LockingRegion> lockingRegions = new ArrayList<LockingRegion>();
+    private TreeMap<Integer, LockingRegion> lockingRegions = new TreeMap<Integer, LockingRegion>();
     private String owner = "";
 
     public SourceDocument(String name)
@@ -181,6 +182,14 @@ public class SourceDocument implements ICodeLocation
             this.putEvent(typingEvent);
     }
 
+    public boolean lockedOut(int position)
+    {
+        for (LockingRegion lockingRegion : this.lockingRegions.values())
+            if (lockingRegion.coversOver(this.owner, position))
+                return true;
+        return false;
+    }
+
     public TypingEventList playOutEvents(Long endTime)
     {
         // PositionKey key;
@@ -223,17 +232,20 @@ public class SourceDocument implements ICodeLocation
             {
             case insert:
             {
-                string.insert(event);
+                if (!this.lockedOut(event.position))
+                    string.insert(event);
             }
                 break;
             case overwrite:
             {
-                string.overwrite(event);
+                if (!this.lockedOut(event.position))
+                    string.overwrite(event);
                 break;
             }
             case backspace:
             {
-                string.backspace(event.position);
+                if (!this.lockedOut(event.position))
+                    string.backspace(event.position);
                 break;
             }
             case deleteAll:
@@ -242,8 +254,15 @@ public class SourceDocument implements ICodeLocation
             }
             case lockRegion:
             {
-                this.lockingRegions.add(new LockingRegion(this.owner,
-                        event.position, event.position + event.length));
+                if (!(this.lockedOut(event.position) || this
+                        .lockedOut(event.position + event.length)))
+                    this.lockingRegions.put(event.position, new LockingRegion(
+                            this.owner, event.position, event.position
+                                    + event.length));
+            }
+            case unlockRegion:
+            {
+                this.lockingRegions.remove(event.position);
             }
             }
         }
