@@ -45,6 +45,8 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 
+import org.jivesoftware.smack.XMPPException;
+
 import cider.common.network.Client;
 
 class MainWindow implements Runnable
@@ -59,13 +61,19 @@ class MainWindow implements Runnable
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
     private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+    private DirectoryViewComponent dirView;
+    private String username;
     
     JTextField messageSendBox;
-
-    public static void main(String[] args)
+    
+    MainWindow( String username, String password, String host, int port ) throws XMPPException
     {
-        MainWindow program = new MainWindow();
-        SwingUtilities.invokeLater(program);
+    	// TODO: Service name passed as parameter
+        // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess
+        dirView = new DirectoryViewComponent();
+        this.username = username;
+        client = new Client( dirView, tabbedPane, openTabs, username, password, host, port, "mossage.co.uk" );
+        // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,
@@ -189,12 +197,13 @@ class MainWindow implements Runnable
                 	profileFrame.show();
                 	profileFrame.setLocationRelativeTo(null);
                 	
-                	JLabel uName = new JLabel("Username: " + client.CLIENT_USERNAME);
+                	JLabel uName = new JLabel("Username: " + username);
                 	uName.setHorizontalAlignment(JLabel.LEFT);
                 	uName.setVerticalAlignment(JLabel.TOP);
                 	content.add(uName);
                 	
-                	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
+//                	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
+                	JLabel uPwd = new JLabel("Password: " + "blank");
                 	uPwd.setHorizontalAlignment(JLabel.LEFT);
                 	uPwd.setVerticalAlignment(JLabel.TOP);
                 	content.add(uPwd);
@@ -331,8 +340,6 @@ class MainWindow implements Runnable
 
     public JPanel mainArea()
     {
-        DirectoryViewComponent dirView = new DirectoryViewComponent();
-        client = new Client(dirView, this.tabbedPane, this.openTabs);
         dirView.setClient(client);
         client.getFileList();
         

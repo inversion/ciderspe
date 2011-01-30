@@ -28,12 +28,27 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.jivesoftware.smack.XMPPException;
+
 public class LoginUI
 {
 	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
 
     static JFrame login; // TODO changed from private to static?
     private JFrame connecting;
+    
+    // Default values for login box
+    public static final String DEFAULT_HOST = "talk.google.com";
+    // TODO: Should be numeric really
+    public static final String DEFAULT_PORT = "5222";
+    // TODO: Not used at the moment
+    public static final String DEFAULT_SERVICE_NAME = "mossage.co.uk";
+    
+    // Login box fields
+    JTextField txtUsername;
+    JPasswordField txtPassword;
+    JTextField txtHost;
+    JTextField txtPort;
     
     JCheckBox chkRemember ;
 
@@ -80,10 +95,14 @@ public class LoginUI
         JLabel lblPass = new JLabel("Password:");
         JLabel lblHost = new JLabel("Host Address:  ");
         JLabel lblPort = new JLabel("Port Number:");
-        JTextField txtUsername = new JTextField(13);
-        JPasswordField txtPassword = new JPasswordField(13);
-        JTextField txtHost = new JTextField(13);
-        JTextField txtPort = new JTextField(13);
+        txtUsername = new JTextField(13);
+        txtPassword = new JPasswordField(13);
+        txtHost = new JTextField(13);
+        txtHost.setText( DEFAULT_HOST );
+        // TODO: Make this numeric?
+        txtPort = new JTextField(13);
+        txtPort.setText( DEFAULT_PORT );
+        
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -247,9 +266,24 @@ public class LoginUI
     {
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
-    	connecting.setVisible(false);
-    	MainWindow program = new MainWindow();
-        SwingUtilities.invokeLater(program);
+    	MainWindow program;
+		try {
+			// TODO: Recommended to zero bytes of password after use
+			// TODO: Check that fields aren't null/validation stuff
+			System.out.println("connecting with " + txtUsername.getText() + " and " + new String( txtPassword.getPassword() ));
+			program = new MainWindow( txtUsername.getText(), 
+								      new String( txtPassword.getPassword() ), 
+									  txtHost.getText(), 
+									  Integer.parseInt( txtPort.getText() ) );
+	        SwingUtilities.invokeLater(program);
+	        // TODO: Reopen login ui if login failed
+	        // TODO: Display alert box with xmpp exception message if it failed
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			System.err.println(e.getMessage());
+			displayLogin();
+		}
+		connecting.setVisible(false);
     }
     
     public static void main(String[] args)
@@ -257,6 +291,5 @@ public class LoginUI
 
         LoginUI ui = new LoginUI();
         ui.displayLogin();
-
     }
 }

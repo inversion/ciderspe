@@ -16,7 +16,6 @@ import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
-import cider.specialcomponents.Base64;
 import cider.specialcomponents.EditorTypingArea;
 
 /**
@@ -31,13 +30,9 @@ public class Client
 {
     public static final boolean DEBUG = true;
 
+    // TODO: Move this out of this class
     // Google apps configuration
-    public static final String HOST = "talk.google.com";
-    public static final int PORT = 5222;
-    public static final String SERVICE_NAME = "mossage.co.uk";
     public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
-    public static final String CLIENT_USERNAME = "ciderclient@mossage.co.uk";
-    public static final String CLIENT_PASSWORD = "clientpw";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -51,35 +46,28 @@ public class Client
     private long lastPush = 0;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs)
+            Hashtable<String, SourceEditor> openTabs, String username, String password, String host, int port, String serviceName) throws XMPPException
     {
-        try
-        {
-            // Connect and login to the XMPP server
-            ConnectionConfiguration config = new ConnectionConfiguration(HOST,
-                    PORT, SERVICE_NAME);
-            this.connection = new XMPPConnection(config);
-            this.connection.connect();
-            this.connection.login(CLIENT_USERNAME, CLIENT_PASSWORD);
+        // Connect and login to the XMPP server
+        ConnectionConfiguration config = new ConnectionConfiguration(host,
+                port, serviceName);
+        this.connection = new XMPPConnection(config);
+        this.connection.connect();
+        this.connection.login( username, password );
 
-            if (DEBUG)
-            {
-                System.out.println("Client connected="
-                        + this.connection.isConnected());
-                System.out.println("Client username="
-                        + this.connection.getUser());
-            }
-
-            this.chatmanager = this.connection.getChatManager();
-            this.listener = new ClientMessageListener(dirView, this);
-            this.chat = this.chatmanager.createChat(BOT_USERNAME, listener);
-            this.tabbedPane = tabbedPane;
-            this.openTabs = openTabs;
-        }
-        catch (XMPPException e)
+        if (DEBUG)
         {
-            e.printStackTrace();
+            System.out.println("Client connected="
+                    + this.connection.isConnected());
+            System.out.println("Client username="
+                    + this.connection.getUser());
         }
+
+        this.chatmanager = this.connection.getChatManager();
+        this.listener = new ClientMessageListener(dirView, this);
+        this.chat = this.chatmanager.createChat(BOT_USERNAME, listener);
+        this.tabbedPane = tabbedPane;
+        this.openTabs = openTabs;
     }
 
     public void disconnect()
@@ -178,23 +166,6 @@ public class Client
         try
         {
             chat.sendMessage("getfilelist");
-        }
-        catch (XMPPException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
-
-    @Deprecated
-    public void putFile(String path, String contents)
-    {
-        try
-        {
-            chat.sendMessage("<putfile><path>"
-                    + Base64.encodeBytes(path.getBytes()) + "</path><contents>"
-                    + Base64.encodeBytes(contents.getBytes())
-                    + "</contents></putfile>");
         }
         catch (XMPPException e)
         {
