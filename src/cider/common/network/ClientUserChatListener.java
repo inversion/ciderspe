@@ -2,6 +2,8 @@ package cider.common.network;
 
 import java.util.ArrayList;
 
+import javax.swing.DefaultListModel;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 
@@ -15,10 +17,11 @@ import org.jivesoftware.smack.ChatManagerListener;
 
 public class ClientUserChatListener implements ChatManagerListener {
 	
+	// TODO: Not sure if there's any point in this chats array
 	private ArrayList<Chat> chats;
 	private ClientUserChatMessageListener userChatMessageListener;
 
-	ClientUserChatListener()
+	ClientUserChatListener(DefaultListModel userListModel)
 	{
 		chats = new ArrayList<Chat>();
 		userChatMessageListener = new ClientUserChatMessageListener();

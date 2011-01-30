@@ -3,15 +3,14 @@ package cider.client.gui;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.TextField;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
@@ -28,11 +27,9 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -47,7 +44,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -74,7 +70,7 @@ class MainWindow implements Runnable
     private String username;
     
     public JList userList;
-    public DefaultListModel listModel;
+    public DefaultListModel userListModel = new DefaultListModel();
     public JTextArea messageSendBox;
     public JTextArea/*JEditorPane*/ messageReceiveBox;
     
@@ -95,7 +91,7 @@ class MainWindow implements Runnable
     {
         dirView = new DirectoryViewComponent();
         username = "ciderclient@mossage.co.uk";
-        client = new Client( dirView, tabbedPane, openTabs, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
     	myProfile = new Profile (username);
         client.getFileList();
@@ -107,7 +103,7 @@ class MainWindow implements Runnable
         dirView = new DirectoryViewComponent();
         this.username = username;
         // TODO: Minor change, perhaps client should handle transforming username to include domain and @
-        client = new Client( dirView, tabbedPane, openTabs, username + "@" + serviceName, password, host, port, serviceName );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, username + "@" + serviceName, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
         dirView.setClient(client);
         client.getFileList();
@@ -418,16 +414,10 @@ class MainWindow implements Runnable
 
     	Border emptyBorder = BorderFactory.createEmptyBorder();
 
-    	listModel = new DefaultListModel();
-    	//example users
-    	listModel.addElement("example_user_1");
-    	listModel.addElement("example_user_2");
-    	listModel.addElement("example_user_3");
-
-    	userList = new JList(listModel);
+    	userList = new JList(userListModel);
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
-    	panel.add(new JLabel(listModel.getSize() + " Users Online"), BorderLayout.NORTH);
+    	panel.add(new JLabel(userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
     	panel.add(userListScroll);
     	panel.setMinimumSize(new Dimension(0, 100));
 
