@@ -277,12 +277,15 @@ public class LoginUI
     {
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
+    	
+    	System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
+    	
     	MainWindow program;
 		try {
 			// TODO: Recommended to zero bytes of password after use
 			// TODO: Check that fields aren't null/validation stuff
 			program = new MainWindow( txtUsername.getText(), 
-								      new String( txtPassword.getPassword() ), 
+					passwordEncrypt.encrypt(new String(txtPassword.getPassword()))/*new String( txtPassword.getPassword()*/ , 
 									  txtHost.getText(), 
 									  Integer.parseInt( txtPort.getText() ),
 									  txtServiceName.getText() );
