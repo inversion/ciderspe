@@ -26,16 +26,16 @@ import cider.specialcomponents.Base64;
  * 
  */
 
-public class ServerMessageListener implements MessageListener
+public class BotMessageListener implements MessageListener
 {
 
-    private CiderFileList filelist = new CiderFileList(Server.SRCPATH);
+    private CiderFileList filelist = new CiderFileList(Bot.SRCPATH);
     // private Pattern putFileMatch = Pattern
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
     //private Matcher matcher = null;
-    private Server source;
+    private Bot source;
 
-    public ServerMessageListener(Server source)
+    public BotMessageListener(Bot source)
     {
         this.source = source;
     }

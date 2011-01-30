@@ -23,7 +23,7 @@ import cider.common.processes.TypingEventMode;
  * @author Andrew
  */
 
-public class Server implements ChatManagerListener
+public class Bot implements ChatManagerListener
 {
 	public static final boolean DEBUG = true;
 	public static final String SRCPATH = "src";
@@ -35,11 +35,10 @@ public class Server implements ChatManagerListener
     public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
     public static final String BOT_PASSWORD = "botpassword";
     
-    
     private XMPPConnection connection;
     private ChatManager chatmanager;
     private LiveFolder liveFolder;
-    private ServerMessageListener messageListener;
+    private BotMessageListener messageListener;
 
     public void testTree()
     {
@@ -55,7 +54,7 @@ public class Server implements ChatManagerListener
 
     public static void main( String[] args )
     {
-    	Server server = new Server();
+    	Bot bot = new Bot();
     	try {
 			System.in.read();
 		} catch (IOException e) {
@@ -64,7 +63,7 @@ public class Server implements ChatManagerListener
 		}
     }
     
-    public Server()
+    public Bot()
     {
         try
         {
@@ -74,7 +73,7 @@ public class Server implements ChatManagerListener
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(
                     HOST, PORT, SERVICE_NAME);
-            this.messageListener = new ServerMessageListener( this );
+            this.messageListener = new BotMessageListener( this );
             connection = new XMPPConnection( config );
             connection.connect();
             connection.login( BOT_USERNAME, BOT_PASSWORD );

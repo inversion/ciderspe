@@ -69,6 +69,11 @@ public class Client
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
     }
+    
+    public void printRoster()
+    {
+    	
+    }
 
     public void disconnect()
     {
