@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.Client;
+import cider.common.processes.Profile;
 
 class MainWindow implements Runnable
 {
@@ -61,6 +62,7 @@ class MainWindow implements Runnable
     public String currentFileName = "Unsaved Document 1";
     public String currentFileContents = "";
     public int currentTab = 0;
+    private Profile myProfile;
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
@@ -92,6 +94,7 @@ class MainWindow implements Runnable
         username = "ciderclient@mossage.co.uk";
         client = new Client( dirView, tabbedPane, openTabs, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
+    	myProfile = new Profile (username);
         client.getFileList();
     }
     
@@ -234,12 +237,12 @@ class MainWindow implements Runnable
                 	content.add(uName);
                 	
 //                	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
-                	JLabel uPwd = new JLabel("Password: " + "blank");
+                	JLabel uPwd = new JLabel("Password: " + "ilikemen123"); //TODO: stop pissing around
                 	uPwd.setHorizontalAlignment(JLabel.LEFT);
                 	uPwd.setVerticalAlignment(JLabel.TOP);
                 	content.add(uPwd);
                 	
-                	JLabel chars = new JLabel("Characters pressed: ");
+                	JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
                 	chars.setHorizontalAlignment(JLabel.LEFT);
                 	chars.setVerticalAlignment(JLabel.TOP);
                 	content.add(chars);
@@ -515,13 +518,12 @@ class MainWindow implements Runnable
             @Override
             public void windowClosed(WindowEvent arg0)
             {
-                // TODO Auto-generated method stub
-
             }
 
             @Override
             public void windowClosing(WindowEvent arg0)
             {
+                myProfile.updateProfileInfo();
                 System.out.println("disconnecting");
                 client.disconnect();
             }
