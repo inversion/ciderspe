@@ -9,18 +9,22 @@ import java.util.TreeMap;
  */
 public class TypingEvent
 {
-    public final String text;
     public final long time;
     public final TypingEventMode mode;
     public final int position;
+    public final int length;
+    public final String text;
+    public final String owner;
 
     public TypingEvent(long time, final TypingEventMode mode, int position,
-            String text)
+            int length, String text, String owner)
     {
         this.time = time;
         this.mode = mode;
         this.position = position;
         this.text = text;
+        this.length = length;
+        this.owner = owner;
     }
 
     public TypingEvent(String str)
@@ -34,7 +38,9 @@ public class TypingEvent
             this.mode = TypingEventMode.valueOf(split[0]);
             this.text = split[1];
             this.position = Integer.parseInt(split[2]);
-            this.time = Long.parseLong(split[3]);
+            this.length = Integer.parseInt(split[3]);
+            this.time = Long.parseLong(split[4]);
+            this.owner = split[5];
         }
         catch (Exception e)
         {
@@ -45,7 +51,7 @@ public class TypingEvent
     public String pack()
     {
         return this.mode + "~" + this.text + "~" + this.position + "~"
-                + this.time;
+                + this.length + "~" + this.time + "~" + this.owner;
     }
 
     public TreeMap<Double, TypingEvent> explode()
@@ -68,8 +74,8 @@ public class TypingEvent
             for (char c : this.text.toCharArray())
             {
                 t = this.time + inc * pos;
-                result.put(t,
-                        new TypingEvent(this.time, this.mode, pos, "" + c));
+                result.put(t, new TypingEvent(this.time, this.mode, pos,
+                        length, "" + c, owner));
                 pos++;
             }
         }

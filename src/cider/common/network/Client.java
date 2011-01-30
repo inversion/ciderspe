@@ -48,51 +48,60 @@ public class Client
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastPush = 0;
-    
+
     // Chat session with the Bot
     private Chat botChat;
     private ClientMessageListener botChatlistener;
-    
+    private String username;
+
     // Listen for chat sessions with other users
     private ClientUserChatListener userChatListener;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, String username, String password, String host, int port, String serviceName) throws XMPPException
+            Hashtable<String, SourceEditor> openTabs, String username,
+            String password, String host, int port, String serviceName)
+            throws XMPPException
     {
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
         connection = new XMPPConnection(config);
         connection.connect();
-        connection.login( username, password );
-        
+        connection.login(username, password);
+
         // Add self to roster
-        connection.sendPacket( new Presence( Presence.Type.available ) );
-        
+        connection.sendPacket(new Presence(Presence.Type.available));
+
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
         userChatListener = new ClientUserChatListener();
-        chatmanager.addChatListener( userChatListener );
-        
+        chatmanager.addChatListener(userChatListener);
+
         // Establish chat session with the bot
         botChatlistener = new ClientMessageListener(dirView, this);
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
 
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
+        this.username = username;
     }
-    
+
+    public String getUsername()
+    {
+        return this.username;
+    }
+
     // Print users currently connected to the XMPP server
     public void printRoster()
     {
-    	Roster roster = connection.getRoster();
-    	Collection<RosterEntry> users = roster.getEntries();
-    	Iterator<RosterEntry> itr = users.iterator();
-    	System.out.println( "Roster:" );
-    	while( itr.hasNext() )
-    	{
-    		System.out.println( itr.next().getName() );
-    	}
+        Roster roster = connection.getRoster();
+        Collection<RosterEntry> users = roster.getEntries();
+        Iterator<RosterEntry> itr = users.iterator();
+        System.out.println("Roster:");
+        while (itr.hasNext())
+        {
+            System.out.println(itr.next().getName());
+        }
     }
 
     public void disconnect()
@@ -152,7 +161,9 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage("pullEventsSince(" + String.valueOf(time) + ")");
+            botChat
+                    .sendMessage("pullEventsSince(" + String.valueOf(time)
+                            + ")");
         }
         catch (XMPPException e)
         {

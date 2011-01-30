@@ -36,7 +36,7 @@ public class SourceDocumentDemo
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
-                this.server.timer);
+                this.server.timer, id);
         w.add(panel);
         w.pack();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -132,6 +132,7 @@ public class SourceDocumentDemo
         private Timer timer = new Timer();
         private long delay = 0;
         private long period = 100;
+        int id;
 
         public PseudoClient(final SDDemoPanel panel, final int id)
         {
@@ -148,6 +149,7 @@ public class SourceDocumentDemo
 
                 }
             }, this.delay, this.period);
+            this.id = id;
         }
 
         @Override
@@ -219,10 +221,12 @@ public class SourceDocumentDemo
     {
         EditorTypingArea eta = new EditorTypingArea();
         ICodeLocation server;
+        int id;
 
         public SDDemoPanel(JFrame w, Dimension size,
-                final ICodeLocation server, final Timer timer)
+                final ICodeLocation server, final Timer timer, final int id)
         {
+            this.id = id;
             this.setSize(size);
             this.eta.setPreferredSize(size);
             this.add(this.eta);
@@ -276,8 +280,8 @@ public class SourceDocumentDemo
 
                         TypingEvent te = new TypingEvent(System
                                 .currentTimeMillis(), mode, eta
-                                .getCaretPosition(), String.valueOf(ke
-                                .getKeyChar()));
+                                .getCaretPosition(), 1, String.valueOf(ke
+                                .getKeyChar()), "Demo User " + id);
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
                         server.push(outgoingEvents);

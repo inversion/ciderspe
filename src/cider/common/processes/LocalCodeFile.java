@@ -54,8 +54,8 @@ public class LocalCodeFile implements ICodeLocation
         LocalCodeFile lcf = new LocalCodeFile(file);
         lcf.events();
         TypingEvent timestamp = new TypingEvent(date.getTime(),
-                TypingEventMode.insert, lcf.oldFileContentString.length(),
-                "Test text: " + date.toString());
+                TypingEventMode.insert, lcf.oldFileContentString.length(), 0,
+                "Test text: " + date.toString(), "owner");
         Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
         typingEvents.addAll(timestamp.explode().values());
         lcf.push(typingEvents);
@@ -87,8 +87,8 @@ public class LocalCodeFile implements ICodeLocation
         // this.oldFileContent.add(new TypingEvent(currentTime,
         // TypingEventMode.deleteAll, 0, ""));
         this.oldFileContent = new TypingEvent(currentTime + 1,
-                TypingEventMode.overwrite, 0, this.oldFileContentString = this
-                        .read());
+                TypingEventMode.overwrite, 0, 0,
+                this.oldFileContentString = this.read(), "owner");
         Queue<TypingEvent> result = new LinkedList<TypingEvent>();
         result.add(this.oldFileContent);
         return result;

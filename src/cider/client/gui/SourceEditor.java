@@ -155,7 +155,8 @@ public class SourceEditor extends JPanel
 
                         TypingEvent te = new TypingEvent(System
                                 .currentTimeMillis(), mode, eta
-                                .getCaretPosition(), chr);
+                                .getCaretPosition(), 1, chr, client
+                                .getUsername());
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
                         client.pushToServer(outgoingEvents, path);
