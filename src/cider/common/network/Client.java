@@ -5,7 +5,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Queue;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JTabbedPane;
 
 import org.jivesoftware.smack.Chat;
@@ -59,7 +58,7 @@ public class Client
     private ClientUserChatListener userChatListener;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, String username,
+            Hashtable<String, SourceEditor> openTabs, String username,
             String password, String host, int port, String serviceName)
             throws XMPPException
     {
