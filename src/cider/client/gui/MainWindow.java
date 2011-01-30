@@ -1,6 +1,7 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -415,6 +416,11 @@ class MainWindow implements Runnable
     	Border emptyBorder = BorderFactory.createEmptyBorder();
 
     	userList = new JList(userListModel);
+    	for (int i=0; i < userList.getModel().getSize(); i++) 
+    	{
+    	    Object item = userList.getModel().getElementAt(i);
+    	    userList.setForeground(Color.red); //TODO looking at using different colours for each user    	    
+    	}
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
     	panel.add(new JLabel(userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
@@ -487,18 +493,17 @@ class MainWindow implements Runnable
         {
             public void mouseClicked(MouseEvent  e)
             {
-            	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                Date date = new Date();
-                String message = messageSendBox.getText();
+            	String message = messageSendBox.getText();
+            	if (!message.equals("")) //TODO disable send button if no meaningful text entered
+            	{
+            		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    Date date = new Date();
 
-            	System.out.println(message);
-            	System.out.println(dateFormat.format(date));
-            	
-            	updateChatLog(username, date, message);
-            	messageSendBox.setText("");
-            	//TODO
-            	//user
-            	//chat.send.message(USER, dateFormat.format(date), messageSendBox.getText());
+                	System.out.println(dateFormat.format(date) + " " + message);
+                	
+                	updateChatLog(username, date, message);
+                	messageSendBox.setText("");
+            	}
             }
         });
         panel.add(btnSend, BorderLayout.EAST);  
