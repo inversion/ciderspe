@@ -55,7 +55,7 @@ public class TypingEventList
         for (int test = 0; test < 100; test++)
         {
             TypingEvent te = new TypingEvent(0, TypingEventMode.deleteAll, 0,
-                    "x");
+                    1, "x", "test user");
             switch (rand.nextInt(3))
             {
             case 0:

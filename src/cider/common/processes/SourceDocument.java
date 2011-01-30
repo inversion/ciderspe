@@ -18,6 +18,7 @@ public class SourceDocument implements ICodeLocation
     private PriorityQueue<TypingEvent> typingEvents;
     public String name = "untitled";
     private long latestTime;
+    private ArrayList<LockingRegion> lockingRegions = new ArrayList<LockingRegion>();
 
     public SourceDocument(String name)
     {
@@ -59,16 +60,17 @@ public class SourceDocument implements ICodeLocation
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
         tes.addAll(generateEvents(0, 100, 0,
                 "the quick brown fox jumped over the lazy dog",
-                TypingEventMode.insert));
+                TypingEventMode.insert, "na"));
         tes.addAll(generateEvents(200, 500, 10, "muddled",
-                TypingEventMode.overwrite));
-        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert));
+                TypingEventMode.overwrite, "na"));
+        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
+                "na"));
         tes.addAll(generateEvents(800, 1000, 27, "jumped",
-                TypingEventMode.backspace));
+                TypingEventMode.backspace, "na"));
         tes.addAll(generateEvents(2000, 2500, 21, "bounced",
-                TypingEventMode.insert));
+                TypingEventMode.insert, "na"));
         tes.addAll(generateEvents(2600, 3000, 9,
-                "123123123123123123123123123 ", TypingEventMode.insert));
+                "123123123123123123123123123 ", TypingEventMode.insert, "na"));
 
         tes = shuffledEvents(tes, new Date().getTime());
 
@@ -87,8 +89,8 @@ public class SourceDocument implements ICodeLocation
     protected static String lengthTest()
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, "<"));
-        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, ">"));
+        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, 1, "<", "na"));
+        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, 1, ">", "na"));
 
         String bigString = "";
         final String alphabet = "10";
@@ -98,7 +100,7 @@ public class SourceDocument implements ICodeLocation
             bigString += alphaChars[i % l];
 
         tes.addAll(generateEvents(0, 10000, 0, bigString,
-                TypingEventMode.insert));
+                TypingEventMode.insert, "na"));
 
         SourceDocument testDoc = new SourceDocument();
         for (TypingEvent event : tes)
@@ -139,7 +141,7 @@ public class SourceDocument implements ICodeLocation
 
     public static ArrayList<TypingEvent> generateEvents(long startTime,
             long endTime, int startingPosition, String text,
-            TypingEventMode mode)
+            TypingEventMode mode, String owner)
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
         final int n = text.length();
@@ -150,14 +152,14 @@ public class SourceDocument implements ICodeLocation
         {
             if (mode == TypingEventMode.backspace)
             {
-                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp,
-                        "\0"));
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
+                        "\0", text));
                 cp--;
             }
             else
             {
-                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, ""
-                        + text.charAt(i)));
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
+                        "" + text.charAt(i), owner));
                 cp++;
             }
             i++;
@@ -236,6 +238,10 @@ public class SourceDocument implements ICodeLocation
             case deleteAll:
             {
                 string.clear();
+            }
+            case lockRegion:
+            {
+
             }
             }
         }
