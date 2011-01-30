@@ -157,7 +157,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             int localCP = this.caretPosition - caretLineStart;
             // g.drawString("" + localCP, 400, 400);
-            int x = (localCP + 2) * 7;
+            int x = (localCP + 2) * 7 + this.leftMargin - 10;
             int y = (caretLine == 0 ? 0 : caretLine - 1) * 10;
             g.setColor(Color.BLUE);
             g.drawLine(x + 10 + this.leftMargin, y, x + 10 + this.leftMargin,
