@@ -14,6 +14,7 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.SourceEditor;
@@ -64,15 +65,10 @@ public class Client
         connection = new XMPPConnection(config);
         connection.connect();
         connection.login( username, password );
-
-        if (DEBUG)
-        {
-            System.out.println("Client connected="
-                    + this.connection.isConnected());
-            System.out.println("Client username="
-                    + this.connection.getUser());
-        }
-
+        
+        // Add self to roster
+        connection.sendPacket( new Presence( Presence.Type.available ) );
+        
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
         userChatListener = new ClientUserChatListener();
@@ -84,7 +80,6 @@ public class Client
 
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
-        printRoster();
     }
     
     // Print users currently connected to the XMPP server
@@ -114,7 +109,7 @@ public class Client
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        System.out.println("Client disconnected");
+        System.out.println("Disconnected from XMPP server...");
     }
 
     public boolean updatesAutomatically()

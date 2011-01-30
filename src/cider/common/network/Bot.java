@@ -10,6 +10,7 @@ import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Presence;
 
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
@@ -17,13 +18,12 @@ import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
 
 /**
- * This is the class that implements the bot that connects to the XMPP server
- * and listens for new chats.
+ * This is the class that implements the bot that connects to the XMPP server.
  * 
  * @author Andrew
  */
 
-public class Bot implements ChatManagerListener
+public class Bot
 {
 	public static final boolean DEBUG = true;
 	public static final String SRCPATH = "src";
@@ -37,20 +37,9 @@ public class Bot implements ChatManagerListener
     
     private XMPPConnection connection;
     private ChatManager chatmanager;
+    private BotChatListener botChatListener;
+    
     private LiveFolder liveFolder;
-    private BotMessageListener messageListener;
-
-    public void testTree()
-    {
-        this.liveFolder = new LiveFolder("root");
-        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
-        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.addAll(SourceDocument.generateEvents(0, 1000, 0,
-                "This was a triumph!", TypingEventMode.insert));
-        t1.push(tes);
-        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument");
-    }
 
     public static void main( String[] args )
     {
@@ -74,26 +63,34 @@ public class Bot implements ChatManagerListener
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(
                     HOST, PORT, SERVICE_NAME);
-            this.messageListener = new BotMessageListener( this );
             connection = new XMPPConnection( config );
             connection.connect();
             connection.login( BOT_USERNAME, BOT_PASSWORD );
-
-            if ( DEBUG )
-            {
-                System.out.println("Server connected="
-                        + connection.isConnected());
-                System.out.println("Server username=" + connection.getUser());
-            }
+            
+            // Add self to roster
+            connection.sendPacket( new Presence( Presence.Type.available ) );
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            chatmanager.addChatListener(this);
+            botChatListener = new BotChatListener( this );
+            chatmanager.addChatListener( botChatListener );
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
         }
+    }
+    
+    public void testTree()
+    {
+        this.liveFolder = new LiveFolder("root");
+        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        tes.addAll(SourceDocument.generateEvents(0, 1000, 0,
+                "This was a triumph!", TypingEventMode.insert));
+        t1.push(tes);
+        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+                .makeDocument("test2Doc.SourceDocument");
     }
 
     public void disconnect()
@@ -104,15 +101,6 @@ public class Bot implements ChatManagerListener
     public LiveFolder getRootFolder()
     {
         return this.liveFolder;
-    }
-
-    @Override
-    public void chatCreated(Chat chat, boolean createdLocally)
-    {
-        if (DEBUG)
-            System.out.println(chat.getParticipant() + " connected...");
-
-        chat.addMessageListener(this.messageListener);
     }
 
 }
