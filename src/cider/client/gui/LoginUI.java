@@ -47,6 +47,7 @@ public class LoginUI
     // Login box fields
     JTextField txtUsername;
     JPasswordField txtPassword;
+    JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
     
@@ -93,10 +94,13 @@ public class LoginUI
 
         JLabel lblUser = new JLabel("Username:");
         JLabel lblPass = new JLabel("Password:");
+        JLabel lblServiceName = new JLabel( "Service Name: " );
         JLabel lblHost = new JLabel("Host Address:  ");
         JLabel lblPort = new JLabel("Port Number:");
         txtUsername = new JTextField(13);
         txtPassword = new JPasswordField(13);
+        txtServiceName = new JTextField(13);
+        txtServiceName.setText( DEFAULT_SERVICE_NAME );
         txtHost = new JTextField(13);
         txtHost.setText( DEFAULT_HOST );
         // TODO: Make this numeric?
@@ -109,12 +113,14 @@ public class LoginUI
         GroupLayout.ParallelGroup leftColumn = infoLayout.createParallelGroup();
         leftColumn.addComponent(lblUser);
         leftColumn.addComponent(lblPass);
+        leftColumn.addComponent(lblServiceName);
         leftColumn.addComponent(lblHost);
         leftColumn.addComponent(lblPort);
         GroupLayout.ParallelGroup rightColumn = infoLayout
                 .createParallelGroup();
         rightColumn.addComponent(txtUsername);
         rightColumn.addComponent(txtPassword);
+        rightColumn.addComponent(txtServiceName);
         rightColumn.addComponent(txtHost);
         rightColumn.addComponent(txtPort);
         leftToRight.addGroup(leftColumn);
@@ -129,15 +135,19 @@ public class LoginUI
         row2.addComponent(lblPass);
         row2.addComponent(txtPassword);
         GroupLayout.ParallelGroup row3 = infoLayout.createParallelGroup();
-        row3.addComponent(lblHost);
-        row3.addComponent(txtHost);
+        row3.addComponent(lblServiceName);
+        row3.addComponent(txtServiceName);
         GroupLayout.ParallelGroup row4 = infoLayout.createParallelGroup();
-        row4.addComponent(lblPort);
-        row4.addComponent(txtPort);
+        row4.addComponent(lblHost);
+        row4.addComponent(txtHost);
+        GroupLayout.ParallelGroup row5 = infoLayout.createParallelGroup();
+        row5.addComponent(lblPort);
+        row5.addComponent(txtPort);
         topToBottom.addGroup(row1);
         topToBottom.addGroup(row2);
         topToBottom.addGroup(row3);
         topToBottom.addGroup(row4);
+        topToBottom.addGroup(row5);
 
         infoLayout.setHorizontalGroup(leftToRight);
         infoLayout.setVerticalGroup(topToBottom);
@@ -170,6 +180,7 @@ public class LoginUI
     	{
     		@Override
     		public void actionPerformed(ActionEvent e) {
+    			// TODO: Save service name as well.
     			String action = e.getActionCommand();
     			if (chkRemember.isSelected() == true)
     			{
@@ -270,11 +281,11 @@ public class LoginUI
 		try {
 			// TODO: Recommended to zero bytes of password after use
 			// TODO: Check that fields aren't null/validation stuff
-			System.out.println("connecting with " + txtUsername.getText() + " and " + new String( txtPassword.getPassword() ));
 			program = new MainWindow( txtUsername.getText(), 
 								      new String( txtPassword.getPassword() ), 
 									  txtHost.getText(), 
-									  Integer.parseInt( txtPort.getText() ) );
+									  Integer.parseInt( txtPort.getText() ),
+									  txtServiceName.getText() );
 	        SwingUtilities.invokeLater(program);
 	        // TODO: Reopen login ui if login failed
 	        // TODO: Display alert box with xmpp exception message if it failed

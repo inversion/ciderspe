@@ -66,13 +66,12 @@ class MainWindow implements Runnable
     
     JTextField messageSendBox;
     
-    MainWindow( String username, String password, String host, int port ) throws XMPPException
+    MainWindow( String username, String password, String host, int port, String serviceName ) throws XMPPException
     {
-    	// TODO: Service name passed as parameter
         // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         this.username = username;
-        client = new Client( dirView, tabbedPane, openTabs, username, password, host, port, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, username + "@" + serviceName, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
     }
 
