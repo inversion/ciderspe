@@ -1,12 +1,16 @@
 package cider.common.network;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Queue;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -15,6 +19,7 @@ import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -58,29 +63,48 @@ public class Client
     private String username;
 
     // Listen for private chat sessions with other users
-    private ClientUserChatListener userChatListener;
+    private ClientPrivateChatListener userChatListener;
     
     // Chatroom
     private MultiUserChat chatroom;
+    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a66" + "@" + "groupchat.google.com";
+    
+    private JTextArea messageReceiveBox;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, String username,
+            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, JTextArea messageReceiveBox, String username,
             String password, String host, int port, String serviceName)
-            throws XMPPException
+            
     {
+    	// Assign objects from parameters
+        this.tabbedPane = tabbedPane;
+        this.openTabs = openTabs;
+        this.username = username;
+        this.messageReceiveBox = messageReceiveBox;
+    	
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
         connection = new XMPPConnection(config);
-        connection.connect();
-        connection.login(username, password);
+        try {
+			connection.connect();
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			System.err.println( "Error Connecting: " + e1.getMessage() );
+		}
+        try {
+			connection.login(username, password);
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			System.err.println( "Error logging in: " + e1.getMessage() );
+		}
 
         // Add self to roster
         connection.sendPacket(new Presence(Presence.Type.available));
 
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
-        userChatListener = new ClientUserChatListener( userListModel );
+        userChatListener = new ClientPrivateChatListener( userListModel );
         chatmanager.addChatListener(userChatListener);
 
         // Establish chat session with the bot
@@ -88,7 +112,7 @@ public class Client
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
         
         // Set up chatroom for users
-        chatroom = new MultiUserChat( connection, "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a66" + "@" + "groupchat.google.com" );
+        chatroom = new MultiUserChat( connection, chatroomName );
         try
         {
         	// Try and create the chatroom
@@ -99,18 +123,36 @@ public class Client
         {
         	// If the chatroom already exists join it instead
         	//System.err.println("Creating chatroom error: " + e.getMessage() );
-        	chatroom.join( username );
+        	try {
+				chatroom.join( username );
+			} catch (XMPPException e1) {
+				// TODO Auto-generated catch block
+				System.err.println( "Error Joining chatroom: " + e1.getMessage() );
+			}
         }
+        chatroom.addMessageListener( new ClientChatroomMessageListener( this ) );
+    }
+    
+    public void updateChatLog(String username, Date date, String message)
+    {
+    	//TODO format the text nicely i.e. bold and not bold
+    	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
-        this.tabbedPane = tabbedPane;
-        this.openTabs = openTabs;
-        this.username = username;
+    	//messageReceiveBox.setContentType("text/html");
+    	String oldText = messageReceiveBox.getText();
+    	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
+    	
+    	//messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
+        messageReceiveBox.append(message + "\n");
     }
     
     public void sendMessageChatroom( String message )
     {
     	try {
-			chatroom.sendMessage( message );
+    		Message msg = new Message( chatroomName, Message.Type.groupchat );
+    		msg.setBody( message );
+			chatroom.sendMessage( msg );
+			System.out.println("SENT");
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

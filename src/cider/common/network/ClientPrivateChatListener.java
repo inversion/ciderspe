@@ -15,16 +15,16 @@ import org.jivesoftware.smack.ChatManagerListener;
  *
  */
 
-public class ClientUserChatListener implements ChatManagerListener {
+public class ClientPrivateChatListener implements ChatManagerListener {
 	
 	// TODO: Not sure if there's any point in this chats array
 	private ArrayList<Chat> chats;
-	private ClientUserChatMessageListener userChatMessageListener;
+	private ClientPrivateChatMessageListener userChatMessageListener;
 
-	ClientUserChatListener(DefaultListModel userListModel)
+	ClientPrivateChatListener(DefaultListModel userListModel)
 	{
 		chats = new ArrayList<Chat>();
-		userChatMessageListener = new ClientUserChatMessageListener();
+		userChatMessageListener = new ClientPrivateChatMessageListener();
 	}
 	
 	@Override

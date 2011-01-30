@@ -15,7 +15,7 @@ import org.jivesoftware.smack.packet.Message;
  *
  */
 
-public class ClientUserChatMessageListener implements MessageListener, ActionListener {
+public class ClientPrivateChatMessageListener implements MessageListener, ActionListener {
 
 	@Override
 	public void processMessage(Chat chat, Message message) {
