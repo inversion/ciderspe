@@ -31,6 +31,7 @@ import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -73,7 +74,7 @@ class MainWindow implements Runnable
     public JList userList;
     public DefaultListModel listModel;
     public JTextArea messageSendBox;
-    public JTextArea messageReceiveBox;
+    public JTextArea/*JEditorPane*/ messageReceiveBox;
     
     // Main method and no parameter constructor for running without login box
     public static void main( String[] args )
@@ -390,8 +391,9 @@ class MainWindow implements Runnable
     	JScrollPane userListScroll = new JScrollPane(userList);
     	pnlUsers.add(new JLabel(" Users Online"), BorderLayout.NORTH);
     	pnlUsers.add(userListScroll);
+        pnlUsers.setMinimumSize(new Dimension(0, 100));
     	
-        messageReceiveBox = new JTextArea();
+        messageReceiveBox = new JTextArea();//new JEditorPane();
         messageReceiveBox.setLineWrap(true);
         messageReceiveBox.setWrapStyleWord(true);
         Font receiveFont = new Font("Dialog", 2, 12);
@@ -403,6 +405,7 @@ class MainWindow implements Runnable
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         pnlReceive.add(new JLabel(" User Chat"), BorderLayout.NORTH);
         pnlReceive.add(messageReceiveBoxScroll, BorderLayout.CENTER);
+        pnlReceive.setPreferredSize(new Dimension(0, 800));
         
         /*Text field for message text*/
         messageSendBox = new JTextArea();
@@ -427,10 +430,14 @@ class MainWindow implements Runnable
         pnlSend.add(messageSendBoxScroll, BorderLayout.CENTER);
         
         JButton btnSend = new JButton("Send");
-        btnSend.setMinimumSize(new Dimension(10,40));
+        btnSend.setMinimumSize(new Dimension(0,40));
 
         btnSend.setToolTipText("Click to send message");
+
         //btnSend.addActionListener(); TODO need an action listener for the enter key
+        btnSend.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "doSomething");
+        btnSend.getActionMap().put("doSomething", null); //TODO call the mouseclicked code below
+
         btnSend.addMouseListener(new MouseAdapter()
         {
             public void mouseClicked(MouseEvent  e)
@@ -442,17 +449,21 @@ class MainWindow implements Runnable
             	System.out.println(message);
             	System.out.println(dateFormat.format(date));
             	
-            	updateChatLog("my_username", date, message);
+            	updateChatLog(username, date, message);
             	messageSendBox.setText("");
             	//TODO
             	//user
             	//chat.send.message(USER, dateFormat.format(date), messageSendBox.getText());
             }
         });
-        pnlSend.add(btnSend, BorderLayout.EAST);        
+        pnlSend.add(btnSend, BorderLayout.EAST);  
+        pnlSend.setMaximumSize(new Dimension(10, 40));
 
         JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlUsers, pnlReceive);
         JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend);
+        usersReceive.setOneTouchExpandable(true);
+        chat.setOneTouchExpandable(true);
+        //chat.setDividerLocation(800);
         
         //chat.add(box);
         /*End of Chat panel stuffs*/
@@ -478,10 +489,15 @@ class MainWindow implements Runnable
 
     public void updateChatLog(String username, Date date, String message)
     {
+    	//TODO format the text nicely i.e. bold and not bold
     	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+    	//messageReceiveBox.setContentType("text/html");
+    	String oldText = messageReceiveBox.getText();
+    	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
     	
     	messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
-    	messageReceiveBox.append(message + "\n");
+        messageReceiveBox.append(message + "\n");
     }
     
     
