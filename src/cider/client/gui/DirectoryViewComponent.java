@@ -71,6 +71,7 @@ public class DirectoryViewComponent extends JPanel
         label3 = new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
+        this.add(new JLabel(" File Explorer"), BorderLayout.NORTH);
         this.add(scrollpane, BorderLayout.CENTER);
     }
 

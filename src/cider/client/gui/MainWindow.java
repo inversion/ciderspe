@@ -28,19 +28,23 @@ import java.util.Date;
 import java.util.Hashtable;
 
 import javax.swing.Box;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -64,7 +68,10 @@ class MainWindow implements Runnable
     private DirectoryViewComponent dirView;
     private String username;
     
-    JTextField messageSendBox;
+    public JList userList;
+    public DefaultListModel listModel;
+    public JTextArea messageSendBox;
+    public JTextArea messageReceiveBox;
     
     // Main method and no parameter constructor for running without login box
     public static void main( String[] args )
@@ -365,40 +372,61 @@ class MainWindow implements Runnable
     public JPanel mainArea()
     {        
         /*Chat panel stuffs- Alex*/
-        JPanel chat = new JPanel(new BorderLayout());
         
-        Box box = Box.createVerticalBox();
+    	JPanel pnlUsers = new JPanel(new BorderLayout());
+    	JPanel pnlReceive = new JPanel(new BorderLayout());
+    	JPanel pnlSend = new JPanel(new BorderLayout());
         
-        JTextField messageReceiveBox = new JTextField();
+    	listModel = new DefaultListModel();
+    	//examples
+    	listModel.addElement("example_user_1");
+    	listModel.addElement("example_user_2");
+    	listModel.addElement("example_user_3");
+    	
+    	userList = new JList(listModel);
+    	JScrollPane userListScroll = new JScrollPane(userList);
+    	pnlUsers.add(new JLabel(" Users Online"), BorderLayout.NORTH);
+    	pnlUsers.add(userListScroll);
+    	
+        messageReceiveBox = new JTextArea();
+        messageReceiveBox.setLineWrap(true);
+        messageReceiveBox.setWrapStyleWord(true);
         Font receiveFont = new Font("Dialog", 2, 12);
         messageReceiveBox.setFont(receiveFont);
+        messageReceiveBox.setEditable(false);
         //messageReceiveBox.addActionListener(); TODO 
         /*Format of output:
          *[bold]username[/bold] timestamp: message*/
-        box.add(messageReceiveBox);
+        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+        pnlReceive.add(new JLabel(" User Chat"), BorderLayout.NORTH);
+        pnlReceive.add(messageReceiveBoxScroll, BorderLayout.CENTER);
         
         /*Text field for message text*/
-        final String initialMessage = "Enter your message...";
-        messageSendBox = new JTextField(initialMessage);
+        messageSendBox = new JTextArea();
+        messageSendBox.setLineWrap(true);
+        messageSendBox.setWrapStyleWord(true);
         Font sendFont = new Font("Dialog", 1, 12);
         messageSendBox.setFont(sendFont);
         //ActionListener aL = newAction(); //TODO - Alex doesn't know what he be doing with action listeners
         //messageSendBox.setActionCommand("Send");
         messageSendBox.addMouseListener(new MouseAdapter()
         {
-            public void mouseClicked(MouseEvent  e)
+            /*public void mouseClicked(MouseEvent  e)
             {
             	if (messageSendBox.getText().equals(initialMessage)) //TODO could use an edited flag instead
             	{
             		messageSendBox.setText("boogaloo");
             		messageSendBox.setText("");
             	}
-            }
+            }*/
         });
-        box.add(messageSendBox);
+        JScrollPane messageSendBoxScroll = new JScrollPane(messageSendBox);
+        pnlSend.add(messageSendBoxScroll, BorderLayout.CENTER);
         
         JButton btnSend = new JButton("Send");
-        btnSend.setToolTipText("Click to send you message");
+        btnSend.setMinimumSize(new Dimension(10,40));
+
+        btnSend.setToolTipText("Click to send message");
         //btnSend.addActionListener(); TODO need an action listener for the enter key
         btnSend.addMouseListener(new MouseAdapter()
         {
@@ -406,17 +434,24 @@ class MainWindow implements Runnable
             {
             	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 Date date = new Date();
+                String message = messageSendBox.getText();
 
-            	System.out.println(messageSendBox.getText());
+            	System.out.println(message);
             	System.out.println(dateFormat.format(date));
+            	
+            	updateChatLog("my_username", date, message);
+            	messageSendBox.setText("");
             	//TODO
             	//user
             	//chat.send.message(USER, dateFormat.format(date), messageSendBox.getText());
             }
         });
-        box.add(btnSend);        
+        pnlSend.add(btnSend, BorderLayout.EAST);        
+
+        JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlUsers, pnlReceive);
+        JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend);
         
-        chat.add(box);
+        //chat.add(box);
         /*End of Chat panel stuffs*/
         
 
@@ -438,6 +473,15 @@ class MainWindow implements Runnable
         return panel;
     }
 
+    public void updateChatLog(String username, Date date, String message)
+    {
+    	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+    	
+    	messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
+    	messageReceiveBox.append(message + "\n");
+    }
+    
+    
     public void run()
     {
         w = new JFrame("CIDEr");
@@ -454,7 +498,7 @@ class MainWindow implements Runnable
         w.add(p);
         w.pack();
         this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
-        this.editorChatSplit.setDividerLocation(0.8);
+        this.editorChatSplit.setDividerLocation(0.75);
         w.setLocationByPlatform(true);
         w.setExtendedState(JFrame.MAXIMIZED_BOTH);
         w.setVisible(true);
