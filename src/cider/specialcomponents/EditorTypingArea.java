@@ -2,8 +2,12 @@ package cider.specialcomponents;
 
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
@@ -19,10 +23,12 @@ public class EditorTypingArea extends JPanel
     private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private long lastUpdateTime = 0;
+    private boolean caretFlashing = true;
+    private boolean caretVisible = false;
 
     public EditorTypingArea()
     {
-        // this.setFocusable(true);
+        this.setupCaretFlashing();
     }
 
     public EditorTypingArea(ICodeLocation codeLocation)
@@ -31,7 +37,42 @@ public class EditorTypingArea extends JPanel
         this.doc = new SourceDocument();
         this.doc.push(this.codeLocation.events());
         this.str = this.doc.toString();
-        // this.setFocusable(true);
+        this.setupCaretFlashing();
+    }
+
+    private void setupCaretFlashing()
+    {
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+
+            @Override
+            public void run()
+            {
+                caretVisible = caretFlashing && !caretVisible;
+                if (caretFlashing)
+                    updateUI();
+            }
+
+        }, 0, 500);
+
+        this.addFocusListener(new FocusListener()
+        {
+
+            @Override
+            public void focusGained(FocusEvent e)
+            {
+                System.out.println("focus!");
+                caretFlashing = true;
+            }
+
+            @Override
+            public void focusLost(FocusEvent e)
+            {
+                caretFlashing = false;
+            }
+
+        });
     }
 
     public void updateText()
@@ -90,11 +131,14 @@ public class EditorTypingArea extends JPanel
             i += line.replaceAll("\n", "").length();
         }
 
-        int localCP = this.caretPosition - caretLineStart;
-        // g.drawString("" + localCP, 400, 400);
-        int x = (localCP + 2) * 7;
-        int y = (caretLine - 1) * 10;
-        g.drawLine(x + 10, y, x + 10, y + 11);
+        if (this.caretVisible)
+        {
+            int localCP = this.caretPosition - caretLineStart;
+            // g.drawString("" + localCP, 400, 400);
+            int x = (localCP + 2) * 7;
+            int y = (caretLine == 0 ? 0 : caretLine - 1) * 10;
+            g.drawLine(x + 10, y, x + 10, y + 11);
+        }
     }
 
     public int getCaretPosition()

@@ -29,7 +29,7 @@ import cider.specialcomponents.Base64;
 public class ServerMessageListener implements MessageListener
 {
 
-    private CiderFileList filelist = new CiderFileList( Server.SRCPATH );
+    private CiderFileList filelist = new CiderFileList(Server.SRCPATH);
     // private Pattern putFileMatch = Pattern
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
     private Matcher matcher = null;
@@ -117,12 +117,26 @@ public class ServerMessageListener implements MessageListener
         }
         else if (body.startsWith("pushto("))
         {
-            String[] preAndAfter = body.split(") ");
-            String[] pre = preAndAfter[0].split("(");
-            String dest = pre[1];
-            Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-            typingEvents.add(new TypingEvent(preAndAfter[1]));
-            this.source.getRootFolder().path(dest).push(typingEvents);
+            String[] instructions = body.split("\\n");
+            for (String instruction : instructions)
+            {
+                String[] preAndAfter = instruction.split("\\) ");
+                String[] pre = preAndAfter[0].split("\\(");
+                String dest = pre[1];
+                dest = dest.replace("root\\", "");
+                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+                typingEvents.add(new TypingEvent(preAndAfter[1]));
+                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                this.source.getRootFolder().path(dest).push(typingEvents);
+            }
+
+            /*
+             * String[] preAndAfter = body.split(") "); String[] pre =
+             * preAndAfter[0].split("("); String dest = pre[1];
+             * Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+             * typingEvents.add(new TypingEvent(preAndAfter[1]));
+             * this.source.getRootFolder().path(dest).push(typingEvents);
+             */
         }
         /*
          * else if (body.startsWith("<putfile>")) { if (matcher != null) matcher

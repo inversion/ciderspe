@@ -47,7 +47,8 @@ public class Client
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
     private long lastUpdate = 0;
-    Hashtable<String, SourceEditor> openTabs;
+    private Hashtable<String, SourceEditor> openTabs;
+    private long lastPush = 0;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
             Hashtable<String, SourceEditor> openTabs)
@@ -125,7 +126,7 @@ public class Client
         if (!this.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(doc);
-            SourceEditor sourceEditor = new SourceEditor(eta, this);
+            SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
             sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, sourceEditor);
             System.out.println("Pull since 0 since a new tab is being opened");
@@ -147,10 +148,29 @@ public class Client
         }
     }
 
-    public void pushToServer(Queue<TypingEvent> outgoingEvents)
+    public void pushToServer(Queue<TypingEvent> typingEvents, String path)
     {
         // TODO
-        System.out.println("TODO: Send those outgoing events to the server");
+        // System.out.println("TODO: Send those outgoing events to the server");
+
+        // FIXME
+        // HACK!
+        // Need code reuse between Server
+        String instructions = "";
+        for (TypingEvent te : typingEvents)
+            instructions += "pushto(" + path + ") " + te.pack() + "\n";
+        try
+        {
+            chat.sendMessage(instructions);
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        this.lastPush = System.currentTimeMillis();
+        this.pullEventsSince(lastPush - 1);
     }
 
     public void getFileList()

@@ -30,13 +30,15 @@ public class SourceEditor extends JPanel
     private EditorTypingArea eta;
     private Component tabHandle = null;
     private Client client;
+    private String path;
 
-    public SourceEditor(final EditorTypingArea eta, Client client)
+    public SourceEditor(final EditorTypingArea eta, Client client, String path)
     {
         this.eta = eta;
         this.eta.addComponentListener(new TabSelectionFocusGainListener());
         this.eta.addKeyListener(this.newKeyListener());
         this.client = client;
+        this.path = path;
     }
 
     /**
@@ -115,40 +117,56 @@ public class SourceEditor extends JPanel
             @Override
             public void keyPressed(KeyEvent ke)
             {
-                try
+                switch (ke.getKeyCode())
                 {
-                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                    // System.out.println(server.lastUpdateTime());
-                    TypingEventMode mode = TypingEventMode.insert;
-                    switch (ke.getKeyChar())
+                case 37:
+                    eta.moveLeft();
+                    break;
+                case 39:
+                    eta.moveRight();
+                    break;
+                default:
+                {
+                    try
                     {
-                    case '\u0008':
-                    {
-                        mode = TypingEventMode.backspace;
-                        // eta.moveLeft();
-                    }
-                        break;
-                    // case '\u0027':
-                    // tryCaretPosition(position + 1);
-                    // break;
-                    default:
-                    {
-                        // eta.moveRight();
-                    }
-                    }
+                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                        // System.out.println(server.lastUpdateTime());
+                        TypingEventMode mode = TypingEventMode.insert;
+                        String chr;
+                        if (ke.isShiftDown())
+                            chr = "";
+                        else
+                        {
+                            switch (ke.getKeyChar())
+                            {
+                            case '\u0008':
+                            {
+                                mode = TypingEventMode.backspace;
+                                // eta.moveLeft();
+                            }
+                                break;
+                            default:
+                                eta.moveRight();
+                                break;
+                            }
 
-                    TypingEvent te = new TypingEvent(
-                            System.currentTimeMillis(), mode, eta
-                                    .getCaretPosition(), String.valueOf(ke
-                                    .getKeyChar()));
-                    System.out.println("push to server: " + te);
-                    outgoingEvents.add(te);
-                    client.pushToServer(outgoingEvents);
+                            chr = "" + ke.getKeyChar();
+                        }
+
+                        TypingEvent te = new TypingEvent(System
+                                .currentTimeMillis(), mode, eta
+                                .getCaretPosition(), chr);
+                        System.out.println("push to server: " + te);
+                        outgoingEvents.add(te);
+                        client.pushToServer(outgoingEvents, path);
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
                 }
+
             }
 
             @Override
