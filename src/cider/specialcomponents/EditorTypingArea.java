@@ -26,6 +26,7 @@ public class EditorTypingArea extends JPanel
     private long lastUpdateTime = 0;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
+    private int leftMargin = 16;
 
     public EditorTypingArea()
     {
@@ -108,7 +109,14 @@ public class EditorTypingArea extends JPanel
     private void paintLine(Graphics g, String line, int lineNumber)
     {
         g.setFont(font);
-        g.drawString(line, 10, lineNumber * 10);
+        g.setColor(Color.black);
+        int sy = lineNumber * 10;
+        int ry = lineNumber * 5 - 2;
+        g.drawString(line, 10 + this.leftMargin, sy);
+        g.setColor(new Color(0.9f, 0.9f, 0.9f));
+        // g.fillRect(0, ry, this.leftMargin, ry + 4);
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawString("" + lineNumber, 3, sy);
     }
 
     @Override
@@ -139,8 +147,8 @@ public class EditorTypingArea extends JPanel
             int x = (localCP + 2) * 7;
             int y = (caretLine == 0 ? 0 : caretLine - 1) * 10;
             g.setColor(Color.BLUE);
-            g.drawLine(x + 10, y, x + 10, y + 11);
-            g.setColor(Color.BLACK);
+            g.drawLine(x + 10 + this.leftMargin, y, x + 10 + this.leftMargin,
+                    y + 11);
         }
     }
 
