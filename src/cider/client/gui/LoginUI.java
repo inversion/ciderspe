@@ -2,6 +2,7 @@ package cider.client.gui;
 
 import java.awt.Component;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,6 +84,12 @@ public class LoginUI
         lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         box.add(lblImage);
+        
+        //JFrame icon
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image3 = new ImageIcon(x);
+        Image test3 = image3.getImage();
+        login.setIconImage(test3);
 
         // Username, Password, Address, Port Labels/Textboxes
         JPanel infoPanel = new JPanel();
