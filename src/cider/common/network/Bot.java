@@ -87,8 +87,8 @@ public class Bot
         this.liveFolder = new LiveFolder("root");
         SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
         Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.addAll(SourceDocument.generateEvents(0, 1000, 0,
-                "This was a triumph!", TypingEventMode.insert, "bot"));
+        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
+                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         t1.push(tes);
         this.liveFolder.makeFolder("testFolder").makeFolder("test2")
                 .makeDocument("test2Doc.SourceDocument");
