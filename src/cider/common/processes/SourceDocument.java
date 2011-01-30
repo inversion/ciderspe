@@ -19,6 +19,7 @@ public class SourceDocument implements ICodeLocation
     public String name = "untitled";
     private long latestTime;
     private ArrayList<LockingRegion> lockingRegions = new ArrayList<LockingRegion>();
+    private String owner = "";
 
     public SourceDocument(String name)
     {
@@ -241,7 +242,8 @@ public class SourceDocument implements ICodeLocation
             }
             case lockRegion:
             {
-
+                this.lockingRegions.add(new LockingRegion(this.owner,
+                        event.position, event.position + event.length));
             }
             }
         }
