@@ -62,13 +62,13 @@ public class LoginUI
         login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
-        try
+        /*try
         {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         catch (Exception e)
         {
-        }
+        }*/
 
         JPanel main = new JPanel();
         main.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
@@ -235,13 +235,13 @@ public class LoginUI
         connecting.setResizable(false);
         
         JPanel panel = new JPanel();
-        try
+        /*try
         {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
         catch (Exception e)
         {
-        }
+        }*/
         
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         Box box = Box.createHorizontalBox();
