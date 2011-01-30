@@ -87,9 +87,9 @@ public class LoginUI
         
         //JFrame icon
         URL x = this.getClass().getResource("icon.png");
-        ImageIcon image3 = new ImageIcon(x);
-        Image test3 = image3.getImage();
-        login.setIconImage(test3);
+        ImageIcon image2 = new ImageIcon(x);
+        Image test = image2.getImage();
+        login.setIconImage(test);
 
         // Username, Password, Address, Port Labels/Textboxes
         JPanel infoPanel = new JPanel();

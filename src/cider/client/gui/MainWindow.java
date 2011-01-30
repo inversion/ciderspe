@@ -224,33 +224,7 @@ class MainWindow implements Runnable
                 }
                 else if (action.equals("My Profile"))
                 {
-                	JFrame profileFrame = new JFrame("My Profile");
-                	Container content = profileFrame.getContentPane();
-                	content.setLayout(new GridLayout(10, 2));
-                	
-                	profileFrame.setBounds(100, 100, 400, 350);
-                	profileFrame.setResizable(false);
-                	//profileFrame.pack();
-                	profileFrame.show();
-                	profileFrame.setLocationRelativeTo(null);
-                	
-                	JLabel uName = new JLabel("Username: " + username);
-                	uName.setHorizontalAlignment(JLabel.LEFT);
-                	uName.setVerticalAlignment(JLabel.TOP);
-                	content.add(uName);
-                	
-//                	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
-                	JLabel uPwd = new JLabel("Password: " + "ilikemen123"); //TODO: stop pissing around
-                	uPwd.setHorizontalAlignment(JLabel.LEFT);
-                	uPwd.setVerticalAlignment(JLabel.TOP);
-                	content.add(uPwd);
-                	
-                	JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
-                	chars.setHorizontalAlignment(JLabel.LEFT);
-                	chars.setVerticalAlignment(JLabel.TOP);
-                	content.add(chars);
-                	
-                	profileFrame.setVisible(true);
+                	showMyProfile();
                 }
                 else if (action.equals("Close File"))
                 {
@@ -277,10 +251,72 @@ class MainWindow implements Runnable
                 	LoginUI.login.setVisible(true);
                 	w.setVisible(false);
                 }
+                else if (action.equals("About"))
+                {
+                	showAbout();
+                }
 
             }
         };
         return AL;
+    }
+    
+    private void showMyProfile()
+    {
+    	JFrame profileFrame = new JFrame("My Profile- " + username);
+    	Container content = profileFrame.getContentPane();
+    	content.setLayout(new GridLayout(10, 2));
+    	
+    	URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        profileFrame.setIconImage(test);
+    	
+    	profileFrame.setBounds(100, 100, 400, 350);
+    	profileFrame.setResizable(false);
+    	//profileFrame.pack();
+    	profileFrame.show();
+    	profileFrame.setLocationRelativeTo(null);
+    	
+    	JLabel uName = new JLabel("Username: " + username);
+    	uName.setHorizontalAlignment(JLabel.LEFT);
+    	uName.setVerticalAlignment(JLabel.TOP);
+    	content.add(uName);
+    	
+//    	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
+    	JLabel uPwd = new JLabel("Password: " + "ilikemen123"); //TODO: stop pissing around
+    	uPwd.setHorizontalAlignment(JLabel.LEFT);
+    	uPwd.setVerticalAlignment(JLabel.TOP);
+    	content.add(uPwd);
+    	
+    	JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
+    	chars.setHorizontalAlignment(JLabel.LEFT);
+    	chars.setVerticalAlignment(JLabel.TOP);
+    	content.add(chars);
+    	
+    	profileFrame.setVisible(true);
+    }
+    
+    private void showAbout()
+    {
+    	JFrame frame = new JFrame("About CIDEr");
+    	Container content = frame.getContentPane();
+    	content.setLayout(new GridLayout(10, 2));
+    	
+    	URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        frame.setIconImage(test);
+    	
+    	frame.setBounds(100, 100, 400, 350);
+    	frame.setResizable(false);
+    	frame.show();
+    	frame.setLocationRelativeTo(null);
+    	
+    	JLabel chars = new JLabel("CIDEr- Collaborative Integrated Development EnviRonment.");
+    	content.add(chars);
+    	
+    	frame.setVisible(true);
     }
 
     private void tabClicked(MouseEvent e)
@@ -325,9 +361,9 @@ class MainWindow implements Runnable
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
         addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
-        addMenuItem(menu, "Save As", -1, aL);
+        addMenuItem(menu, "Save As", KeyEvent.VK_A, aL);
         addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
-        addMenuItem(menu, "Logout", -1, aL);
+        addMenuItem(menu, "Logout", KeyEvent.VK_L, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
         // menu 2
@@ -374,45 +410,59 @@ class MainWindow implements Runnable
         panel.add(this.tabbedPane);
         return panel;
     }
+    
+    public JPanel pnlUsers()
+    {
+    	/*panel for the list of online users*/
+    	JPanel panel = new JPanel(new BorderLayout());
 
-    public JPanel mainArea()
-    {        
-        /*Chat panel stuffs- Alex*/
-        
-    	JPanel pnlUsers = new JPanel(new BorderLayout());
-    	JPanel pnlReceive = new JPanel(new BorderLayout());
-    	JPanel pnlSend = new JPanel(new BorderLayout());
     	Border emptyBorder = BorderFactory.createEmptyBorder();
-        
+
     	listModel = new DefaultListModel();
-    	//examples
+    	//example users
     	listModel.addElement("example_user_1");
     	listModel.addElement("example_user_2");
     	listModel.addElement("example_user_3");
-    	
+
     	userList = new JList(listModel);
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
-    	pnlUsers.add(new JLabel(" Users Online"), BorderLayout.NORTH);
-    	pnlUsers.add(userListScroll);
-        pnlUsers.setMinimumSize(new Dimension(0, 100));
+    	panel.add(new JLabel(listModel.getSize() + " Users Online"), BorderLayout.NORTH);
+    	panel.add(userListScroll);
+    	panel.setMinimumSize(new Dimension(0, 100));
+
+    	return panel;
+    }
+    
+    public JPanel pnlReceive()
+    {
+    	/*panel for the chat conversation*/
+    	JPanel panel = new JPanel(new BorderLayout());
     	
-        messageReceiveBox = new JTextArea();//new JEditorPane();
-        messageReceiveBox.setLineWrap(true);
-        messageReceiveBox.setWrapStyleWord(true);
-        Font receiveFont = new Font("Dialog", 2, 12);
-        messageReceiveBox.setFont(receiveFont);
-        messageReceiveBox.setEditable(false);
-        //messageReceiveBox.addActionListener(); TODO 
-        /*Format of output:
-         *[bold]username[/bold] timestamp: message*/
-        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
-        //messageReceiveBoxScroll.setBorder(emptyBorder);
-        pnlReceive.add(new JLabel(" User Chat"), BorderLayout.NORTH);
-        pnlReceive.add(messageReceiveBoxScroll, BorderLayout.CENTER);
-        pnlReceive.setPreferredSize(new Dimension(0, 800));
-        
-        /*Text field for message text*/
+    	 messageReceiveBox = new JTextArea();//new JEditorPane();
+         messageReceiveBox.setLineWrap(true);
+         messageReceiveBox.setWrapStyleWord(true);
+         Font receiveFont = new Font("Dialog", 2, 12);
+         messageReceiveBox.setFont(receiveFont);
+         messageReceiveBox.setEditable(false);
+         //messageReceiveBox.addActionListener(); TODO 
+         /*Format of output:
+          *[bold]username[/bold] timestamp: message*/
+         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+         //messageReceiveBoxScroll.setBorder(emptyBorder);
+         panel.add(new JLabel(" User Chat"), BorderLayout.NORTH);
+         panel.add(messageReceiveBoxScroll, BorderLayout.CENTER);
+         panel.setPreferredSize(new Dimension(0, 800));
+    	
+    	return panel;
+    }
+    
+    public JPanel pnlSend()
+    {
+    	/**/
+    	JPanel panel = new JPanel(new BorderLayout());
+    	
+    	 /*Text field for message text*/
         messageSendBox = new JTextArea();
         messageSendBox.setLineWrap(true);
         messageSendBox.setWrapStyleWord(true);
@@ -432,7 +482,7 @@ class MainWindow implements Runnable
             }*/
         });
         JScrollPane messageSendBoxScroll = new JScrollPane(messageSendBox);
-        pnlSend.add(messageSendBoxScroll, BorderLayout.CENTER);
+        panel.add(messageSendBoxScroll, BorderLayout.CENTER);
         
         JButton btnSend = new JButton("Send");
         btnSend.setMinimumSize(new Dimension(0,40));
@@ -461,35 +511,35 @@ class MainWindow implements Runnable
             	//chat.send.message(USER, dateFormat.format(date), messageSendBox.getText());
             }
         });
-        pnlSend.add(btnSend, BorderLayout.EAST);  
-        pnlSend.setMaximumSize(new Dimension(10, 40));
+        panel.add(btnSend, BorderLayout.EAST);  
+        panel.setMaximumSize(new Dimension(10, 40));
+    	
+    	return panel;
+    }
 
-        JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlUsers, pnlReceive);
+    public JPanel mainArea()
+    {        
+        /*Chat panel stuffs- Alex*/
+    	Border emptyBorder = BorderFactory.createEmptyBorder();
+    	
+        JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlUsers(), pnlReceive());
         usersReceive.setBorder(emptyBorder);
-        JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend);
-        chat.setBorder(emptyBorder);
         usersReceive.setOneTouchExpandable(true);
+        
+        JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend());
+        chat.setBorder(emptyBorder);
         chat.setOneTouchExpandable(true);
         //chat.setDividerLocation(800);
-        
-        //chat.add(box);
         /*End of Chat panel stuffs*/
-        
 
         JPanel panel = new JPanel(new BorderLayout());
-        dirSourceEditorSeletionSplit = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, dirView/* label */, this
-                        .sourceEditorSection());// textArea/*label2*/);
-        editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                dirSourceEditorSeletionSplit, chat/*new JLabel("chat")*/);
-
+        dirSourceEditorSeletionSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView, this.sourceEditorSection());
         dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
-        
         dirSourceEditorSeletionSplit.setBorder(emptyBorder);
-        // splitPane.setDividerLocation(150);
+
+        editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirSourceEditorSeletionSplit, chat);
         editorChatSplit.setOneTouchExpandable(true);
         this.editorChatSplit.setResizeWeight(1.0);
-        // splitPane2.setDividerLocation(150);
 
         // Provide minimum sizes for the two components in the split pane
         panel.add(editorChatSplit);
@@ -516,9 +566,9 @@ class MainWindow implements Runnable
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");
-        ImageIcon image3 = new ImageIcon(x);
-        Image test3 = image3.getImage();
-        w.setIconImage(test3);
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        w.setIconImage(test);
 
         JPanel p = new JPanel(new BorderLayout());
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
