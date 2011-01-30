@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -49,6 +50,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -380,6 +382,7 @@ class MainWindow implements Runnable
     	JPanel pnlUsers = new JPanel(new BorderLayout());
     	JPanel pnlReceive = new JPanel(new BorderLayout());
     	JPanel pnlSend = new JPanel(new BorderLayout());
+    	Border emptyBorder = BorderFactory.createEmptyBorder();
         
     	listModel = new DefaultListModel();
     	//examples
@@ -389,6 +392,7 @@ class MainWindow implements Runnable
     	
     	userList = new JList(listModel);
     	JScrollPane userListScroll = new JScrollPane(userList);
+    	//userListScroll.setBorder(emptyBorder);
     	pnlUsers.add(new JLabel(" Users Online"), BorderLayout.NORTH);
     	pnlUsers.add(userListScroll);
         pnlUsers.setMinimumSize(new Dimension(0, 100));
@@ -403,6 +407,7 @@ class MainWindow implements Runnable
         /*Format of output:
          *[bold]username[/bold] timestamp: message*/
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+        //messageReceiveBoxScroll.setBorder(emptyBorder);
         pnlReceive.add(new JLabel(" User Chat"), BorderLayout.NORTH);
         pnlReceive.add(messageReceiveBoxScroll, BorderLayout.CENTER);
         pnlReceive.setPreferredSize(new Dimension(0, 800));
@@ -460,7 +465,9 @@ class MainWindow implements Runnable
         pnlSend.setMaximumSize(new Dimension(10, 40));
 
         JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT, pnlUsers, pnlReceive);
+        usersReceive.setBorder(emptyBorder);
         JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend);
+        chat.setBorder(emptyBorder);
         usersReceive.setOneTouchExpandable(true);
         chat.setOneTouchExpandable(true);
         //chat.setDividerLocation(800);
@@ -477,6 +484,8 @@ class MainWindow implements Runnable
                 dirSourceEditorSeletionSplit, chat/*new JLabel("chat")*/);
 
         dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
+        
+        dirSourceEditorSeletionSplit.setBorder(emptyBorder);
         // splitPane.setDividerLocation(150);
         editorChatSplit.setOneTouchExpandable(true);
         this.editorChatSplit.setResizeWeight(1.0);
