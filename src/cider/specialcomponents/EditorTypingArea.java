@@ -7,18 +7,17 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
 
 import javax.swing.JPanel;
 
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
-import cider.common.processes.TypingEventMode;
 
 public class EditorTypingArea extends JPanel implements MouseListener
 {
@@ -31,7 +30,32 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
     private int leftMargin = 16;
-    private TreeSet<Integer> lineStarts = new TreeSet<Integer>();
+    private ArrayList<ETALine> lines = new ArrayList<ETALine>();
+
+    class ETALine
+    {
+        char[] str;
+        int y;
+
+        public ETALine(String str, int y, int startCP)
+        {
+            this.y = y;
+            this.str = str.toCharArray();
+        }
+
+        public void paint(Graphics g, int i)
+        {
+            g.setColor(Color.BLACK);
+            g.drawString("" + str[i], i * 7, this.y);
+        }
+
+        public void paintCaret(Graphics g, int i)
+        {
+            g.setColor(Color.BLUE);
+            int x = (i + 1) * 7;
+            g.drawLine(x, this.y - 10, x, this.y);
+        }
+    }
 
     public EditorTypingArea()
     {
@@ -99,6 +123,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             }
             this.doc.push(events);
             this.str = this.doc.toString();
+            this.refreshLines();
             this.updateUI();
             this.lastUpdateTime = latest;
         }
@@ -110,58 +135,40 @@ public class EditorTypingArea extends JPanel implements MouseListener
             throw new Exception(
                     "Cannot set text directly as this EditorTypingArea is tied to an ICodeLocation");
         this.str = text;
+        this.refreshLines();
         this.updateUI();
     }
 
-    private void paintLine(Graphics g, String line, int lineNumber,
-            boolean highlighted)
+    private void refreshLines()
     {
-        g.setFont(font);
-        g.setColor(Color.black);
-        int sy = lineNumber * 10;
-        int ry = lineNumber * 5 - 2;
-        if (highlighted)
-            g.drawRect(0, ry, this.getWidth(), 3);
-        g.drawString(line, 10 + this.leftMargin, sy);
-        g.setColor(new Color(0.9f, 0.9f, 0.9f));
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawString("" + lineNumber, 3, sy);
+        this.lines.clear();
+        String[] split = this.str.split("\\n");
+        int j = 1;
+        for (String lineStr : split)
+        {
+            this.lines.add(new ETALine(lineStr, j * 10, j++));
+        }
     }
 
     @Override
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
+        g.setFont(font);
         g.clearRect(0, 0, this.getWidth(), this.getHeight());
-        String[] lines = this.str.split("\n");
-        int i = 0;
-        int ln = 0;
-        this.lineStarts.clear();
-        for (String line : lines)
+        int p = 0;
+        for (ETALine line : this.lines)
         {
-            line = line.replace("\n", "");
-            this.lineStarts.add(i);
-            g.setColor(Color.LIGHT_GRAY);
-            boolean lockedOut = this.doc != null && this.doc.lockedOut(i);
-            this.paintLine(g, line, ++ln, lockedOut);
-            i += line.length();
+            for (int i = 0; i < line.str.length; i++)
+            {
+                if (p == this.caretPosition)
+                    line.paintCaret(g, i);
+                line.paint(g, i);
+                p++;
+            }
+            p++;
         }
 
-        if (this.caretVisible)
-        {
-
-            int cln = this.getLineNumberOf(this.caretPosition);
-            if (cln < 1)
-                cln++;
-            Integer lineStart = (Integer) this.lineStarts.toArray()[cln - 1];
-            int localCP = this.caretPosition - lineStart - cln + 1;
-            int x = (localCP * 7) + this.leftMargin + 16;
-            // System.out.println(cln);
-            int y = ((cln - 1) * 10);
-            g.setColor(Color.BLUE);
-            g.drawLine(x, y, x, y + 10);
-
-        }
     }
 
     public int getCaretPosition()
@@ -173,13 +180,15 @@ public class EditorTypingArea extends JPanel implements MouseListener
     {
         if (this.caretPosition > 0)
             this.caretPosition--;
+
         this.updateUI();
     }
 
     public void moveRight()
     {
-        if (this.caretPosition < this.str.length())
+        if (this.caretPosition < this.str.length() - 1)
             this.caretPosition++;
+
         this.updateUI();
     }
 
@@ -214,24 +223,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     }
 
-    public int getStartOfLineContaining(int position)
-    {
-        Integer ln = this.lineStarts.lower(position);
-        return ln != null ? ln : this.lineStarts.size() - 1;
-    }
-
-    public int getEndOfLineContaining(int position)
-    {
-        Integer ln = this.lineStarts.higher(position - 1);
-        return ln != null ? ln : this.lineStarts.size() - 1;
-    }
-
-    private int getLineNumberOf(int localCP)
-    {
-        Integer ln = this.lineStarts.headSet(localCP).size();
-        return ln != null ? ln : this.lineStarts.size() - 1;
-    }
-
     public int yToLineNumber(int y)
     {
         return (int) (y / 10.0) + 1;
@@ -240,23 +231,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     @Override
     public void mousePressed(MouseEvent me)
     {
-        int ln = yToLineNumber(me.getY());
-        int start = (Integer) this.lineStarts.toArray()[Math.min(
-                this.lineStarts.size() - 1, ln - 1)];
-        int end = this.getEndOfLineContaining(start + 1) - 1;
-        this.caretPosition = start;
-        this.updateUI();
-        System.out.println("locking " + start + ", " + end + ", ln " + ln);
 
-        if (this.codeLocation != null)
-        {
-            Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-            tes.add(new TypingEvent(lastUpdateTime, TypingEventMode.lockRegion,
-                    start, end, "", doc.getOwner()));
-            this.codeLocation.push(tes);
-        }
-        else
-            System.out.println("no code location to send locking event to");
     }
 
     @Override
