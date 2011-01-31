@@ -9,6 +9,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -165,6 +167,8 @@ public class LoginUI
         chkRemember.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         chkRemember.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(chkRemember);
+        
+        //fetchLogin();
 
         // Submit Button
         JButton btnSubmit = new JButton("Submit");
@@ -181,7 +185,24 @@ public class LoginUI
         login.setVisible(true);
     }
     
-    public ActionListener newAction()
+    private void fetchLogin() 
+    {
+    	try 
+    	{
+			FileReader fstream = new FileReader(currentDir + "login.txt");
+			txtUsername.setText("test");
+			txtPassword.setText("test");
+			txtServiceName.setText("test");
+			txtHost.setText("test");
+			txtPort.setText("test");
+		} 
+    	catch (FileNotFoundException e) 
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public ActionListener newAction()
     {
     	ActionListener AL = new ActionListener() 
     	{
@@ -191,12 +212,22 @@ public class LoginUI
     			String action = e.getActionCommand();
     			if (chkRemember.isSelected() == true)
     			{
-    				saveLoginDetails("string", "2", "blah", "troll");
-        			//saveLoginDetails(txtUsername, txtPassword, txtHost, txtPort)
+    				//saveLoginDetails("string", "2", "blah", "troll");
+        			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtHost.getText(), txtPort.getText());
     			}
     			else
     			{
-    				System.out.println("Don't save");
+    				String fileName = currentDir + "login.txt";
+    				File file = new File(fileName);
+    				
+    				try
+    				{
+    					file.delete();
+    				}
+    				catch(IllegalArgumentException err)
+    				{
+    					System.out.println("Deletion failed: " + fileName);
+    				}
     			}
     			showConnectBox();
     		}
@@ -207,14 +238,13 @@ public class LoginUI
     void saveLoginDetails(String txtUsername, String txtPassword, String txtHost, String txtPort)
     {
     	// TODO password encryption / encrypt everything
-    	System.out.println(txtUsername);
-    	System.out.println(currentDir);
+    	System.out.println("Saving loging details for '" + txtUsername + "' in directory: " + currentDir);
     	
     	try
     	{
     		FileWriter fstream = new FileWriter(currentDir + "login.txt");
     		BufferedWriter out = new BufferedWriter(fstream);
-    		out.write(txtUsername + txtPassword + txtHost + txtPort);
+    		out.write(txtUsername + ", " + txtPassword + ", " + txtHost + ", " + txtPort);
     		out.close();
     	}
     	catch (IOException e)
