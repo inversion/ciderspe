@@ -54,10 +54,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.drawString("" + this.ln, 5, this.y);
         }
 
-        public void paint(Graphics g, int i)
+        public void paint(Graphics g, int i, boolean locked)
         {
             g.setColor(Color.BLACK);
-            g.drawString("" + str[i], (i * 7) + leftMargin, this.y);
+            int x = (i * 7) + leftMargin;
+            int y = this.y;
+            if (locked)
+                g.fillRect(x, y, x + 3, y + 4);
+            g.drawString("" + str[i], x, y);
         }
 
         public void paintCaret(Graphics g, int i)
@@ -178,7 +182,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             {
                 if (p == this.caretPosition)
                     line.paintCaret(g, i);
-                line.paint(g, i);
+                line.paint(g, i, this.doc != null && this.doc.lockedOut(i));
                 p++;
             }
             p++;
