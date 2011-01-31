@@ -20,4 +20,18 @@ public class passwordEncrypt
 		System.out.println(encryptedText);
 		return encryptedText;
 	}
+	
+	public static String decrypt(String input)
+	{
+		String encryptedText = "";
+		for (int i = 0; i < input.length(); i++)
+		{
+			char c = input.charAt(i);
+			c = (char) (c - 128);
+			encryptedText+= c;
+		}
+		System.out.println("Input : " + input);
+		System.out.println("Output: " + encryptedText);
+		return encryptedText;
+	}
 }

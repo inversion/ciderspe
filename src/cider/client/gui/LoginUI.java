@@ -204,7 +204,7 @@ public class LoginUI
 				StringTokenizer token = new StringTokenizer(line, ",");
 				while (token.hasMoreTokens())
 				{
-					text[i] = token.nextToken();
+					text[i] = passwordEncrypt.decrypt(token.nextToken());
 					i++;
 				}
 			}
@@ -268,7 +268,7 @@ public class LoginUI
     	{
     		FileWriter fstream = new FileWriter(currentDir + "login.txt");
     		BufferedWriter out = new BufferedWriter(fstream);
-    		out.write(txtUsername + "," + txtPassword + "," + txtServiceName + "," + txtHost + "," + txtPort);
+    		out.write(passwordEncrypt.encrypt(txtUsername) + "," + passwordEncrypt.encrypt(txtPassword) + "," + passwordEncrypt.encrypt(txtServiceName) + "," + passwordEncrypt.encrypt(txtHost) + "," + passwordEncrypt.encrypt(txtPort));
     		out.close();
     	}
     	catch (IOException e)
