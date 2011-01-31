@@ -91,7 +91,8 @@ class MainWindow implements Runnable
     MainWindow( ) throws XMPPException
     {
         dirView = new DirectoryViewComponent();
-        username = "ciderclient@mossage.co.uk";
+        // NB: Don't put @mossage.co.uk after name, client handles this now
+        username = "ciderclient";
         client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
     	myProfile = new Profile (username);
@@ -103,8 +104,7 @@ class MainWindow implements Runnable
         // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         this.username = username;
-        // TODO: Minor change, perhaps client should handle transforming username to include domain and @
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username + "@" + serviceName, password, host, port, serviceName );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
         dirView.setClient(client);
         client.getFileList();
@@ -495,15 +495,15 @@ class MainWindow implements Runnable
             	String message = messageSendBox.getText();
             	if (!message.equals("")) //TODO disable send button if no meaningful text entered
             	{
-            		DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    Date date = new Date();
+            		//DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    //Date date = new Date();
 
-                	System.out.println(dateFormat.format(date) + " " + message);
+                	//System.out.println(dateFormat.format(date) + " " + message);
                 	
-                	client.updateChatLog(username, date, message);
+                	//client.updateChatLog(username, date, message);
+                	client.sendMessageChatroom( message );
                 	messageSendBox.setText("");
             	}
-            	client.sendMessageChatroom( messageSendBox.getText() );
             }
         });
         panel.add(btnSend, BorderLayout.EAST);  

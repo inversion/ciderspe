@@ -9,6 +9,7 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
@@ -32,6 +33,10 @@ public class Bot
     public static final String SERVICE_NAME = "mossage.co.uk";
     public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
     public static final String BOT_PASSWORD = "botpassword";
+    
+    // Chatroom
+    private MultiUserChat chatroom;
+    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a69" + "@" + "groupchat.google.com";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -70,9 +75,13 @@ public class Bot
             // Add self to roster
             connection.sendPacket(new Presence(Presence.Type.available));
 
+            // Set up and join chatroom
+            chatroom = new MultiUserChat( connection, chatroomName );
+            chatroom.join( "ciderbot" );
+            
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            botChatListener = new BotChatListener(this);
+            botChatListener = new BotChatListener( this, chatroom );
             chatmanager.addChatListener(botChatListener);
         }
         catch (XMPPException e)

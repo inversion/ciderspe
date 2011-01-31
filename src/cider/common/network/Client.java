@@ -2,7 +2,6 @@ package cider.common.network;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -15,13 +14,12 @@ import javax.swing.JTextArea;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.Roster;
-import org.jivesoftware.smack.RosterEntry;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.Form;
+import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
@@ -67,7 +65,7 @@ public class Client
     
     // Chatroom
     private MultiUserChat chatroom;
-    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a66" + "@" + "groupchat.google.com";
+    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a69" + "@" + "groupchat.google.com";
     
     private JTextArea messageReceiveBox;
 
@@ -93,7 +91,7 @@ public class Client
 			System.err.println( "Error Connecting: " + e1.getMessage() );
 		}
         try {
-			connection.login(username, password);
+			connection.login(username + "@" + serviceName, password);
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
 			System.err.println( "Error logging in: " + e1.getMessage() );
@@ -111,25 +109,9 @@ public class Client
         botChatlistener = new ClientMessageListener(dirView, this);
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
         
-        // Set up chatroom for users
+        // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat( connection, chatroomName );
-        try
-        {
-        	// Try and create the chatroom
-        	chatroom.create( username );
-        	chatroom.sendConfigurationForm( new Form( Form.TYPE_SUBMIT ) );
-        }
-        catch( XMPPException e )
-        {
-        	// If the chatroom already exists join it instead
-        	//System.err.println("Creating chatroom error: " + e.getMessage() );
-        	try {
-				chatroom.join( username );
-			} catch (XMPPException e1) {
-				// TODO Auto-generated catch block
-				System.err.println( "Error Joining chatroom: " + e1.getMessage() );
-			}
-        }
+        MultiUserChat.addInvitationListener( connection, new ClientChatroomInviteListener( chatroom, username ) );
         chatroom.addMessageListener( new ClientChatroomMessageListener( this ) );
     }
     
@@ -150,10 +132,9 @@ public class Client
     public void sendMessageChatroom( String message )
     {
     	try {
-    		Message msg = new Message( chatroomName, Message.Type.groupchat );
+    		Message msg = chatroom.createMessage();
     		msg.setBody( message );
 			chatroom.sendMessage( msg );
-			System.out.println("SENT");
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
