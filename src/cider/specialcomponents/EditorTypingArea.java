@@ -139,11 +139,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.lineStarts.clear();
         for (String line : lines)
         {
-
+            line = line.replace("\n", "");
             this.lineStarts.add(i);
             g.setColor(Color.LIGHT_GRAY);
             boolean lockedOut = this.doc != null && this.doc.lockedOut(i);
-            this.paintLine(g, line.replaceAll("\n", ""), ++ln, lockedOut);
+            this.paintLine(g, line, ++ln, lockedOut);
             i += line.length();
         }
 
@@ -160,14 +160,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int y = ((cln - 1) * 10);
             g.setColor(Color.BLUE);
             g.drawLine(x, y, x, y + 10);
-
-            /*
-             * int localCP = this.caretPosition - caretLineStart; //
-             * g.drawString("" + localCP, 400, 400); int x = ((localCP + 2) * 7)
-             * + this.leftMargin - 15; int y = (caretLine == 0 ? 0 : caretLine -
-             * 1) * 10; g.setColor(Color.BLUE); g.drawLine(x + 10 +
-             * this.leftMargin, y, x + 10 + this.leftMargin, y + 11);
-             */
 
         }
     }
