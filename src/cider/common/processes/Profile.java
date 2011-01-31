@@ -16,6 +16,7 @@ public class Profile
 {
 	public String uname;
 	public int typedChars;
+	public long timeSpent;
 	
 	public static void main (String uname)
 	{
@@ -26,6 +27,7 @@ public class Profile
 	{
 		uname = un;
 		typedChars = 0;
+		timeSpent = 0;
 		readProfileFile();
 	}
 	
@@ -34,7 +36,7 @@ public class Profile
 		File f = new File (uname + ".txt");
 		if (f.exists())
 		{
-			System.out.println("Profile file exists, reading");
+			System.out.println("Profile file exists, reading " + uname + ".txt");
 			try
 			{
 				FileInputStream fis = new FileInputStream(f);
@@ -49,6 +51,20 @@ public class Profile
 						try
 						{
 							typedChars = Integer.parseInt(splitline[1]);
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error: Integer parse failed in Profile.java");
+						}
+					}
+					if (line.contains("timespent:"))
+					{
+						String[] splitline = line.split(" ");
+						try
+						{
+							System.out.println(timeSpent);
+							timeSpent = Integer.parseInt(splitline[1]);
+							System.out.println(timeSpent);
 						}
 						catch (Exception e)
 						{
@@ -74,7 +90,7 @@ public class Profile
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0");
+				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0");
 				out.close();
 			} 
 			catch (IOException e) 
@@ -90,20 +106,30 @@ public class Profile
 		return;
 	}
 
+	public void updateTimeSpent(Long start)
+	{
+		long end, spent;
+		end = System.currentTimeMillis();
+		spent = end-start;
+
+		System.out.println("UPDATING TIME " + spent + timeSpent);
+		timeSpent += spent;
+	}
+	
 	public void updateProfileInfo() 
 	{
 		File f = new File (uname + ".txt");
 		try 
 		{
 			if (!f.exists())
-				System.out.println("Error: how the hell did that happen"); //TODO: should probably remove ;p
+				System.out.println("Error: User Profile file was not generated");
 			else
 			{
 				f.delete();
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars);
+				out.write(uname + "\n" + "chars: " + typedChars + "\ntimespent: " + timeSpent);
 				out.close();
 			}
 		} 
