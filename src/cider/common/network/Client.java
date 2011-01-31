@@ -65,7 +65,7 @@ public class Client
     
     // Chatroom
     private MultiUserChat chatroom;
-    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a69" + "@" + "groupchat.google.com";
+    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a70" + "@" + "groupchat.google.com";
     
     private JTextArea messageReceiveBox;
 
