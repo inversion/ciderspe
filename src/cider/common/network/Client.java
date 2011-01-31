@@ -102,12 +102,18 @@ public class Client
 
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
-        userChatListener = new ClientPrivateChatListener( userListModel );
-        chatmanager.addChatListener(userChatListener);
+//        userChatListener = new ClientPrivateChatListener( userListModel );
+//        chatmanager.addChatListener(userChatListener);
 
         // Establish chat session with the bot
         botChatlistener = new ClientMessageListener(dirView, this);
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
+        try {
+			botChat.sendMessage("hello");
+		} catch (XMPPException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat( connection, chatroomName );

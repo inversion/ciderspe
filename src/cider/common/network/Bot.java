@@ -40,9 +40,6 @@ public class Bot
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
-    private BotChatListener botChatListener;
-
-    private LiveFolder liveFolder;
 
     public static void main(String[] args)
     {
@@ -63,9 +60,6 @@ public class Bot
     {
         try
         {
-            this.testTree();
-            System.out.println(this.liveFolder.xml(""));
-
             // Connect and login to the XMPP server
             ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, SERVICE_NAME);
             connection = new XMPPConnection(config);
@@ -81,40 +75,17 @@ public class Bot
             
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            botChatListener = new BotChatListener( this );
-            chatmanager.addChatListener(botChatListener);
+            chatmanager.addChatListener( new BotChatListener( chatroom ) );
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
         }
     }
-    
-    public void inviteUser( String username )
-    {
-    	chatroom.invite( username, " " );
-    }
-
-    public void testTree()
-    {
-        this.liveFolder = new LiveFolder("root");
-        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
-        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
-                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
-        t1.push(tes);
-        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument");
-    }
 
     public void disconnect()
     {
         this.connection.disconnect();
-    }
-
-    public LiveFolder getRootFolder()
-    {
-        return this.liveFolder;
     }
 
 }
