@@ -250,8 +250,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
         if (ln > this.lines.size())
             ln = this.lines.size();
         ETALine line = this.lines.get(ln - 1);
-        this.caretPosition = line.start;
-        this.updateUI();
         int start = line.start;
         int end = start + line.str.length;
         System.out.println("locking " + start + ", " + end + ", ln " + ln);
