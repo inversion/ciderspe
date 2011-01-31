@@ -10,7 +10,6 @@ import java.util.Random;
 import java.util.TreeMap;
 
 /**
- * Experimental work: Real-time merging (unfinished)
  * 
  * @author Lawrence
  */

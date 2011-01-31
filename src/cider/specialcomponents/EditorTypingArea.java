@@ -136,32 +136,39 @@ public class EditorTypingArea extends JPanel implements MouseListener
         String[] lines = this.str.split("\n");
         int i = 0;
         int ln = 0;
-        int caretLine = 0;
-        int caretLineStart = 0;
         this.lineStarts.clear();
         for (String line : lines)
         {
-            this.lineStarts.add(caretLineStart);
+
+            this.lineStarts.add(i);
             g.setColor(Color.LIGHT_GRAY);
             boolean lockedOut = this.doc != null && this.doc.lockedOut(i);
-            this.paintLine(g, line, ++ln, lockedOut);
-            if (this.caretPosition >= i)
-            {
-                caretLine++;
-                caretLineStart = i + ln;
-            }
-            i += line.replaceAll("\n", "").length();
+            this.paintLine(g, line.replaceAll("\n", ""), ++ln, lockedOut);
+            i += line.length();
         }
 
         if (this.caretVisible)
         {
-            int localCP = this.caretPosition - caretLineStart;
-            // g.drawString("" + localCP, 400, 400);
-            int x = (localCP + 2) * 7 + this.leftMargin - 10;
-            int y = (caretLine == 0 ? 0 : caretLine - 1) * 10;
+
+            int cln = this.getLineNumberOf(this.caretPosition);
+            if (cln < 1)
+                cln++;
+            Integer lineStart = (Integer) this.lineStarts.toArray()[cln - 1];
+            int localCP = this.caretPosition - lineStart - cln + 1;
+            int x = (localCP * 7) + this.leftMargin + 16;
+            // System.out.println(cln);
+            int y = ((cln - 1) * 10);
             g.setColor(Color.BLUE);
-            g.drawLine(x + 10 + this.leftMargin, y, x + 10 + this.leftMargin,
-                    y + 11);
+            g.drawLine(x, y, x, y + 10);
+
+            /*
+             * int localCP = this.caretPosition - caretLineStart; //
+             * g.drawString("" + localCP, 400, 400); int x = ((localCP + 2) * 7)
+             * + this.leftMargin - 15; int y = (caretLine == 0 ? 0 : caretLine -
+             * 1) * 10; g.setColor(Color.BLUE); g.drawLine(x + 10 +
+             * this.leftMargin, y, x + 10 + this.leftMargin, y + 11);
+             */
+
         }
     }
 
@@ -217,7 +224,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public int getStartOfLineContaining(int position)
     {
-        return this.lineStarts.lower(position);
+        Integer ln = this.lineStarts.lower(position);
+        return ln != null ? ln : this.lineStarts.size() - 1;
     }
 
     public int getEndOfLineContaining(int position)
@@ -226,9 +234,15 @@ public class EditorTypingArea extends JPanel implements MouseListener
         return ln != null ? ln : this.lineStarts.size() - 1;
     }
 
+    private int getLineNumberOf(int localCP)
+    {
+        Integer ln = this.lineStarts.headSet(localCP).size();
+        return ln != null ? ln : this.lineStarts.size() - 1;
+    }
+
     public int yToLineNumber(int y)
     {
-        return (int) ((y + 2.0) / 10.0) + 1;
+        return (int) (y / 10.0) + 1;
     }
 
     @Override
@@ -237,7 +251,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int ln = yToLineNumber(me.getY());
         int start = (Integer) this.lineStarts.toArray()[Math.min(
                 this.lineStarts.size() - 1, ln - 1)];
-        int end = this.getEndOfLineContaining(start + 1);
+        int end = this.getEndOfLineContaining(start + 1) - 1;
+        this.caretPosition = start;
+        this.updateUI();
         System.out.println("locking " + start + ", " + end + ", ln " + ln);
 
         if (this.codeLocation != null)
