@@ -11,11 +11,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.sql.Date;
+import java.util.Calendar;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class Profile 
 {
 	public String uname;
 	public int typedChars;
+	public String lastOnline;
 	
 	public static void main (String uname)
 	{
@@ -26,6 +31,7 @@ public class Profile
 	{
 		uname = un;
 		typedChars = 0;
+		lastOnline = "never";
 		readProfileFile();
 	}
 	
@@ -54,6 +60,19 @@ public class Profile
 						{
 							System.err.println("Error: Integer parse failed in Profile.java");
 						}
+					}
+					if (line.contains("lasttime:"))
+					{
+						String[] splitline = line.split(" ");
+						try
+						{
+							lastOnline = splitline[3];
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error: Last Online parse failed in Profile.java");
+						}
+					      
 					}
 				}
 			}
@@ -99,11 +118,12 @@ public class Profile
 				System.out.println("Error: how the hell did that happen"); //TODO: should probably remove ;p
 			else
 			{
+				lastOnline = Date.toGMTString();
 				f.delete();
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars);
+				out.write(uname + "\n" + "chars: " + typedChars + "\n" + "lastime: " + lastOnline);
 				out.close();
 			}
 		} 

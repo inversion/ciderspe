@@ -291,6 +291,11 @@ class MainWindow implements Runnable
     	chars.setVerticalAlignment(JLabel.TOP);
     	content.add(chars);
     	
+    	JLabel last = new JLabel("Last Time Online: " + myProfile.lastOnline);
+        chars.setHorizontalAlignment(JLabel.LEFT);
+        chars.setVerticalAlignment(JLabel.TOP);
+        content.add(last);
+    	
     	profileFrame.setVisible(true);
     }
     
