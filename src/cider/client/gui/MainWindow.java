@@ -269,6 +269,12 @@ class MainWindow implements Runnable
                 {
                 	showAbout();
                 }
+                else if (action.equals("Update Profile"))
+                {
+                	myProfile.updateTimeSpent(startTime);
+                	startTime = System.currentTimeMillis();
+                	myProfile.updateProfileInfo();
+                }
 
             }
 
@@ -458,7 +464,7 @@ class MainWindow implements Runnable
         menuBar.add(menu);
 
         addMenuItem(menu, "Push file to server (NYI)", -1, aL);
-        addMenuItem(menu, "Get file list from server (NYI)", -1, aL);
+        addMenuItem(menu, "Update Profile", -1, aL);
         addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
 
         return menuBar;
