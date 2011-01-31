@@ -29,30 +29,38 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private long lastUpdateTime = 0;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
-    private int leftMargin = 16;
+    private int leftMargin = 32;
     private ArrayList<ETALine> lines = new ArrayList<ETALine>();
 
     class ETALine
     {
         char[] str;
         int y;
+        int ln;
 
-        public ETALine(String str, int y, int startCP)
+        public ETALine(String str, int y, int ln)
         {
+            this.ln = ln;
             this.y = y;
             this.str = str.toCharArray();
+        }
+
+        public void paintMargin(Graphics g)
+        {
+            g.setColor(Color.GRAY);
+            g.drawString("" + this.ln, 5, this.y);
         }
 
         public void paint(Graphics g, int i)
         {
             g.setColor(Color.BLACK);
-            g.drawString("" + str[i], i * 7, this.y);
+            g.drawString("" + str[i], (i * 7) + leftMargin, this.y);
         }
 
         public void paintCaret(Graphics g, int i)
         {
             g.setColor(Color.BLUE);
-            int x = (i + 1) * 7;
+            int x = ((i + 1) * 7) + leftMargin;
             g.drawLine(x, this.y - 10, x, this.y);
         }
     }
@@ -159,6 +167,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int p = 0;
         for (ETALine line : this.lines)
         {
+            line.paintMargin(g);
             for (int i = 0; i < line.str.length; i++)
             {
                 if (p == this.caretPosition)
