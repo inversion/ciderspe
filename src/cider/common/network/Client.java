@@ -143,7 +143,8 @@ public class Client
     	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
     	
     	//messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
-        messageReceiveBox.append(message + "\n");
+    	System.out.println(username + "\n" + date + "\n" + message);
+    	messageReceiveBox.append(username + " (" + (date) + "):\n" + message + "\n");
     }
     
     public void sendMessageChatroom( String message )
