@@ -423,7 +423,7 @@ class MainWindow implements Runnable
     	}
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
-    	panel.add(new JLabel(userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
+    	panel.add(new JLabel(" " + userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
     	panel.add(userListScroll);
     	panel.setMinimumSize(new Dimension(0, 100));
 
