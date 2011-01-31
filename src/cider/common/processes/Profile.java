@@ -11,12 +11,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.util.Date;
 
 public class Profile 
 {
 	public String uname;
 	public int typedChars;
 	public long timeSpent;
+	public String lastOnline;
 	
 	public static void main (String uname)
 	{
@@ -28,6 +31,7 @@ public class Profile
 		uname = un;
 		typedChars = 0;
 		timeSpent = 0;
+		lastOnline = "Never!";
 		readProfileFile();
 	}
 	
@@ -62,9 +66,20 @@ public class Profile
 						String[] splitline = line.split(" ");
 						try
 						{
-							System.out.println(timeSpent);
 							timeSpent = Integer.parseInt(splitline[1]);
-							System.out.println(timeSpent);
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error: Integer parse failed in Profile.java");
+						}
+					}
+					if (line.contains("lastonline:"))
+					{
+						int index = line.indexOf(" ");
+						line = line.substring(index);
+						try
+						{
+							lastOnline = line;
 						}
 						catch (Exception e)
 						{
@@ -90,7 +105,7 @@ public class Profile
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0");
+				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0\nlastonline: Never!");
 				out.close();
 			} 
 			catch (IOException e) 
@@ -127,9 +142,12 @@ public class Profile
 			{
 				f.delete();
 				f.createNewFile();
+				Date d = new Date();
+				DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
+				lastOnline = df.format(d);
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars + "\ntimespent: " + timeSpent);
+				out.write(uname + "\n" + "chars: " + typedChars + "\ntimespent: " + timeSpent + "\nlastonline: " + lastOnline);
 				out.close();
 			}
 		} 
