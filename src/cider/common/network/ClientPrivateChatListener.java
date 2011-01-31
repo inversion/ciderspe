@@ -30,7 +30,6 @@ public class ClientPrivateChatListener implements ChatManagerListener {
 	@Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		// TODO Auto-generated method stub
-		System.out.println("Chat created...");
 		chats.add( chat );
 		chat.addMessageListener( userChatMessageListener );
 	}
