@@ -16,11 +16,11 @@ public class BotChatListener implements ChatManagerListener {
 	
 	public static final boolean DEBUG = true;
 	
-	private Bot source;
+	private MultiUserChat chatroom;
 	
-	BotChatListener( Bot source )
+	BotChatListener( MultiUserChat chatroom )
 	{
-		this.source = source;
+		this.chatroom = chatroom;
 	}
 
     @Override
@@ -29,11 +29,11 @@ public class BotChatListener implements ChatManagerListener {
         if( DEBUG )
             System.out.println(chat.getParticipant() + " initiated chat...");
 
-        chat.addMessageListener( new BotMessageListener( source ) );
+        chat.addMessageListener( new BotMessageListener( ) );
         
         // Invite this user to the chatroom
         System.out.println( "Inviting user " + chat.getParticipant() );
-        source.inviteUser( chat.getParticipant() );
+        chatroom.invite( chat.getParticipant(), " " );
     }
 
 }
