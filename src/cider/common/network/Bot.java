@@ -35,11 +35,12 @@ public class Bot
     public static final String BOT_PASSWORD = "botpassword";
     
     // Chatroom
-    private MultiUserChat chatroom;
+    protected MultiUserChat chatroom;
     private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a70" + "@" + "groupchat.google.com";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
+    private BotChatListener chatListener;
 
     public static void main(String[] args)
     {
@@ -66,16 +67,14 @@ public class Bot
             connection.connect();
             connection.login(BOT_USERNAME, BOT_PASSWORD);
 
-            // Add self to roster
-            connection.sendPacket(new Presence(Presence.Type.available));
-
             // Set up and join chatroom
             chatroom = new MultiUserChat( connection, chatroomName );
             chatroom.join( "ciderbot" );
             
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            chatmanager.addChatListener( new BotChatListener( chatroom ) );
+            chatListener = new BotChatListener( this );
+            chatmanager.addChatListener( chatListener );
         }
         catch (XMPPException e)
         {

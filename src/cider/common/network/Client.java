@@ -14,9 +14,12 @@ import javax.swing.JTextArea;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.PacketInterceptor;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
@@ -83,37 +86,65 @@ public class Client
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
-        connection = new XMPPConnection(config);
+        connection = new XMPPConnection( config );
         try {
 			connection.connect();
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
 			System.err.println( "Error Connecting: " + e1.getMessage() );
 		}
+		
+		if( DEBUG )
+			System.out.println("Connected to XMPP server, using TLS=" + connection.isSecureConnection() + ", using compression=" + connection.isUsingCompression() );
+		
         try {
 			connection.login(username + "@" + serviceName, password);
 		} catch (XMPPException e1) {
 			// TODO Auto-generated catch block
 			System.err.println( "Error logging in: " + e1.getMessage() );
 		}
+		
+		if( DEBUG )
+			System.out.println("Logged into XMPP server, username=" + username + "@" + serviceName);
 
-        // Add self to roster
-        connection.sendPacket(new Presence(Presence.Type.available));
+        // Subscribe to bot
+        Presence sub = new Presence( Presence.Type.subscribe );
+        Packet pkt = (Packet)sub;
+        pkt.setTo( BOT_USERNAME );
+        connection.sendPacket( pkt );
+        
+        // TODO: TEMP SOLUTION: Reconnect to make sure friendship is established with bot
+        connection.disconnect();
+        connection = new XMPPConnection( config );
+        try {
+			connection.connect();
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			System.err.println( "Error Connecting: " + e1.getMessage() );
+		}
+		
+		if( DEBUG )
+			System.out.println("Connected to XMPP server, using TLS=" + connection.isSecureConnection() + ", using compression=" + connection.isUsingCompression() );
+		
+        try {
+			connection.login(username + "@" + serviceName, password);
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			System.err.println( "Error logging in: " + e1.getMessage() );
+		}
+		
+		if( DEBUG )
+			System.out.println("Logged into XMPP server, username=" + username + "@" + serviceName);
 
+		
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
 //        userChatListener = new ClientPrivateChatListener( userListModel );
 //        chatmanager.addChatListener(userChatListener);
-
+        
         // Establish chat session with the bot
         botChatlistener = new ClientMessageListener(dirView, this);
         botChat = chatmanager.createChat(BOT_USERNAME, botChatlistener);
-        try {
-			botChat.sendMessage("hello");
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat( connection, chatroomName );

@@ -1,5 +1,7 @@
 package cider.common.network;
 
+import java.util.ArrayList;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -17,10 +19,15 @@ public class BotChatListener implements ChatManagerListener {
 	public static final boolean DEBUG = true;
 	
 	private MultiUserChat chatroom;
+	private Bot source;
+	private ArrayList<Chat> chats;
 	
-	BotChatListener( MultiUserChat chatroom )
+	
+	BotChatListener( Bot source )
 	{
-		this.chatroom = chatroom;
+		this.chatroom = source.chatroom;
+		this.source = source;
+		chats = new ArrayList<Chat>();
 	}
 
     @Override
@@ -29,6 +36,8 @@ public class BotChatListener implements ChatManagerListener {
         if( DEBUG )
             System.out.println(chat.getParticipant() + " initiated chat...");
 
+        // Add this chat to the list of chats and give it a new message listener
+        chats.add( chat );
         chat.addMessageListener( new BotMessageListener( ) );
         
         // Invite this user to the chatroom

@@ -339,7 +339,7 @@ public class LoginUI
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
     	
-    	System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
+    	//System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
     	
     	MainWindow program;
 		try {
