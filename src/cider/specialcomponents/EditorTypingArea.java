@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventMode;
 
 public class EditorTypingArea extends JPanel implements MouseListener
 {
@@ -37,9 +38,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
         char[] str;
         int y;
         int ln;
+        public int start;
 
-        public ETALine(String str, int y, int ln)
+        public ETALine(String str, int y, int ln, int start)
         {
+            this.start = start;
             this.ln = ln;
             this.y = y;
             this.str = str.toCharArray();
@@ -152,9 +155,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.lines.clear();
         String[] split = this.str.split("\\n");
         int j = 1;
+        int i = 0;
         for (String lineStr : split)
         {
-            this.lines.add(new ETALine(lineStr, j * 10, j++));
+            ETALine line = new ETALine(lineStr, j * 10, j++, i);
+            this.lines.add(line);
+            i += line.str.length;
         }
     }
 
@@ -240,7 +246,25 @@ public class EditorTypingArea extends JPanel implements MouseListener
     @Override
     public void mousePressed(MouseEvent me)
     {
+        int ln = yToLineNumber(me.getY());
+        if (ln > this.lines.size())
+            ln = this.lines.size();
+        ETALine line = this.lines.get(ln - 1);
+        this.caretPosition = line.start;
+        this.updateUI();
+        int start = line.start;
+        int end = start + line.str.length;
+        System.out.println("locking " + start + ", " + end + ", ln " + ln);
 
+        if (this.codeLocation != null)
+        {
+            Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+            tes.add(new TypingEvent(lastUpdateTime, TypingEventMode.lockRegion,
+                    start, end, "", doc.getOwner()));
+            this.codeLocation.push(tes);
+        }
+        else
+            System.out.println("no code location to send locking event to");
     }
 
     @Override
