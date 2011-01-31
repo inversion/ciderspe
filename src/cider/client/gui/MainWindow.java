@@ -17,15 +17,18 @@ import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.Timer;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -62,7 +65,7 @@ class MainWindow implements Runnable
     public String currentFileName = "Unsaved Document 1";
     public String currentFileContents = "";
     public int currentTab = 0;
-    private Profile myProfile;
+    
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
@@ -74,6 +77,14 @@ class MainWindow implements Runnable
     public DefaultListModel userListModel = new DefaultListModel();
     public JTextArea messageSendBox;
     public JTextArea/*JEditorPane*/ messageReceiveBox = new JTextArea();
+    
+    /**
+     * These variable are for the profiles
+     * @author Jon
+     */
+    public long startTime;
+    private Profile myProfile;
+    
     
     // Main method and no parameter constructor for running without login box
     public static void main( String[] args )
@@ -90,12 +101,13 @@ class MainWindow implements Runnable
      
     MainWindow( ) throws XMPPException
     {
+    	myProfile = new Profile (username);
+    	startTime = System.currentTimeMillis();
         dirView = new DirectoryViewComponent();
         // NB: Don't put @mossage.co.uk after name, client handles this now
         username = "ciderclient";
         client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
-    	myProfile = new Profile (username);
         client.getFileList();
     }
     
@@ -103,6 +115,7 @@ class MainWindow implements Runnable
     {
         // TODO: Should more stuff be in the constructor rather than the mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
+    	myProfile = new Profile (username);
         this.username = username;
         client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
@@ -223,6 +236,10 @@ class MainWindow implements Runnable
                 {
                 	showMyProfile();
                 }
+                else if (action.equals("Reset My Profile"))
+                {
+                	restartProfile();
+                }
                 else if (action.equals("Close File"))
                 {
                     closeFile(action);
@@ -254,12 +271,51 @@ class MainWindow implements Runnable
                 }
 
             }
+
+			private void restartProfile() 
+			{
+                int response = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you wish to reset your lovely profile?");
+                if (response == 0)
+                {
+					File f = new File (username + ".txt");
+					try 
+					{
+						if (!f.exists())
+							System.out.println("Error: how the hell did that happen"); //TODO: should probably remove ;p
+						else
+						{
+							f.delete();
+							f.createNewFile();
+							FileWriter fw = new FileWriter(f);
+							BufferedWriter out = new BufferedWriter(fw);
+							System.out.println("Profile has been reset, new credentials are:");
+							System.out.println(username + "\n" + "chars: 0\ntimespent: 0");
+							out.write(username + "\n" + "chars: 0\ntimespent: 0");
+							out.close();
+						}
+					} 
+					catch (IOException e) 
+					{
+						e.printStackTrace();
+					}
+					myProfile = new Profile(username);
+					startTime = System.currentTimeMillis();
+                }
+                else
+                	return;
+			}
         };
         return AL;
     }
     
     private void showMyProfile()
     {
+    	System.out.println(myProfile.timeSpent);
+    	myProfile.updateTimeSpent(startTime);
+    	System.out.println(myProfile.timeSpent);
+    	startTime = System.currentTimeMillis();
+    	
     	JFrame profileFrame = new JFrame("My Profile- " + username);
     	Container content = profileFrame.getContentPane();
     	content.setLayout(new GridLayout(10, 2));
@@ -281,15 +337,20 @@ class MainWindow implements Runnable
     	content.add(uName);
     	
 //    	JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
-    	JLabel uPwd = new JLabel("Password: " + "ilikemen123"); //TODO: stop pissing around
-    	uPwd.setHorizontalAlignment(JLabel.LEFT);
-    	uPwd.setVerticalAlignment(JLabel.TOP);
-    	content.add(uPwd);
+//    	uPwd.setHorizontalAlignment(JLabel.LEFT);
+//    	uPwd.setVerticalAlignment(JLabel.TOP);
+//    	content.add(uPwd);
     	
     	JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
     	chars.setHorizontalAlignment(JLabel.LEFT);
     	chars.setVerticalAlignment(JLabel.TOP);
     	content.add(chars);
+    	
+    	Time t = new Time(myProfile.timeSpent);
+    	JLabel time = new JLabel("Total time spent: " + t);
+    	time.setHorizontalAlignment(JLabel.LEFT);
+    	time.setVerticalAlignment(JLabel.TOP);
+    	content.add(time);
     	
     	profileFrame.setVisible(true);
     }
@@ -581,6 +642,7 @@ class MainWindow implements Runnable
             @Override
             public void windowClosing(WindowEvent arg0)
             {
+            	myProfile.updateTimeSpent(startTime);
                 myProfile.updateProfileInfo();
                 System.out.println("disconnecting");
                 client.disconnect();
