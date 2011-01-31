@@ -18,7 +18,8 @@ public class ClientChatroomMessageListener implements PacketListener {
 	public void processPacket(Packet packet) {
 		// TODO Auto-generated method stub
 		Message msg = (Message) packet;
-		client.updateChatLog( msg.getFrom(), new Date(), msg.getBody() );
+		if( msg.getType() == Message.Type.groupchat )
+			client.updateChatLog( msg.getFrom(), new Date(), msg.getBody() );
 	}
 
 }

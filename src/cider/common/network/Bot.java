@@ -36,7 +36,7 @@ public class Bot
     
     // Chatroom
     private MultiUserChat chatroom;
-    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a69" + "@" + "groupchat.google.com";
+    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a70" + "@" + "groupchat.google.com";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -81,13 +81,18 @@ public class Bot
             
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            botChatListener = new BotChatListener( this, chatroom );
+            botChatListener = new BotChatListener( this );
             chatmanager.addChatListener(botChatListener);
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
         }
+    }
+    
+    public void inviteUser( String username )
+    {
+    	chatroom.invite( username, " " );
     }
 
     public void testTree()
