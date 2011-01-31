@@ -290,8 +290,8 @@ class MainWindow implements Runnable
 							FileWriter fw = new FileWriter(f);
 							BufferedWriter out = new BufferedWriter(fw);
 							System.out.println("Profile has been reset, new credentials are:");
-							System.out.println(username + "\n" + "chars: 0\ntimespent: 0");
-							out.write(username + "\n" + "chars: 0\ntimespent: 0");
+							System.out.println(username + "\n" + "chars: 0\ntimespent: 0\nlastonline: Never!");
+							out.write(username + "\n" + "chars: 0\ntimespent: 0\nlastonline: Never!");
 							out.close();
 						}
 					} 
@@ -347,10 +347,16 @@ class MainWindow implements Runnable
     	content.add(chars);
     	
     	Time t = new Time(myProfile.timeSpent);
+    	System.out.println("TS = " + myProfile.timeSpent);
     	JLabel time = new JLabel("Total time spent: " + t);
     	time.setHorizontalAlignment(JLabel.LEFT);
     	time.setVerticalAlignment(JLabel.TOP);
     	content.add(time);
+    	
+    	JLabel lastonline = new JLabel("You were last seen: " + myProfile.lastOnline);
+    	lastonline.setHorizontalAlignment(JLabel.LEFT);
+    	lastonline.setVerticalAlignment(JLabel.TOP);
+    	content.add(lastonline);
     	
     	profileFrame.setVisible(true);
     }
