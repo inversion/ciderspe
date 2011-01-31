@@ -20,11 +20,14 @@ public class BotChatListener implements ChatManagerListener {
 	
 	private MultiUserChat chatroom;
 	private Bot source;
+	private ArrayList<Chat> chats;
+	
 	
 	BotChatListener( Bot source )
 	{
 		this.chatroom = source.chatroom;
 		this.source = source;
+		chats = new ArrayList<Chat>();
 	}
 
     @Override
@@ -33,7 +36,9 @@ public class BotChatListener implements ChatManagerListener {
         if( DEBUG )
             System.out.println(chat.getParticipant() + " initiated chat...");
 
-        chat.addMessageListener( new BotMessageListener( source ) );
+        // Add this chat to the list of chats and give it a new message listener
+        chats.add( chat );
+        chat.addMessageListener( new BotMessageListener( ) );
         
         // Invite this user to the chatroom
         System.out.println( "Inviting user " + chat.getParticipant() );
