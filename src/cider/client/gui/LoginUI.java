@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,6 +15,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -168,7 +170,7 @@ public class LoginUI
         chkRemember.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(chkRemember);
         
-        //fetchLogin();
+        fetchLogin();
 
         // Submit Button
         JButton btnSubmit = new JButton("Submit");
@@ -187,18 +189,41 @@ public class LoginUI
     
     private void fetchLogin() 
     {
+    	/*Checks for login.txt file and fills in the details if found- Alex*/
     	try 
     	{
 			FileReader fstream = new FileReader(currentDir + "login.txt");
-			txtUsername.setText("test");
-			txtPassword.setText("test");
-			txtServiceName.setText("test");
-			txtHost.setText("test");
-			txtPort.setText("test");
+			BufferedReader in = new BufferedReader(fstream);
+
+			String line;
+			int i = 0;
+			String [] text = new String [5];
+
+			while((line = in.readLine()) != null)
+			{
+				StringTokenizer token = new StringTokenizer(line, ",");
+				while (token.hasMoreTokens())
+				{
+					text[i] = token.nextToken();
+					i++;
+				}
+			}
+			in.close();
+
+			txtUsername.setText(text[0]);
+			txtPassword.setText(text[1]);
+			txtServiceName.setText(text[2]);
+			txtHost.setText(text[3]);
+			txtPort.setText(text[4]);
+			chkRemember.setSelected(true);
 		} 
     	catch (FileNotFoundException e) 
 		{
-			e.printStackTrace();
+    		//System.out.println("File not found");
+		}
+    	catch (IOException e) 
+    	{
+    		//System.out.println("File not found");
 		}
 	}
 
@@ -212,8 +237,7 @@ public class LoginUI
     			String action = e.getActionCommand();
     			if (chkRemember.isSelected() == true)
     			{
-    				//saveLoginDetails("string", "2", "blah", "troll");
-        			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtHost.getText(), txtPort.getText());
+        			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
     			}
     			else
     			{
@@ -235,16 +259,16 @@ public class LoginUI
     	return AL;
     } 
 
-    void saveLoginDetails(String txtUsername, String txtPassword, String txtHost, String txtPort)
+    void saveLoginDetails(String txtUsername, String txtPassword, String txtServiceName, String txtHost, String txtPort)
     {
     	// TODO password encryption / encrypt everything
-    	System.out.println("Saving loging details for '" + txtUsername + "' in directory: " + currentDir);
+    	System.out.println("Saving login details for '" + txtUsername + "' in directory: " + currentDir);
     	
     	try
     	{
     		FileWriter fstream = new FileWriter(currentDir + "login.txt");
     		BufferedWriter out = new BufferedWriter(fstream);
-    		out.write(txtUsername + ", " + txtPassword + ", " + txtHost + ", " + txtPort);
+    		out.write(txtUsername + "," + txtPassword + "," + txtServiceName + "," + txtHost + "," + txtPort);
     		out.close();
     	}
     	catch (IOException e)
