@@ -35,12 +35,17 @@ public class BotMessageListener implements MessageListener
     // private Pattern putFileMatch = Pattern
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
     //private Matcher matcher = null;
+    private LiveFolder liveFolder;
     
-    private Bot source;
-    
-    public BotMessageListener( Bot source )
+    public BotMessageListener( )
     {
-    	this.source = source;
+        this.testTree();
+        System.out.println(this.liveFolder.xml(""));
+    }
+
+    public LiveFolder getRootFolder()
+    {
+        return this.liveFolder;
     }
     
     @Override
@@ -79,7 +84,7 @@ public class BotMessageListener implements MessageListener
             {
                 // chat.sendMessage("filelist=" +
                 // Base64.encodeObject(filelist));
-                String xml = source.getRootFolder().xml("");
+                String xml = this.getRootFolder().xml("");
                 chat.sendMessage("filelist=" + xml);
 
             }
@@ -100,7 +105,7 @@ public class BotMessageListener implements MessageListener
             arg = arg.split("\\)")[0];
             long t = Long.parseLong(arg);
 
-            Queue<LocalisedTypingEvents> events = source.getRootFolder()
+            Queue<LocalisedTypingEvents> events = this.getRootFolder()
                     .eventsSince(t, "");
             String instructions = "";
             for (LocalisedTypingEvents ltes : events)
@@ -130,7 +135,7 @@ public class BotMessageListener implements MessageListener
                 Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
                 typingEvents.add(new TypingEvent(preAndAfter[1]));
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                source.getRootFolder().path(dest).push(typingEvents);
+                this.getRootFolder().path(dest).push(typingEvents);
             }
 
             /*
@@ -160,5 +165,17 @@ public class BotMessageListener implements MessageListener
          * 
          * }
          */
+    }
+    
+    public void testTree()
+    {
+        this.liveFolder = new LiveFolder("root");
+        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
+                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
+        t1.push(tes);
+        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+                .makeDocument("test2Doc.SourceDocument");
     }
 }
