@@ -1,6 +1,8 @@
 package cider.common.processes;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -35,19 +37,23 @@ public class SourceDocumentDemo
         JFrame w = new JFrame();
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
+        SourceDocument sourceDocument = new SourceDocument("Demo User " + id);
+        EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
+                sourceDocument);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
-                this.server.timer, id);
+                this.server.timer, id, eta);
         w.add(panel);
         w.pack();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         w.setVisible(true);
-        PseudoClient client = new PseudoClient(panel, id);
+        PseudoClient client = new PseudoClient(panel, id, sourceDocument);
         this.server.addClient(client);
     }
 
     public class PseudoServer implements ICodeLocation
     {
-        private SourceDocument sourceDocument = new SourceDocument();
+        private SourceDocument sourceDocument = new SourceDocument(
+                "Bot Document");
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;
@@ -126,7 +132,7 @@ public class SourceDocumentDemo
 
     public class PseudoClient implements ICodeLocation
     {
-        SourceDocument sourceDocument = new SourceDocument();
+        SourceDocument sourceDocument;
         long lastUpdateTime;
         SDDemoPanel panel;
         private Timer timer = new Timer();
@@ -134,8 +140,10 @@ public class SourceDocumentDemo
         private long period = 100;
         int id;
 
-        public PseudoClient(final SDDemoPanel panel, final int id)
+        public PseudoClient(final SDDemoPanel panel, final int id,
+                SourceDocument sourceDocument)
         {
+            this.sourceDocument = sourceDocument;
             this.panel = panel;
             this.timer.scheduleAtFixedRate(new TimerTask()
             {
@@ -150,6 +158,21 @@ public class SourceDocumentDemo
                 }
             }, this.delay, this.period);
             this.id = id;
+
+            this.panel.eta.addActionListener(new ActionListener()
+            {
+
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                    TypingEvent te = (TypingEvent) e.getSource();
+                    outgoingEvents.add(te);
+                    System.out.println("push to server: " + te);
+                    server.push(outgoingEvents);
+                }
+
+            });
         }
 
         @Override
@@ -163,7 +186,8 @@ public class SourceDocumentDemo
 
                 try
                 {
-                    panel.updateText(sourceDocument.toString());
+                    this.panel.eta.updateText();
+                    // panel.updateText(sourceDocument.toString());
                 }// System.out.println(id + " : " + sourceDocument);
                 catch (Exception e)
                 {
@@ -219,15 +243,17 @@ public class SourceDocumentDemo
 
     public class SDDemoPanel extends JPanel
     {
-        EditorTypingArea eta = new EditorTypingArea();
+        EditorTypingArea eta;
         ICodeLocation server;
         int id;
 
         public SDDemoPanel(JFrame w, Dimension size,
-                final ICodeLocation server, final Timer timer, final int id)
+                final ICodeLocation server, final Timer timer, final int id,
+                final EditorTypingArea eta)
         {
             this.id = id;
             this.setSize(size);
+            this.eta = eta;
             this.eta.setPreferredSize(size);
             this.add(this.eta);
             this.server = server;
@@ -265,7 +291,10 @@ public class SourceDocumentDemo
                         {
                         case '\u0008':
                         {
-                            mode = TypingEventMode.backspace;
+                            if (eta.getCaretPosition() > 0)
+                                mode = TypingEventMode.backspace;
+                            else
+                                return;
                             // eta.moveLeft();
                         }
                             break;
@@ -294,24 +323,6 @@ public class SourceDocumentDemo
                     }
                 }
             });
-        }
-
-        public void updateText(String string)
-        {
-            try
-            {
-                this.eta.setText(string);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            catch (Throwable e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
         }
     }
 }

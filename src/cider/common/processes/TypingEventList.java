@@ -37,6 +37,16 @@ public class TypingEventList
         this.tel.remove(i);
     }
 
+    public boolean exists(int i)
+    {
+        return i > 0 && i < this.tel.size();
+    }
+
+    public TypingEvent get(int i)
+    {
+        return this.tel.get(i);
+    }
+
     public void clear()
     {
         this.tel.clear();

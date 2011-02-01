@@ -68,7 +68,7 @@ public class LocalCodeFile implements ICodeLocation
         try
         {
             this.out = new BufferedWriter(new FileWriter(this.file));
-            SourceDocument sd = new SourceDocument();
+            SourceDocument sd = new SourceDocument(this.file.getName());
             sd.putEvent(this.oldFileContent);
             sd.push(typingEvents);
             this.out.write(sd.toString());

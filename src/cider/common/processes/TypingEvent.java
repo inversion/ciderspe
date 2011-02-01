@@ -15,6 +15,7 @@ public class TypingEvent
     public final int length;
     public final String text;
     public final String owner;
+    public boolean locked = false;
 
     public TypingEvent(long time, final TypingEventMode mode, int position,
             int length, String text, String owner)
@@ -80,6 +81,11 @@ public class TypingEvent
             }
         }
         return result;
+    }
+
+    public void setLocked(boolean locked)
+    {
+        this.locked = locked;
     }
 
     @Override
