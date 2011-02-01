@@ -10,6 +10,7 @@ import java.util.Queue;
 import javax.swing.DefaultListModel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.ListModel;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -21,6 +22,7 @@ import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
+import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.Form;
 import org.jivesoftware.smackx.FormField;
 import org.jivesoftware.smackx.muc.MultiUserChat;
@@ -64,6 +66,7 @@ public class Client
     private String username;
 
     // Listen for private chat sessions with other users
+    // TODO: Not yet implemented
     private ClientPrivateChatListener userChatListener;
     
     // Chatroom
@@ -150,6 +153,7 @@ public class Client
         chatroom = new MultiUserChat( connection, chatroomName );
         MultiUserChat.addInvitationListener( connection, new ClientChatroomInviteListener( chatroom, username ) );
         chatroom.addMessageListener( new ClientChatroomMessageListener( this ) );
+        chatroom.addParticipantListener( new ClientChatroomParticipantListener( userListModel ) );
     }
     
     public void updateChatLog(String username, Date date, String message)
@@ -162,8 +166,8 @@ public class Client
     	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
     	
     	//messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
-    	System.out.println(username + "\n" + date + "\n" + message);
-    	messageReceiveBox.append(username + " (" + (date) + "):\n" + message + "\n");
+    	System.out.println(StringUtils.parseName( username ) + "\n" + date + "\n" + message);
+    	messageReceiveBox.append(StringUtils.parseName( username ) + " (" + (date) + "):\n" + message + "\n");
     }
     
     public void sendMessageChatroom( String message )
@@ -226,12 +230,13 @@ public class Client
         SourceDocument doc = this.liveFolder.path(strPath);
         if (!this.openTabs.containsKey(strPath))
         {
-            EditorTypingArea eta = new EditorTypingArea(doc);
-            SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
-            sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
-            this.openTabs.put(strPath, sourceEditor);
-            System.out.println("Pull since 0 since a new tab is being opened");
-            this.pullEventsSince(0);
+        	// TODO: Commented out by Andrew because it was causing an error
+            //EditorTypingArea eta = new EditorTypingArea(doc);
+            //SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
+            //sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
+            //this.openTabs.put(strPath, sourceEditor);
+            //System.out.println("Pull since 0 since a new tab is being opened");
+            //this.pullEventsSince(0);
         }
     }
 

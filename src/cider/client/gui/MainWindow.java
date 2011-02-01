@@ -498,8 +498,7 @@ class MainWindow implements Runnable
     	//userListScroll.setBorder(emptyBorder);
     	panel.add(new JLabel(" " + userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
     	panel.add(userListScroll);
-    	panel.setMinimumSize(new Dimension(0, 100));
-
+    	panel.setMinimumSize(new Dimension(0, 100));    	
     	return panel;
     }
     
