@@ -597,7 +597,7 @@ class MainWindow implements Runnable
         JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT, usersReceive, pnlSend());
         chat.setBorder(emptyBorder);
         chat.setOneTouchExpandable(true);
-        //chat.setDividerLocation(800);
+        chat.setDividerLocation(800);
         /*End of Chat panel stuffs*/
 
         JPanel panel = new JPanel(new BorderLayout());
