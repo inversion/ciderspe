@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
-import java.util.TreeSet;
 
 /**
  * 
@@ -18,7 +17,6 @@ public class SourceDocument implements ICodeLocation
     private PriorityQueue<TypingEvent> typingEvents;
     public String name = "untitled";
     private long latestTime;
-    private TreeSet<LockingRegion> lockingRegions = new TreeSet<LockingRegion>();
     private String owner;
 
     public SourceDocument(String owner, String name)
@@ -172,26 +170,25 @@ public class SourceDocument implements ICodeLocation
 
     public void putEvent(TypingEvent typingEvent)
     {
-        if (!this.lockedOut(typingEvent.position))
+        if (typingEvent.mode == TypingEventMode.lockRegion)
         {
-            this.typingEvents.add(typingEvent);
-            if (this.latestTime > typingEvent.time)
-                this.latestTime = typingEvent.time;
+            for (TypingEvent te : this.typingEvents)
+                if (te.position >= typingEvent.position
+                        && te.position <= typingEvent.position
+                                + typingEvent.length)
+                    te.locked = true;
         }
+
+        this.typingEvents.add(typingEvent);
+
+        if (this.latestTime > typingEvent.time)
+            this.latestTime = typingEvent.time;
     }
 
     public void putEvents(Collection<TypingEvent> values)
     {
         for (TypingEvent typingEvent : values)
             this.putEvent(typingEvent);
-    }
-
-    public boolean lockedOut(int position)
-    {
-        for (LockingRegion lockingRegion : this.lockingRegions)
-            if (lockingRegion.coversOver(this.owner, position))
-                return true;
-        return false;
     }
 
     public TypingEventList playOutEvents(Long endTime)
@@ -237,9 +234,6 @@ public class SourceDocument implements ICodeLocation
             case insert:
             {
                 string.insert(event);
-                for (LockingRegion lockingRegion : this.lockingRegions
-                        .tailSet(new LockingRegion(event.position - 1)))
-                    lockingRegion.move(event.text.equals("\n") ? 0 : 1);
             }
                 break;
             case overwrite:
@@ -250,38 +244,17 @@ public class SourceDocument implements ICodeLocation
             case backspace:
             {
                 string.backspace(event.position - 1);
-                for (LockingRegion lockingRegion : this.lockingRegions
-                        .tailSet(new LockingRegion(event.position + 1)))
-                    lockingRegion.move(string.get(event.position - 1).text
-                            .equals("\n") ? 0 : -1);
                 break;
             }
             case deleteAll:
             {
-                this.lockingRegions.clear();
                 string.clear();
-                break;
-            }
-            case lockRegion:
-            {
-                this.lockingRegions.add(new LockingRegion(this.owner,
-                        event.position, event.position + event.length));
-                break;
-            }
-            case unlockRegion:
-            {
-                this.lockingRegions.remove(event.position);
                 break;
             }
             }
         }
 
         return string;
-    }
-
-    public LockingRegion getLockingRegion(int position)
-    {
-        return this.lockingRegions.floor(new LockingRegion(position));
     }
 
     public String getOwner()

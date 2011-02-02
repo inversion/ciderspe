@@ -1,6 +1,7 @@
 package cider.common.processes;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class TypingEventList
@@ -90,5 +91,31 @@ public class TypingEventList
         for (TypingEvent te : this.tel)
             string += te.text;
         return string;
+    }
+
+    public LinkedList<TypingEventList> split(String string)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current = new TypingEventList();
+        for (TypingEvent te : this.tel)
+            if (te.text.equals(string))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
+    public boolean locked(int position)
+    {
+        return this.tel.get(position).locked;
+    }
+
+    public int length()
+    {
+        return this.tel.size();
     }
 }

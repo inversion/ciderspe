@@ -284,6 +284,7 @@ public class SourceDocumentDemo
                 {
                     try
                     {
+
                         Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                         // System.out.println(server.lastUpdateTime());
                         TypingEventMode mode = TypingEventMode.insert;
@@ -291,7 +292,8 @@ public class SourceDocumentDemo
                         {
                         case '\u0008':
                         {
-                            if (eta.getCaretPosition() > 0)
+                            if (eta.getCaretPosition() > 0
+                                    && !eta.currentPositionLocked(-1))
                                 mode = TypingEventMode.backspace;
                             else
                                 return;
@@ -303,7 +305,8 @@ public class SourceDocumentDemo
                         // break;
                         default:
                         {
-                            // eta.moveRight();
+                            if (eta.currentPositionLocked(0))
+                                return;
                         }
                         }
 
