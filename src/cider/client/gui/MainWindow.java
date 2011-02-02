@@ -74,6 +74,7 @@ class MainWindow implements Runnable
     private String username;
     
     public JList userList;
+    public JLabel userCount = new JLabel();
     public DefaultListModel userListModel = new DefaultListModel();
     public JTextArea messageSendBox;
     public JTextArea/*JEditorPane*/ messageReceiveBox = new JTextArea();
@@ -106,7 +107,7 @@ class MainWindow implements Runnable
         dirView = new DirectoryViewComponent();
         // NB: Don't put @mossage.co.uk after name, client handles this now
         username = "ciderclient";
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
         dirView.setClient(client);
         client.getFileList();
     }
@@ -117,7 +118,7 @@ class MainWindow implements Runnable
         dirView = new DirectoryViewComponent();
     	myProfile = new Profile (username);
         this.username = username;
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, messageReceiveBox, username, password, host, port, serviceName );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox, username, password, host, port, serviceName );
         // No need to put this. on tabbedPane and openTabs unless variable in current scope is overriding?
         dirView.setClient(client);
         client.getFileList();
@@ -480,7 +481,7 @@ class MainWindow implements Runnable
         panel.add(this.tabbedPane);
         return panel;
     }
-    
+
     public JPanel pnlUsers()
     {
     	/*panel for the list of online users*/
@@ -496,10 +497,11 @@ class MainWindow implements Runnable
     	}
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
-    	panel.add(new JLabel(" " + userListModel.getSize() + " Users Online"), BorderLayout.NORTH);
+    	
+    	userCount.setText(" " + userListModel.getSize() + " Users Online");
+    	panel.add(userCount, BorderLayout.NORTH);
     	panel.add(userListScroll);
-    	panel.setMinimumSize(new Dimension(0, 100));
-
+    	panel.setMinimumSize(new Dimension(0, 100));    	
     	return panel;
     }
     
