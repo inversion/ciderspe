@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.Queue;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ListModel;
@@ -76,7 +77,7 @@ public class Client
     private JTextArea messageReceiveBox;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, JTextArea messageReceiveBox, String username,
+            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, JLabel userCount, JTextArea messageReceiveBox, String username,
             String password, String host, int port, String serviceName)
             
     {
@@ -153,7 +154,7 @@ public class Client
         chatroom = new MultiUserChat( connection, chatroomName );
         MultiUserChat.addInvitationListener( connection, new ClientChatroomInviteListener( chatroom, username ) );
         chatroom.addMessageListener( new ClientChatroomMessageListener( this ) );
-        chatroom.addParticipantListener( new ClientChatroomParticipantListener( userListModel ) );
+        chatroom.addParticipantListener( new ClientChatroomParticipantListener( userListModel, userCount ) );
     }
     
     public void updateChatLog(String username, Date date, String message)

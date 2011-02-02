@@ -3,6 +3,7 @@ package cider.common.network;
 import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
@@ -22,15 +23,17 @@ import org.jivesoftware.smack.util.StringUtils;
 public class ClientChatroomParticipantListener implements PacketListener {
 
 	public DefaultListModel list;
+	private JLabel userCount;
 	
 	// Maintain table of users online/offline
 	// TODO: Implement some sort of greyed out status in the GUI for users that have been 'seen' but are offline
 	private HashMap<String,Boolean> users;
 	
-	public ClientChatroomParticipantListener( DefaultListModel userListModel ) 
+	public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal ) 
 	{
 		list = userListModel;
 		users = new HashMap<String,Boolean>();
+		userCount = userTotal;
 	}
 
 	@Override
@@ -46,6 +49,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
 			{
 				users.put( nickname, true );
 				list.addElement( nickname );
+				userCount.setText(" " + list.getSize() + " Users Online");
 			}
 		}
 		else if( pres.getType() == Presence.Type.unavailable )
@@ -55,6 +59,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
 			{
 				users.remove( nickname );
 				list.removeElement( nickname );
+				userCount.setText(" " + list.getSize() + " Users Online");
 			}
 		}
 			
