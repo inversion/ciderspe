@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
@@ -490,11 +491,67 @@ class MainWindow implements Runnable
     	Border emptyBorder = BorderFactory.createEmptyBorder();
 
     	userList = new JList(userListModel);
-    	for (int i=0; i < userList.getModel().getSize(); i++) 
+    	/*for (int i=0; i < userList.getModel().getSize(); i++) 
     	{
     	    Object item = userList.getModel().getElementAt(i);
     	    userList.setForeground(Color.red); //TODO looking at using different colours for each user    	    
-    	}
+    	}*/
+    	
+    	/*this can be used to initiate a private chat- Alex*/
+    	 MouseListener mouseListener = new MouseAdapter() {
+    	     public void mouseClicked(MouseEvent e) {
+    	         if (e.getClickCount() == 2) {
+    	             int i = userList.locationToIndex(e.getPoint());
+    	             System.out.println("Double clicked on Item " + i);
+    	             System.out.println("Double clicked on Item: " + userList.getModel().getElementAt(i));  
+    	             //initiate.private.chat.with(userList.getModel().getElementAt(i));
+    	          }
+    	         else if (e.getButton() == MouseEvent.BUTTON3)
+    	         {
+    	        	 /*pop up for viewing users profile/stats etc");*/
+    	        	
+    	             JPopupMenu popupMenu = new JPopupMenu();
+    	             JMenuItem chat = new JMenuItem("Chat with User");
+    	             JMenuItem showProfile = new JMenuItem("Show User's Profile");
+    	             chat.addActionListener(new ActionListener()
+    	             {
+    	                 public void actionPerformed(ActionEvent e)
+    	                 {
+    	                     SwingUtilities.invokeLater(new Runnable()
+    	                     {
+    	                         public void run()
+    	                         {
+    	                        	//initiate.private.chat.with(userList.getModel().getElementAt(i));
+    	                         }
+    	                     });
+    	                 }
+    	             });
+    	             popupMenu.add(chat);
+    	             
+    	             showProfile.addActionListener(new ActionListener()
+    	             {
+    	                 public void actionPerformed(ActionEvent e)
+    	                 {
+    	                     SwingUtilities.invokeLater(new Runnable()
+    	                     {
+    	                         public void run()
+    	                         {
+    	                        	 showMyProfile(); //TODO could this be parsed the username that you want to see the profile of?
+    	                         }
+    	                     });
+    	                 }
+    	             });
+    	             popupMenu.add(showProfile);
+
+    	             // display popup near location of mouse click
+    	             popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+    	         }
+    	     }
+    	 };
+    	 userList.addMouseListener(mouseListener);
+    	
+    	
+    	
     	JScrollPane userListScroll = new JScrollPane(userList);
     	//userListScroll.setBorder(emptyBorder);
     	
