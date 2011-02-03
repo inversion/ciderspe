@@ -66,7 +66,7 @@ public class SourceDocument implements ICodeLocation
                 TypingEventMode.overwrite, "na"));
         tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
                 "na"));
-        tes.addAll(generateEvents(800, 1000, 28, "jumped",
+        tes.addAll(generateEvents(800, 1000, 27, "jumped",
                 TypingEventMode.backspace, "na"));
         tes.addAll(generateEvents(2000, 2500, 21, "bounced",
                 TypingEventMode.insert, "na"));
@@ -170,19 +170,24 @@ public class SourceDocument implements ICodeLocation
 
     public void putEvent(TypingEvent typingEvent)
     {
-        if (typingEvent.mode == TypingEventMode.lockRegion)
+        if (this.typingEvents.contains(typingEvent))
+            return;
+        else
         {
-            for (TypingEvent te : this.typingEvents)
-                if (te.position >= typingEvent.position
-                        && te.position <= typingEvent.position
-                                + typingEvent.length)
-                    te.locked = true;
+            if (typingEvent.mode == TypingEventMode.lockRegion)
+            {
+                for (TypingEvent te : this.typingEvents)
+                    if (te.position >= typingEvent.position
+                            && te.position <= typingEvent.position
+                                    + typingEvent.length)
+                        te.locked = true;
+            }
+
+            this.typingEvents.add(typingEvent);
+
+            if (this.latestTime > typingEvent.time)
+                this.latestTime = typingEvent.time;
         }
-
-        this.typingEvents.add(typingEvent);
-
-        if (this.latestTime > typingEvent.time)
-            this.latestTime = typingEvent.time;
     }
 
     public void putEvents(Collection<TypingEvent> values)
@@ -243,7 +248,7 @@ public class SourceDocument implements ICodeLocation
             }
             case backspace:
             {
-                string.backspace(event.position - 1);
+                string.backspace(event.position);
                 break;
             }
             case deleteAll:
