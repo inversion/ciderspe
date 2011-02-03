@@ -106,9 +106,8 @@ class MainWindow implements Runnable
     	myProfile = new Profile (username);
     	startTime = System.currentTimeMillis();
         dirView = new DirectoryViewComponent();
-        // NB: Don't put @mossage.co.uk after name, client handles this now
         username = "ciderclient";
-        client = new Client( dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox, username, "clientpw", "talk.google.com", 5222, "mossage.co.uk" );
+        client = new Client( dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox, username, "clientpw", "xmpp.org.uk", 5222, "xmpp.org.uk" );
         dirView.setClient(client);
         client.getFileList();
     }
