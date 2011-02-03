@@ -90,6 +90,43 @@ public class EditorTypingArea extends JPanel implements MouseListener
     }
 
     /**
+     * converts the number of pixels from the top of the document to a line
+     * number, useful for picking out a particular line for selection or locking
+     * 
+     * @param y
+     *            pixels
+     * @return
+     */
+    public int yToLineNumber(int y)
+    {
+        return (int) (y / 10.0) + 1;
+    }
+
+    @Override
+    /**
+     * mouse presses are currently used to lock out lines of text
+     */
+    public void mousePressed(MouseEvent me)
+    {
+        int ln = yToLineNumber(me.getY());
+        if (ln > this.lines.size())
+            ln = this.lines.size();
+        ETALine line = this.lines.get(ln - 1);
+        int start = line.start + ln - 2;
+        int length = line.str.length();
+
+        TypingEvent te = new TypingEvent(System.currentTimeMillis(),
+                TypingEventMode.lockRegion, start, length, "", "");
+
+        for (ActionListener al : this.als)
+            al
+                    .actionPerformed(new ActionEvent(te, LINE_LOCKED,
+                            "Lines locked"));
+
+        this.updateUI();
+    }
+
+    /**
      * Represents a line of text on the screen. Lists of these objects are
      * stored and their paint methods called whenever it is time to update the
      * graphics
@@ -368,40 +405,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
     {
         // TODO Auto-generated method stub
 
-    }
-
-    /**
-     * converts the number of pixels from the top of the document to a line
-     * number, useful for picking out a particular line for selection or locking
-     * 
-     * @param y
-     *            pixels
-     * @return
-     */
-    public int yToLineNumber(int y)
-    {
-        return (int) (y / 10.0) + 1;
-    }
-
-    @Override
-    public void mousePressed(MouseEvent me)
-    {
-        int ln = yToLineNumber(me.getY());
-        if (ln > this.lines.size())
-            ln = this.lines.size();
-        ETALine line = this.lines.get(ln - 1);
-        int start = line.start + ln - 2;
-        int length = line.str.length();
-
-        TypingEvent te = new TypingEvent(System.currentTimeMillis(),
-                TypingEventMode.lockRegion, start, length, "", "");
-
-        for (ActionListener al : this.als)
-            al
-                    .actionPerformed(new ActionEvent(te, LINE_LOCKED,
-                            "Lines locked"));
-
-        this.updateUI();
     }
 
     @Override
