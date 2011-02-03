@@ -49,6 +49,46 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
 
+    @Override
+    /**
+     * calls paint methods on the ETALines
+     */
+    public void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+        g.setFont(font);
+        g.clearRect(0, 0, this.getWidth(), this.getHeight());
+        int p = 0;
+        int ln = 0;
+        try
+        {
+            for (ETALine line : this.lines)
+            {
+                line.paintMargin(g);
+
+                // Paints locking regions
+                for (int i = 0; i < line.str.length(); i++)
+                    if (line.locked(i))
+                        line.highlight(g, i, Color.LIGHT_GRAY);
+
+                // Paints the lines of text and the caret
+                for (int i = 0; i < line.str.length(); i++)
+                {
+                    if (p == this.caretPosition - ln)
+                        line.paintCaret(g, i);
+                    p++;
+                    line.paint(g, i);
+                }
+                ln++;
+            }
+            p++;
+        }
+        catch (ConcurrentModificationException e)
+        {
+            // ignore for now
+        }
+    }
+
     /**
      * Represents a line of text on the screen. Lists of these objects are
      * stored and their paint methods called whenever it is time to update the
@@ -251,41 +291,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
             ETALine line = new ETALine(tel, j * 10, j++, i);
             this.lines.add(line);
             i += line.str.length();
-        }
-    }
-
-    @Override
-    public void paintComponent(Graphics g)
-    {
-        super.paintComponent(g);
-        g.setFont(font);
-        g.clearRect(0, 0, this.getWidth(), this.getHeight());
-        int p = 0;
-        int ln = 0;
-        try
-        {
-            for (ETALine line : this.lines)
-            {
-                line.paintMargin(g);
-
-                for (int i = 0; i < line.str.length(); i++)
-                    if (line.locked(i))
-                        line.highlight(g, i, Color.LIGHT_GRAY);
-
-                for (int i = 0; i < line.str.length(); i++)
-                {
-                    if (p == this.caretPosition - ln)
-                        line.paintCaret(g, i);
-                    p++;
-                    line.paint(g, i);
-                }
-                ln++;
-            }
-            p++;
-        }
-        catch (ConcurrentModificationException e)
-        {
-            // ignore
         }
     }
 
