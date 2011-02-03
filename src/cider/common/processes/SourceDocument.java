@@ -66,7 +66,7 @@ public class SourceDocument implements ICodeLocation
                 TypingEventMode.overwrite, "na"));
         tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
                 "na"));
-        tes.addAll(generateEvents(800, 1000, 27, "jumped",
+        tes.addAll(generateEvents(800, 1000, 28, "jumped",
                 TypingEventMode.backspace, "na"));
         tes.addAll(generateEvents(2000, 2500, 21, "bounced",
                 TypingEventMode.insert, "na"));
