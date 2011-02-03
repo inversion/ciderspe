@@ -24,6 +24,15 @@ import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
 import cider.common.processes.TypingEventMode;
 
+/**
+ * A panel in which text is painted on the screen designed to fit in with our
+ * concurrent editing objects. The purpose of this object is to offer an
+ * alternative to Swing text objects which do not offer enough flexibility (in
+ * particular with the way the caret is controlled and text formatting)
+ * 
+ * @author Lawrence
+ * 
+ */
 public class EditorTypingArea extends JPanel implements MouseListener
 {
     private TypingEventList str = new TypingEventList();
@@ -40,6 +49,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
 
+    /**
+     * Represents a line of text on the screen. Lists of these objects are
+     * stored and their paint methods called whenever it is time to update the
+     * graphics
+     * 
+     * @author Lawrence
+     * 
+     */
     class ETALine
     {
         TypingEventList str;
@@ -47,6 +64,18 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int ln;
         public int start;
 
+        /**
+         * 
+         * @param tel
+         *            the list of events in order that they should be printed on
+         *            the screen from lift to right
+         * @param y
+         *            the number of pixels down the screen
+         * @param ln
+         *            the line number
+         * @param start
+         *            the caret position of the first character of this line
+         */
         public ETALine(TypingEventList tel, int y, int ln, int start)
         {
             this.start = start;
@@ -55,12 +84,25 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.str = tel;
         }
 
+        /**
+         * paints the line number to the left of this line
+         * 
+         * @param g
+         */
         public void paintMargin(Graphics g)
         {
             g.setColor(Color.GRAY);
             g.drawString("" + this.ln, 5, this.y);
         }
 
+        /**
+         * paints a character of this line, loop through i to draw the whole
+         * string
+         * 
+         * @param g
+         * @param i
+         *            the character number of this line to be painted
+         */
         public void paint(Graphics g, int i)
         {
             int x = (i * 7) + leftMargin;
@@ -69,6 +111,15 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.drawString("" + str.get(i).text, x, y);
         }
 
+        /**
+         * draws a coloured box on this line (should be called before paint(g,
+         * i)) - one use of this method is to indicate that this character is
+         * locked. Different colours could represent different users
+         * 
+         * @param g
+         * @param i
+         * @param c
+         */
         public void highlight(Graphics g, int i, Color c)
         {
             g.setColor(c);
@@ -77,6 +128,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.fillRect(x, y - 10, 7, 10);
         }
 
+        /**
+         * paints a caret on this line at local character number i
+         * 
+         * @param g
+         * @param i
+         */
         public void paintCaret(Graphics g, int i)
         {
             g.setColor(Color.BLUE);
@@ -84,12 +141,24 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.drawLine(x, this.y - 10, x, this.y);
         }
 
+        /**
+         * tests whether this character is part of a locked region, which is one
+         * way of testing if it should be highlighted
+         * 
+         * @param i
+         * @return
+         */
         public boolean locked(int i)
         {
             return this.str.get(i).locked;
         }
     }
 
+    /**
+     * 
+     * @param owner
+     * @param codeLocation
+     */
     public EditorTypingArea(String owner, ICodeLocation codeLocation)
     {
         this.codeLocation = codeLocation;
@@ -100,6 +169,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.addMouseListener(this);
     }
 
+    /**
+     * The caret flashes to help draw attention to its location and indicate
+     * that this component is in focus. This method schedules a timer task to
+     * toggle between the caret being visible or invisible. Should only need to
+     * be called once.
+     */
     private void setupCaretFlashing()
     {
         Timer timer = new Timer();
@@ -135,6 +210,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
         });
     }
 
+    /**
+     * Frequently called whenever it is time for the text to be updated. Takes
+     * from the code location recent events that need to be pushed to doc and
+     * then refreshes the lines and updates the UI.
+     */
     public void updateText()
     {
         if (this.codeLocation != null)
@@ -156,13 +236,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
         }
     }
 
-    /*
-     * public void setText(String text) throws Throwable { if (this.codeLocation
-     * != null) throw new Exception(
-     * "Cannot set text directly as this EditorTypingArea is tied to an ICodeLocation"
-     * ); this.str = text; this.refreshLines(); this.updateUI(); }
+    /**
+     * called by updateText() to split up text from doc and turn it into a list
+     * of TypingEventLists
      */
-
     private void refreshLines()
     {
         this.lines.clear();
@@ -212,11 +289,21 @@ public class EditorTypingArea extends JPanel implements MouseListener
         }
     }
 
+    /**
+     * the caret indicates which part of the document text typing events will be
+     * applied to. This method returns the position of the caret starting from
+     * the very beginning of the document.
+     * 
+     * @return
+     */
     public int getCaretPosition()
     {
         return this.caretPosition;
     }
 
+    /**
+     * moves the caret left one position and updates the UI
+     */
     public void moveLeft()
     {
         if (this.caretPosition > 0)
@@ -225,6 +312,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.updateUI();
     }
 
+    /**
+     * moves the caret right one position and updates the UI
+     */
     public void moveRight()
     {
         if (this.caretPosition < this.str.length() - 1)
@@ -233,11 +323,22 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.updateUI();
     }
 
+    /**
+     * used to retrieve the object from which typing events stored in this
+     * EditorTypingArea's SourceDocument are drawn from
+     * 
+     * @return
+     */
     public ICodeLocation getCodeLocation()
     {
         return this.codeLocation;
     }
 
+    /**
+     * the last time that this document was updated
+     * 
+     * @return
+     */
     public long getLastUpdate()
     {
         return this.lastUpdateTime;
@@ -264,6 +365,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     }
 
+    /**
+     * converts the number of pixels from the top of the document to a line
+     * number, useful for picking out a particular line for selection or locking
+     * 
+     * @param y
+     *            pixels
+     * @return
+     */
     public int yToLineNumber(int y)
     {
         return (int) (y / 10.0) + 1;
@@ -307,6 +416,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.als.clear();
     }
 
+    /**
+     * used to find out if the position which the caret is currently at is part
+     * of a locked out region. Used to find out whether the doc should accept a
+     * particular event when it is being typed out by the user.
+     * 
+     * @param offset
+     * @return
+     */
     public boolean currentPositionLocked(int offset)
     {
         int pos = this.caretPosition + offset;
