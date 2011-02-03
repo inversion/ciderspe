@@ -48,6 +48,7 @@ public class SourceDocumentDemo
         w.setVisible(true);
         PseudoClient client = new PseudoClient(panel, id, sourceDocument);
         this.server.addClient(client);
+        panel.setClient(client);
     }
 
     public class PseudoServer implements ICodeLocation
@@ -57,7 +58,7 @@ public class SourceDocumentDemo
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;
-        private long period = 50;
+        private long period = 500;
         private long currentTime = System.currentTimeMillis();
         private long lastPush = 0;
 
@@ -197,21 +198,15 @@ public class SourceDocumentDemo
 
                 for (TypingEvent te : events)
                 {
-                    switch (te.mode)
-                    {
-                    case insert:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveRight();
-                        break;
-                    case overwrite:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveRight();
-                        break;
-                    case backspace:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveLeft();
-                        break;
-                    }
+                    /*
+                     * switch (te.mode) { case insert: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     * break; case overwrite: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     * break; case backspace: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveLeft();
+                     * break; }
+                     */
                 }
             }
         }
@@ -239,12 +234,14 @@ public class SourceDocumentDemo
         {
             this.sourceDocument.clearAll();
         }
+
     }
 
     public class SDDemoPanel extends JPanel
     {
         EditorTypingArea eta;
         ICodeLocation server;
+        ICodeLocation client;
         int id;
 
         public SDDemoPanel(JFrame w, Dimension size,
@@ -259,6 +256,7 @@ public class SourceDocumentDemo
             this.server = server;
             w.addKeyListener(new KeyListener()
             {
+
                 @Override
                 public void keyPressed(KeyEvent ke)
                 {
@@ -294,10 +292,11 @@ public class SourceDocumentDemo
                         {
                             if (eta.getCaretPosition() > 0
                                     && !eta.currentPositionLocked(-1))
+                            {
                                 mode = TypingEventMode.backspace;
+                            }
                             else
                                 return;
-                            // eta.moveLeft();
                         }
                             break;
                         // case '\u0027':
@@ -316,7 +315,24 @@ public class SourceDocumentDemo
                                 .getKeyChar()), "Demo User " + id);
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
+
+                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
+                                outgoingEvents);
+                        client.push(internal);
                         server.push(outgoingEvents);
+
+                        switch (mode)
+                        {
+                        case insert:
+                            eta.moveRight();
+                            break;
+                        case overwrite:
+                            eta.moveRight();
+                            break;
+                        case backspace:
+                            eta.moveLeft();
+                            break;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -326,6 +342,11 @@ public class SourceDocumentDemo
                     }
                 }
             });
+        }
+
+        public void setClient(ICodeLocation client)
+        {
+            this.client = client;
         }
     }
 }
