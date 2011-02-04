@@ -28,7 +28,7 @@ public class ClientChatroomMessageListener implements PacketListener {
 		// TODO Auto-generated method stub
 		Message msg = (Message) packet;
 		if( msg.getType() == Message.Type.groupchat )
-			client.updateChatLog( msg.getFrom(), new Date(), msg.getBody() );
+			client.updateChatLog( msg.getFrom(), msg.getSubject(), msg.getBody() );
 	}
 
 }
