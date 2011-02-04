@@ -146,7 +146,6 @@ public class SourceEditor extends JPanel
                             }
                                 break;
                             default:
-                                eta.moveRight();
                                 break;
                             }
 
@@ -159,6 +158,10 @@ public class SourceEditor extends JPanel
                                 .getUsername());
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
+                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
+                                outgoingEvents);
+                        eta.getCodeLocation().push(internal);
+                        eta.updateText();
                         client.pushToServer(outgoingEvents, path);
 
                         switch (mode)
