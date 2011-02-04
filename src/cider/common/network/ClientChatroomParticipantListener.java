@@ -55,6 +55,10 @@ public class ClientChatroomParticipantListener implements PacketListener {
 		else if( pres.getType() == Presence.Type.unavailable )
 		{
 			System.out.println( "Presence from: " + nickname + " NOT AVAILABLE" );
+			// TODO: GUI people display error box for this?
+			if( nickname.equals( Bot.BOT_USERNAME ) )
+				System.err.println( "Bot has gone offline, CIDER will stop working properly." );
+			
 			if( users.containsKey( nickname ) )
 			{
 				users.remove( nickname );
