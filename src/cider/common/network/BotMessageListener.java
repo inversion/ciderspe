@@ -1,6 +1,5 @@
 package cider.common.network;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -9,13 +8,8 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
-import cider.common.processes.CiderFileList;
-import cider.common.processes.LiveFolder;
 import cider.common.processes.LocalisedTypingEvents;
-import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
-import cider.common.processes.TypingEventMode;
-import cider.specialcomponents.Base64;
 
 /**
  * This class waits for a message to be received on a chat session and then
@@ -31,60 +25,30 @@ import cider.specialcomponents.Base64;
 public class BotMessageListener implements MessageListener
 {
 
-    private CiderFileList filelist = new CiderFileList(Bot.SRCPATH);
+    // private CiderFileList filelist = new CiderFileList(Bot.SRCPATH);
     // private Pattern putFileMatch = Pattern
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
-    //private Matcher matcher = null;
-    private LiveFolder liveFolder;
+    // private Matcher matcher = null;
     private BotChatListener source;
     private String name;
-    
-    public BotMessageListener( BotChatListener source, String name )
+    private Bot bot;
+
+    public BotMessageListener(BotChatListener source, String name, Bot bot)
     {
-        this.testTree();
         this.source = source;
         this.name = name;
-        //System.out.println(this.liveFolder.xml(""));
+        this.bot = bot;
+        // System.out.println(this.liveFolder.xml(""));
     }
 
-    public LiveFolder getRootFolder()
-    {
-        return this.liveFolder;
-    }
-    
     @Override
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
         // TODO: XML-ize this and get filelist??
-        if( body.startsWith( "quit" ) )
+        if (body.startsWith("quit"))
         {
-        	source.endSession( name );
-        }
-        else if (body.startsWith("getfile="))
-        {
-            try
-            {
-                // TODO: Error checking if file doesn't exist??
-                String encPath = body.substring(8, body.length());
-                String path = new String(Base64.decode(encPath.getBytes()));
-                String contents = filelist.table.get(path).getFileContents();
-                String encContents = Base64.encodeBytes(contents.getBytes());
-
-                chat.sendMessage("<file><path>" + encPath + "</path><contents>"
-                        + encContents + "</contents></file>");
-
-            }
-            catch (XMPPException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            source.endSession(name);
         }
         else if (body.equals("getfilelist"))
         {
@@ -92,7 +56,7 @@ public class BotMessageListener implements MessageListener
             {
                 // chat.sendMessage("filelist=" +
                 // Base64.encodeObject(filelist));
-                String xml = this.getRootFolder().xml("");
+                String xml = this.bot.getRootFolder().xml("");
                 chat.sendMessage("filelist=" + xml);
 
             }
@@ -113,7 +77,7 @@ public class BotMessageListener implements MessageListener
             arg = arg.split("\\)")[0];
             long t = Long.parseLong(arg);
 
-            Queue<LocalisedTypingEvents> events = this.getRootFolder()
+            Queue<LocalisedTypingEvents> events = this.bot.getRootFolder()
                     .eventsSince(t, "");
             String instructions = "";
             for (LocalisedTypingEvents ltes : events)
@@ -143,7 +107,7 @@ public class BotMessageListener implements MessageListener
                 Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
                 typingEvents.add(new TypingEvent(preAndAfter[1]));
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                this.getRootFolder().path(dest).push(typingEvents);
+                this.bot.getRootFolder().path(dest).push(typingEvents);
             }
 
             /*
@@ -174,16 +138,5 @@ public class BotMessageListener implements MessageListener
          * }
          */
     }
-    
-    public void testTree()
-    {
-        this.liveFolder = new LiveFolder("root");
-        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
-        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
-                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
-        t1.push(tes);
-        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument");
-    }
+
 }

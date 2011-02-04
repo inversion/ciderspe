@@ -160,6 +160,19 @@ public class SourceEditor extends JPanel
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
                         client.pushToServer(outgoingEvents, path);
+
+                        switch (mode)
+                        {
+                        case insert:
+                            eta.moveRight();
+                            break;
+                        case overwrite:
+                            eta.moveRight();
+                            break;
+                        case backspace:
+                            eta.moveLeft();
+                            break;
+                        }
                     }
                     catch (Exception e)
                     {
