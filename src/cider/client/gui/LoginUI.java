@@ -5,6 +5,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -112,6 +114,62 @@ public class LoginUI
         txtPort = new JTextField(13);
         txtPort.setText( DEFAULT_PORT );
         
+        txtUsername.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtPassword.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtServiceName.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtHost.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtPort.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+
+
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -220,6 +278,29 @@ public class LoginUI
     		//System.out.println("File not found");
 		}
 	}
+    
+    void checkLogin()
+    {
+    	if (chkRemember.isSelected() == true)
+		{
+			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
+		}
+		else
+		{
+			String fileName = currentDir + "login.txt";
+			File file = new File(fileName);
+			
+			try
+			{
+				file.delete();
+			}
+			catch(IllegalArgumentException err)
+			{
+				System.out.println("Deletion failed: " + fileName);
+			}
+		}
+		showConnectBox();
+    }
 
 	public ActionListener newAction()
     {
@@ -227,27 +308,8 @@ public class LoginUI
     	{
     		@Override
     		public void actionPerformed(ActionEvent e) {
-    			// TODO: Save service name as well.
     			String action = e.getActionCommand();
-    			if (chkRemember.isSelected() == true)
-    			{
-        			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
-    			}
-    			else
-    			{
-    				String fileName = currentDir + "login.txt";
-    				File file = new File(fileName);
-    				
-    				try
-    				{
-    					file.delete();
-    				}
-    				catch(IllegalArgumentException err)
-    				{
-    					System.out.println("Deletion failed: " + fileName);
-    				}
-    			}
-    			showConnectBox();
+    			checkLogin();
     		}
     	};
     	return AL;
