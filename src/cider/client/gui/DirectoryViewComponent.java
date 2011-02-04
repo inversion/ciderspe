@@ -36,7 +36,7 @@ public class DirectoryViewComponent extends JPanel
     private Hashtable<String, DefaultMutableTreeNode> nodePaths;
     private Client client;
     private JTree tree;
-    private LiveFolder rootFolder = new LiveFolder("root");
+    private LiveFolder rootFolder = new LiveFolder("Bot", "root");
 
     /*
      * public static void main(String[] args) { JFrame w = new JFrame();

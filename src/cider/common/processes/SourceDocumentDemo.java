@@ -37,7 +37,8 @@ public class SourceDocumentDemo
         JFrame w = new JFrame();
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
-        SourceDocument sourceDocument = new SourceDocument("Demo User " + id);
+        SourceDocument sourceDocument = new SourceDocument("Demo User " + id,
+                "test.SourceDocument");
         EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
                 sourceDocument);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
@@ -53,7 +54,7 @@ public class SourceDocumentDemo
 
     public class PseudoServer implements ICodeLocation
     {
-        private SourceDocument sourceDocument = new SourceDocument(
+        private SourceDocument sourceDocument = new SourceDocument("TestBot",
                 "Bot Document");
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();

@@ -240,7 +240,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public EditorTypingArea(String owner, ICodeLocation codeLocation)
     {
         this.codeLocation = codeLocation;
-        this.doc = new SourceDocument(owner);
+        this.doc = new SourceDocument(owner, "ETA Private Document");
         this.doc.push(this.codeLocation.events());
         this.str = this.doc.playOutEvents(Long.MAX_VALUE);
         this.setupCaretFlashing();
