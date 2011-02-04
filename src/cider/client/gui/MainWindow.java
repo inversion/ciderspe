@@ -50,6 +50,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
@@ -490,6 +491,7 @@ class MainWindow implements Runnable
     	Border emptyBorder = BorderFactory.createEmptyBorder();
 
     	userList = new JList(userListModel);
+    	userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     	/*for (int i=0; i < userList.getModel().getSize(); i++) 
     	{
     	    Object item = userList.getModel().getElementAt(i);
@@ -505,10 +507,11 @@ class MainWindow implements Runnable
     	             System.out.println("Double clicked on Item: " + userList.getModel().getElementAt(i));  
     	             //initiate.private.chat.with(userList.getModel().getElementAt(i));
     	          }
-    	         else if (e.getButton() == MouseEvent.BUTTON3)
+    	         else if ((e.getButton() == MouseEvent.BUTTON3) && (userList.locationToIndex(e.getPoint()) != -1))
     	         {
     	        	 /*pop up for viewing users profile/stats etc");*/
-    	        	
+    	        	 userList.setSelectedIndex(userList.locationToIndex(e.getPoint()));
+    	        	 
     	             JPopupMenu popupMenu = new JPopupMenu();
     	             JMenuItem chat = new JMenuItem("Chat with User");
     	             JMenuItem showProfile = new JMenuItem("Show User's Profile");

@@ -15,8 +15,8 @@ public class passwordEncrypt
 			c = (char) (c + 128);
 			output+= c;
 		}
-		System.out.println("Input : " + input);
-		System.out.println("Output: " + output);
+		/*System.out.println("Input : " + input);
+		System.out.println("Output: " + output);*/
 		return output;
 	}
 	
@@ -29,8 +29,8 @@ public class passwordEncrypt
 			c = (char) (c - 128);
 			output+= c;
 		}
-		System.out.println("Input : " + input);
-		System.out.println("Output: " + output);
+		/*System.out.println("Input : " + input);
+		System.out.println("Output: " + output);*/
 		return output;
 	}
 }
