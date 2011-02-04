@@ -181,6 +181,45 @@ class MainWindow implements Runnable
                     startTime = System.currentTimeMillis();
                     myProfile.updateProfileInfo();
                 }
+                else if (action.equals("Close File"))
+                {
+                    closeFile(action);
+                }
+                else if (action.equals("Open"))
+                {
+                    openFile();
+                }
+                else if (action.equals("New"))
+                {
+                    newFile();
+                }
+                else if (action.equals("Save") || action.equals("Save As"))
+                {
+                    saveFile(action);
+                }
+            }
+
+            private void saveFile(String action)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            private void newFile()
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            private void openFile()
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            private void closeFile(String action)
+            {
+                // TODO Auto-generated method stub
 
             }
 

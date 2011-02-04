@@ -40,8 +40,9 @@ public class Client
 {
     public static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
-    public final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-    
+    public final DateFormat dateFormat = new SimpleDateFormat(
+            "dd/MM/yyyy HH:mm:ss");
+
     private XMPPConnection connection;
     private ChatManager chatmanager;
     private boolean autoUpdate = false;
@@ -59,91 +60,112 @@ public class Client
     // Listen for private chat sessions with other users
     // TODO: Not yet implemented
     private ClientPrivateChatListener userChatListener;
-    
+
     // Chatroom
     private String chatroomName;
     private MultiUserChat chatroom;
-    
+
     private JTextArea messageReceiveBox;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs, DefaultListModel userListModel, JLabel userCount, JTextArea messageReceiveBox, String username,
-            String password, String host, int port, String serviceName)
+            Hashtable<String, SourceEditor> openTabs,
+            DefaultListModel userListModel, JLabel userCount,
+            JTextArea messageReceiveBox, String username, String password,
+            String host, int port, String serviceName)
     {
-    	// Assign objects from parameters
+        // Assign objects from parameters
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
         this.username = username;
         this.messageReceiveBox = messageReceiveBox;
         this.chatroomName = "ciderchat" + "@conference." + serviceName;
-    	
+
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
-        connection = new XMPPConnection( config );
-        try {
-			connection.connect();
-		} catch (XMPPException e1) {
-			System.err.println( "Error Connecting: " + e1.getMessage() );
-		}
-		
-        try {
-        	/**
-        	 *  Append a random string to the resource to prevent conflicts with existing
-        	 *  instances of the CIDER client from the same user.
-        	 *  
-        	 *  Later the Bot will alert the user if there is an existing instance of the CIDER client.
-        	 */
-        	String rand = StringUtils.randomString(5);
-			connection.login( username, password, RESOURCE + rand );
-			if( DEBUG )
-				System.out.println("Logged into XMPP server, username=" + username + "/" + rand );
-		} catch (XMPPException e1) {
-			System.err.println( "Error logging in: " + e1.getMessage() );
-		}
-		
-		connection.addPacketListener( new DebugPacketListener(), new DebugPacketFilter());
-		
+        connection = new XMPPConnection(config);
+        try
+        {
+            connection.connect();
+        }
+        catch (XMPPException e1)
+        {
+            System.err.println("Error Connecting: " + e1.getMessage());
+        }
+
+        try
+        {
+            /**
+             * Append a random string to the resource to prevent conflicts with
+             * existing instances of the CIDER client from the same user.
+             * 
+             * Later the Bot will alert the user if there is an existing
+             * instance of the CIDER client.
+             */
+            String rand = StringUtils.randomString(5);
+            connection.login(username, password, RESOURCE + rand);
+            if (DEBUG)
+                System.out.println("Logged into XMPP server, username="
+                        + username + "/" + rand);
+        }
+        catch (XMPPException e1)
+        {
+            System.err.println("Error logging in: " + e1.getMessage());
+        }
+
+        connection.addPacketListener(new DebugPacketListener(),
+                new DebugPacketFilter());
+
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
-//        userChatListener = new ClientPrivateChatListener( userListModel );
-//        chatmanager.addChatListener(userChatListener);
-        
+        // userChatListener = new ClientPrivateChatListener( userListModel );
+        // chatmanager.addChatListener(userChatListener);
+
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(dirView, this);
-        botChat = chatmanager.createChat( Bot.BOT_USERNAME + "@" + serviceName, botChatListener );
-        
+        botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
+                botChatListener);
+
         // Listen for invitation to chatroom and set up message listener for it
-        chatroom = new MultiUserChat( connection, chatroomName );
-        MultiUserChat.addInvitationListener( connection, new ClientChatroomInviteListener( chatroom, username ) );
-        chatroom.addMessageListener( new ClientChatroomMessageListener( this ) );
-        chatroom.addParticipantListener( new ClientChatroomParticipantListener( userListModel, userCount ) );
+        chatroom = new MultiUserChat(connection, chatroomName);
+        MultiUserChat.addInvitationListener(connection,
+                new ClientChatroomInviteListener(chatroom, username));
+        chatroom.addMessageListener(new ClientChatroomMessageListener(this));
+        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
+                userListModel, userCount));
     }
-    
+
     public void updateChatLog(String username, String date, String message)
     {
 
-    	//messageReceiveBox.setContentType("text/html");
-    	String oldText = messageReceiveBox.getText();
-    	//messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " (" + dateFormat.format(date) + "):<br>" + message + "<br></html>");
-    	
-    	//messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
-    	System.out.println(StringUtils.parseResource( username ) + "\n" + date + "\n" + message);
-    	messageReceiveBox.append(StringUtils.parseResource( username ) + " (" + date + "):\n" + message + "\n");
+        // messageReceiveBox.setContentType("text/html");
+        String oldText = messageReceiveBox.getText();
+        // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
+        // + dateFormat.format(date) + "):<br>" + message + "<br></html>");
+
+        // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
+        // "):\n");
+        System.out.println(StringUtils.parseResource(username) + "\n" + date
+                + "\n" + message);
+        messageReceiveBox.append(StringUtils.parseResource(username) + " ("
+                + date + "):\n" + message + "\n");
     }
-    
-    public void sendMessageChatroom( String message )
+
+    public void sendMessageChatroom(String message)
     {
-    	try {
-    		Date date = new Date();
-    		Message msg = chatroom.createMessage();
-    		msg.setBody( message );
-    		msg.setSubject( dateFormat.format( date ) );
-			chatroom.sendMessage( msg );
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try
+        {
+            Date date = new Date();
+            Message msg = chatroom.createMessage();
+            msg.setBody(message);
+            msg.setSubject(dateFormat.format(date));
+            chatroom.sendMessage(msg);
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public String getUsername()
@@ -153,13 +175,16 @@ public class Client
 
     public void disconnect()
     {
-    	try {
-			botChat.sendMessage( "quit" );
-		} catch (XMPPException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-    	chatroom.leave();
+        try
+        {
+            botChat.sendMessage("quit");
+        }
+        catch (XMPPException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        chatroom.leave();
         connection.disconnect();
         while (this.connection.isConnected())
             System.out.printf(".");
@@ -201,13 +226,13 @@ public class Client
         SourceDocument doc = this.liveFolder.path(strPath);
         if (!this.openTabs.containsKey(strPath))
         {
-        	// TODO: Commented out by Andrew because it was causing an error
-            //EditorTypingArea eta = new EditorTypingArea(doc);
-            //SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
-            //sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
-            //this.openTabs.put(strPath, sourceEditor);
-            //System.out.println("Pull since 0 since a new tab is being opened");
-            //this.pullEventsSince(0);
+            // TODO: Commented out by Andrew because it was causing an error
+            EditorTypingArea eta = new EditorTypingArea(this.username, doc);
+            SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
+            sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
+            this.openTabs.put(strPath, sourceEditor);
+            System.out.println("Pull since 0 since a new tab is being opened");
+            this.pullEventsSince(0);
         }
     }
 

@@ -40,11 +40,12 @@ public class ClientMessageListener implements MessageListener, ActionListener
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        if( body.startsWith( "quit" ) )
+        if (body.startsWith("quit"))
         {
-        	client.disconnect();
-        	System.err.println( "Someone is already running a CIDER client with your username, disconnecting and quitting.");
-        	System.exit(1);
+            client.disconnect();
+            System.err
+                    .println("Someone is already running a CIDER client with your username, disconnecting and quitting.");
+            System.exit(1);
         }
         else if (body.startsWith("filelist="))
         {
