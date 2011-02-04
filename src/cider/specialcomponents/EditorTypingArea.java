@@ -57,7 +57,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     {
         super.paintComponent(g);
         g.setFont(font);
-        g.clearRect(0, 0, this.getWidth(), this.getHeight());
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, this.getWidth(), this.getHeight());
         int p = 0;
         int ln = 0;
         try
