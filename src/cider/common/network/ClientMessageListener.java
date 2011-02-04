@@ -33,7 +33,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
     {
         this.client = client;
         this.dirView = dirView;
-        timer = new Timer(100, this);
+        timer = new Timer(500, this);
     }
 
     @Override
@@ -77,6 +77,16 @@ public class ClientMessageListener implements MessageListener, ActionListener
     @Override
     public void actionPerformed(ActionEvent ae)
     {
-        this.client.pullEventsSince(this.client.getLastUpdate());
+        try
+        {
+            this.client.pullEventsSince(this.client.getLastUpdate());
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            System.out
+                    .println(e.getMessage()
+                            + "  - Exception that was not printed to stack trace! ClientMessageListener line 87");
+        }
     }
 }

@@ -247,7 +247,7 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
+            // TODO:
             e.printStackTrace();
         }
     }
