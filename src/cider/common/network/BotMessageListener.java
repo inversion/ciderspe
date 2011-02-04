@@ -36,11 +36,15 @@ public class BotMessageListener implements MessageListener
     // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
     //private Matcher matcher = null;
     private LiveFolder liveFolder;
+    private BotChatListener source;
+    private String name;
     
-    public BotMessageListener( )
+    public BotMessageListener( BotChatListener source, String name )
     {
         this.testTree();
-        System.out.println(this.liveFolder.xml(""));
+        this.source = source;
+        this.name = name;
+        //System.out.println(this.liveFolder.xml(""));
     }
 
     public LiveFolder getRootFolder()
@@ -53,7 +57,11 @@ public class BotMessageListener implements MessageListener
     {
         String body = message.getBody();
         // TODO: XML-ize this and get filelist??
-        if (body.startsWith("getfile="))
+        if( body.startsWith( "quit" ) )
+        {
+        	source.endSession( name );
+        }
+        else if (body.startsWith("getfile="))
         {
             try
             {

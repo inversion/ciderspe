@@ -17,8 +17,6 @@ import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
@@ -41,10 +39,7 @@ import cider.specialcomponents.EditorTypingArea;
 public class Client
 {
     public static final boolean DEBUG = true;
-
-    // TODO: Move this out of this class
-    // Google apps configuration
-    public static final String BOT_USERNAME = "ciderbot";
+    public static final String RESOURCE = "CIDER";
     
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -84,24 +79,27 @@ public class Client
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
-        config.setCompressionEnabled( true );
         connection = new XMPPConnection( config );
         try {
 			connection.connect();
 		} catch (XMPPException e1) {
-			// TODO Auto-generated catch block
 			System.err.println( "Error Connecting: " + e1.getMessage() );
 		}
 		
         try {
-			connection.login(username, password);
+        	/**
+        	 *  Append a random string to the resource to prevent conflicts with existing
+        	 *  instances of the CIDER client from the same user.
+        	 *  
+        	 *  Later the Bot will alert the user if there is an existing instance of the CIDER client.
+        	 */
+        	String rand = StringUtils.randomString(5);
+			connection.login( username, password, RESOURCE + rand );
+			if( DEBUG )
+				System.out.println("Logged into XMPP server, username=" + username + "/" + rand );
 		} catch (XMPPException e1) {
-			// TODO Auto-generated catch block
 			System.err.println( "Error logging in: " + e1.getMessage() );
 		}
-		
-		if( DEBUG )
-			System.out.println("Logged into XMPP server, username=" + username);
 		
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
@@ -110,7 +108,7 @@ public class Client
         
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(dirView, this);
-        botChat = chatmanager.createChat( BOT_USERNAME + "@" + serviceName, botChatListener );
+        botChat = chatmanager.createChat( Bot.BOT_USERNAME + "@" + serviceName, botChatListener );
         
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat( connection, chatroomName );
@@ -152,6 +150,12 @@ public class Client
 
     public void disconnect()
     {
+    	try {
+			botChat.sendMessage( "quit" );
+		} catch (XMPPException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
     	chatroom.leave();
         connection.disconnect();
         while (this.connection.isConnected())
