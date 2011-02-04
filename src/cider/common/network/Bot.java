@@ -122,7 +122,7 @@ public class Bot
 
     public void testTree()
     {
-        this.liveFolder = new LiveFolder("root");
+        this.liveFolder = new LiveFolder("Bot", "root");
         SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
         Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "

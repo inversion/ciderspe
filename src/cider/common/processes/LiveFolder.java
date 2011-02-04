@@ -9,22 +9,24 @@ public class LiveFolder
     public String name;
     private Hashtable<String, SourceDocument> documents = new Hashtable<String, SourceDocument>();
     private Hashtable<String, LiveFolder> folders = new Hashtable<String, LiveFolder>();
+    private String owner;
 
-    public LiveFolder(String name)
+    public LiveFolder(String owner, String name)
     {
+        this.owner = owner;
         this.name = name;
     }
 
     public SourceDocument makeDocument(String name)
     {
-        SourceDocument sourceDocument = new SourceDocument(name);
+        SourceDocument sourceDocument = new SourceDocument(this.owner, name);
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }
 
     public LiveFolder makeFolder(String name)
     {
-        LiveFolder folder = new LiveFolder(name);
+        LiveFolder folder = new LiveFolder(this.owner, name);
         this.folders.put(name, folder);
         return folder;
     }
@@ -64,7 +66,7 @@ public class LiveFolder
 
     public static void main(String[] args)
     {
-        LiveFolder folder = new LiveFolder("root");
+        LiveFolder folder = new LiveFolder("test owner", "root");
         folder.makeDocument("t1");
         folder.makeFolder("testFolder").makeDocument("t2");
         // System.out.println(folder.xml(""));

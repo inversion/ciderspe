@@ -14,10 +14,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Time;
 import java.util.Hashtable;
@@ -26,6 +30,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -199,28 +204,86 @@ class MainWindow implements Runnable
                 }
             }
 
-            private void saveFile(String action)
+            @Deprecated
+            public void openFile()
             {
-                // TODO Auto-generated method stub
-
+//                JFileChooser fc = new JFileChooser();
+//                int rVal = fc.showOpenDialog(null);
+//                if (rVal == JFileChooser.APPROVE_OPTION)
+//                {
+//                    String temp;
+//                    currentDir = fc.getSelectedFile().getAbsolutePath();
+//                    currentFileName = fc.getSelectedFile().getName();
+//                    try
+//                    {
+//                        FileInputStream fis = new FileInputStream(currentDir);
+//                        BufferedInputStream bis = new BufferedInputStream(fis);
+//                        BufferedReader br = new BufferedReader(
+//                                new InputStreamReader(bis));
+//                        currentFileContents = "";
+//                        while ((temp = br.readLine()) != null)
+//                        {
+//                            currentFileContents = currentFileContents + temp
+//                                    + "\n";
+//                        }
+//                    }
+//                    catch (IOException e)
+//                    {
+//                        System.err.println("Error: " + e.getMessage());
+//                        System.exit(0);
+//                    }
+//
+//                    // tabbedPane.addTab(currentFileName, new SourceEditor(
+//                    // currentFileContents, currentDir));
+//                    tabbedPane.setSelectedIndex(++currentTab);
+//                }
             }
 
-            private void newFile()
+            @Deprecated
+            public void saveFile(String action)
             {
-                // TODO Auto-generated method stub
-
+//                JFileChooser fc = new JFileChooser();
+//                if (currentFileName.equals("Unsaved Document 1")
+//                        || action.equals("Save As"))
+//                {
+//                    int watdo = fc.showSaveDialog(null);
+//                    if (watdo != JFileChooser.APPROVE_OPTION)
+//                    {
+//                        return;
+//                    }
+//                    currentFileName = fc.getSelectedFile().getName();
+//                    currentDir = fc.getSelectedFile().getAbsolutePath();
+//                }
+//                try
+//                {
+//                    FileWriter fstream = new FileWriter(currentDir);
+//                    BufferedWriter out = new BufferedWriter(fstream);
+//                    out.write(currentFileContents);
+//                    out.close();
+//                }
+//                catch (IOException e1)
+//                {
+//                    System.err.println("Error: " + e1.getMessage());
+//                }
+//                tabbedPane.setTitleAt(currentTab, currentFileName);
             }
 
-            private void openFile()
+            @Deprecated
+            public void closeFile(String action)
             {
-                // TODO Auto-generated method stub
-
+//                saveFile(action);
+//                // closes tab regardless of save or cancel
+//                tabbedPane.remove(tabbedPane.getSelectedIndex());
+//                tabbedPane.setSelectedIndex(--currentTab);
             }
 
-            private void closeFile(String action)
+            @Deprecated
+            public void newFile()
             {
-                // TODO Auto-generated method stub
-
+                // closes tab regardless of save or cancel
+                // tabbedPane.addTab("Unsaved Document 1", new SourceEditor("",
+                // "\\."));
+                // tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
             }
 
             private void restartProfile()

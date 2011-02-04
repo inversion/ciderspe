@@ -27,13 +27,6 @@ public class SourceDocument implements ICodeLocation
                 new EventComparer());
     }
 
-    public SourceDocument(String owner)
-    {
-        this.owner = owner;
-        this.typingEvents = new PriorityQueue<TypingEvent>(1000,
-                new EventComparer());
-    }
-
     public static void main(String[] args)
     {
         System.out.println(test());
@@ -75,7 +68,8 @@ public class SourceDocument implements ICodeLocation
 
         tes = shuffledEvents(tes, new Date().getTime());
 
-        SourceDocument testDoc = new SourceDocument("test owner");
+        SourceDocument testDoc = new SourceDocument("test owner",
+                "testdoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.putEvent(event);
         String result = testDoc.toString();
@@ -103,7 +97,8 @@ public class SourceDocument implements ICodeLocation
         tes.addAll(generateEvents(0, 10000, 0, bigString,
                 TypingEventMode.insert, "na"));
 
-        SourceDocument testDoc = new SourceDocument("test owner");
+        SourceDocument testDoc = new SourceDocument("test owner",
+                "testDoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.putEvent(event);
         String result = testDoc.toString();
