@@ -1,7 +1,6 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -25,11 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Time;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Hashtable;
-import java.util.Timer;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;

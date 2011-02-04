@@ -40,6 +40,7 @@ public class Client
 {
     public static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
+    public final DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
     
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -101,6 +102,8 @@ public class Client
 			System.err.println( "Error logging in: " + e1.getMessage() );
 		}
 		
+		connection.addPacketListener( new DebugPacketListener(), new DebugPacketFilter());
+		
         // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
 //        userChatListener = new ClientPrivateChatListener( userListModel );
@@ -117,10 +120,8 @@ public class Client
         chatroom.addParticipantListener( new ClientChatroomParticipantListener( userListModel, userCount ) );
     }
     
-    public void updateChatLog(String username, Date date, String message)
+    public void updateChatLog(String username, String date, String message)
     {
-    	//TODO format the text nicely i.e. bold and not bold
-    	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     	//messageReceiveBox.setContentType("text/html");
     	String oldText = messageReceiveBox.getText();
@@ -128,14 +129,16 @@ public class Client
     	
     	//messageReceiveBox.append(username + " (" + dateFormat.format(date) + "):\n");
     	System.out.println(StringUtils.parseResource( username ) + "\n" + date + "\n" + message);
-    	messageReceiveBox.append(StringUtils.parseResource( username ) + " (" + (date) + "):\n" + message + "\n");
+    	messageReceiveBox.append(StringUtils.parseResource( username ) + " (" + date + "):\n" + message + "\n");
     }
     
     public void sendMessageChatroom( String message )
     {
     	try {
+    		Date date = new Date();
     		Message msg = chatroom.createMessage();
     		msg.setBody( message );
+    		msg.setSubject( dateFormat.format( date ) );
 			chatroom.sendMessage( msg );
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
