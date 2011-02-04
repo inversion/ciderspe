@@ -54,7 +54,6 @@ public class BotChatListener implements ChatManagerListener {
         
         if( DEBUG )
             System.out.println( chat.getParticipant() + " initiated chat..." );
-        // TODO: If someone talks to the bot from a non cider client it will tell them to quit
         
         chats.put( StringUtils.parseName( chat.getParticipant() ), chat );
         chat.addMessageListener( new BotMessageListener( this, StringUtils.parseName( chat.getParticipant() ) ) );
