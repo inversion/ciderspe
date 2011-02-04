@@ -5,17 +5,13 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,7 +22,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import cider.common.network.Client;
-import cider.common.processes.CiderFileList;
 import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
@@ -107,77 +102,6 @@ public class DirectoryViewComponent extends JPanel
 
         book = new DefaultMutableTreeNode("File 2");
         category.add(book);
-    }
-
-    @Deprecated
-    public void constructTree(CiderFileList list)
-    {
-        // TODO: Dirs without children are displayed with the same icon as files
-        // TODO: This is pretty incomprehensible, I need to add comments
-        // (Andrew)
-
-        Object[] files = list.table.keySet().toArray();
-        Arrays.sort(files);
-
-        // Table of files/dirs and their nodes, keyed by path
-        Hashtable<String, DefaultMutableTreeNode> nodes = new Hashtable<String, DefaultMutableTreeNode>();
-        DefaultMutableTreeNode cur = null;
-        Pattern pattern = Pattern.compile("(.+)\\\\(.+)$");
-        Matcher matcher = null;
-
-        // Purge current directory tree to prevent duplicates
-        top.removeAllChildren();
-
-        for (int i = 0; i < files.length; i++)
-        {
-            if (list.table.get(files[i]).isDir())
-            {
-                if (matcher != null)
-                    matcher = matcher.reset((String) files[i]);
-                else
-                    matcher = pattern.matcher((String) files[i]);
-
-                if (matcher.matches())
-                    cur = new DefaultMutableTreeNode(matcher.group(2));
-
-                if (nodes.containsKey(matcher.group(1)))
-                    nodes.get(matcher.group(1)).add(cur);
-                else
-                    top.add(cur);
-                nodes.put((String) files[i], cur);
-            }
-            else
-            {
-                if (matcher != null)
-                    matcher = matcher.reset((String) files[i]);
-                else
-                    matcher = pattern.matcher((String) files[i]);
-
-                if (matcher.matches())
-                {
-                    cur = new DefaultMutableTreeNode(matcher.group(2));
-                    nodes.get(matcher.group(1)).add(cur);
-                    nodes.put((String) files[i], cur);
-                }
-            }
-        }
-        // TODO: Can see a potential problem with this method if people click on
-        // nodes before this method finishes, change approach to make both
-        // hashes on the fly?
-        // String[] keys = nodes.keySet().toArray();
-        this.nodePaths = new Hashtable<String, DefaultMutableTreeNode>();
-        this.nodePaths.putAll(nodes);
-        // for (int i = 0; i < keys.length; i++)
-        // nodePaths.put(nodes.get(keys[i]), keys[i]);
-
-        // Listen for changes in the selected node
-        // TODO : Bit messy just removing current listeners atm
-        TreeSelectionListener[] listeners = tree.getTreeSelectionListeners();
-        for (int i = 0; i < listeners.length; i++)
-            tree.removeTreeSelectionListener(listeners[i]);
-
-        this.tree.addTreeSelectionListener(new DirectoryViewSelectionListener(
-                tree, client));
     }
 
     public void constructTree(String xml)
