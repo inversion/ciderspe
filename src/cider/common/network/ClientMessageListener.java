@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
 
 import org.jivesoftware.smack.Chat;
@@ -84,9 +85,9 @@ public class ClientMessageListener implements MessageListener, ActionListener
         catch (Exception e)
         {
             e.printStackTrace();
-            System.out
-                    .println(e.getMessage()
-                            + "  - Exception that was not printed to stack trace! ClientMessageListener line 87");
+            JOptionPane.showMessageDialog(null, "Cannot pull events: "
+                    + e.getMessage());
+            System.exit(1);
         }
     }
 }

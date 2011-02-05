@@ -8,6 +8,7 @@ import java.util.Queue;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
@@ -269,8 +270,11 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Client failed to send message across bot chat: "
+                            + e.getMessage());
+            System.exit(1);
         }
 
         this.lastPush = System.currentTimeMillis();
