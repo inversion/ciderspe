@@ -162,7 +162,7 @@ public class SourceEditor extends JPanel
                                 outgoingEvents);
                         eta.getCodeLocation().push(internal);
                         eta.updateText();
-                        client.pushToServer(outgoingEvents, path);
+                        client.broadcastTypingEvents(outgoingEvents, path);
 
                         switch (mode)
                         {
