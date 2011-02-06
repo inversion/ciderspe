@@ -94,4 +94,12 @@ public class TypingEvent
         return "time " + this.time + "\t" + this.position + "\t"
                 + mode.toString() + "\t" + text;
     }
+
+    public boolean existsIn(TypingEvent[] tes)
+    {
+        for (TypingEvent te : tes)
+            if (this.time == te.time)
+                return true;
+        return false;
+    }
 }
