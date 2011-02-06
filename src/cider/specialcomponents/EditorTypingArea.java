@@ -151,7 +151,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             TypingEventMode tem;
 
-            if (line.locked(0))
+            if (length > 0 && line.locked(0))
                 tem = TypingEventMode.unlockRegion;
             else
                 tem = TypingEventMode.lockRegion;

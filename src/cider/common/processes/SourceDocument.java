@@ -132,7 +132,7 @@ public class SourceDocument implements ICodeLocation
 
     public static long stepSize(long startTime, long endTime, int n)
     {
-        return (endTime - startTime) / n;
+        return Math.max((endTime - startTime) / n, 1);
     }
 
     public static ArrayList<TypingEvent> generateEvents(long startTime,
@@ -169,24 +169,23 @@ public class SourceDocument implements ICodeLocation
         TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
         this.typingEvents.toArray(tes);
 
-        if (typingEvent.existsIn(tes))
+        if (typingEvent.mode == TypingEventMode.lockRegion)
         {
-            // ignored
-        }
-        else
-        {
-            if (typingEvent.mode == TypingEventMode.lockRegion)
-                for (TypingEvent te : this.typingEvents)
-                    te.locked = te.locked || this.insideRegion(typingEvent, te);
-            else if (typingEvent.mode == TypingEventMode.unlockRegion)
-                for (TypingEvent te : this.typingEvents)
-                    te.locked = !this.insideRegion(typingEvent, te)
-                            && te.locked;
-
+            for (TypingEvent te : this.typingEvents)
+                te.locked = te.locked || this.insideRegion(typingEvent, te);
             this.typingEvents.add(typingEvent);
-
+        }
+        else if (typingEvent.mode == TypingEventMode.unlockRegion)
+        {
+            for (TypingEvent te : this.typingEvents)
+                te.locked = !this.insideRegion(typingEvent, te) && te.locked;
+            this.typingEvents.add(typingEvent);
+        }
+        else if (!typingEvent.existsIn(tes))
+        {
             if (this.latestTime > typingEvent.time)
                 this.latestTime = typingEvent.time;
+            this.typingEvents.add(typingEvent);
         }
     }
 
