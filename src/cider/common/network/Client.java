@@ -4,7 +4,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Hashtable;
+import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -51,7 +54,12 @@ public class Client
     private JTabbedPane tabbedPane;
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
-    private long lastPush = 0;
+    private long lastBroardcast = 0;
+    private static final long minimumBroadcastDelay = 2000;
+    private String outgoingTypingEvents = "";
+    private Timer broardcastTimer = new Timer();
+
+    private DirectoryViewComponent dirView;
 
     // Chat session with the Bot
     private Chat botChat;
@@ -67,6 +75,7 @@ public class Client
     private MultiUserChat chatroom;
 
     private JTextArea messageReceiveBox;
+    private boolean isWaitingToBroadcast = false;
 
     public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
             Hashtable<String, SourceEditor> openTabs,
@@ -80,6 +89,7 @@ public class Client
         this.username = username;
         this.messageReceiveBox = messageReceiveBox;
         this.chatroomName = "ciderchat" + "@conference." + serviceName;
+        this.dirView = dirView;
 
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
@@ -123,7 +133,7 @@ public class Client
         // chatmanager.addChatListener(userChatListener);
 
         // Establish chat session with the bot
-        botChatListener = new ClientMessageListener(dirView, this);
+        botChatListener = new ClientMessageListener(this);
         botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
                 botChatListener);
 
@@ -233,11 +243,11 @@ public class Client
             sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, sourceEditor);
             System.out.println("Pull since 0 since a new tab is being opened");
-            this.pullEventsSince(0);
+            this.pullEventsSinceFromBot(0);
         }
     }
 
-    public void pullEventsSince(long time)
+    public void pullEventsSinceFromBot(long time)
     {
         try
         {
@@ -253,20 +263,57 @@ public class Client
         }
     }
 
-    public void pushToServer(Queue<TypingEvent> typingEvents, String path)
+    public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
+            String path)
     {
-        // TODO
-        // System.out.println("TODO: Send those outgoing events to the server");
-
-        // FIXME
-        // HACK!
-        // Need code reuse between Server
-        String instructions = "";
         for (TypingEvent te : typingEvents)
-            instructions += "pushto(" + path + ") " + te.pack() + "\n";
+            this.outgoingTypingEvents += "pushto(" + path + ") " + te.pack()
+                    + "\n";
         try
         {
-            botChat.sendMessage(instructions);
+            long currentTime = System.currentTimeMillis();
+            long interval = currentTime - this.lastBroardcast;
+            if (!this.isWaitingToBroadcast)
+            {
+                if (interval < minimumBroadcastDelay)
+                {
+                    this.isWaitingToBroadcast = true;
+                    this.broardcastTimer.schedule(new TimerTask()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            try
+                            {
+                                isWaitingToBroadcast = false;
+                                long currentTime = System.currentTimeMillis();
+                                if (currentTime - lastBroardcast < minimumBroadcastDelay)
+                                    throw new Error(
+                                            "Bug detected: broadcasting too soon");
+
+                                chatroom.sendMessage(outgoingTypingEvents);
+                                outgoingTypingEvents = "";
+                                lastBroardcast = System.currentTimeMillis();
+                            }
+                            catch (XMPPException e)
+                            {
+                                e.printStackTrace();
+                                JOptionPane.showMessageDialog(null,
+                                        "Client failed to send message across bot chat: "
+                                                + e.getMessage());
+                                System.exit(1);
+                            }
+
+                        }
+                    }, minimumBroadcastDelay - interval);
+                }
+                else
+                {
+                    this.chatroom.sendMessage(this.outgoingTypingEvents);
+                    this.outgoingTypingEvents = "";
+                    this.lastBroardcast = System.currentTimeMillis();
+                }
+            }
         }
         catch (XMPPException e)
         {
@@ -276,12 +323,9 @@ public class Client
                             + e.getMessage());
             System.exit(1);
         }
-
-        this.lastPush = System.currentTimeMillis();
-        this.pullEventsSince(lastPush - 1);
     }
 
-    public void getFileList()
+    public void getFileListFromBot()
     {
         try
         {
@@ -321,5 +365,32 @@ public class Client
     public long getLastUpdate()
     {
         return this.lastUpdate;
+    }
+
+    public void processDocumentMessages(String body)
+    {
+        if (body.startsWith("filelist="))
+        {
+            String xml = body.split("filelist=")[1];
+            this.dirView.constructTree(xml);
+            this.setLiveFolder(this.dirView.getLiveFolder());
+            this.setUpdatesAutomatically(true);
+        }
+        else if (body.startsWith("pushto("))
+        {
+            String[] instructions = body.split("\\n");
+            for (String instruction : instructions)
+            {
+                String[] preAndAfter = instruction.split("\\) ");
+                String[] pre = preAndAfter[0].split("\\(");
+                String dest = pre[1];
+                dest = dest.replace("root\\", "");
+                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+                typingEvents.add(new TypingEvent(preAndAfter[1]));
+                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                this.push(typingEvents, dest);
+            }
+
+        }
     }
 }

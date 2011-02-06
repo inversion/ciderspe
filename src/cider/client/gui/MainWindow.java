@@ -110,7 +110,7 @@ class MainWindow implements Runnable
                 userCount, messageReceiveBox, username, "clientpw",
                 "xmpp.org.uk", 5222, "xmpp.org.uk");
         dirView.setClient(client);
-        client.getFileList();
+        client.getFileListFromBot();
     }
 
     MainWindow(String username, String password, String host, int port,
@@ -127,7 +127,7 @@ class MainWindow implements Runnable
         // No need to put this. on tabbedPane and openTabs unless variable in
         // current scope is overriding?
         dirView.setClient(client);
-        client.getFileList();
+        client.getFileListFromBot();
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,

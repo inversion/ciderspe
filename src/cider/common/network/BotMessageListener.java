@@ -71,28 +71,14 @@ public class BotMessageListener implements MessageListener
             // e.printStackTrace();
             // }
         }
+        // This part is still important for when a file is opened
         else if (body.startsWith("pullEventsSince("))
         {
             String arg = body.split("\\(")[1];
             arg = arg.split("\\)")[0];
             long t = Long.parseLong(arg);
 
-            Queue<LocalisedTypingEvents> events = this.bot.getRootFolder()
-                    .eventsSince(t, "");
-            String instructions = "";
-            for (LocalisedTypingEvents ltes : events)
-                for (TypingEvent te : ltes.typingEvents)
-                    instructions += "pushto(" + ltes.path + ") " + te.pack()
-                            + "\n";
-            try
-            {
-                chat.sendMessage(instructions);
-            }
-            catch (XMPPException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            this.pushBack(chat, t);
 
         }
         else if (body.startsWith("pushto("))
@@ -109,34 +95,26 @@ public class BotMessageListener implements MessageListener
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
                 this.bot.getRootFolder().path(dest).push(typingEvents);
             }
-
-            /*
-             * String[] preAndAfter = body.split(") "); String[] pre =
-             * preAndAfter[0].split("("); String dest = pre[1];
-             * Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-             * typingEvents.add(new TypingEvent(preAndAfter[1]));
-             * this.source.getRootFolder().path(dest).push(typingEvents);
-             */
         }
-        /*
-         * else if (body.startsWith("<putfile>")) { if (matcher != null) matcher
-         * = matcher.reset(body); else matcher = putFileMatch.matcher(body);
-         * 
-         * if (matcher.matches()) { try { // Write the file String path = new
-         * String(Base64.decode(matcher.group(1))); FileWriter fwriter = new
-         * FileWriter(path); fwriter.write(new
-         * String(Base64.decode(matcher.group(2)))); fwriter.flush();
-         * fwriter.close();
-         * 
-         * // Replace the CiderFile object in the CiderFileList
-         * filelist.table.remove(path); filelist.table.put(path, new
-         * CiderFile(path));
-         * 
-         * // TODO: Send updated file list to clients now? } catch (IOException
-         * e) { // TODO Auto-generated catch block e.printStackTrace(); } }
-         * 
-         * }
-         */
+    }
+
+    private void pushBack(Chat chat, long t)
+    {
+        Queue<LocalisedTypingEvents> events = this.bot.getRootFolder()
+                .eventsSince(t, "");
+        String instructions = "";
+        for (LocalisedTypingEvents ltes : events)
+            for (TypingEvent te : ltes.typingEvents)
+                instructions += "pushto(" + ltes.path + ") " + te.pack() + "\n";
+        try
+        {
+            chat.sendMessage(instructions);
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 }
