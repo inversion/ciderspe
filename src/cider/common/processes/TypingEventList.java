@@ -118,4 +118,10 @@ public class TypingEventList
     {
         return this.tel.size();
     }
+
+    public boolean newline()
+    {
+        return this.tel.size() == 0 || this.tel.size() == 1
+                && this.tel.get(0).equals("\n");
+    }
 }

@@ -46,8 +46,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private int leftMargin = 32;
     private ArrayList<ETALine> lines = new ArrayList<ETALine>();
     private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
+    private ETALine currentLine = null;
+    private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
+    private static final int lineSpacing = 10;
+    private static final int characterSpacing = 7;
 
     @Override
     /**
@@ -61,24 +65,45 @@ public class EditorTypingArea extends JPanel implements MouseListener
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         int p = 0;
         int ln = 0;
+        boolean caretFound = false;
+        Color[] colors;
         try
         {
             for (ETALine line : this.lines)
             {
                 line.paintMargin(g);
+                line.characterColors();
 
                 // Paints locking regions
                 for (int i = 0; i < line.str.length(); i++)
                     if (line.locked(i))
                         line.highlight(g, i, Color.LIGHT_GRAY);
 
-                // Paints the lines of text and the caret
+                // If the caret is placed just after a newline
+                // that line might not actually have any text in it
+                if (!caretFound && p == this.caretPosition - ln + 1)
+                {
+                    this.currentLine = line;
+                    this.currentColNum = 0;
+                    caretFound = true;
+                    this.currentLine.highlightMargin(g);
+                    this.currentLine.paintCaretOnNewline(g);
+                }
+
+                // Paints the lines of text and the caret if it has not
+                // already been drawn at the start
                 for (int i = 0; i < line.str.length(); i++)
                 {
-                    if (p == this.caretPosition - ln)
+                    if (!caretFound && p == this.caretPosition - ln)
+                    {
                         line.paintCaret(g, i);
+                        currentLine = line;
+                        currentColNum = i + 1;
+                        caretFound = true;
+                        line.highlightMargin(g);
+                    }
                     p++;
-                    line.paint(g, i);
+                    line.paintCharacter(g, i);
                 }
                 ln++;
             }
@@ -100,7 +125,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     public int yToLineNumber(int y)
     {
-        return (int) (y / 10.0) + 1;
+        return (int) (y / (double) lineSpacing) + 1;
+    }
+
+    public int xToColumnNumber(int x)
+    {
+        return (int) ((x - this.leftMargin) / (double) characterSpacing);
     }
 
     @Override
@@ -112,17 +142,32 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int ln = yToLineNumber(me.getY());
         if (ln > this.lines.size())
             ln = this.lines.size();
+
         ETALine line = this.lines.get(ln - 1);
         int start = line.start + ln - 2;
         int length = line.str.length();
 
-        TypingEvent te = new TypingEvent(System.currentTimeMillis(),
-                TypingEventMode.lockRegion, start, length, "", "");
+        if (me.getX() < this.leftMargin)
+        {
+            TypingEventMode tem;
 
-        for (ActionListener al : this.als)
-            al
-                    .actionPerformed(new ActionEvent(te, LINE_LOCKED,
-                            "Lines locked"));
+            if (line.locked(0))
+                tem = TypingEventMode.unlockRegion;
+            else
+                tem = TypingEventMode.lockRegion;
+
+            TypingEvent te = new TypingEvent(System.currentTimeMillis(), tem,
+                    start, length, "", "");
+
+            for (ActionListener al : this.als)
+                al.actionPerformed(new ActionEvent(te,
+                        tem == TypingEventMode.lockRegion ? LINE_LOCKED
+                                : LINE_UNLOCKED, "Locking event"));
+        }
+        else
+        {
+            this.caretPosition = start + this.xToColumnNumber(me.getX());
+        }
 
         this.updateUI();
     }
@@ -141,6 +186,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int y;
         int ln;
         public int start;
+        Color[] colors;
 
         /**
          * 
@@ -160,6 +206,34 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.ln = ln;
             this.y = y;
             this.str = tel;
+            this.colors = new Color[this.str.length()];
+        }
+
+        /**
+         * 
+         * Syntax Highlighting: I've provided an example here to help. You might
+         * want to store the colours in a hashtable or something.
+         */
+        public void characterColors()
+        {
+            String[] words = this.str.toString().split(" ");
+            int i = 0;
+            for (String word : words)
+            {
+                if (word.equals("if"))
+                    wash(this.colors, Color.RED, i, i += word.length());
+                else
+                    wash(this.colors, Color.BLACK, i, i += word.length());
+                i++;
+
+            }
+        }
+
+        public void highlightMargin(Graphics g)
+        {
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
+                    lineSpacing, 3, 3);
         }
 
         /**
@@ -181,11 +255,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
          * @param i
          *            the character number of this line to be painted
          */
-        public void paint(Graphics g, int i)
+        public void paintCharacter(Graphics g, int i)
         {
-            int x = (i * 7) + leftMargin;
+            int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
-            g.setColor(Color.BLACK);
+            g.setColor(this.colors[i]);
             g.drawString("" + str.get(i).text, x, y);
         }
 
@@ -201,9 +275,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
         public void highlight(Graphics g, int i, Color c)
         {
             g.setColor(c);
-            int x = (i * 7) + leftMargin;
+            int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
-            g.fillRect(x, y - 10, 7, 10);
+            g.fillRect(x, y - lineSpacing, characterSpacing, lineSpacing);
         }
 
         /**
@@ -215,8 +289,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
         public void paintCaret(Graphics g, int i)
         {
             g.setColor(Color.BLUE);
-            int x = ((i + 1) * 7) + leftMargin;
-            g.drawLine(x, this.y - 10, x, this.y);
+            int x = ((i + 1) * characterSpacing) + leftMargin;
+            g.drawLine(x, this.y - lineSpacing, x, this.y);
+        }
+
+        public void paintCaretOnNewline(Graphics g)
+        {
+            g.setColor(Color.BLUE);
+            g.drawLine(leftMargin, this.y - lineSpacing, leftMargin, this.y);
         }
 
         /**
@@ -230,6 +310,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             return this.str.get(i).locked;
         }
+    }
+
+    public static void wash(Color[] target, Color color, int start, int end)
+    {
+        for (int i = start; i < end; i++)
+            target[i] = color;
     }
 
     /**
@@ -326,7 +412,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int i = 0;
         for (TypingEventList tel : split)
         {
-            ETALine line = new ETALine(tel, j * 10, j++, i);
+            ETALine line = new ETALine(tel, j * lineSpacing, j++, i);
             this.lines.add(line);
             i += line.str.length();
         }
@@ -364,6 +450,46 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.caretPosition++;
 
         this.updateUI();
+    }
+
+    // TODO:
+    // clean up, reuse code between these two methods
+    public void moveUp()
+    {
+        if (this.currentLine.str.newline())
+            this.moveLeft();
+        else
+        {
+            int ln = this.currentLine.ln - 1;
+            if (ln < 1)
+                ln = 1;
+            ETALine line = this.lines.get(ln - 1);
+            int start = line.start + line.ln - 2;
+            int length = line.str.length();
+            if (this.currentColNum >= length)
+                this.currentColNum = length;
+            this.caretPosition = start + this.currentColNum;
+            this.updateUI();
+        }
+    }
+
+    public void moveDown()
+    {
+        if (this.currentLine.str.newline())
+            this.moveRight();
+        else
+        {
+            int ln = this.currentLine.ln + 1;
+            if (ln > this.lines.size())
+                ln = this.lines.size();
+            ETALine line = this.lines.get(ln - 1);
+            int start = line.start + line.ln - 2;
+            int length = line.str.length();
+            if (this.currentColNum >= length)
+                this.currentColNum = length;
+            this.caretPosition = start + this.currentColNum;
+            this.updateUI();
+        }
     }
 
     /**
