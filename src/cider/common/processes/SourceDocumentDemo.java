@@ -61,7 +61,7 @@ public class SourceDocumentDemo
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;
-        private long period = 500;
+        private long period = 1000;
         private long currentTime = System.currentTimeMillis();
         private long lastPush = 0;
 
@@ -87,7 +87,7 @@ public class SourceDocumentDemo
                                 client.push(pushQueue);
                             }
                         }
-                        lastPush = currentTime;
+                        lastPush = currentTime - 1;
                     }
                     catch (Exception e)
                     {
@@ -319,8 +319,9 @@ public class SourceDocumentDemo
                         }
                         }
 
-                        TypingEvent te = new TypingEvent(System
-                                .currentTimeMillis(), mode, eta
+                        long t = System.currentTimeMillis();
+
+                        TypingEvent te = new TypingEvent(t, mode, eta
                                 .getCaretPosition(), 1, String.valueOf(ke
                                 .getKeyChar()), "Demo User " + id);
                         System.out.println("push to server: " + te);
@@ -328,8 +329,8 @@ public class SourceDocumentDemo
 
                         Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
                                 outgoingEvents);
-                        client.push(internal);
                         server.push(outgoingEvents);
+                        client.push(internal);
 
                         switch (mode)
                         {

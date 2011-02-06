@@ -165,8 +165,14 @@ public class SourceDocument implements ICodeLocation
 
     public void putEvent(TypingEvent typingEvent)
     {
-        if (this.typingEvents.contains(typingEvent))
-            return;
+        // TODO: it may be that a more efficient way of doing this can be found
+        TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
+        this.typingEvents.toArray(tes);
+
+        if (typingEvent.existsIn(tes))
+        {
+            // ignored
+        }
         else
         {
             if (typingEvent.mode == TypingEventMode.lockRegion)
