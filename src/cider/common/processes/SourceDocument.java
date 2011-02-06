@@ -170,19 +170,24 @@ public class SourceDocument implements ICodeLocation
         else
         {
             if (typingEvent.mode == TypingEventMode.lockRegion)
-            {
                 for (TypingEvent te : this.typingEvents)
-                    if (te.position >= typingEvent.position
-                            && te.position <= typingEvent.position
-                                    + typingEvent.length)
-                        te.locked = true;
-            }
+                    te.locked = te.locked || this.insideRegion(typingEvent, te);
+            else if (typingEvent.mode == TypingEventMode.unlockRegion)
+                for (TypingEvent te : this.typingEvents)
+                    te.locked = !this.insideRegion(typingEvent, te)
+                            && te.locked;
 
             this.typingEvents.add(typingEvent);
 
             if (this.latestTime > typingEvent.time)
                 this.latestTime = typingEvent.time;
         }
+    }
+
+    private boolean insideRegion(TypingEvent region, TypingEvent te)
+    {
+        return te.position >= region.position
+                && te.position <= region.position + region.length;
     }
 
     public void putEvents(Collection<TypingEvent> values)

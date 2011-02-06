@@ -37,6 +37,8 @@ public class SourceDocumentDemo
         JFrame w = new JFrame();
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
+        int offset = (id - 1) * 100;
+        w.setLocation(w.getX() + offset, w.getY() + offset);
         SourceDocument sourceDocument = new SourceDocument("Demo User " + id,
                 "test.SourceDocument");
         EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
@@ -261,13 +263,20 @@ public class SourceDocumentDemo
                 @Override
                 public void keyPressed(KeyEvent ke)
                 {
-                    if (ke.getKeyCode() == KeyEvent.VK_LEFT)
+                    switch (ke.getKeyCode())
                     {
+                    case KeyEvent.VK_LEFT:
                         eta.moveLeft();
-                    }
-                    else if (ke.getKeyCode() == KeyEvent.VK_RIGHT)
-                    {
+                        break;
+                    case KeyEvent.VK_RIGHT:
                         eta.moveRight();
+                        break;
+                    case KeyEvent.VK_UP:
+                        eta.moveUp();
+                        break;
+                    case KeyEvent.VK_DOWN:
+                        eta.moveDown();
+                        break;
                     }
                 }
 
