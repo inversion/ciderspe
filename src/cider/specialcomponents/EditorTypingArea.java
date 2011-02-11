@@ -143,30 +143,33 @@ public class EditorTypingArea extends JPanel implements MouseListener
         if (ln > this.lines.size())
             ln = this.lines.size();
 
-        ETALine line = this.lines.get(ln - 1);
-        int start = line.start + ln - 2;
-        int length = line.str.length();
-
-        if (me.getX() < this.leftMargin)
+        if (this.lines.size() > 0)
         {
-            TypingEventMode tem;
+            ETALine line = this.lines.get(ln - 1);
+            int start = line.start + ln - 2;
+            int length = line.str.length();
 
-            if (length > 0 && line.locked(0))
-                tem = TypingEventMode.unlockRegion;
+            if (me.getX() < this.leftMargin)
+            {
+                TypingEventMode tem;
+
+                if (length > 0 && line.locked(0))
+                    tem = TypingEventMode.unlockRegion;
+                else
+                    tem = TypingEventMode.lockRegion;
+
+                TypingEvent te = new TypingEvent(System.currentTimeMillis(),
+                        tem, start, length, "", "");
+
+                for (ActionListener al : this.als)
+                    al.actionPerformed(new ActionEvent(te,
+                            tem == TypingEventMode.lockRegion ? LINE_LOCKED
+                                    : LINE_UNLOCKED, "Locking event"));
+            }
             else
-                tem = TypingEventMode.lockRegion;
-
-            TypingEvent te = new TypingEvent(System.currentTimeMillis(), tem,
-                    start, length, "", "");
-
-            for (ActionListener al : this.als)
-                al.actionPerformed(new ActionEvent(te,
-                        tem == TypingEventMode.lockRegion ? LINE_LOCKED
-                                : LINE_UNLOCKED, "Locking event"));
-        }
-        else
-        {
-            this.caretPosition = start + this.xToColumnNumber(me.getX());
+            {
+                this.caretPosition = start + this.xToColumnNumber(me.getX());
+            }
         }
 
         this.updateUI();
