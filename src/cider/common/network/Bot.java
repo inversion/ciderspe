@@ -74,7 +74,7 @@ public class Bot
             chatroom = new MultiUserChat(connection, CHATROOM_NAME
                     + "@conference." + SERVICE_NAME);
             chatroom.create(BOT_USERNAME);
-            chatroom.addMessageListener( new BotChatroomMessageListener() );
+            chatroom.addMessageListener(new BotChatroomMessageListener(this));
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
