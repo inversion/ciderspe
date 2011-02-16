@@ -7,6 +7,7 @@ package cider.common.network;
  * 
  */
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -15,6 +16,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 
 import cider.common.processes.TypingEvent;
+import cider.specialcomponents.Base64;
 
 public class BotChatroomMessageListener implements PacketListener
 {
@@ -30,7 +32,13 @@ public class BotChatroomMessageListener implements PacketListener
     public void processPacket(Packet packet)
     {
         Message msg = (Message) packet;
-        String body = msg.getBody();
+        String body = null;
+		try {
+			body = new String( Base64.decode( msg.getBody() ) );
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         if (body.startsWith("pushto("))
         {
             String[] instructions = body.split("\\n");

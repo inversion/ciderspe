@@ -29,6 +29,7 @@ import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
+import cider.specialcomponents.Base64;
 import cider.specialcomponents.EditorTypingArea;
 
 /**
@@ -68,7 +69,7 @@ public class Client
 
     // Listen for private chat sessions with other users
     // TODO: Not yet implemented
-    private ClientPrivateChatListener userChatListener;
+    //private ClientPrivateChatListener userChatListener;
 
     // Chatroom
     private String chatroomName;
@@ -150,7 +151,7 @@ public class Client
     {
 
         // messageReceiveBox.setContentType("text/html");
-        String oldText = messageReceiveBox.getText();
+        //String oldText = messageReceiveBox.getText();
         // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
         // + dateFormat.format(date) + "):<br>" + message + "<br></html>");
 
@@ -168,7 +169,7 @@ public class Client
         {
             Date date = new Date();
             Message msg = chatroom.createMessage();
-            msg.setBody(message);
+            msg.setBody( Base64.encodeBytes( message.getBytes() ) );
             msg.setSubject(dateFormat.format(date));
             chatroom.sendMessage(msg);
         }
@@ -188,7 +189,7 @@ public class Client
     {
         try
         {
-            botChat.sendMessage("quit");
+            botChat.sendMessage( Base64.encodeBytes( "quit".getBytes() ) );
         }
         catch (XMPPException e1)
         {
@@ -237,7 +238,6 @@ public class Client
         SourceDocument doc = this.liveFolder.path(strPath);
         if (!this.openTabs.containsKey(strPath))
         {
-            // TODO: Commented out by Andrew because it was causing an error
             EditorTypingArea eta = new EditorTypingArea(this.username, doc);
             SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
             sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
@@ -252,9 +252,7 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat
-                    .sendMessage("pullEventsSince(" + String.valueOf(time)
-                            + ")");
+            botChat.sendMessage( Base64.encodeBytes( ("pullEventsSince(" + String.valueOf(time) + ")").getBytes() ) );
         }
         catch (XMPPException e)
         {
@@ -291,7 +289,7 @@ public class Client
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
-                                chatroom.sendMessage(outgoingTypingEvents);
+                                chatroom.sendMessage( Base64.encodeBytes( outgoingTypingEvents.getBytes() ) );
                                 outgoingTypingEvents = "";
                                 lastBroardcast = System.currentTimeMillis();
                             }
@@ -309,7 +307,7 @@ public class Client
                 }
                 else
                 {
-                    this.chatroom.sendMessage(this.outgoingTypingEvents);
+                    this.chatroom.sendMessage( Base64.encodeBytes( this.outgoingTypingEvents.getBytes() ) );
                     this.outgoingTypingEvents = "";
                     this.lastBroardcast = System.currentTimeMillis();
                 }
@@ -329,7 +327,7 @@ public class Client
     {
         try
         {
-            botChat.sendMessage("getfilelist");
+            botChat.sendMessage( Base64.encodeBytes( "getfilelist".getBytes() ) );
         }
         catch (XMPPException e)
         {

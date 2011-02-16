@@ -109,6 +109,9 @@ class MainWindow implements Runnable
         client = new Client(dirView, tabbedPane, openTabs, userListModel,
                 userCount, messageReceiveBox, username, "clientpw",
                 "xmpp.org.uk", 5222, "xmpp.org.uk");
+/*        client = new Client(dirView, tabbedPane, openTabs, userListModel,
+                userCount, messageReceiveBox, username, "clientpw",
+                "192.168.0.2", 5222, "192.168.0.2");*/
         dirView.setClient(client);
         client.getFileListFromBot();
     }
