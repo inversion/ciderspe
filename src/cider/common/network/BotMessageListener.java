@@ -1,5 +1,6 @@
 package cider.common.network;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -10,6 +11,7 @@ import org.jivesoftware.smack.packet.Message;
 
 import cider.common.processes.LocalisedTypingEvents;
 import cider.common.processes.TypingEvent;
+import cider.specialcomponents.Base64;
 
 /**
  * This class waits for a message to be received on a chat session and then
@@ -44,7 +46,13 @@ public class BotMessageListener implements MessageListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = message.getBody();
+        String body = null;
+		try {
+			body = new String( Base64.decode( message.getBody() ) );
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
         // TODO: XML-ize this and get filelist??
         if (body.startsWith("quit"))
         {
@@ -54,11 +62,8 @@ public class BotMessageListener implements MessageListener
         {
             try
             {
-                // chat.sendMessage("filelist=" +
-                // Base64.encodeObject(filelist));
                 String xml = this.bot.getRootFolder().xml("");
-                chat.sendMessage("filelist=" + xml);
-
+                chat.sendMessage( Base64.encodeBytes( ("filelist=" + xml).getBytes() ) );
             }
             catch (XMPPException e)
             {
@@ -108,7 +113,7 @@ public class BotMessageListener implements MessageListener
                 instructions += "pushto(" + ltes.path + ") " + te.pack() + "\n";
         try
         {
-            chat.sendMessage(instructions);
+            chat.sendMessage( Base64.encodeBytes( instructions.getBytes() ) );
         }
         catch (XMPPException e)
         {
