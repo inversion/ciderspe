@@ -33,15 +33,18 @@ public class BotChatroomMessageListener implements PacketListener
     {
         Message msg = (Message) packet;
         String body = null;
-		try {
-			body = new String( Base64.decode( msg.getBody() ) );
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        try
+        {
+            body = new String(Base64.decode(msg.getBody()));
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split("\\n");
+            String[] instructions = body.split(" -> ");
             for (String instruction : instructions)
             {
                 String[] preAndAfter = instruction.split("\\) ");

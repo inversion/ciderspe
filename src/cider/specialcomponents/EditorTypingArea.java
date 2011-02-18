@@ -52,6 +52,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public static final int LINE_UNLOCKED = 1;
     private static final int lineSpacing = 10;
     private static final int characterSpacing = 7;
+    private boolean waiting = true;
 
     @Override
     /**
@@ -60,59 +61,71 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
-        g.setFont(font);
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, this.getWidth(), this.getHeight());
-        int p = 0;
-        int ln = 0;
-        boolean caretFound = false;
-        Color[] colors;
-        try
+
+        if (this.waiting)
+            this.paintWaitingSign(g);
+        else
         {
-            for (ETALine line : this.lines)
+            g.setFont(font);
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, this.getWidth(), this.getHeight());
+            int p = 0;
+            int ln = 0;
+            boolean caretFound = false;
+            Color[] colors;
+            try
             {
-                line.paintMargin(g);
-                line.characterColors();
-
-                // Paints locking regions
-                for (int i = 0; i < line.str.length(); i++)
-                    if (line.locked(i))
-                        line.highlight(g, i, Color.LIGHT_GRAY);
-
-                // If the caret is placed just after a newline
-                // that line might not actually have any text in it
-                if (!caretFound && p == this.caretPosition - ln + 1)
+                for (ETALine line : this.lines)
                 {
-                    this.currentLine = line;
-                    this.currentColNum = 0;
-                    caretFound = true;
-                    this.currentLine.highlightMargin(g);
-                    this.currentLine.paintCaretOnNewline(g);
-                }
+                    line.paintMargin(g);
+                    line.characterColors();
 
-                // Paints the lines of text and the caret if it has not
-                // already been drawn at the start
-                for (int i = 0; i < line.str.length(); i++)
-                {
-                    if (!caretFound && p == this.caretPosition - ln)
+                    // Paints locking regions
+                    for (int i = 0; i < line.str.length(); i++)
+                        if (line.locked(i))
+                            line.highlight(g, i, Color.LIGHT_GRAY);
+
+                    // If the caret is placed just after a newline
+                    // that line might not actually have any text in it
+                    if (!caretFound && p == this.caretPosition - ln + 1)
                     {
-                        line.paintCaret(g, i);
-                        currentLine = line;
-                        currentColNum = i + 1;
+                        this.currentLine = line;
+                        this.currentColNum = 0;
                         caretFound = true;
-                        line.highlightMargin(g);
+                        this.currentLine.highlightMargin(g);
+                        this.currentLine.paintCaretOnNewline(g);
                     }
-                    p++;
-                    line.paintCharacter(g, i);
+
+                    // Paints the lines of text and the caret if it has not
+                    // already been drawn at the start
+                    for (int i = 0; i < line.str.length(); i++)
+                    {
+                        if (!caretFound && p == this.caretPosition - ln)
+                        {
+                            line.paintCaret(g, i);
+                            currentLine = line;
+                            currentColNum = i + 1;
+                            caretFound = true;
+                            line.highlightMargin(g);
+                        }
+                        p++;
+                        line.paintCharacter(g, i);
+                    }
+                    ln++;
                 }
-                ln++;
+                p++;
             }
-            p++;
+            catch (ConcurrentModificationException e)
+            {
+                // ignore for now
+            }
         }
-        catch (ConcurrentModificationException e)
-        {
-            // ignore for now
-        }
+    }
+
+    public void paintWaitingSign(Graphics g)
+    {
+        g.setFont(new Font("ariel", Font.PLAIN, 14));
+        g.drawString("Retrieving document from server... ", 32, 32);
     }
 
     /**
@@ -375,6 +388,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
             }
 
         });
+    }
+
+    public void setWaiting(boolean waiting)
+    {
+        this.waiting = waiting;
     }
 
     /**

@@ -119,12 +119,33 @@ public class SourceEditor extends JPanel
             {
                 switch (ke.getKeyCode())
                 {
-                case 37:
+                case KeyEvent.VK_LEFT:
                     eta.moveLeft();
                     break;
-                case 39:
+                case KeyEvent.VK_RIGHT:
                     eta.moveRight();
                     break;
+                case KeyEvent.VK_UP:
+                    eta.moveUp();
+                    break;
+                case KeyEvent.VK_DOWN:
+                    eta.moveDown();
+                    break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void keyTyped(KeyEvent ke)
+            {
+                switch (ke.getKeyCode())
+                {
                 default:
                 {
                     try
@@ -133,29 +154,24 @@ public class SourceEditor extends JPanel
                         // System.out.println(server.lastUpdateTime());
                         TypingEventMode mode = TypingEventMode.insert;
                         String chr;
-                        if (ke.isShiftDown())
-                            chr = "";
-                        else
+                        switch (ke.getKeyChar())
                         {
-                            switch (ke.getKeyChar())
-                            {
-                            case '\u0008':
-                            {
-                                mode = TypingEventMode.backspace;
-                                // eta.moveLeft();
-                            }
-                                break;
-                            default:
-                                break;
-                            }
-
-                            chr = "" + ke.getKeyChar();
+                        case '\u0008':
+                        {
+                            mode = TypingEventMode.backspace;
+                            // eta.moveLeft();
+                        }
+                            break;
+                        default:
+                            break;
                         }
 
-                        TypingEvent te = new TypingEvent(System
-                                .currentTimeMillis(), mode, eta
-                                .getCaretPosition(), 1, chr, client
-                                .getUsername());
+                        chr = String.valueOf(ke.getKeyChar());
+
+                        TypingEvent te = new TypingEvent(
+                                System.currentTimeMillis(), mode,
+                                eta.getCaretPosition(), 1, chr,
+                                client.getUsername());
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
                         Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
@@ -183,20 +199,6 @@ public class SourceEditor extends JPanel
                     }
                 }
                 }
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void keyTyped(KeyEvent e)
-            {
-
             }
         };
         return k;
