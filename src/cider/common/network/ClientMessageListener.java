@@ -61,8 +61,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
         catch (Exception e)
         {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Cannot pull events: "
-                    + e.getMessage());
+            JOptionPane.showMessageDialog(null,
+                    "Cannot pull events: " + e.getMessage());
             System.exit(1);
         }
     }

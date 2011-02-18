@@ -56,7 +56,7 @@ public class Client
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
-    private static final long minimumBroadcastDelay = 2000;
+    private static final long minimumBroadcastDelay = 0;
     private String outgoingTypingEvents = "";
     private Timer broardcastTimer = new Timer();
 
@@ -69,7 +69,7 @@ public class Client
 
     // Listen for private chat sessions with other users
     // TODO: Not yet implemented
-    //private ClientPrivateChatListener userChatListener;
+    // private ClientPrivateChatListener userChatListener;
 
     // Chatroom
     private String chatroomName;
@@ -151,7 +151,7 @@ public class Client
     {
 
         // messageReceiveBox.setContentType("text/html");
-        //String oldText = messageReceiveBox.getText();
+        // String oldText = messageReceiveBox.getText();
         // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
         // + dateFormat.format(date) + "):<br>" + message + "<br></html>");
 
@@ -169,7 +169,7 @@ public class Client
         {
             Date date = new Date();
             Message msg = chatroom.createMessage();
-            msg.setBody( Base64.encodeBytes( message.getBytes() ) );
+            msg.setBody(Base64.encodeBytes(message.getBytes()));
             msg.setSubject(dateFormat.format(date));
             chatroom.sendMessage(msg);
         }
@@ -189,7 +189,7 @@ public class Client
     {
         try
         {
-            botChat.sendMessage( Base64.encodeBytes( "quit".getBytes() ) );
+            botChat.sendMessage(Base64.encodeBytes("quit".getBytes()));
         }
         catch (XMPPException e1)
         {
@@ -252,7 +252,8 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage( Base64.encodeBytes( ("pullEventsSince(" + String.valueOf(time) + ")").getBytes() ) );
+            botChat.sendMessage(Base64.encodeBytes(("pullEventsSince("
+                    + String.valueOf(time) + ")").getBytes()));
         }
         catch (XMPPException e)
         {
@@ -265,8 +266,10 @@ public class Client
             String path)
     {
         for (TypingEvent te : typingEvents)
+        {
             this.outgoingTypingEvents += "pushto(" + path + ") " + te.pack()
-                    + "\n";
+                    + " -> ";
+        }
         try
         {
             long currentTime = System.currentTimeMillis();
@@ -289,7 +292,9 @@ public class Client
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
-                                chatroom.sendMessage( Base64.encodeBytes( outgoingTypingEvents.getBytes() ) );
+                                chatroom.sendMessage(Base64
+                                        .encodeBytes(outgoingTypingEvents
+                                                .getBytes()));
                                 outgoingTypingEvents = "";
                                 lastBroardcast = System.currentTimeMillis();
                             }
@@ -307,7 +312,8 @@ public class Client
                 }
                 else
                 {
-                    this.chatroom.sendMessage( Base64.encodeBytes( this.outgoingTypingEvents.getBytes() ) );
+                    this.chatroom.sendMessage(Base64
+                            .encodeBytes(this.outgoingTypingEvents.getBytes()));
                     this.outgoingTypingEvents = "";
                     this.lastBroardcast = System.currentTimeMillis();
                 }
@@ -316,7 +322,8 @@ public class Client
         catch (XMPPException e)
         {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
+            JOptionPane.showMessageDialog(
+                    null,
                     "Client failed to send message across bot chat: "
                             + e.getMessage());
             System.exit(1);
@@ -327,7 +334,7 @@ public class Client
     {
         try
         {
-            botChat.sendMessage( Base64.encodeBytes( "getfilelist".getBytes() ) );
+            botChat.sendMessage(Base64.encodeBytes("getfilelist".getBytes()));
         }
         catch (XMPPException e)
         {
@@ -355,6 +362,7 @@ public class Client
     {
         EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
         eta.getCodeLocation().push(typingEvents);
+        eta.setWaiting(false);
         eta.updateText();
         if (eta.getLastUpdate() >= this.lastUpdate)
             this.lastUpdate = eta.getLastUpdate();
@@ -376,7 +384,7 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split("\\n");
+            String[] instructions = body.split(" -> ");
             for (String instruction : instructions)
             {
                 String[] preAndAfter = instruction.split("\\) ");

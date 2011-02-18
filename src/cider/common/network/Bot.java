@@ -27,8 +27,8 @@ public class Bot
     public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
-//    public static final String HOST = "192.168.0.2";
-//    public static final String SERVICE_NAME = "192.168.0.2";
+    // public static final String HOST = "192.168.0.2";
+    // public static final String SERVICE_NAME = "192.168.0.2";
     public static final String HOST = "xmpp.org.uk";
     public static final String SERVICE_NAME = "xmpp.org.uk";
     public static final int PORT = 5222;
@@ -79,8 +79,8 @@ public class Bot
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
             connection.addPacketListener(new DebugPacketListener(),
                     new DebugPacketFilter());
-            connection.addPacketInterceptor( new DebugPacketInterceptor(), new DebugPacketFilter() );
-            
+            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();

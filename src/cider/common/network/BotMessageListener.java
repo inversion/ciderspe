@@ -47,12 +47,15 @@ public class BotMessageListener implements MessageListener
     public void processMessage(Chat chat, Message message)
     {
         String body = null;
-		try {
-			body = new String( Base64.decode( message.getBody() ) );
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        try
+        {
+            body = new String(Base64.decode(message.getBody()));
+        }
+        catch (IOException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         // TODO: XML-ize this and get filelist??
         if (body.startsWith("quit"))
         {
@@ -63,7 +66,8 @@ public class BotMessageListener implements MessageListener
             try
             {
                 String xml = this.bot.getRootFolder().xml("");
-                chat.sendMessage( Base64.encodeBytes( ("filelist=" + xml).getBytes() ) );
+                chat.sendMessage(Base64.encodeBytes(("filelist=" + xml)
+                        .getBytes()));
             }
             catch (XMPPException e)
             {
@@ -82,13 +86,13 @@ public class BotMessageListener implements MessageListener
             String arg = body.split("\\(")[1];
             arg = arg.split("\\)")[0];
             long t = Long.parseLong(arg);
-
             this.pushBack(chat, t);
+            // JOptionPane.showMessageDialog(null, "Pushed Back " + t);
 
         }
         else if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split("\\n");
+            String[] instructions = body.split("\\) \\n");
             for (String instruction : instructions)
             {
                 String[] preAndAfter = instruction.split("\\) ");
@@ -110,10 +114,11 @@ public class BotMessageListener implements MessageListener
         String instructions = "";
         for (LocalisedTypingEvents ltes : events)
             for (TypingEvent te : ltes.typingEvents)
-                instructions += "pushto(" + ltes.path + ") " + te.pack() + "\n";
+                instructions += "pushto(" + ltes.path + ") " + te.pack()
+                        + " -> ";
         try
         {
-            chat.sendMessage( Base64.encodeBytes( instructions.getBytes() ) );
+            chat.sendMessage(Base64.encodeBytes(instructions.getBytes()));
         }
         catch (XMPPException e)
         {
@@ -121,5 +126,4 @@ public class BotMessageListener implements MessageListener
             e.printStackTrace();
         }
     }
-
 }
