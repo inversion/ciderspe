@@ -9,13 +9,13 @@ import java.util.TreeMap;
  */
 public class TypingEvent
 {
-    public final long time;
+    public boolean locked = false;
     public final TypingEventMode mode;
+    public final long time;
     public final int position;
     public final int length;
     public final String text;
     public final String owner;
-    public boolean locked = false;
 
     public TypingEvent(long time, final TypingEventMode mode, int position,
             int length, String text, String owner)
@@ -26,6 +26,19 @@ public class TypingEvent
         this.text = text;
         this.length = length;
         this.owner = owner;
+    }
+
+    public TypingEvent(TypingEvent typingEvent, long time, int position,
+            TypingEventMode mode)
+    {
+        this.time = time;
+        this.position = position;
+        this.mode = mode;
+        this.locked = typingEvent.locked;
+        this.length = typingEvent.length;
+        this.text = typingEvent.text;
+        this.owner = typingEvent.owner;
+
     }
 
     public TypingEvent(String str)

@@ -1,6 +1,7 @@
 package cider.common.processes;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -123,5 +124,20 @@ public class TypingEventList
     {
         return this.tel.size() == 0 || this.tel.size() == 1
                 && this.tel.get(0).equals("\n");
+    }
+
+    public Collection<? extends TypingEvent> events()
+    {
+        return this.tel;
+    }
+
+    public void homogenizes(long end)
+    {
+        int size = this.tel.size();
+        long start = end - size;
+        long t = start;
+        for (int i = 0; i < size; i++)
+            this.tel.set(i, new TypingEvent(this.tel.get(i), t++, i,
+                    TypingEventMode.insert));
     }
 }

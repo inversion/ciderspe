@@ -42,12 +42,12 @@ public class SourceDocument implements ICodeLocation
      */
     public static String test()
     {
-        String testLog = shuffledEventsTest() + "\n";
+        String testLog = shuffleAndSimplificationTest() + "\n";
         testLog += lengthTest();
         return testLog;
     }
 
-    protected static String shuffledEventsTest()
+    protected static String shuffleAndSimplificationTest()
     {
         String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
 
@@ -72,13 +72,33 @@ public class SourceDocument implements ICodeLocation
                 "testdoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.putEvent(event);
+
         String result = testDoc.toString();
-        return expected.equals(result) ? "pass"
+        String testResult = expected.equals(result) ? "pass\n"
                 : "fail: did not pass shuffled events test since toString returned '"
                         + result
                         + "', where as it should of been '"
                         + expected
+                        + "'.\n";
+
+        expected = "the quick 123123123123123123123123123 muddled fox bounced over [this text was inserted after the simplification] the lazy dog";
+
+        testDoc.simplify(3000);
+        tes.clear();
+        tes.addAll(generateEvents(3000, 3100, 62,
+                "[this text was inserted after the simplification] ",
+                TypingEventMode.insert, "na"));
+
+        for (TypingEvent event : tes)
+            testDoc.putEvent(event);
+
+        result = testDoc.toString();
+        testResult += expected.equals(result) ? "pass"
+                : "fail: simplification followed by new events produced '"
+                        + result + "', where as it should of been '" + expected
                         + "'.";
+
+        return testResult;
     }
 
     protected static String lengthTest()
@@ -94,7 +114,7 @@ public class SourceDocument implements ICodeLocation
         for (int i = 0; i < 10000; i++)
             bigString += alphaChars[i % l];
 
-        tes.addAll(generateEvents(0, 10000, 0, bigString,
+        tes.addAll(generateEvents(2, 10000, 0, bigString,
                 TypingEventMode.insert, "na"));
 
         SourceDocument testDoc = new SourceDocument("test owner",
@@ -187,6 +207,21 @@ public class SourceDocument implements ICodeLocation
                 this.latestTime = typingEvent.time;
             this.typingEvents.add(typingEvent);
         }
+    }
+
+    public void simplify(long endTime)
+    {
+        TypingEventList tel = this.playOutEvents(endTime);
+        this.clearUpTo(endTime);
+        tel.homogenizes(endTime);
+        this.typingEvents.addAll(tel.events());
+    }
+
+    public void clearUpTo(long endTime)
+    {
+        while (this.typingEvents.size() > 0
+                && this.typingEvents.peek().time < endTime)
+            this.typingEvents.poll();
     }
 
     private boolean insideRegion(TypingEvent region, TypingEvent te)
