@@ -110,6 +110,31 @@ public class TypingEventList
         return ll;
     }
 
+    static boolean belongsTo(String string, String[] strings)
+    {
+        for (String str : strings)
+            if (str.equals(string))
+                return true;
+        return false;
+    }
+
+    public LinkedList<TypingEventList> splitWords(String[] dividers)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current;
+        current = new TypingEventList();
+        for (TypingEvent te : this.tel)
+            if (belongsTo(te.text, dividers))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
     public boolean locked(int position)
     {
         return this.tel.get(position).locked;
@@ -131,7 +156,7 @@ public class TypingEventList
         return this.tel;
     }
 
-    public void homogenizes(long end)
+    public void homogenize(long end)
     {
         int size = this.tel.size();
         long start = end - size;

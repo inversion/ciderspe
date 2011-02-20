@@ -213,7 +213,7 @@ public class SourceDocument implements ICodeLocation
     {
         TypingEventList tel = this.playOutEvents(endTime);
         this.clearUpTo(endTime);
-        tel.homogenizes(endTime);
+        tel.homogenize(endTime);
         this.typingEvents.addAll(tel.events());
     }
 

@@ -226,22 +226,25 @@ public class EditorTypingArea extends JPanel implements MouseListener
         }
 
         /**
+         * ------------------ >>> LOOK HERE <<< ------------------
          * 
          * Syntax Highlighting: I've provided an example here to help. You might
          * want to store the colours in a hashtable or something.
          */
         public void characterColors()
         {
-            String[] words = this.str.toString().split(" ");
+            LinkedList<TypingEventList> words = this.str
+                    .splitWords(new String[] { " ", "(", ")", ";", "\t" });
             int i = 0;
-            for (String word : words)
+            String str;
+            int length;
+            for (TypingEventList word : words)
             {
-                if (word.equals("if"))
-                    wash(this.colors, Color.RED, i, i += word.length());
-                else
-                    wash(this.colors, Color.BLACK, i, i += word.length());
-                i++;
-
+                str = word.toString();
+                length = str.length();
+                if (str.equals("if"))
+                    wash(this.colors, Color.RED, i, i + length);
+                i += length + 1;
             }
         }
 
@@ -275,7 +278,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
-            g.setColor(this.colors[i]);
+            g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
             g.drawString("" + str.get(i).text, x, y);
         }
 
@@ -330,6 +333,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public static void wash(Color[] target, Color color, int start, int end)
     {
+        start = start < 0 ? 0 : start;
+        end = end < target.length ? end : target.length;
         for (int i = start; i < end; i++)
             target[i] = color;
     }
