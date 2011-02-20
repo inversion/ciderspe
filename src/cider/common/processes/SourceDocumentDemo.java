@@ -43,6 +43,7 @@ public class SourceDocumentDemo
                 "test.SourceDocument");
         EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
                 sourceDocument);
+        eta.setWaiting(false);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
                 this.server.timer, id, eta);
         w.add(panel);
