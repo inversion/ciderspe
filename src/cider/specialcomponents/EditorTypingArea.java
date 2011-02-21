@@ -461,7 +461,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     public void moveLeft()
     {
-        if (this.caretPosition > 0)
+        if (this.caretPosition >= 0)
             this.caretPosition--;
 
         this.updateUI();
