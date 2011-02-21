@@ -57,7 +57,7 @@ public class LocalCodeFile implements ICodeLocation
                 TypingEventMode.insert, lcf.oldFileContentString.length(), 0,
                 "Test text: " + date.toString(), "owner");
         Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-        typingEvents.addAll(timestamp.explode().values());
+        typingEvents.addAll(timestamp.explode());
         lcf.push(typingEvents);
         return lcf.read();
     }

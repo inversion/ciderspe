@@ -6,6 +6,9 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -37,6 +40,8 @@ public class SourceEditor extends JPanel
         this.eta = eta;
         this.eta.addComponentListener(new TabSelectionFocusGainListener());
         this.eta.addKeyListener(this.newKeyListener());
+        this.eta.addMouseListener(this.newMouseListener());
+        this.eta.setFocusTraversalKeysEnabled(false);
         this.client = client;
         this.path = path;
     }
@@ -110,6 +115,50 @@ public class SourceEditor extends JPanel
         return this.tabHandle;
     }
 
+    private MouseListener newMouseListener()
+    {
+        MouseListener m = new MouseListener()
+        {
+
+            @Override
+            public void mouseClicked(MouseEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void mouseExited(MouseEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void mousePressed(MouseEvent arg0)
+            {
+                SourceEditor.this.eta.requestFocusInWindow();
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+        };
+
+        return m;
+    }
+
     public KeyListener newKeyListener()
     {
         KeyListener k = new KeyListener()
@@ -150,32 +199,47 @@ public class SourceEditor extends JPanel
                 {
                     try
                     {
-                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                         // System.out.println(server.lastUpdateTime());
                         TypingEventMode mode = TypingEventMode.insert;
                         String chr;
+
                         switch (ke.getKeyChar())
                         {
                         case '\u0008':
                         {
                             mode = TypingEventMode.backspace;
-                            // eta.moveLeft();
+                            chr = " ";
+                        }
+                            break;
+                        case '\t':
+                        {
+                            chr = "    ";
+                            SourceEditor.this.eta.requestFocusInWindow();
                         }
                             break;
                         default:
+                            chr = String.valueOf(ke.getKeyChar());
                             break;
                         }
 
-                        chr = String.valueOf(ke.getKeyChar());
-
                         TypingEvent te = new TypingEvent(
                                 System.currentTimeMillis(), mode,
-                                eta.getCaretPosition(), 1, chr,
+                                eta.getCaretPosition(), chr.length(), chr,
                                 client.getUsername());
-                        System.out.println("push to server: " + te);
-                        outgoingEvents.add(te);
-                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
-                                outgoingEvents);
+                        ArrayList<TypingEvent> particles = te.explode();
+
+                        for (TypingEvent particle : particles)
+                            System.out.println("push to server: " + particle);
+
+                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+
+                        for (TypingEvent particle : particles)
+                        {
+                            outgoingEvents.add(particle);
+                            internal.add(particle);
+                        }
+
                         eta.getCodeLocation().push(internal);
                         eta.updateText();
                         client.broadcastTypingEvents(outgoingEvents, path);
@@ -183,10 +247,10 @@ public class SourceEditor extends JPanel
                         switch (mode)
                         {
                         case insert:
-                            eta.moveRight();
+                            eta.moveCaret(particles.size());
                             break;
                         case overwrite:
-                            eta.moveRight();
+                            eta.moveCaret(particles.size());
                             break;
                         case backspace:
                             eta.moveLeft();

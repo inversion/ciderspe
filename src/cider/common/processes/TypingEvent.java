@@ -1,6 +1,6 @@
 package cider.common.processes;
 
-import java.util.TreeMap;
+import java.util.ArrayList;
 
 /**
  * 
@@ -41,6 +41,17 @@ public class TypingEvent
 
     }
 
+    public TypingEvent(TypingEvent typingEvent, long time, String text)
+    {
+        this.time = time;
+        this.position = typingEvent.position;
+        this.mode = typingEvent.mode;
+        this.locked = typingEvent.locked;
+        this.text = text;
+        this.length = text.length();
+        this.owner = typingEvent.owner;
+    }
+
     public TypingEvent(String str)
     {
         String[] split = str.split("~");
@@ -68,32 +79,14 @@ public class TypingEvent
                 + this.length + "~" + this.time + "~" + this.owner;
     }
 
-    public TreeMap<Double, TypingEvent> explode()
+    public ArrayList<TypingEvent> explode()
     {
-        int len = this.text.length();
-        return this.explode(len > 0 ? 1 : len);
-    }
-
-    public TreeMap<Double, TypingEvent> explode(final double amountOfTime)
-    {
-        TreeMap<Double, TypingEvent> result = new TreeMap<Double, TypingEvent>();
-        int len = this.text.length();
-        if (len == 0)
-            result.put((double) this.time, this);
-        else
-        {
-            final double inc = amountOfTime / this.text.length();
-            int pos = this.position;
-            double t;
-            for (char c : this.text.toCharArray())
-            {
-                t = this.time + inc * pos;
-                result.put(t, new TypingEvent(this.time, this.mode, pos,
-                        length, "" + c, owner));
-                pos++;
-            }
-        }
-        return result;
+        ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
+        char[] chrs = this.text.toCharArray();
+        long t = this.time;
+        for (char chr : chrs)
+            particles.add(new TypingEvent(this, t++, "" + chr));
+        return particles;
     }
 
     public void setLocked(boolean locked)

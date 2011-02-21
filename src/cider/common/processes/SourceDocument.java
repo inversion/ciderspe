@@ -342,8 +342,7 @@ public class SourceDocument implements ICodeLocation
         while (!typingEvents.isEmpty())
         {
             TypingEvent typingEvent = typingEvents.poll();
-            Collection<TypingEvent> fragments = typingEvent.explode().values();
-            this.putEvents(fragments);
+            this.putEvents(typingEvent.explode());
         }
     }
 
