@@ -205,10 +205,26 @@ public class SourceEditor extends JPanel
 
                         switch (ke.getKeyChar())
                         {
+                        case '\u007F':
+                        {
+                            if (eta.getCaretPosition() >= 0)
+                            {
+                                mode = TypingEventMode.backspace;
+                                chr = " ";
+                            }
+                            else
+                                return;
+                        }
+                            break;
                         case '\u0008':
                         {
-                            mode = TypingEventMode.backspace;
-                            chr = " ";
+                            if (eta.getCaretPosition() >= 0)
+                            {
+                                mode = TypingEventMode.backspace;
+                                chr = " ";
+                            }
+                            else
+                                return;
                         }
                             break;
                         case '\t':
