@@ -590,4 +590,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int pos = this.caretPosition + offset;
         return pos >= 0 && pos < this.str.length() && this.str.locked(pos);
     }
+
+    public void moveCaret(int spaces)
+    {
+        if (this.caretPosition < this.str.length() - 1)
+            this.caretPosition += spaces;
+
+        this.updateUI();
+    }
 }
