@@ -33,6 +33,7 @@ public class SourceEditor extends JPanel
 {
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
+    public static HashSet<String> comments = new HashSet<String>();
     
     private EditorTypingArea eta;
     private Component tabHandle = null;
@@ -52,6 +53,10 @@ public class SourceEditor extends JPanel
         String[] keywordArray = "instanceof assert if else switch case default break goto return for while do continue new throw throws try catch finally this super extends implements import true false null package transient strictfp void char short int long double float const static volatile byte boolean class interface native private protected public final abstract synchronized enum".split(" ");
         for( int i = 0; i < keywordArray.length; i++ )
         	keywords.add( keywordArray[i] );
+        
+        String[] CommentArray = "// /* */".split(" ");
+        for( int i = 0; i < CommentArray.length; i++ )
+        	comments.add( CommentArray[i] ); 
     }
 
     /**

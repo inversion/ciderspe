@@ -249,6 +249,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 length = str.length();
                 if ( SourceEditor.keywords.contains(str) )
                     wash(this.colors, Color.BLUE, i, i + length);
+                if ( SourceEditor.comments.contains(str) )
+                	wash(this.colors, Color.RED, i, i + length);
                 i += length + 1;
             }
         }
@@ -284,6 +286,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
             g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
+
             g.drawString("" + str.get(i).text, x, y);
         }
 
