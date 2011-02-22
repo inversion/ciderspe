@@ -238,13 +238,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
         public void characterColors()
         {
             LinkedList<TypingEventList> words = this.str
-                    .splitWords(new String[] { " ", "(", ")", ";", "\t" });            
+                    .splitWords(new String[] { " ", "(", ")", ";", "\t", ":" , "#", "{", "}"});            
             int i = 0;
             String str;
             int length;
             for (TypingEventList word : words)
             {
                 str = word.toString();
+                str = str.toLowerCase();
                 length = str.length();
                 if ( SourceEditor.keywords.contains(str) )
                     wash(this.colors, Color.BLUE, i, i + length);
