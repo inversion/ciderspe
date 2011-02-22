@@ -9,6 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -30,6 +31,9 @@ import cider.specialcomponents.EditorTypingArea;
 @SuppressWarnings("serial")
 public class SourceEditor extends JPanel
 {
+    // Keywords for syntax highlighting
+    public static HashSet<String> keywords = new HashSet<String>();
+    
     private EditorTypingArea eta;
     private Component tabHandle = null;
     private Client client;
@@ -44,6 +48,10 @@ public class SourceEditor extends JPanel
         this.eta.setFocusTraversalKeysEnabled(false);
         this.client = client;
         this.path = path;
+        
+        String[] keywordArray = "instanceof assert if else switch case default break goto return for while do continue new throw throws try catch finally this super extends implements import true false null package transient strictfp void char short int long double float const static volatile byte boolean class interface native private protected public final abstract synchronized enum".split(" ");
+        for( int i = 0; i < keywordArray.length; i++ )
+        	keywords.add( keywordArray[i] );
     }
 
     /**

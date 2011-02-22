@@ -11,13 +11,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
+import cider.client.gui.SourceEditor;
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
@@ -34,7 +37,7 @@ import cider.common.processes.TypingEventMode;
  * 
  */
 public class EditorTypingArea extends JPanel implements MouseListener
-{
+{	
     private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
     private Font font = new Font("monospaced", Font.PLAIN, 11);
@@ -203,7 +206,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int ln;
         public int start;
         Color[] colors;
-
+        
         /**
          * 
          * @param tel
@@ -216,7 +219,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
          * @param start
          *            the caret position of the first character of this line
          */
-        public ETALine(TypingEventList tel, int y, int ln, int start)
+        public ETALine(TypingEventList tel, int y, int ln, int start )
         {
             this.start = start;
             this.ln = ln;
@@ -231,10 +234,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
          * Syntax Highlighting: I've provided an example here to help. You might
          * want to store the colours in a hashtable or something.
          */
+        
         public void characterColors()
         {
             LinkedList<TypingEventList> words = this.str
-                    .splitWords(new String[] { " ", "(", ")", ";", "\t" });
+                    .splitWords(new String[] { " ", "(", ")", ";", "\t" });            
             int i = 0;
             String str;
             int length;
@@ -242,8 +246,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
             {
                 str = word.toString();
                 length = str.length();
-                if (str.equals("if"))
-                    wash(this.colors, Color.RED, i, i + length);
+                if ( SourceEditor.keywords.contains(str) )
+                    wash(this.colors, Color.BLUE, i, i + length);
                 i += length + 1;
             }
         }
