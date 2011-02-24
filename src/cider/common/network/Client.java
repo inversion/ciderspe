@@ -47,10 +47,9 @@ public class Client
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
-    public boolean ERRORFLAG = false;
 
     private XMPPConnection connection;
-    private ChatManager chatmanager;
+	private ChatManager chatmanager;
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
@@ -70,7 +69,7 @@ public class Client
     private String host;
     private int port;
     private String serviceName;
-    protected String password;
+    private String password;
     
     // Listen for private chat sessions with other users
     // TODO: Not yet implemented
@@ -83,82 +82,66 @@ public class Client
     private JTextArea messageReceiveBox;
     private boolean isWaitingToBroadcast = false;
 
-    public Client (String username, String pw,
-            String host0, int port0, String sn)
+    public Client (String username, String password,
+            String host, int port, String serviceName)
     {
 
         // Assign objects from parameters
-        this.tabbedPane = tabbedPane;
-        this.openTabs = openTabs;
         this.username = username;
-        this.messageReceiveBox = messageReceiveBox;
         this.chatroomName = "ciderchat" + "@conference." + serviceName;
-        this.dirView = dirView;
-        this.host = host0;
-        this.port = port0;
-        this.serviceName = sn;
-        this.password = pw;
-
+        this.host = host;
+        this.port = port;
+        this.serviceName = serviceName;
+        this.password = password;
     }
     
-    public Client(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
+    /**
+     * Register GUI components from the Main Window
+     * 
+     * @author Andrew
+     * 
+     */
+    public void registerGUIComponents(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
             Hashtable<String, SourceEditor> openTabs,
             DefaultListModel userListModel, JLabel userCount,
-            JTextArea messageReceiveBox, String username, String password,
-            String host, int port, String serviceName)
+            JTextArea messageReceiveBox )
     {
+        this.dirView = dirView;
+        this.tabbedPane = tabbedPane;
+        this.openTabs = openTabs;
+        this.messageReceiveBox = messageReceiveBox;
+        
+        chatroom.addMessageListener(new ClientChatroomMessageListener(this));
+        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
+                userListModel, userCount));
     }
     
     /**
      * Returns TRUE on successful connection, FALSE on failure
      * 
+     * Edited by Andrew to throw the exception.
+     * 
      * @author Jon
      */
-    public boolean attemptConnection()
+    public void attemptConnection() throws XMPPException
     {
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
         connection = new XMPPConnection(config);
-        try
-        {
-            connection.connect();
-        }
-        catch (XMPPException e1)
-        {
-            System.err.println("Error Connecting: " + e1.getMessage());
-            ERRORFLAG = true;
-        }
-
-        try
-        {
-            /**
-             * Append a random string to the resource to prevent conflicts with
-             * existing instances of the CIDER client from the same user.
-             * 
-             * Later the Bot will alert the user if there is an existing
-             * instance of the CIDER client.
-             */
-            String rand = StringUtils.randomString(5);
-            connection.login(username, password, RESOURCE + rand);
-            if (DEBUG)
-                System.out.println("Logged into XMPP server, username="
-                        + username + "/" + rand);
-        }
-        catch (XMPPException e1)
-        {
-            System.err.println("Error logging in: " + e1.getMessage());
-            ERRORFLAG = true;
-        }
-        
-        return !ERRORFLAG;
-    }
-    
-    public void connect(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs,
-            DefaultListModel userListModel, JLabel userCount,
-            JTextArea messageReceiveBox) 
-    {
+        connection.connect();
+        /**
+         * Append a random string to the resource to prevent conflicts with
+         * existing instances of the CIDER client from the same user.
+         * 
+         * Later the Bot will alert the user if there is an existing
+         * instance of the CIDER client.
+         */
+        String rand = StringUtils.randomString(5);
+        connection.login(username, password, RESOURCE + rand);
+        if (DEBUG)
+            System.out.println("Logged into XMPP server, username="
+                    + username + "/" + rand);
         connection.addPacketListener(new DebugPacketListener(),
                 new DebugPacketFilter());
 
@@ -176,12 +159,8 @@ public class Client
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username));
-        chatroom.addMessageListener(new ClientChatroomMessageListener(this));
-        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
-                userListModel, userCount));
-    }
-    
-    
+
+    }    
 
     public void updateChatLog(String username, String date, String message)
     {
@@ -213,7 +192,6 @@ public class Client
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            ERRORFLAG = true;
         }
     }
 
@@ -232,7 +210,6 @@ public class Client
         {
             // TODO Auto-generated catch block
             e1.printStackTrace();
-            ERRORFLAG = true;
         }
         chatroom.leave();
         connection.disconnect();
@@ -246,7 +223,6 @@ public class Client
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            ERRORFLAG = true;
         }
         System.out.println("Disconnected from XMPP server...");
     }
@@ -298,7 +274,6 @@ public class Client
         {
             // TODO:
             e.printStackTrace();
-            ERRORFLAG = true;
         }
     }
 
@@ -380,7 +355,6 @@ public class Client
         {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            ERRORFLAG = true;
         }
     }
 
