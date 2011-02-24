@@ -9,6 +9,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -117,20 +118,22 @@ class MainWindow implements Runnable
     }
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName) throws XMPPException
+            String serviceName, Client c) throws XMPPException
     {
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         myProfile = new Profile(username);
         this.username = username;
-        client = new Client(dirView, tabbedPane, openTabs, userListModel,
-                userCount, messageReceiveBox, username, password, host, port,
-                serviceName);
-        // No need to put this. on tabbedPane and openTabs unless variable in
-        // current scope is overriding?
-        dirView.setClient(client);
-        client.getFileListFromBot();
+        client = c;
+        client.connect(dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox);
+        if (!client.ERRORFLAG)
+        {
+	        // No need to put this. on tabbedPane and openTabs unless variable in
+	        // current scope is overriding?
+	        dirView.setClient(client);
+	        client.getFileListFromBot();
+        }
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,
@@ -376,7 +379,7 @@ class MainWindow implements Runnable
         content.add(chars);
 
         Time t = new Time(myProfile.timeSpent);
-        System.out.println("TS = " + myProfile.timeSpent);
+        System.out.println("TS = " + (myProfile.timeSpent));
         JLabel time = new JLabel("Total time spent: " + t);
         time.setHorizontalAlignment(JLabel.LEFT);
         time.setVerticalAlignment(JLabel.TOP);
@@ -629,6 +632,28 @@ class MainWindow implements Runnable
         messageSendBox.setWrapStyleWord(true);
         Font sendFont = new Font("Dialog", 1, 12);
         messageSendBox.setFont(sendFont);
+        messageSendBox.addKeyListener(new KeyListener()
+        {
+
+			@Override
+			public void keyTyped(KeyEvent e) 
+			{}
+
+			@Override
+			public void keyPressed(KeyEvent e) 
+			{}
+
+			@Override
+			public void keyReleased(KeyEvent e) 
+			{
+				int c = e.getKeyCode();
+				if (c == KeyEvent.VK_ENTER)
+				{
+					sendChatMessage();
+				}
+			}
+        	
+        });
         // ActionListener aL = newAction(); //TODO - Alex doesn't know what he
         // be doing with action listeners
         // messageSendBox.setActionCommand("Send");
@@ -661,21 +686,7 @@ class MainWindow implements Runnable
         {
             public void mouseClicked(MouseEvent e)
             {
-                String message = messageSendBox.getText();
-                if (!message.equals("")) // TODO disable send button if no
-                // meaningful text entered
-                {
-                    // DateFormat dateFormat = new
-                    // SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    // Date date = new Date();
-
-                    // System.out.println(dateFormat.format(date) + " " +
-                    // message);
-
-                    // client.updateChatLog(username, date, message);
-                    client.sendMessageChatroom(message);
-                    messageSendBox.setText("");
-                }
+                sendChatMessage();
             }
         });
         panel.add(btnSend, BorderLayout.EAST);
@@ -684,7 +695,27 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    public JPanel mainArea()
+    protected void sendChatMessage() 
+    {
+    	String message = messageSendBox.getText();
+        if (!message.equals("")) // TODO disable send button if no
+        // meaningful text entered
+        {
+            // DateFormat dateFormat = new
+            // SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            // Date date = new Date();
+
+            // System.out.println(dateFormat.format(date) + " " +
+            // message);
+
+            // client.updateChatLog(username, date, message);
+            client.sendMessageChatroom(message);
+            messageSendBox.setText("");
+        }
+		
+	}
+
+	public JPanel mainArea()
     {
         /* Chat panel stuffs- Alex */
         Border emptyBorder = BorderFactory.createEmptyBorder();
@@ -805,4 +836,9 @@ class MainWindow implements Runnable
             // "You fail", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+	public void killWindow() 
+	{
+		w.dispose();
+	}
 }
