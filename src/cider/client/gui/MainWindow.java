@@ -107,9 +107,9 @@ class MainWindow implements Runnable
         startTime = System.currentTimeMillis();
         dirView = new DirectoryViewComponent();
         username = "ciderclient";
-        client = new Client(dirView, tabbedPane, openTabs, userListModel,
-                userCount, messageReceiveBox, username, "clientpw",
-                "xmpp.org.uk", 5222, "xmpp.org.uk");
+//        client = new Client(dirView, tabbedPane, openTabs, userListModel,
+//                userCount, messageReceiveBox, username, "clientpw",
+//                "xmpp.org.uk", 5222, "xmpp.org.uk");
 /*        client = new Client(dirView, tabbedPane, openTabs, userListModel,
                 userCount, messageReceiveBox, username, "clientpw",
                 "192.168.0.2", 5222, "192.168.0.2");*/
@@ -127,14 +127,9 @@ class MainWindow implements Runnable
         startTime = System.currentTimeMillis();
         this.username = username;
         client = c;
-        client.connect(dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox);
-        if (!client.ERRORFLAG)
-        {
-	        // No need to put this. on tabbedPane and openTabs unless variable in
-	        // current scope is overriding?
-	        dirView.setClient(client);
-	        client.getFileListFromBot();
-        }
+        client.registerGUIComponents(dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox);
+        dirView.setClient(client);
+        client.getFileListFromBot();
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,

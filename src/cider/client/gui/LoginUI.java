@@ -63,7 +63,7 @@ public class LoginUI
     	// TODO: Can we make it connect when you press enter on one of the textFields
         // Setup JFrame
         login = new JFrame();
-        login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
+        login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
         /*try
@@ -285,6 +285,7 @@ public class LoginUI
     
     boolean checkLogin()
     {
+    	// TODO: Can we have some commenting on what methods actually do please GUI people
     	if (chkRemember.isSelected() == true)
 		{
 			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
@@ -388,15 +389,15 @@ public class LoginUI
         connecting.setLocation(x - connecting.getWidth()/2, y - connecting.getHeight()/3);
         connecting.setVisible(true);
         
-        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
-    	try
-    	{
-    		thisThread.sleep(2000);
-    	}
-    	catch (InterruptedException e)
-    	{
-    		e.printStackTrace();
-    	}
+//        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
+//    	try
+//    	{
+//    		thisThread.sleep(2000);
+//    	}
+//    	catch (InterruptedException e)
+//    	{
+//    		e.printStackTrace();
+//    	}
         if (connect())
         	return true;
         else
@@ -412,41 +413,31 @@ public class LoginUI
     	// On connect, close login and connect JFrames, run MainWindow
     	
     	//System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
-    	
+		Client client;
 		try {
 			// TODO: Recommended to zero bytes of password after use
 			// TODO: Check that fields aren't null/validation stuff
-			Client client = new Client(
+			client = new Client(
 	                txtUsername.getText(), 
 	                new String(txtPassword.getPassword()), 
 	                txtHost.getText(), 
 	                Integer.parseInt( txtPort.getText() ),
 	                txtServiceName.getText());
-			if (client.attemptConnection())
-			{
-				program = new MainWindow( txtUsername.getText(), 
-				/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
-								  txtHost.getText(), 
-								  Integer.parseInt( txtPort.getText() ),
-								  txtServiceName.getText() ,
-								  client);
-			}
-			else
-				return false;
-
-	        SwingUtilities.invokeLater(program);
-	        // TODO: Reopen login ui if login failed
-	        // TODO: Display alert box with xmpp exception message if it failed
+			client.attemptConnection();
+			program = new MainWindow( txtUsername.getText(), 
+					/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
+									  txtHost.getText(), 
+									  Integer.parseInt( txtPort.getText() ),
+									  txtServiceName.getText() ,
+									  client);
+			        SwingUtilities.invokeLater(program);
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Couldn't login: " + e.getMessage());
 			return false;
 		}
 		connecting.setVisible(false);
-		if (program.client.ERRORFLAG)
-			return false;
-		else
-			return true;
+		return true;
     }
     
     public static void main(String[] args)
