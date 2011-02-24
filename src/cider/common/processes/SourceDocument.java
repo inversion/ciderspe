@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Random;
-import java.util.TreeMap;
 
 /**
  * 
@@ -18,18 +17,12 @@ public class SourceDocument implements ICodeLocation
     private PriorityQueue<TypingEvent> typingEvents;
     public String name = "untitled";
     private long latestTime;
-    private TreeMap<Integer, LockingRegion> lockingRegions = new TreeMap<Integer, LockingRegion>();
-    private String owner = "";
+    private String owner;
 
-    public SourceDocument(String name)
+    public SourceDocument(String owner, String name)
     {
+        this.owner = owner;
         this.name = name;
-        this.typingEvents = new PriorityQueue<TypingEvent>(1000,
-                new EventComparer());
-    }
-
-    public SourceDocument()
-    {
         this.typingEvents = new PriorityQueue<TypingEvent>(1000,
                 new EventComparer());
     }
@@ -49,12 +42,12 @@ public class SourceDocument implements ICodeLocation
      */
     public static String test()
     {
-        String testLog = shuffledEventsTest() + "\n";
+        String testLog = shuffleAndSimplificationTest() + "\n";
         testLog += lengthTest();
         return testLog;
     }
 
-    protected static String shuffledEventsTest()
+    protected static String shuffleAndSimplificationTest()
     {
         String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
 
@@ -75,16 +68,37 @@ public class SourceDocument implements ICodeLocation
 
         tes = shuffledEvents(tes, new Date().getTime());
 
-        SourceDocument testDoc = new SourceDocument();
+        SourceDocument testDoc = new SourceDocument("test owner",
+                "testdoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.putEvent(event);
+
         String result = testDoc.toString();
-        return expected.equals(result) ? "pass"
+        String testResult = expected.equals(result) ? "pass\n"
                 : "fail: did not pass shuffled events test since toString returned '"
                         + result
                         + "', where as it should of been '"
                         + expected
+                        + "'.\n";
+
+        expected = "the quick 123123123123123123123123123 muddled fox bounced over [this text was inserted after the simplification] the lazy dog";
+
+        testDoc.simplify(3000);
+        tes.clear();
+        tes.addAll(generateEvents(3000, 3100, 62,
+                "[this text was inserted after the simplification] ",
+                TypingEventMode.insert, "na"));
+
+        for (TypingEvent event : tes)
+            testDoc.putEvent(event);
+
+        result = testDoc.toString();
+        testResult += expected.equals(result) ? "pass"
+                : "fail: simplification followed by new events produced '"
+                        + result + "', where as it should of been '" + expected
                         + "'.";
+
+        return testResult;
     }
 
     protected static String lengthTest()
@@ -100,10 +114,11 @@ public class SourceDocument implements ICodeLocation
         for (int i = 0; i < 10000; i++)
             bigString += alphaChars[i % l];
 
-        tes.addAll(generateEvents(0, 10000, 0, bigString,
+        tes.addAll(generateEvents(2, 10000, 0, bigString,
                 TypingEventMode.insert, "na"));
 
-        SourceDocument testDoc = new SourceDocument();
+        SourceDocument testDoc = new SourceDocument("test owner",
+                "testDoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.putEvent(event);
         String result = testDoc.toString();
@@ -137,7 +152,7 @@ public class SourceDocument implements ICodeLocation
 
     public static long stepSize(long startTime, long endTime, int n)
     {
-        return (endTime - startTime) / n;
+        return Math.max((endTime - startTime) / n, 1);
     }
 
     public static ArrayList<TypingEvent> generateEvents(long startTime,
@@ -170,23 +185,55 @@ public class SourceDocument implements ICodeLocation
 
     public void putEvent(TypingEvent typingEvent)
     {
-        this.typingEvents.add(typingEvent);
-        if (this.latestTime > typingEvent.time)
-            this.latestTime = typingEvent.time;
+        // TODO: it may be that a more efficient way of doing this can be found
+        TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
+        this.typingEvents.toArray(tes);
+
+        if (typingEvent.mode == TypingEventMode.lockRegion)
+        {
+            for (TypingEvent te : this.typingEvents)
+                te.locked = te.locked || this.insideRegion(typingEvent, te);
+            this.typingEvents.add(typingEvent);
+        }
+        else if (typingEvent.mode == TypingEventMode.unlockRegion)
+        {
+            for (TypingEvent te : this.typingEvents)
+                te.locked = !this.insideRegion(typingEvent, te) && te.locked;
+            this.typingEvents.add(typingEvent);
+        }
+        else if (!typingEvent.existsIn(tes))
+        {
+            if (this.latestTime > typingEvent.time)
+                this.latestTime = typingEvent.time;
+            this.typingEvents.add(typingEvent);
+        }
+    }
+
+    public void simplify(long endTime)
+    {
+        TypingEventList tel = this.playOutEvents(endTime);
+        this.clearUpTo(endTime);
+        tel.homogenize(endTime);
+        this.typingEvents.addAll(tel.events());
+    }
+
+    public void clearUpTo(long endTime)
+    {
+        while (this.typingEvents.size() > 0
+                && this.typingEvents.peek().time < endTime)
+            this.typingEvents.poll();
+    }
+
+    private boolean insideRegion(TypingEvent region, TypingEvent te)
+    {
+        return te.position >= region.position
+                && te.position <= region.position + region.length;
     }
 
     public void putEvents(Collection<TypingEvent> values)
     {
         for (TypingEvent typingEvent : values)
             this.putEvent(typingEvent);
-    }
-
-    public boolean lockedOut(int position)
-    {
-        for (LockingRegion lockingRegion : this.lockingRegions.values())
-            if (lockingRegion.coversOver(this.owner, position))
-                return true;
-        return false;
     }
 
     public TypingEventList playOutEvents(Long endTime)
@@ -231,47 +278,28 @@ public class SourceDocument implements ICodeLocation
             {
             case insert:
             {
-                if (!this.lockedOut(event.position))
-                    string.insert(event);
+                string.insert(event);
             }
                 break;
             case overwrite:
             {
-                if (!this.lockedOut(event.position))
-                    string.overwrite(event);
+                string.overwrite(event);
                 break;
             }
             case backspace:
             {
-                if (!this.lockedOut(event.position))
-                    string.backspace(event.position);
+                string.backspace(event.position);
                 break;
             }
             case deleteAll:
             {
                 string.clear();
-            }
-            case lockRegion:
-            {
-                if (!(this.lockedOut(event.position) || this
-                        .lockedOut(event.position + event.length)))
-                    this.lockingRegions.put(event.position, new LockingRegion(
-                            this.owner, event.position, event.position
-                                    + event.length));
-            }
-            case unlockRegion:
-            {
-                this.lockingRegions.remove(event.position);
+                break;
             }
             }
         }
 
         return string;
-    }
-
-    public LockingRegion getLockingRegion(int position)
-    {
-        return this.lockingRegions.get(position);
     }
 
     public String getOwner()
@@ -314,8 +342,7 @@ public class SourceDocument implements ICodeLocation
         while (!typingEvents.isEmpty())
         {
             TypingEvent typingEvent = typingEvents.poll();
-            Collection<TypingEvent> fragments = typingEvent.explode().values();
-            this.putEvents(fragments);
+            this.putEvents(typingEvent.explode());
         }
     }
 

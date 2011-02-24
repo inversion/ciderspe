@@ -1,6 +1,6 @@
 package cider.common.processes;
 
-import java.util.TreeMap;
+import java.util.ArrayList;
 
 /**
  * 
@@ -9,8 +9,9 @@ import java.util.TreeMap;
  */
 public class TypingEvent
 {
-    public final long time;
+    public boolean locked = false;
     public final TypingEventMode mode;
+    public final long time;
     public final int position;
     public final int length;
     public final String text;
@@ -25,6 +26,30 @@ public class TypingEvent
         this.text = text;
         this.length = length;
         this.owner = owner;
+    }
+
+    public TypingEvent(TypingEvent typingEvent, long time, int position,
+            TypingEventMode mode)
+    {
+        this.time = time;
+        this.position = position;
+        this.mode = mode;
+        this.locked = typingEvent.locked;
+        this.length = typingEvent.length;
+        this.text = typingEvent.text;
+        this.owner = typingEvent.owner;
+
+    }
+
+    public TypingEvent(TypingEvent typingEvent, long time, String text)
+    {
+        this.time = time;
+        this.position = typingEvent.position;
+        this.mode = typingEvent.mode;
+        this.locked = typingEvent.locked;
+        this.text = text;
+        this.length = text.length();
+        this.owner = typingEvent.owner;
     }
 
     public TypingEvent(String str)
@@ -54,32 +79,19 @@ public class TypingEvent
                 + this.length + "~" + this.time + "~" + this.owner;
     }
 
-    public TreeMap<Double, TypingEvent> explode()
+    public ArrayList<TypingEvent> explode()
     {
-        int len = this.text.length();
-        return this.explode(len > 0 ? 1 : len);
+        ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
+        char[] chrs = this.text.toCharArray();
+        long t = this.time;
+        for (char chr : chrs)
+            particles.add(new TypingEvent(this, t++, "" + chr));
+        return particles;
     }
 
-    public TreeMap<Double, TypingEvent> explode(final double amountOfTime)
+    public void setLocked(boolean locked)
     {
-        TreeMap<Double, TypingEvent> result = new TreeMap<Double, TypingEvent>();
-        int len = this.text.length();
-        if (len == 0)
-            result.put((double) this.time, this);
-        else
-        {
-            final double inc = amountOfTime / this.text.length();
-            int pos = this.position;
-            double t;
-            for (char c : this.text.toCharArray())
-            {
-                t = this.time + inc * pos;
-                result.put(t, new TypingEvent(this.time, this.mode, pos,
-                        length, "" + c, owner));
-                pos++;
-            }
-        }
-        return result;
+        this.locked = locked;
     }
 
     @Override
@@ -87,5 +99,13 @@ public class TypingEvent
     {
         return "time " + this.time + "\t" + this.position + "\t"
                 + mode.toString() + "\t" + text;
+    }
+
+    public boolean existsIn(TypingEvent[] tes)
+    {
+        for (TypingEvent te : tes)
+            if (this.time == te.time)
+                return true;
+        return false;
     }
 }

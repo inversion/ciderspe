@@ -9,7 +9,7 @@ import org.jivesoftware.smack.ChatManagerListener;
 
 /**
  * 
- * Listen for newly created user chats and assign them a message listener.
+ * Listen for newly created private client <-> client chats and assign them a message listener.
  * 
  * @author Andrew
  *

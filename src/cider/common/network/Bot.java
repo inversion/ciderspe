@@ -8,7 +8,6 @@ import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.processes.LiveFolder;
@@ -27,19 +26,25 @@ public class Bot
     public static final boolean DEBUG = true;
     public static final String SRCPATH = "src";
 
-    // Google apps configuration
-    public static final String HOST = "talk.google.com";
+    // XMPP Server Configuration
+    // public static final String HOST = "192.168.0.2";
+    // public static final String SERVICE_NAME = "192.168.0.2";
+    public static final String HOST = "xmpp.org.uk";
+    public static final String SERVICE_NAME = "xmpp.org.uk";
     public static final int PORT = 5222;
-    public static final String SERVICE_NAME = "mossage.co.uk";
-    public static final String BOT_USERNAME = "ciderbot@mossage.co.uk";
+    public static final String BOT_USERNAME = "ciderbot";
     public static final String BOT_PASSWORD = "botpassword";
-    
+    private ConnectionConfiguration config = new ConnectionConfiguration(HOST,
+            PORT, SERVICE_NAME);
+
     // Chatroom
-    private MultiUserChat chatroom;
-    private final String chatroomName = "private-chat-d70eec50-2cbf-11e0-91fa-0800200c9a70" + "@" + "groupchat.google.com";
+    protected MultiUserChat chatroom;
+    private final String CHATROOM_NAME = "ciderchat";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
+    private BotChatListener chatListener;
+    private LiveFolder liveFolder;
 
     public static void main(String[] args)
     {
@@ -60,32 +65,82 @@ public class Bot
     {
         try
         {
+            checkForBot();
+
             // Connect and login to the XMPP server
-            ConnectionConfiguration config = new ConnectionConfiguration(HOST, PORT, SERVICE_NAME);
             connection = new XMPPConnection(config);
             connection.connect();
             connection.login(BOT_USERNAME, BOT_PASSWORD);
 
-            // Add self to roster
-            connection.sendPacket(new Presence(Presence.Type.available));
-
             // Set up and join chatroom
-            chatroom = new MultiUserChat( connection, chatroomName );
-            chatroom.join( "ciderbot" );
-            
+            chatroom = new MultiUserChat(connection, CHATROOM_NAME
+                    + "@conference." + SERVICE_NAME);
+            chatroom.create(BOT_USERNAME);
+            chatroom.addMessageListener(new BotChatroomMessageListener(this));
+            connection.addPacketListener(new DebugPacketListener(),
+                    new DebugPacketFilter());
+            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                    new DebugPacketFilter());
+
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
-            chatmanager.addChatListener( new BotChatListener( chatroom ) );
+            chatListener = new BotChatListener(this);
+            chatmanager.addChatListener(chatListener);
+
+            this.testTree();
         }
         catch (XMPPException e)
         {
-            e.printStackTrace();
+            System.err.println("Error:" + e.getMessage());
         }
     }
 
-    public void disconnect()
+    // Connect to the server as a reserved user to check if the bot is already
+    // online from another location
+    private void checkForBot() throws XMPPException
     {
-        this.connection.disconnect();
+        XMPPConnection conn = new XMPPConnection(config);
+        conn.connect();
+        conn.login("ciderchecker", "checkerpw");
+        chatroom = new MultiUserChat(conn, CHATROOM_NAME + "@conference."
+                + SERVICE_NAME);
+        try
+        {
+            chatroom.create("ciderchecker");
+        }
+        catch (XMPPException e)
+        {
+            System.err
+                    .println("Error: Chatroom already exists, this means the bot is already online, or someone else has created the room.");
+            System.err.println("Disconnecting, exiting...");
+            conn.disconnect();
+            System.exit(1);
+        }
+        chatroom.leave();
+        conn.disconnect();
     }
 
+    // Leave the chatroom and disconnect from the server
+    public void disconnect()
+    {
+        chatroom.leave();
+        connection.disconnect();
+    }
+
+    public void testTree()
+    {
+        this.liveFolder = new LiveFolder("Bot", "root");
+        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
+                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
+        t1.push(tes);
+        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+                .makeDocument("test2Doc.SourceDocument");
+    }
+
+    public LiveFolder getRootFolder()
+    {
+        return this.liveFolder;
+    }
 }

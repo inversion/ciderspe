@@ -1,12 +1,12 @@
 package cider.client.gui;
 
 import java.awt.Component;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.StringTokenizer;
 
-import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.GroupLayout;
@@ -26,14 +25,14 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
+
+import cider.common.network.Client;
 
 public class LoginUI
 {
@@ -43,11 +42,10 @@ public class LoginUI
     private JFrame connecting;
     
     // Default values for login box
-    public static final String DEFAULT_HOST = "talk.google.com";
+    public static final String DEFAULT_HOST = "xmpp.org.uk";
     // TODO: Should be numeric really
     public static final String DEFAULT_PORT = "5222";
-    // TODO: Not used at the moment
-    public static final String DEFAULT_SERVICE_NAME = "mossage.co.uk";
+    public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
     
     // Login box fields
     JTextField txtUsername;
@@ -56,14 +54,16 @@ public class LoginUI
     JTextField txtHost;
     JTextField txtPort;
     
+	MainWindow program;
+    
     JCheckBox chkRemember ;
 
-    void displayLogin()
+    public void displayLogin()
     {
     	// TODO: Can we make it connect when you press enter on one of the textFields
         // Setup JFrame
         login = new JFrame();
-        login.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
+        login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
         /*try
@@ -118,6 +118,62 @@ public class LoginUI
         txtPort = new JTextField(13);
         txtPort.setText( DEFAULT_PORT );
         
+        txtUsername.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtPassword.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtServiceName.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtHost.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+        
+        txtPort.addKeyListener(new KeyAdapter()
+        {
+        	public void keyPressed(KeyEvent e)
+        	{
+        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+        		{
+        			checkLogin();
+        		}
+        	}
+        });
+
+
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -226,6 +282,37 @@ public class LoginUI
     		//System.out.println("File not found");
 		}
 	}
+    
+    boolean checkLogin()
+    {
+    	// TODO: Can we have some commenting on what methods actually do please GUI people
+    	if (chkRemember.isSelected() == true)
+		{
+			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
+		}
+		else
+		{
+			String fileName = currentDir + "login.txt";
+			File file = new File(fileName);
+			
+			try
+			{
+				file.delete();
+			}
+			catch(IllegalArgumentException err)
+			{
+				System.out.println("Deletion failed: " + fileName);
+			}
+		}
+		if (showConnectBox())
+			return true;
+		else
+		{
+			displayLogin();
+			//program.killWindow();
+		}
+		return false;
+    }
 
 	public ActionListener newAction()
     {
@@ -233,27 +320,8 @@ public class LoginUI
     	{
     		@Override
     		public void actionPerformed(ActionEvent e) {
-    			// TODO: Save service name as well.
     			String action = e.getActionCommand();
-    			if (chkRemember.isSelected() == true)
-    			{
-        			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
-    			}
-    			else
-    			{
-    				String fileName = currentDir + "login.txt";
-    				File file = new File(fileName);
-    				
-    				try
-    				{
-    					file.delete();
-    				}
-    				catch(IllegalArgumentException err)
-    				{
-    					System.out.println("Deletion failed: " + fileName);
-    				}
-    			}
-    			showConnectBox();
+    			checkLogin();
     		}
     	};
     	return AL;
@@ -278,7 +346,7 @@ public class LoginUI
     	}
     }
     
-    void showConnectBox()
+    boolean showConnectBox()
     {
     	login.setVisible(false);
     	
@@ -321,44 +389,55 @@ public class LoginUI
         connecting.setLocation(x - connecting.getWidth()/2, y - connecting.getHeight()/3);
         connecting.setVisible(true);
         
-        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
-    	try
-    	{
-    		thisThread.sleep(2000);
-    	}
-    	catch (InterruptedException e)
-    	{
-    		e.printStackTrace();
-    	}
-        
-        connect();
+//        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
+//    	try
+//    	{
+//    		thisThread.sleep(2000);
+//    	}
+//    	catch (InterruptedException e)
+//    	{
+//    		e.printStackTrace();
+//    	}
+        if (connect())
+        	return true;
+        else
+        {
+        	connecting.dispose();
+        	return false;
+        }
     }
 
-    void connect()
+    boolean connect()
     {
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
     	
-    	System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
-    	
-    	MainWindow program;
+    	//System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
+		Client client;
 		try {
 			// TODO: Recommended to zero bytes of password after use
 			// TODO: Check that fields aren't null/validation stuff
+			client = new Client(
+	                txtUsername.getText(), 
+	                new String(txtPassword.getPassword()), 
+	                txtHost.getText(), 
+	                Integer.parseInt( txtPort.getText() ),
+	                txtServiceName.getText());
+			client.attemptConnection();
 			program = new MainWindow( txtUsername.getText(), 
 					/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
 									  txtHost.getText(), 
 									  Integer.parseInt( txtPort.getText() ),
-									  txtServiceName.getText() );
-	        SwingUtilities.invokeLater(program);
-	        // TODO: Reopen login ui if login failed
-	        // TODO: Display alert box with xmpp exception message if it failed
+									  txtServiceName.getText() ,
+									  client);
+			        SwingUtilities.invokeLater(program);
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Couldn't login: " + e.getMessage());
-			displayLogin();
+			return false;
 		}
 		connecting.setVisible(false);
+		return true;
     }
     
     public static void main(String[] args)
