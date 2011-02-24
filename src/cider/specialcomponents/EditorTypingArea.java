@@ -251,6 +251,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     wash(this.colors, Color.BLUE, i, i + length);
                 if ( SourceEditor.comments.contains(str) )
                 	wash(this.colors, Color.RED, i, i + length);
+                if ( isParsableToNum(str) == true)
+                	wash(this.colors, Color.GREEN, i, i + length);
+                if (i > 1)
+                	if ((this.colors[(i-2)] == Color.RED) || (this.colors[(i-1)] == Color.RED))
+                		wash(this.colors, Color.RED, i, i + length);
                 i += length + 1;
             }
         }
@@ -260,6 +265,19 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.setColor(Color.LIGHT_GRAY);
             g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
                     lineSpacing, 3, 3);
+        }
+        
+        public boolean isParsableToNum(String str)
+        {
+        	try
+        	{
+        		Float.parseFloat(str);
+        		return true;
+        	}
+        	catch(NumberFormatException nfe)
+        	{
+        		return false;
+        	}
         }
 
         /**
@@ -285,8 +303,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
+            
             g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
-
+            
+            		
             g.drawString("" + str.get(i).text, x, y);
         }
 
