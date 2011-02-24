@@ -123,6 +123,7 @@ class MainWindow implements Runnable
         // mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         myProfile = new Profile(username);
+        startTime = System.currentTimeMillis();
         this.username = username;
         client = new Client(dirView, tabbedPane, openTabs, userListModel,
                 userCount, messageReceiveBox, username, password, host, port,
