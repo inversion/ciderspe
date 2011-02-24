@@ -1,6 +1,8 @@
 package cider.common.processes;
 
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -35,23 +37,32 @@ public class SourceDocumentDemo
         JFrame w = new JFrame();
         w.setSize(640, 480);
         w.setLocationByPlatform(true);
+        int offset = (id - 1) * 100;
+        w.setLocation(w.getX() + offset, w.getY() + offset);
+        SourceDocument sourceDocument = new SourceDocument("Demo User " + id,
+                "test.SourceDocument");
+        EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
+                sourceDocument);
+        eta.setWaiting(false);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
-                this.server.timer, id);
+                this.server.timer, id, eta);
         w.add(panel);
         w.pack();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         w.setVisible(true);
-        PseudoClient client = new PseudoClient(panel, id);
+        PseudoClient client = new PseudoClient(panel, id, sourceDocument);
         this.server.addClient(client);
+        panel.setClient(client);
     }
 
     public class PseudoServer implements ICodeLocation
     {
-        private SourceDocument sourceDocument = new SourceDocument();
+        private SourceDocument sourceDocument = new SourceDocument("TestBot",
+                "Bot Document");
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;
-        private long period = 50;
+        private long period = 1000;
         private long currentTime = System.currentTimeMillis();
         private long lastPush = 0;
 
@@ -77,7 +88,7 @@ public class SourceDocumentDemo
                                 client.push(pushQueue);
                             }
                         }
-                        lastPush = currentTime;
+                        lastPush = currentTime - 1;
                     }
                     catch (Exception e)
                     {
@@ -126,7 +137,7 @@ public class SourceDocumentDemo
 
     public class PseudoClient implements ICodeLocation
     {
-        SourceDocument sourceDocument = new SourceDocument();
+        SourceDocument sourceDocument;
         long lastUpdateTime;
         SDDemoPanel panel;
         private Timer timer = new Timer();
@@ -134,8 +145,10 @@ public class SourceDocumentDemo
         private long period = 100;
         int id;
 
-        public PseudoClient(final SDDemoPanel panel, final int id)
+        public PseudoClient(final SDDemoPanel panel, final int id,
+                SourceDocument sourceDocument)
         {
+            this.sourceDocument = sourceDocument;
             this.panel = panel;
             this.timer.scheduleAtFixedRate(new TimerTask()
             {
@@ -150,6 +163,21 @@ public class SourceDocumentDemo
                 }
             }, this.delay, this.period);
             this.id = id;
+
+            this.panel.eta.addActionListener(new ActionListener()
+            {
+
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                    TypingEvent te = (TypingEvent) e.getSource();
+                    outgoingEvents.add(te);
+                    System.out.println("push to server: " + te);
+                    server.push(outgoingEvents);
+                }
+
+            });
         }
 
         @Override
@@ -163,7 +191,8 @@ public class SourceDocumentDemo
 
                 try
                 {
-                    panel.updateText(sourceDocument.toString());
+                    this.panel.eta.updateText();
+                    // panel.updateText(sourceDocument.toString());
                 }// System.out.println(id + " : " + sourceDocument);
                 catch (Exception e)
                 {
@@ -173,21 +202,15 @@ public class SourceDocumentDemo
 
                 for (TypingEvent te : events)
                 {
-                    switch (te.mode)
-                    {
-                    case insert:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveRight();
-                        break;
-                    case overwrite:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveRight();
-                        break;
-                    case backspace:
-                        if (te.position >= panel.eta.getCaretPosition())
-                            panel.eta.moveLeft();
-                        break;
-                    }
+                    /*
+                     * switch (te.mode) { case insert: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     * break; case overwrite: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     * break; case backspace: if (te.position >=
+                     * panel.eta.getCaretPosition()) panel.eta.moveLeft();
+                     * break; }
+                     */
                 }
             }
         }
@@ -215,34 +238,46 @@ public class SourceDocumentDemo
         {
             this.sourceDocument.clearAll();
         }
+
     }
 
     public class SDDemoPanel extends JPanel
     {
-        EditorTypingArea eta = new EditorTypingArea();
+        EditorTypingArea eta;
         ICodeLocation server;
+        ICodeLocation client;
         int id;
 
         public SDDemoPanel(JFrame w, Dimension size,
-                final ICodeLocation server, final Timer timer, final int id)
+                final ICodeLocation server, final Timer timer, final int id,
+                final EditorTypingArea eta)
         {
             this.id = id;
             this.setSize(size);
+            this.eta = eta;
             this.eta.setPreferredSize(size);
             this.add(this.eta);
             this.server = server;
             w.addKeyListener(new KeyListener()
             {
+
                 @Override
                 public void keyPressed(KeyEvent ke)
                 {
-                    if (ke.getKeyCode() == KeyEvent.VK_LEFT)
+                    switch (ke.getKeyCode())
                     {
+                    case KeyEvent.VK_LEFT:
                         eta.moveLeft();
-                    }
-                    else if (ke.getKeyCode() == KeyEvent.VK_RIGHT)
-                    {
+                        break;
+                    case KeyEvent.VK_RIGHT:
                         eta.moveRight();
+                        break;
+                    case KeyEvent.VK_UP:
+                        eta.moveUp();
+                        break;
+                    case KeyEvent.VK_DOWN:
+                        eta.moveDown();
+                        break;
                     }
                 }
 
@@ -258,6 +293,7 @@ public class SourceDocumentDemo
                 {
                     try
                     {
+
                         Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                         // System.out.println(server.lastUpdateTime());
                         TypingEventMode mode = TypingEventMode.insert;
@@ -265,8 +301,13 @@ public class SourceDocumentDemo
                         {
                         case '\u0008':
                         {
-                            mode = TypingEventMode.backspace;
-                            // eta.moveLeft();
+                            if (eta.getCaretPosition() > 0
+                                    && !eta.currentPositionLocked(-1))
+                            {
+                                mode = TypingEventMode.backspace;
+                            }
+                            else
+                                return;
                         }
                             break;
                         // case '\u0027':
@@ -274,17 +315,36 @@ public class SourceDocumentDemo
                         // break;
                         default:
                         {
-                            // eta.moveRight();
+                            if (eta.currentPositionLocked(0))
+                                return;
                         }
                         }
 
-                        TypingEvent te = new TypingEvent(System
-                                .currentTimeMillis(), mode, eta
+                        long t = System.currentTimeMillis();
+
+                        TypingEvent te = new TypingEvent(t, mode, eta
                                 .getCaretPosition(), 1, String.valueOf(ke
                                 .getKeyChar()), "Demo User " + id);
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
+
+                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>(
+                                outgoingEvents);
                         server.push(outgoingEvents);
+                        client.push(internal);
+
+                        switch (mode)
+                        {
+                        case insert:
+                            eta.moveRight();
+                            break;
+                        case overwrite:
+                            eta.moveRight();
+                            break;
+                        case backspace:
+                            eta.moveLeft();
+                            break;
+                        }
                     }
                     catch (Exception e)
                     {
@@ -296,22 +356,9 @@ public class SourceDocumentDemo
             });
         }
 
-        public void updateText(String string)
+        public void setClient(ICodeLocation client)
         {
-            try
-            {
-                this.eta.setText(string);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
-                System.exit(1);
-            }
-            catch (Throwable e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            this.client = client;
         }
     }
 }

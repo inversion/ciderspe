@@ -11,15 +11,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.sql.Date;
-import java.util.Calendar;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class Profile 
 {
 	public String uname;
 	public int typedChars;
+	public long timeSpent;
 	public String lastOnline;
 	
 	public static void main (String uname)
@@ -31,7 +30,8 @@ public class Profile
 	{
 		uname = un;
 		typedChars = 0;
-		lastOnline = "never";
+		timeSpent = 0;
+		lastOnline = "Never!";
 		readProfileFile();
 	}
 	
@@ -40,7 +40,7 @@ public class Profile
 		File f = new File (uname + ".txt");
 		if (f.exists())
 		{
-			System.out.println("Profile file exists, reading");
+			System.out.println("Profile file exists, reading " + uname + ".txt");
 			try
 			{
 				FileInputStream fis = new FileInputStream(f);
@@ -61,18 +61,30 @@ public class Profile
 							System.err.println("Error: Integer parse failed in Profile.java");
 						}
 					}
-					if (line.contains("lasttime:"))
+					if (line.contains("timespent:"))
 					{
 						String[] splitline = line.split(" ");
 						try
 						{
-							lastOnline = splitline[3];
+							timeSpent = Integer.parseInt(splitline[1]);
 						}
 						catch (Exception e)
 						{
-							System.err.println("Error: Last Online parse failed in Profile.java");
+							System.err.println("Error: Integer parse failed in timespent Profile.java");
 						}
-					      
+					}
+					if (line.contains("lastonline:"))
+					{
+						int index = line.indexOf(" ");
+						line = line.substring(index);
+						try
+						{
+							lastOnline = line;
+						}
+						catch (Exception e)
+						{
+							System.err.println("Error: Integer parse failed in lastonline Profile.java");
+						}
 					}
 				}
 			}
@@ -93,7 +105,7 @@ public class Profile
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0");
+				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0" + "\n" + " lastonline: Never!");
 				out.close();
 			} 
 			catch (IOException e) 
@@ -109,21 +121,33 @@ public class Profile
 		return;
 	}
 
+	public void updateTimeSpent(Long start)
+	{
+		long end, spent;
+		end = System.currentTimeMillis();
+		spent = end-start;
+
+		System.out.println("UPDATING TIME " + spent + timeSpent);
+		timeSpent += spent;
+	}
+	
 	public void updateProfileInfo() 
 	{
 		File f = new File (uname + ".txt");
 		try 
 		{
 			if (!f.exists())
-				System.out.println("Error: how the hell did that happen"); //TODO: should probably remove ;p
+				System.out.println("Error: User Profile file was not generated");
 			else
 			{
-				lastOnline = Date.toGMTString();
 				f.delete();
 				f.createNewFile();
+				Date d = new Date();
+				DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
+				lastOnline = df.format(d);
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars + "\n" + "lastime: " + lastOnline);
+				out.write(uname + "\n" + "chars: " + typedChars + "\ntimespent: " + timeSpent + "\nlastonline: " + lastOnline);
 				out.close();
 			}
 		} 

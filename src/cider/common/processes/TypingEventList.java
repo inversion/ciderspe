@@ -1,6 +1,8 @@
 package cider.common.processes;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Random;
 
 public class TypingEventList
@@ -35,6 +37,16 @@ public class TypingEventList
         if (i < 0)
             return;
         this.tel.remove(i);
+    }
+
+    public boolean exists(int i)
+    {
+        return i > 0 && i < this.tel.size();
+    }
+
+    public TypingEvent get(int i)
+    {
+        return this.tel.get(i);
     }
 
     public void clear()
@@ -80,5 +92,77 @@ public class TypingEventList
         for (TypingEvent te : this.tel)
             string += te.text;
         return string;
+    }
+
+    public LinkedList<TypingEventList> split(String string)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current = new TypingEventList();
+        for (TypingEvent te : this.tel)
+            if (te.text.equals(string))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
+    static boolean belongsTo(String string, String[] strings)
+    {
+        for (String str : strings)
+            if (str.equals(string))
+                return true;
+        return false;
+    }
+
+    public LinkedList<TypingEventList> splitWords(String[] dividers)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current;
+        current = new TypingEventList();
+        for (TypingEvent te : this.tel)
+            if (belongsTo(te.text, dividers))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
+    public boolean locked(int position)
+    {
+        return this.tel.get(position).locked;
+    }
+
+    public int length()
+    {
+        return this.tel.size();
+    }
+
+    public boolean newline()
+    {
+        return this.tel.size() == 0 || this.tel.size() == 1
+                && this.tel.get(0).equals("\n");
+    }
+
+    public Collection<? extends TypingEvent> events()
+    {
+        return this.tel;
+    }
+
+    public void homogenize(long end)
+    {
+        int size = this.tel.size();
+        long start = end - size;
+        long t = start;
+        for (int i = 0; i < size; i++)
+            this.tel.set(i, new TypingEvent(this.tel.get(i), t++, i,
+                    TypingEventMode.insert));
     }
 }
