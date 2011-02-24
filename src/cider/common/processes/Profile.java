@@ -70,7 +70,7 @@ public class Profile
 						}
 						catch (Exception e)
 						{
-							System.err.println("Error: Integer parse failed in Profile.java");
+							System.err.println("Error: Integer parse failed in timespent Profile.java");
 						}
 					}
 					if (line.contains("lastonline:"))
@@ -83,7 +83,7 @@ public class Profile
 						}
 						catch (Exception e)
 						{
-							System.err.println("Error: Integer parse failed in Profile.java");
+							System.err.println("Error: Integer parse failed in lastonline Profile.java");
 						}
 					}
 				}
@@ -105,7 +105,7 @@ public class Profile
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0\nlastonline: Never!");
+				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0" + "\n" + " lastonline: Never!");
 				out.close();
 			} 
 			catch (IOException e) 
