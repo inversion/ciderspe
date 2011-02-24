@@ -32,6 +32,8 @@ import javax.swing.SwingUtilities;
 
 import org.jivesoftware.smack.XMPPException;
 
+import cider.common.network.Client;
+
 public class LoginUI
 {
 	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
@@ -52,9 +54,11 @@ public class LoginUI
     JTextField txtHost;
     JTextField txtPort;
     
+	MainWindow program;
+    
     JCheckBox chkRemember ;
 
-    void displayLogin()
+    public void displayLogin()
     {
     	// TODO: Can we make it connect when you press enter on one of the textFields
         // Setup JFrame
@@ -279,7 +283,7 @@ public class LoginUI
 		}
 	}
     
-    void checkLogin()
+    boolean checkLogin()
     {
     	if (chkRemember.isSelected() == true)
 		{
@@ -299,7 +303,14 @@ public class LoginUI
 				System.out.println("Deletion failed: " + fileName);
 			}
 		}
-		showConnectBox();
+		if (showConnectBox())
+			return true;
+		else
+		{
+			displayLogin();
+			//program.killWindow();
+		}
+		return false;
     }
 
 	public ActionListener newAction()
@@ -334,7 +345,7 @@ public class LoginUI
     	}
     }
     
-    void showConnectBox()
+    boolean showConnectBox()
     {
     	login.setVisible(false);
     	
@@ -386,35 +397,56 @@ public class LoginUI
     	{
     		e.printStackTrace();
     	}
-        
-        connect();
+        if (connect())
+        	return true;
+        else
+        {
+        	connecting.dispose();
+        	return false;
+        }
     }
 
-    void connect()
+    boolean connect()
     {
     	// TODO Connection Code
     	// On connect, close login and connect JFrames, run MainWindow
     	
     	//System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
     	
-    	MainWindow program;
 		try {
 			// TODO: Recommended to zero bytes of password after use
 			// TODO: Check that fields aren't null/validation stuff
-			program = new MainWindow( txtUsername.getText(), 
-					/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
-									  txtHost.getText(), 
-									  Integer.parseInt( txtPort.getText() ),
-									  txtServiceName.getText() );
+			Client client = new Client(
+	                txtUsername.getText(), 
+	                new String(txtPassword.getPassword()), 
+	                txtHost.getText(), 
+	                Integer.parseInt( txtPort.getText() ),
+	                txtServiceName.getText());
+			if (client.attemptConnection())
+			{
+				program = new MainWindow( txtUsername.getText(), 
+				/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
+								  txtHost.getText(), 
+								  Integer.parseInt( txtPort.getText() ),
+								  txtServiceName.getText() ,
+								  client);
+			}
+			else
+				return false;
+
 	        SwingUtilities.invokeLater(program);
 	        // TODO: Reopen login ui if login failed
 	        // TODO: Display alert box with xmpp exception message if it failed
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Couldn't login: " + e.getMessage());
-			displayLogin();
+			return false;
 		}
 		connecting.setVisible(false);
+		if (program.client.ERRORFLAG)
+			return false;
+		else
+			return true;
     }
     
     public static void main(String[] args)
