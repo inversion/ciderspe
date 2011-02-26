@@ -34,12 +34,15 @@ public class ClientMessageListener implements MessageListener, ActionListener
     public void processMessage(Chat chat, Message message)
     {
         String body = null;
-		try {
-			body = new String( Base64.decode( message.getBody() ) );
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
+        try
+        {
+            body = new String(Base64.decode(message.getBody()));
+        }
+        catch (IOException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
         if (body.startsWith("quit"))
         {
             client.disconnect();
@@ -54,16 +57,11 @@ public class ClientMessageListener implements MessageListener, ActionListener
     @Override
     public void actionPerformed(ActionEvent ae)
     {
-        try
-        {
-            this.client.pullEventsSinceFromBot(this.client.getLastUpdate());
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null,
-                    "Cannot pull events: " + e.getMessage());
-            System.exit(1);
-        }
+        /*
+         * try { this.client.pullEventsFromBot(this.client.getLastUpdate()); }
+         * catch (Exception e) { e.printStackTrace();
+         * JOptionPane.showMessageDialog(null, "Cannot pull events: " +
+         * e.getMessage()); System.exit(1); }
+         */
     }
 }

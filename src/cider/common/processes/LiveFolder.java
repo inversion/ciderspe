@@ -91,6 +91,13 @@ public class LiveFolder
         this.documents.clear();
     }
 
+    /**
+     * returns all events for this folder
+     * 
+     * @param time
+     * @param path
+     * @return
+     */
     public Queue<LocalisedTypingEvents> eventsSince(long time, String path)
     {
         Queue<LocalisedTypingEvents> events = new LinkedList<LocalisedTypingEvents>();

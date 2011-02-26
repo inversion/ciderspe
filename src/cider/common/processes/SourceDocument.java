@@ -27,6 +27,14 @@ public class SourceDocument implements ICodeLocation
                 new EventComparer());
     }
 
+    public SourceDocument(String owner, String name,
+            PriorityQueue<TypingEvent> typingEvents)
+    {
+        this.owner = owner;
+        this.name = name;
+        this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
+    }
+
     public static void main(String[] args)
     {
         System.out.println(test());
@@ -215,6 +223,17 @@ public class SourceDocument implements ICodeLocation
         this.clearUpTo(endTime);
         tel.homogenize(endTime);
         this.typingEvents.addAll(tel.events());
+    }
+
+    public SourceDocument simplified(long endTime)
+    {
+        SourceDocument doc = new SourceDocument(this.owner, this.name,
+                this.typingEvents);
+        TypingEventList tel = this.playOutEvents(endTime);
+        doc.clearUpTo(endTime);
+        tel.homogenize(endTime);
+        doc.typingEvents.addAll(tel.events());
+        return doc;
     }
 
     public void clearUpTo(long endTime)
