@@ -49,7 +49,7 @@ public class Client
             "dd/MM/yyyy HH:mm:ss");
 
     private XMPPConnection connection;
-	private ChatManager chatmanager;
+    private ChatManager chatmanager;
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
@@ -70,7 +70,7 @@ public class Client
     private int port;
     private String serviceName;
     private String password;
-    
+
     // Listen for private chat sessions with other users
     // TODO: Not yet implemented
     // private ClientPrivateChatListener userChatListener;
@@ -82,8 +82,8 @@ public class Client
     private JTextArea messageReceiveBox;
     private boolean isWaitingToBroadcast = false;
 
-    public Client (String username, String password,
-            String host, int port, String serviceName)
+    public Client(String username, String password, String host, int port,
+            String serviceName)
     {
 
         // Assign objects from parameters
@@ -94,28 +94,28 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
     }
-    
+
     /**
      * Register GUI components from the Main Window
      * 
      * @author Andrew
      * 
      */
-    public void registerGUIComponents(DirectoryViewComponent dirView, JTabbedPane tabbedPane,
-            Hashtable<String, SourceEditor> openTabs,
+    public void registerGUIComponents(DirectoryViewComponent dirView,
+            JTabbedPane tabbedPane, Hashtable<String, SourceEditor> openTabs,
             DefaultListModel userListModel, JLabel userCount,
-            JTextArea messageReceiveBox )
+            JTextArea messageReceiveBox)
     {
         this.dirView = dirView;
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
         this.messageReceiveBox = messageReceiveBox;
-        
+
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
                 userListModel, userCount));
     }
-    
+
     /**
      * Returns TRUE on successful connection, FALSE on failure
      * 
@@ -134,14 +134,14 @@ public class Client
          * Append a random string to the resource to prevent conflicts with
          * existing instances of the CIDER client from the same user.
          * 
-         * Later the Bot will alert the user if there is an existing
-         * instance of the CIDER client.
+         * Later the Bot will alert the user if there is an existing instance of
+         * the CIDER client.
          */
         String rand = StringUtils.randomString(5);
         connection.login(username, password, RESOURCE + rand);
         if (DEBUG)
-            System.out.println("Logged into XMPP server, username="
-                    + username + "/" + rand);
+            System.out.println("Logged into XMPP server, username=" + username
+                    + "/" + rand);
         connection.addPacketListener(new DebugPacketListener(),
                 new DebugPacketFilter());
 
@@ -160,7 +160,7 @@ public class Client
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username));
 
-    }    
+    }
 
     public void updateChatLog(String username, String date, String message)
     {
@@ -257,18 +257,33 @@ public class Client
             SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
             sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, sourceEditor);
-            System.out.println("Pull since 0 since a new tab is being opened");
-            this.pullEventsSinceFromBot(0);
+            this.pullSimplifiedEventsFromBot(strPath,
+                    System.currentTimeMillis());
         }
     }
 
-    public void pullEventsSinceFromBot(long time)
+    public void pullSimplifiedEventsFromBot(String strPath, long time)
     {
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage(Base64.encodeBytes(("pullEventsSince("
-                    + String.valueOf(time) + ")").getBytes()));
+            botChat.sendMessage(Base64.encodeBytes(("pullSimplifiedEvents("
+                    + strPath + "," + String.valueOf(time) + ")").getBytes()));
+        }
+        catch (XMPPException e)
+        {
+            // TODO:
+            e.printStackTrace();
+        }
+    }
+
+    public void pullEventsFromBot(String strPath, long time)
+    {
+        try
+        {
+            // System.out.println("pull since " + time);
+            botChat.sendMessage(Base64.encodeBytes(("pullEvents(" + strPath
+                    + "," + String.valueOf(time) + ")").getBytes()));
         }
         catch (XMPPException e)
         {

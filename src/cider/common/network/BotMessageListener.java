@@ -81,14 +81,27 @@ public class BotMessageListener implements MessageListener
             // }
         }
         // This part is still important for when a file is opened
-        else if (body.startsWith("pullEventsSince("))
+        else if (body.startsWith("pullEvents("))
         {
-            String arg = body.split("\\(")[1];
-            arg = arg.split("\\)")[0];
-            long t = Long.parseLong(arg);
-            this.pushBack(chat, t);
+            String str = body.split("\\(")[1];
+            str = str.split("\\)")[0];
+            String[] args = str.split(",");
+            String dest = args[0];
+            long t = Long.parseLong(args[1]);
+            this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                    .eventsSince(t));
             // JOptionPane.showMessageDialog(null, "Pushed Back " + t);
 
+        }
+        else if (body.startsWith("pullSimplifiedEvents("))
+        {
+            String str = body.split("\\(")[1];
+            str = str.split("\\)")[0];
+            String[] args = str.split(",");
+            String dest = args[0];
+            long t = Long.parseLong(args[1]);
+            this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                    .simplified(t).events());
         }
         else if (body.startsWith("pushto("))
         {
@@ -107,10 +120,24 @@ public class BotMessageListener implements MessageListener
         }
     }
 
-    private void pushBack(Chat chat, long t)
+    private void pushBack(Chat chat, String path, Queue<TypingEvent> queue)
     {
-        Queue<LocalisedTypingEvents> events = this.bot.getRootFolder()
-                .eventsSince(t, "");
+        String instructions = "";
+        for (TypingEvent te : queue)
+            instructions += "pushto(" + path + ") " + te.pack() + " -> ";
+        try
+        {
+            chat.sendMessage(Base64.encodeBytes(instructions.getBytes()));
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    private void pushBack(Chat chat, Queue<LocalisedTypingEvents> events)
+    {
         String instructions = "";
         for (LocalisedTypingEvents ltes : events)
             for (TypingEvent te : ltes.typingEvents)
