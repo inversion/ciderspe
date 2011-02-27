@@ -372,7 +372,7 @@ class MainWindow implements Runnable
         chars.setVerticalAlignment(JLabel.TOP);
         content.add(chars);
 
-        Time t = new Time(myProfile.timeSpent);
+        Time t = new Time(myProfile.timeSpent - 3600000);
         System.out.println("TS = " + myProfile.timeSpent);
         JLabel time = new JLabel("Total time spent: " + t);
         time.setHorizontalAlignment(JLabel.LEFT);
