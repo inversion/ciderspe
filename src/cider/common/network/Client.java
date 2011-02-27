@@ -81,6 +81,7 @@ public class Client
 
     private JTextArea messageReceiveBox;
     private boolean isWaitingToBroadcast = false;
+    private SourceDocument currentDoc = null;
 
     public Client(String username, String password, String host, int port,
             String serviceName)
@@ -93,6 +94,11 @@ public class Client
         this.port = port;
         this.serviceName = serviceName;
         this.password = password;
+    }
+
+    public SourceDocument getCurrentDocument()
+    {
+        return this.currentDoc;
     }
 
     /**
@@ -251,6 +257,7 @@ public class Client
         String strPath = this.getPathToSourceDocument(path, 1);
         System.out.println(strPath);
         SourceDocument doc = this.liveFolder.path(strPath);
+        this.currentDoc = doc;
         if (!this.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(this.username, doc);

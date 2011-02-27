@@ -15,14 +15,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Time;
 import java.util.Hashtable;
@@ -107,12 +103,14 @@ class MainWindow implements Runnable
         startTime = System.currentTimeMillis();
         dirView = new DirectoryViewComponent();
         username = "ciderclient";
-//        client = new Client(dirView, tabbedPane, openTabs, userListModel,
-//                userCount, messageReceiveBox, username, "clientpw",
-//                "xmpp.org.uk", 5222, "xmpp.org.uk");
-/*        client = new Client(dirView, tabbedPane, openTabs, userListModel,
-                userCount, messageReceiveBox, username, "clientpw",
-                "192.168.0.2", 5222, "192.168.0.2");*/
+        // client = new Client(dirView, tabbedPane, openTabs, userListModel,
+        // userCount, messageReceiveBox, username, "clientpw",
+        // "xmpp.org.uk", 5222, "xmpp.org.uk");
+        /*
+         * client = new Client(dirView, tabbedPane, openTabs, userListModel,
+         * userCount, messageReceiveBox, username, "clientpw", "192.168.0.2",
+         * 5222, "192.168.0.2");
+         */
         dirView.setClient(client);
         client.getFileListFromBot();
     }
@@ -127,7 +125,8 @@ class MainWindow implements Runnable
         startTime = System.currentTimeMillis();
         this.username = username;
         client = c;
-        client.registerGUIComponents(dirView, tabbedPane, openTabs, userListModel, userCount, messageReceiveBox);
+        client.registerGUIComponents(dirView, tabbedPane, openTabs,
+                userListModel, userCount, messageReceiveBox);
         dirView.setClient(client);
         client.getFileListFromBot();
     }
@@ -209,74 +208,74 @@ class MainWindow implements Runnable
             @Deprecated
             public void openFile()
             {
-//                JFileChooser fc = new JFileChooser();
-//                int rVal = fc.showOpenDialog(null);
-//                if (rVal == JFileChooser.APPROVE_OPTION)
-//                {
-//                    String temp;
-//                    currentDir = fc.getSelectedFile().getAbsolutePath();
-//                    currentFileName = fc.getSelectedFile().getName();
-//                    try
-//                    {
-//                        FileInputStream fis = new FileInputStream(currentDir);
-//                        BufferedInputStream bis = new BufferedInputStream(fis);
-//                        BufferedReader br = new BufferedReader(
-//                                new InputStreamReader(bis));
-//                        currentFileContents = "";
-//                        while ((temp = br.readLine()) != null)
-//                        {
-//                            currentFileContents = currentFileContents + temp
-//                                    + "\n";
-//                        }
-//                    }
-//                    catch (IOException e)
-//                    {
-//                        System.err.println("Error: " + e.getMessage());
-//                        System.exit(0);
-//                    }
-//
-//                    // tabbedPane.addTab(currentFileName, new SourceEditor(
-//                    // currentFileContents, currentDir));
-//                    tabbedPane.setSelectedIndex(++currentTab);
-//                }
+                // JFileChooser fc = new JFileChooser();
+                // int rVal = fc.showOpenDialog(null);
+                // if (rVal == JFileChooser.APPROVE_OPTION)
+                // {
+                // String temp;
+                // currentDir = fc.getSelectedFile().getAbsolutePath();
+                // currentFileName = fc.getSelectedFile().getName();
+                // try
+                // {
+                // FileInputStream fis = new FileInputStream(currentDir);
+                // BufferedInputStream bis = new BufferedInputStream(fis);
+                // BufferedReader br = new BufferedReader(
+                // new InputStreamReader(bis));
+                // currentFileContents = "";
+                // while ((temp = br.readLine()) != null)
+                // {
+                // currentFileContents = currentFileContents + temp
+                // + "\n";
+                // }
+                // }
+                // catch (IOException e)
+                // {
+                // System.err.println("Error: " + e.getMessage());
+                // System.exit(0);
+                // }
+                //
+                // // tabbedPane.addTab(currentFileName, new SourceEditor(
+                // // currentFileContents, currentDir));
+                // tabbedPane.setSelectedIndex(++currentTab);
+                // }
             }
 
             @Deprecated
             public void saveFile(String action)
             {
-//                JFileChooser fc = new JFileChooser();
-//                if (currentFileName.equals("Unsaved Document 1")
-//                        || action.equals("Save As"))
-//                {
-//                    int watdo = fc.showSaveDialog(null);
-//                    if (watdo != JFileChooser.APPROVE_OPTION)
-//                    {
-//                        return;
-//                    }
-//                    currentFileName = fc.getSelectedFile().getName();
-//                    currentDir = fc.getSelectedFile().getAbsolutePath();
-//                }
-//                try
-//                {
-//                    FileWriter fstream = new FileWriter(currentDir);
-//                    BufferedWriter out = new BufferedWriter(fstream);
-//                    out.write(currentFileContents);
-//                    out.close();
-//                }
-//                catch (IOException e1)
-//                {
-//                    System.err.println("Error: " + e1.getMessage());
-//                }
-//                tabbedPane.setTitleAt(currentTab, currentFileName);
+                JFileChooser fc = new JFileChooser();
+                if (currentFileName.equals("Unsaved Document 1")
+                        || action.equals("Save As"))
+                {
+                    int watdo = fc.showSaveDialog(null);
+                    if (watdo != JFileChooser.APPROVE_OPTION)
+                    {
+                        return;
+                    }
+                    currentFileName = fc.getSelectedFile().getName();
+                    currentDir = fc.getSelectedFile().getAbsolutePath();
+                }
+                try
+                {
+                    FileWriter fstream = new FileWriter(currentDir);
+                    BufferedWriter out = new BufferedWriter(fstream);
+                    out.write(currentFileContents);
+                    out.close();
+                }
+                catch (IOException e1)
+                {
+                    System.err.println("Error: " + e1.getMessage());
+                }
+                tabbedPane.setTitleAt(currentTab, currentFileName);
             }
 
             @Deprecated
             public void closeFile(String action)
             {
-//                saveFile(action);
-//                // closes tab regardless of save or cancel
-//                tabbedPane.remove(tabbedPane.getSelectedIndex());
-//                tabbedPane.setSelectedIndex(--currentTab);
+                // saveFile(action);
+                // // closes tab regardless of save or cancel
+                // tabbedPane.remove(tabbedPane.getSelectedIndex());
+                // tabbedPane.setSelectedIndex(--currentTab);
             }
 
             @Deprecated
@@ -316,10 +315,9 @@ class MainWindow implements Runnable
                                     .println(username
                                             + "\n"
                                             + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                            out
-                                    .write(username
-                                            + "\n"
-                                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
+                            out.write(username
+                                    + "\n"
+                                    + "chars: 0\ntimespent: 0\nlastonline: Never!");
                             out.close();
                         }
                     }
@@ -631,24 +629,26 @@ class MainWindow implements Runnable
         messageSendBox.addKeyListener(new KeyListener()
         {
 
-			@Override
-			public void keyTyped(KeyEvent e) 
-			{}
+            @Override
+            public void keyTyped(KeyEvent e)
+            {
+            }
 
-			@Override
-			public void keyPressed(KeyEvent e) 
-			{}
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+            }
 
-			@Override
-			public void keyReleased(KeyEvent e) 
-			{
-				int c = e.getKeyCode();
-				if (c == KeyEvent.VK_ENTER)
-				{
-					sendChatMessage();
-				}
-			}
-        	
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                int c = e.getKeyCode();
+                if (c == KeyEvent.VK_ENTER)
+                {
+                    sendChatMessage();
+                }
+            }
+
         });
         // ActionListener aL = newAction(); //TODO - Alex doesn't know what he
         // be doing with action listeners
@@ -691,9 +691,9 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    protected void sendChatMessage() 
+    protected void sendChatMessage()
     {
-    	String message = messageSendBox.getText();
+        String message = messageSendBox.getText();
         if (!message.equals("")) // TODO disable send button if no
         // meaningful text entered
         {
@@ -708,10 +708,10 @@ class MainWindow implements Runnable
             client.sendMessageChatroom(message);
             messageSendBox.setText("");
         }
-		
-	}
 
-	public JPanel mainArea()
+    }
+
+    public JPanel mainArea()
     {
         /* Chat panel stuffs- Alex */
         Border emptyBorder = BorderFactory.createEmptyBorder();
@@ -730,8 +730,8 @@ class MainWindow implements Runnable
 
         JPanel panel = new JPanel(new BorderLayout());
         dirSourceEditorSeletionSplit = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, dirView, this
-                        .sourceEditorSection());
+                JSplitPane.HORIZONTAL_SPLIT, dirView,
+                this.sourceEditorSection());
         dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
         dirSourceEditorSeletionSplit.setBorder(emptyBorder);
 
@@ -833,8 +833,8 @@ class MainWindow implements Runnable
         }
     }
 
-	public void killWindow() 
-	{
-		w.dispose();
-	}
+    public void killWindow()
+    {
+        w.dispose();
+    }
 }
