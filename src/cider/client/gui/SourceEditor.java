@@ -54,7 +54,7 @@ public class SourceEditor extends JPanel
         for( int i = 0; i < keywordArray.length; i++ )
         	keywords.add( keywordArray[i] );
         
-        String[] CommentArray = "// /* */".split(" ");
+        String[] CommentArray = "/* */".split(" ");
         for( int i = 0; i < CommentArray.length; i++ )
         	comments.add( CommentArray[i] ); 
     }
