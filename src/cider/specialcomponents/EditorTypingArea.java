@@ -249,7 +249,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 length = str.length();
                 if ( SourceEditor.keywords.contains(str) )
                     wash(this.colors, Color.BLUE, i, i + length);
-                if ( SourceEditor.comments.contains(str) )
+                if ( isComment(str) == true)
                 	wash(this.colors, Color.RED, i, i + length);
                 if ( isParsableToNum(str) == true)
                 	wash(this.colors, Color.GREEN, i, i + length);
@@ -265,6 +265,15 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.setColor(Color.LIGHT_GRAY);
             g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
                     lineSpacing, 3, 3);
+        }
+        
+        public boolean isComment(String str)
+        {
+        	if (str.length() > 1)
+        		if (str.startsWith("//") || str.startsWith("/*") || str.startsWith("*/") == true)
+        		return true;
+        	
+        	return false;        	
         }
         
         public boolean isParsableToNum(String str)
