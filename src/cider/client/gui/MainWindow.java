@@ -80,6 +80,7 @@ class MainWindow implements Runnable
     public JList userList;
     public JLabel userCount = new JLabel();
     public DefaultListModel userListModel = new DefaultListModel();
+    JTabbedPane receiveTabs;
     public JTextArea messageSendBox;
     public JTextArea/* JEditorPane */messageReceiveBox = new JTextArea();
 
@@ -602,16 +603,15 @@ class MainWindow implements Runnable
         {
             public void mouseClicked(MouseEvent e)
             {
-                if (e.getClickCount() == 2)
-                {
-                    int i = userList.locationToIndex(e.getPoint());
-                    System.out.println("Double clicked on Item " + i);
-                    System.out.println("Double clicked on Item: "
-                            + userList.getModel().getElementAt(i));
-                    // initiate.private.chat.with(userList.getModel().getElementAt(i));
-                }
-                else if ((e.getButton() == MouseEvent.BUTTON3)
-                        && (userList.locationToIndex(e.getPoint()) != -1))
+            	int i = userList.locationToIndex(e.getPoint());
+            	if (e.getClickCount() == 2)
+            	{
+            		System.out.println("Double clicked on Item " + i);
+            		System.out.println("Double clicked on Item: " + userList.getModel().getElementAt(i));
+            		initiateAChat((String) userList.getModel().getElementAt(i));
+            	}
+            	else if ((e.getButton() == MouseEvent.BUTTON3)
+            			&& (userList.locationToIndex(e.getPoint()) != -1))
                 {
                     /* pop up for viewing users profile/stats etc"); */
                     userList.setSelectedIndex(userList.locationToIndex(e
@@ -628,7 +628,7 @@ class MainWindow implements Runnable
                             {
                                 public void run()
                                 {
-                                    // initiate.private.chat.with(userList.getModel().getElementAt(i));
+                                     //initiatePrivateChat(userList.getModel().getElementAt(i)); 
                                 }
                             });
                         }
@@ -669,12 +669,24 @@ class MainWindow implements Runnable
         panel.setMinimumSize(new Dimension(0, 100));
         return panel;
     }
+    
+    void initiateAChat(String user)
+    {
+    	/*should create a messageReceiveBox object*/
+    	if(receiveTabs.indexOfTab(user) ==-1)
+    	{
+    		JLabel temp= new JLabel("testing");
+        	receiveTabs.add(temp);
+        	receiveTabs.setTitleAt(receiveTabs.getTabCount()-1, user);
+    	}    	
+    }
 
     public JPanel pnlReceive()
     {
+    	/*this should only create the panel- initiateAChat) should create the chat's both group and private to fill the tabbed pane- Alex*/
         /* panel for the chat conversation */
         JPanel panel = new JPanel(new BorderLayout());
-
+        
         messageReceiveBox.setLineWrap(true);
         messageReceiveBox.setWrapStyleWord(true);
         Font receiveFont = new Font("Dialog", 2, 12);
@@ -686,8 +698,14 @@ class MainWindow implements Runnable
          */
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         // messageReceiveBoxScroll.setBorder(emptyBorder);
+        
+        receiveTabs = new JTabbedPane();
+        receiveTabs.add(messageReceiveBoxScroll);
+        receiveTabs.setTitleAt(currentTab, "Group Chat");
+        
+        
         panel.add(new JLabel(" User Chat"), BorderLayout.NORTH);
-        panel.add(messageReceiveBoxScroll, BorderLayout.CENTER);
+        panel.add(receiveTabs/*messageReceiveBoxScroll*/, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 800));
 
         return panel;
