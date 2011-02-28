@@ -45,7 +45,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
 		if( pres.getType() == Presence.Type.available )
 		{
 			System.out.println( "Presence from: " + nickname + " AVAILABLE" );
-			if( !users.containsKey( nickname ) )
+			if( !users.containsKey( nickname ) && !nickname.equals(Bot.BOT_USERNAME) )
 			{
 				users.put( nickname, true );
 				list.addElement( nickname );

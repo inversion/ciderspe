@@ -199,7 +199,7 @@ class MainWindow implements Runnable
                 {
                     newFile();
                 }
-                else if (action.equals("Save") || action.equals("Save As"))
+                else if (action.equals("Export"))//(action.equals("Save") || action.equals("Save As"))
                 {
                     saveFile(action);
                 }
@@ -244,14 +244,18 @@ class MainWindow implements Runnable
             public void saveFile(String action)
             {
                 JFileChooser fc = new JFileChooser();
+                File f = new File(client.getCurrentDocument().name /*+ ".java"*/);
+                fc.setSelectedFile(f);
+                
                 if (currentFileName.equals("Unsaved Document 1")
-                        || action.equals("Save As"))
+                        || action.equals("Export"))
                 {
                     int watdo = fc.showSaveDialog(null);
                     if (watdo != JFileChooser.APPROVE_OPTION)
                     {
                         return;
                     }
+                    
                     currentFileName = fc.getSelectedFile().getName();
                     currentDir = fc.getSelectedFile().getAbsolutePath();
                 }
@@ -259,7 +263,7 @@ class MainWindow implements Runnable
                 {
                     FileWriter fstream = new FileWriter(currentDir);
                     BufferedWriter out = new BufferedWriter(fstream);
-                    out.write(currentFileContents);
+                    out.write(client.getCurrentDocument().toString()/*currentFileContents*/);
                     out.close();
                 }
                 catch (IOException e1)
@@ -452,8 +456,8 @@ class MainWindow implements Runnable
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
-        addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
-        addMenuItem(menu, "Save As", KeyEvent.VK_A, aL);
+        //addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
+        addMenuItem(menu, "Export", KeyEvent.VK_A, aL);
         addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
         addMenuItem(menu, "Logout", KeyEvent.VK_L, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
@@ -727,11 +731,17 @@ class MainWindow implements Runnable
         chat.setOneTouchExpandable(true);
         chat.setDividerLocation(800);
         /* End of Chat panel stuffs */
-
+        
+        
+        JLabel test = new JLabel("i have no idea how to call the java compiler"); /*and when i google, i get instructions for how to run java, not the code to run java*/
+        JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,this.sourceEditorSection(),test);
+        EditorDebugSplit.setBorder(emptyBorder);
+        EditorDebugSplit.setOneTouchExpandable(true);
+        EditorDebugSplit.setDividerLocation(800);
+        
         JPanel panel = new JPanel(new BorderLayout());
-        dirSourceEditorSeletionSplit = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, dirView,
-                this.sourceEditorSection());
+        dirSourceEditorSeletionSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView,EditorDebugSplit);
+        //dirSourceEditorSeletionSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView, this.sourceEditorSection());
         dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
         dirSourceEditorSeletionSplit.setBorder(emptyBorder);
 
