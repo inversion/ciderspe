@@ -123,8 +123,11 @@ public class BotMessageListener implements MessageListener
     private void pushBack(Chat chat, String path, Queue<TypingEvent> queue)
     {
         String instructions = "";
-        for (TypingEvent te : queue)
-            instructions += "pushto(" + path + ") " + te.pack() + " -> ";
+        if (queue.size() == 0)
+            instructions += "isblank(" + path + ")";
+        else
+            for (TypingEvent te : queue)
+                instructions += "pushto(" + path + ") " + te.pack() + " -> ";
         try
         {
             chat.sendMessage(Base64.encodeBytes(instructions.getBytes()));

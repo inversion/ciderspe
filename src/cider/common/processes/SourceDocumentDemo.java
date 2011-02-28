@@ -202,6 +202,7 @@ public class SourceDocumentDemo
 
                 for (TypingEvent te : events)
                 {
+
                     /*
                      * switch (te.mode) { case insert: if (te.position >=
                      * panel.eta.getCaretPosition()) panel.eta.moveRight();

@@ -197,19 +197,7 @@ public class SourceDocument implements ICodeLocation
         TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
         this.typingEvents.toArray(tes);
 
-        if (typingEvent.mode == TypingEventMode.lockRegion)
-        {
-            for (TypingEvent te : this.typingEvents)
-                te.locked = te.locked || this.insideRegion(typingEvent, te);
-            this.typingEvents.add(typingEvent);
-        }
-        else if (typingEvent.mode == TypingEventMode.unlockRegion)
-        {
-            for (TypingEvent te : this.typingEvents)
-                te.locked = !this.insideRegion(typingEvent, te) && te.locked;
-            this.typingEvents.add(typingEvent);
-        }
-        else if (!typingEvent.existsIn(tes))
+        if (!typingEvent.existsIn(tes) && !this.lockingEvent(typingEvent))
         {
             if (this.latestTime > typingEvent.time)
                 this.latestTime = typingEvent.time;
@@ -217,11 +205,37 @@ public class SourceDocument implements ICodeLocation
         }
     }
 
+    public void addLockingEvents(ArrayList<TypingEvent> lockingEvents)
+    {
+        for (TypingEvent le : lockingEvents)
+            this.lockingEvent(le);
+    }
+
+    private boolean lockingEvent(TypingEvent typingEvent)
+    {
+        if (typingEvent.mode == TypingEventMode.lockRegion)
+        {
+            for (TypingEvent te : this.typingEvents)
+                te.locked = te.locked || this.insideRegion(typingEvent, te);
+            this.typingEvents.add(typingEvent);
+            return true;
+        }
+        else if (typingEvent.mode == TypingEventMode.unlockRegion)
+        {
+            for (TypingEvent te : this.typingEvents)
+                te.locked = !this.insideRegion(typingEvent, te) && te.locked;
+            this.typingEvents.add(typingEvent);
+            return true;
+        }
+        else
+            return false;
+    }
+
     public void simplify(long endTime)
     {
         TypingEventList tel = this.playOutEvents(endTime);
-        this.clearUpTo(endTime);
         tel.homogenize(endTime);
+        this.clearUpTo(endTime);
         this.typingEvents.addAll(tel.events());
     }
 
@@ -230,8 +244,8 @@ public class SourceDocument implements ICodeLocation
         SourceDocument doc = new SourceDocument(this.owner, this.name,
                 this.typingEvents);
         TypingEventList tel = this.playOutEvents(endTime);
-        doc.clearUpTo(endTime);
         tel.homogenize(endTime);
+        doc.clearUpTo(endTime);
         doc.typingEvents.addAll(tel.events());
         return doc;
     }

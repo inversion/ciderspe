@@ -158,11 +158,12 @@ public class TypingEventList
 
     public void homogenize(long end)
     {
-        int size = this.tel.size();
+        ArrayList<TypingEvent> telh = this.tel;
+        int size = telh.size();
         long start = end - size;
         long t = start;
         for (int i = 0; i < size; i++)
-            this.tel.set(i, new TypingEvent(this.tel.get(i), t++, i,
+            telh.set(i, new TypingEvent(telh.get(i), t++, i,
                     TypingEventMode.insert));
     }
 }
