@@ -35,14 +35,24 @@ public class ClientChatroomMessageListener implements PacketListener
         if (msg.getType() == Message.Type.groupchat)
         {
             String body = null;
-			try {
-				body = new String( Base64.decode( msg.getBody() ) );
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-            if (body.startsWith("filelist=") || body.startsWith("pushto("))
+            try
+            {
+                body = new String(Base64.decode(msg.getBody()));
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (body.startsWith("filelist=") || body.startsWith("pushto(")
+                    || body.startsWith("empty"))
+            {
+                if (body.contains("true"))
+                {
+                    System.out.println("\t[locked]");
+                }
                 client.processDocumentMessages(body);
+            }
             else
                 client.updateChatLog(msg.getFrom(), msg.getSubject(), body);
         }
