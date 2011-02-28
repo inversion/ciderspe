@@ -1,5 +1,6 @@
 package cider.common.processes;
 
+import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,6 +21,7 @@ public class Profile
 	public int typedChars;
 	public long timeSpent;
 	public String lastOnline;
+	public Color userColour;
 	
 	public static void main (String uname)
 	{
@@ -32,6 +34,7 @@ public class Profile
 		typedChars = 0;
 		timeSpent = 0;
 		lastOnline = "Never!";
+		userColour = new Color(150,150,150);
 		readProfileFile();
 	}
 	
@@ -86,6 +89,15 @@ public class Profile
 							System.err.println("Error: Integer parse failed in lastonline Profile.java");
 						}
 					}
+
+					if (line.contains("colour:"))
+					{
+						String[] splitline = line.split(" ");
+						int r = Integer.parseInt(splitline[1]);
+						int g = Integer.parseInt(splitline[2]);
+						int b = Integer.parseInt(splitline[3]);
+						userColour = new Color(r,g,b);
+					}
 				}
 			}
 			catch (FileNotFoundException ex)
@@ -105,7 +117,7 @@ public class Profile
 				f.createNewFile();
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0" + "\n" + " lastonline: Never!");
+				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0" + "\n" + " lastonline: Never!\n" + "colour: 150 150 150");
 				out.close();
 			} 
 			catch (IOException e) 
@@ -131,6 +143,12 @@ public class Profile
 		timeSpent += spent;
 	}
 	
+	public void updateColour (int R, int G, int B)
+	{
+		userColour = new Color(R, G, B);
+		System.out.println("Colour updated to: " + R + " " + G + " " + B);
+	}
+	
 	public void updateProfileInfo() 
 	{
 		File f = new File (uname + ".txt");
@@ -147,7 +165,13 @@ public class Profile
 				lastOnline = df.format(d);
 				FileWriter fw = new FileWriter(f);
 				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars + "\ntimespent: " + timeSpent + "\nlastonline: " + lastOnline);
+				out.write(uname + "\n" + "chars: " + typedChars + 
+						"\ntimespent: " + timeSpent + 
+						"\nlastonline: " + lastOnline + 
+						"\ncolour: " + 
+						userColour.getRed() + " " + 
+						userColour.getGreen() + " " + 
+						userColour.getBlue() + " ");
 				out.close();
 			}
 		} 
