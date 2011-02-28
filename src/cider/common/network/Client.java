@@ -63,7 +63,7 @@ public class Client
     private DirectoryViewComponent dirView;
 
     // Chat session with the Bot
-    private Chat botChat;
+    public Chat botChat;
     private ClientMessageListener botChatListener;
     private String username;
     private String host;

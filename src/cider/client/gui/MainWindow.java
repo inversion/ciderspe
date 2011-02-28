@@ -59,6 +59,7 @@ import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.specialcomponents.Base64;
 
 class MainWindow implements Runnable
 {
@@ -202,11 +203,15 @@ class MainWindow implements Runnable
                 {
                 	changeColour();
                 }
-                else if (action.equals("DEV: Update Profile"))
+                else if (action.equals("DEV: Pretend to quit"))
                 {
                     myProfile.updateTimeSpent(startTime);
                     startTime = System.currentTimeMillis();
                     myProfile.updateProfileInfo();
+                }
+                else if (action.equals("DEV: Push profile to server"))
+                {
+                	sendProfileToBot();
                 }
                 else if (action.equals("Close File"))
                 {
@@ -225,7 +230,7 @@ class MainWindow implements Runnable
                     saveFile(action);
                 }
             }
-
+            
             private void changeColour() 
             {
             	final JColorChooser colorChooser = new JColorChooser(myProfile.userColour);
@@ -461,7 +466,24 @@ class MainWindow implements Runnable
 
         frame.setVisible(true);
     }
-
+    
+    public void sendProfileToBot()
+    {
+    	myProfile.updateTimeSpent(startTime);
+    	myProfile.updateProfileInfo(); 
+    	System.out.println(myProfile.toString());
+    	try 
+    	{
+    		String s = myProfile.toString();
+    		s = "userprofile:  " + s;
+    		System.out.println(s);
+			client.botChat.sendMessage(Base64.encodeBytes(s.getBytes()));
+		} 
+    	catch (XMPPException e1) 
+    	{
+			e1.printStackTrace();
+		}
+    }
     private void tabClicked(MouseEvent e)
     {
         if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1)
@@ -538,8 +560,8 @@ class MainWindow implements Runnable
         menu = new JMenu("DEV");
         menuBar.add(menu);
 
-        addMenuItem(menu, "Push file to server (NYI)", -1, aL);
-        addMenuItem(menu, "DEV: Update Profile", -1, aL);
+        addMenuItem(menu, "DEV: Push profile to server", -1, aL);
+        addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
         addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
 
         return menuBar;
@@ -838,11 +860,12 @@ class MainWindow implements Runnable
             {
                 myProfile.updateTimeSpent(startTime);
                 myProfile.updateProfileInfo();
+                sendProfileToBot();
                 System.out.println("disconnecting");
                 client.disconnect();
             }
 
-            @Override
+			@Override
             public void windowDeactivated(WindowEvent arg0)
             {
                 // TODO Auto-generated method stub

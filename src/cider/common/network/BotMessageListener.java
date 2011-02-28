@@ -1,5 +1,8 @@
 package cider.common.network;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -61,6 +64,31 @@ public class BotMessageListener implements MessageListener
         {
             source.endSession(name);
         }
+        else if (body.startsWith("userprofile:"))
+        {
+        	String[] splitProfile = body.split("  ");
+    		File f = new File ("profile_" + splitProfile[1] + ".txt");
+    		System.out.println(splitProfile[2]);
+    		try 
+    		{
+    			System.out.println("laskjdalksjdlk");
+				f.createNewFile();
+				FileWriter fw = new FileWriter(f);
+				BufferedWriter out = new BufferedWriter(fw);
+				String s = splitProfile[1] + "\n" +
+				splitProfile[2] + "\n" +
+				splitProfile[3] + "\n" +
+				splitProfile[4] + "\n" +
+				splitProfile[5] ;
+				System.out.println("s equals\n" + s);
+				out.write(s);
+				out.close();
+    		}
+    		catch (IOException e)
+    		{
+    			System.err.println("Error: " + e.getMessage());
+    		}
+        }        
         else if (body.equals("getfilelist"))
         {
             try

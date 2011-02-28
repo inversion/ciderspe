@@ -171,7 +171,7 @@ public class Profile
 						"\ncolour: " + 
 						userColour.getRed() + " " + 
 						userColour.getGreen() + " " + 
-						userColour.getBlue() + " ");
+						userColour.getBlue());
 				out.close();
 			}
 		} 
@@ -180,5 +180,16 @@ public class Profile
 			e.printStackTrace();
 		}
 		
+	}
+	
+	public String toString()
+	{
+		return uname + "  " + "chars: " + typedChars + 
+		"  timespent: " + timeSpent + 
+		"  lastonline: " + lastOnline + 
+		"  colour: " + 
+		userColour.getRed() + " " + 
+		userColour.getGreen() + " " + 
+		userColour.getBlue();
 	}
 }
