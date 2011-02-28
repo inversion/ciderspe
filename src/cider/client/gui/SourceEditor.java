@@ -2,6 +2,8 @@ package cider.client.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
@@ -34,7 +36,7 @@ public class SourceEditor extends JPanel
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
     public static HashSet<String> comments = new HashSet<String>();
-    
+
     private EditorTypingArea eta;
     private Component tabHandle = null;
     private Client client;
@@ -46,17 +48,41 @@ public class SourceEditor extends JPanel
         this.eta.addComponentListener(new TabSelectionFocusGainListener());
         this.eta.addKeyListener(this.newKeyListener());
         this.eta.addMouseListener(this.newMouseListener());
+        this.eta.addActionListener(this.lockingActionListener());
         this.eta.setFocusTraversalKeysEnabled(false);
         this.client = client;
         this.path = path;
-        
-        String[] keywordArray = "instanceof assert if else switch case default break goto return for while do continue new throw throws try catch finally this super extends implements import true false null package transient strictfp void char short int long double float const static volatile byte boolean class interface native private protected public final abstract synchronized enum".split(" ");
-        for( int i = 0; i < keywordArray.length; i++ )
-        	keywords.add( keywordArray[i] );
-        
+
+        String[] keywordArray = "instanceof assert if else switch case default break goto return for while do continue new throw throws try catch finally this super extends implements import true false null package transient strictfp void char short int long double float const static volatile byte boolean class interface native private protected public final abstract synchronized enum"
+                .split(" ");
+        for (int i = 0; i < keywordArray.length; i++)
+            keywords.add(keywordArray[i]);
+
         String[] CommentArray = "/* */".split(" ");
-        for( int i = 0; i < CommentArray.length; i++ )
-        	comments.add( CommentArray[i] ); 
+        for (int i = 0; i < CommentArray.length; i++)
+            comments.add(CommentArray[i]);
+    }
+
+    private ActionListener lockingActionListener()
+    {
+        return new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                TypingEvent te = (TypingEvent) e.getSource();
+                outgoingEvents.add(te);
+                internal.add(te);
+                System.out.println("push to server: " + te);
+                // eta.getCodeLocation().push(internal);
+                // eta.updateUI();
+                client.broadcastTypingEvents(outgoingEvents, path);
+            }
+
+        };
     }
 
     /**
@@ -206,91 +232,99 @@ public class SourceEditor extends JPanel
             @Override
             public void keyTyped(KeyEvent ke)
             {
-                switch (ke.getKeyCode())
+                if (eta.currentPositionLocked(0))
                 {
-                default:
-                {
-                    try
-                    {
-                        // System.out.println(server.lastUpdateTime());
-                        TypingEventMode mode = TypingEventMode.insert;
-                        String chr;
-
-                        switch (ke.getKeyChar())
-                        {
-                        case '\u007F':
-                        {
-                            if (eta.getCaretPosition() >= 0)
-                            {
-                                mode = TypingEventMode.backspace;
-                                chr = " ";
-                            }
-                            else
-                                return;
-                        }
-                            break;
-                        case '\u0008':
-                        {
-                            if (eta.getCaretPosition() >= 0)
-                            {
-                                mode = TypingEventMode.backspace;
-                                chr = " ";
-                            }
-                            else
-                                return;
-                        }
-                            break;
-                        case '\t':
-                        {
-                            chr = "    ";
-                            SourceEditor.this.eta.requestFocusInWindow();
-                        }
-                            break;
-                        default:
-                            chr = String.valueOf(ke.getKeyChar());
-                            break;
-                        }
-
-                        TypingEvent te = new TypingEvent(
-                                System.currentTimeMillis(), mode,
-                                eta.getCaretPosition(), chr.length(), chr,
-                                client.getUsername());
-                        ArrayList<TypingEvent> particles = te.explode();
-
-                        for (TypingEvent particle : particles)
-                            System.out.println("push to server: " + particle);
-
-                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
-
-                        for (TypingEvent particle : particles)
-                        {
-                            outgoingEvents.add(particle);
-                            internal.add(particle);
-                        }
-
-                        eta.getCodeLocation().push(internal);
-                        eta.updateText();
-                        client.broadcastTypingEvents(outgoingEvents, path);
-
-                        switch (mode)
-                        {
-                        case insert:
-                            eta.moveCaret(particles.size());
-                            break;
-                        case overwrite:
-                            eta.moveCaret(particles.size());
-                            break;
-                        case backspace:
-                            eta.moveLeft();
-                            break;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        e.printStackTrace();
-                    }
+                    System.out.println("Current position locked!");
                 }
+                else
+                {
+                    switch (ke.getKeyCode())
+                    {
+                    default:
+                    {
+                        try
+                        {
+                            // System.out.println(server.lastUpdateTime());
+                            TypingEventMode mode = TypingEventMode.insert;
+                            String chr;
+
+                            switch (ke.getKeyChar())
+                            {
+                            case '\u007F':
+                            {
+                                if (eta.getCaretPosition() >= 0)
+                                {
+                                    mode = TypingEventMode.backspace;
+                                    chr = " ";
+                                }
+                                else
+                                    return;
+                            }
+                                break;
+                            case '\u0008':
+                            {
+                                if (eta.getCaretPosition() >= 0)
+                                {
+                                    mode = TypingEventMode.backspace;
+                                    chr = " ";
+                                }
+                                else
+                                    return;
+                            }
+                                break;
+                            case '\t':
+                            {
+                                chr = "    ";
+                                SourceEditor.this.eta.requestFocusInWindow();
+                            }
+                                break;
+                            default:
+                                chr = String.valueOf(ke.getKeyChar());
+                                break;
+                            }
+
+                            TypingEvent te = new TypingEvent(
+                                    System.currentTimeMillis(), mode,
+                                    eta.getCaretPosition(), chr.length(), chr,
+                                    client.getUsername());
+                            ArrayList<TypingEvent> particles = te.explode();
+
+                            for (TypingEvent particle : particles)
+                                System.out.println("push to server: "
+                                        + particle);
+
+                            Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                            Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+
+                            for (TypingEvent particle : particles)
+                            {
+                                outgoingEvents.add(particle);
+                                internal.add(particle);
+                            }
+
+                            eta.getCodeLocation().push(internal);
+                            eta.updateText();
+                            client.broadcastTypingEvents(outgoingEvents, path);
+
+                            switch (mode)
+                            {
+                            case insert:
+                                eta.moveCaret(particles.size());
+                                break;
+                            case overwrite:
+                                eta.moveCaret(particles.size());
+                                break;
+                            case backspace:
+                                eta.moveLeft();
+                                break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                    }
                 }
             }
         };
