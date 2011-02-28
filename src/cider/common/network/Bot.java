@@ -1,8 +1,6 @@
 package cider.common.network;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.Queue;
 
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -12,8 +10,6 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
-import cider.common.processes.TypingEvent;
-import cider.common.processes.TypingEventMode;
 
 /**
  * This is the class that implements the bot that connects to the XMPP server.
@@ -131,10 +127,10 @@ public class Bot
     {
         this.liveFolder = new LiveFolder("Bot", "root");
         SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
-        Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
-        tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
-                + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
-        t1.push(tes);
+        // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
+        // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
+        // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
+        // t1.push(tes);
         this.liveFolder.makeFolder("testFolder").makeFolder("test2")
                 .makeDocument("test2Doc.SourceDocument");
     }

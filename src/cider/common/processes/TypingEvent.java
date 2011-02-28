@@ -66,6 +66,7 @@ public class TypingEvent
             this.length = Integer.parseInt(split[3]);
             this.time = Long.parseLong(split[4]);
             this.owner = split[5];
+            this.locked = Boolean.parseBoolean(split[6]);
         }
         catch (Exception e)
         {
@@ -76,16 +77,24 @@ public class TypingEvent
     public String pack()
     {
         return this.mode + "~" + this.text + "~" + this.position + "~"
-                + this.length + "~" + this.time + "~" + this.owner;
+                + this.length + "~" + this.time + "~" + this.owner + "~"
+                + this.locked;
     }
 
     public ArrayList<TypingEvent> explode()
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
-        char[] chrs = this.text.toCharArray();
-        long t = this.time;
-        for (char chr : chrs)
-            particles.add(new TypingEvent(this, t++, "" + chr));
+        if (this.mode == TypingEventMode.lockRegion
+                || this.mode == TypingEventMode.unlockRegion)
+            particles.add(this);
+        else
+        {
+            char[] chrs = this.text.toCharArray();
+            long t = this.time;
+
+            for (char chr : chrs)
+                particles.add(new TypingEvent(this, t++, "" + chr));
+        }
         return particles;
     }
 
@@ -97,8 +106,9 @@ public class TypingEvent
     @Override
     public String toString()
     {
-        return "time " + this.time + "\t" + this.position + "\t"
-                + mode.toString() + "\t" + text;
+        return "time " + this.time + "\t" + this.position + "\t" + this.length
+                + "\t" + this.mode.toString() + "\t" + this.text + "\t"
+                + this.locked;
     }
 
     public boolean existsIn(TypingEvent[] tes)

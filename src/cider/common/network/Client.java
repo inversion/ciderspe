@@ -421,6 +421,10 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
+            // Bad horrible terrible dumb hack!!!!
+            // TODO:
+            // Need to make separate queues for different destinations
+            // Make sure the document is only repainted once.
             String[] instructions = body.split(" -> ");
             for (String instruction : instructions)
             {
@@ -434,6 +438,13 @@ public class Client
                 this.push(typingEvents, dest);
             }
 
+        }
+        else if (body.startsWith("isblank("))
+        {
+            String dest = body.split("\\(")[1].split("\\)")[0];
+            EditorTypingArea eta = this.openTabs.get(dest)
+                    .getEditorTypingArea();
+            eta.setWaiting(false);
         }
     }
 }
