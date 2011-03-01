@@ -29,6 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -66,13 +67,13 @@ public class LoginUI
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
-        /*try
+        try
         {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
-        }*/
+        }
 
         JPanel main = new JPanel();
         main.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));

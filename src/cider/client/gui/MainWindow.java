@@ -15,8 +15,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
@@ -182,7 +186,7 @@ class MainWindow implements Runnable
                 {
                     closeFile(action);
                 }
-                else if (action.equals("Open"))
+                else if (action.equals("Import"))
                 {
                     openFile();
                 }
@@ -237,39 +241,37 @@ class MainWindow implements Runnable
 
             }
 
-            @Deprecated
+            
             public void openFile()
             {
-                // JFileChooser fc = new JFileChooser();
-                // int rVal = fc.showOpenDialog(null);
-                // if (rVal == JFileChooser.APPROVE_OPTION)
-                // {
-                // String temp;
-                // currentDir = fc.getSelectedFile().getAbsolutePath();
-                // currentFileName = fc.getSelectedFile().getName();
-                // try
-                // {
-                // FileInputStream fis = new FileInputStream(currentDir);
-                // BufferedInputStream bis = new BufferedInputStream(fis);
-                // BufferedReader br = new BufferedReader(
-                // new InputStreamReader(bis));
-                // currentFileContents = "";
-                // while ((temp = br.readLine()) != null)
-                // {
-                // currentFileContents = currentFileContents + temp
-                // + "\n";
-                // }
-                // }
-                // catch (IOException e)
-                // {
-                // System.err.println("Error: " + e.getMessage());
-                // System.exit(0);
-                // }
-                //
-                // // tabbedPane.addTab(currentFileName, new SourceEditor(
-                // // currentFileContents, currentDir));
-                // tabbedPane.setSelectedIndex(++currentTab);
-                // }
+            	JFileChooser fc = new JFileChooser();
+            	int rVal = fc.showOpenDialog(null);
+            	if (rVal == JFileChooser.APPROVE_OPTION)
+            	{
+            		String temp;
+            		currentDir = fc.getSelectedFile().getAbsolutePath();
+            		currentFileName = fc.getSelectedFile().getName();
+            		try
+            		{
+            			//FileInputStream fis = new FileInputStream(currentDir + currentFileName);
+            			//BufferedInputStream bis = new BufferedInputStream(fis);
+            			BufferedReader br = new BufferedReader(new FileReader(currentDir));
+            			currentFileContents = "";
+            			while ((temp = br.readLine()) != null)
+            			{
+            				currentFileContents = currentFileContents + temp + "\n";
+            			}
+            		}
+            		catch (IOException e)
+            		{
+            			System.err.println("Error: " + e.getMessage());
+            			System.exit(0);
+            		}
+
+            		// tabbedPane.addTab(currentFileName, new SourceEditor(
+            		// currentFileContents, currentDir));
+            		tabbedPane.setSelectedIndex(++currentTab);
+            	}
             }
 
             @Deprecated
@@ -449,8 +451,9 @@ class MainWindow implements Runnable
     public void sendProfileToBot()
     {
     	//FIXME:
-    	int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
-    	myProfile.adjustCharCount(0);
+    	/*int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(0);*/
+    	
         myProfile.updateTimeSpent(startTime);
         myProfile.updateProfileInfo();
         System.out.println(myProfile.toString());
@@ -507,7 +510,7 @@ class MainWindow implements Runnable
         ActionListener aL = newAction();
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
-        addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
+        addMenuItem(menu, "Import", KeyEvent.VK_O, aL);
         // addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
         addMenuItem(menu, "Export", KeyEvent.VK_A, aL);
         addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
@@ -744,8 +747,6 @@ class MainWindow implements Runnable
         JButton btnSend = new JButton("Send");
         btnSend.setMinimumSize(new Dimension(0, 40));
         btnSend.setToolTipText("Click to send message");
-        btnSend.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "doSomething");
-        btnSend.getActionMap().put("doSomething", null); 
         btnSend.addMouseListener(new MouseAdapter()
         {
             public void mouseClicked(MouseEvent e)
@@ -766,7 +767,6 @@ class MainWindow implements Runnable
         {
             client.sendMessageChatroom(message);
             messageSendBox.setText("");
-            //messageReceiveBoxes.setCaretPosition(messageReceiveBoxes.getDocument().getLength());
         }
     }
 
