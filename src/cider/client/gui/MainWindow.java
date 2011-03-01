@@ -52,6 +52,7 @@ import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.common.processes.TypingEventList;
 import cider.specialcomponents.Base64;
 
 class MainWindow implements Runnable
@@ -429,6 +430,7 @@ class MainWindow implements Runnable
         // content.add(uPwd);
 
         JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
+        //System.out.println(TypingEventList.countCharactersFor(username));
         chars.setHorizontalAlignment(JLabel.LEFT);
         chars.setVerticalAlignment(JLabel.TOP);
         content.add(chars);
