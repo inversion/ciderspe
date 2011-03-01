@@ -471,8 +471,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     private void refreshLines()
     {
-    	System.out.println(this.lines.size());
-    	Profile.adjustCharCount(-this.lines.size());
+    	//System.out.println(this.lines.size());
+    	//Profile.adjustCharCount(-this.lines.size());
         this.lines.clear();
         LinkedList<TypingEventList> split = this.str.split("\n");
         int j = 1;
@@ -482,8 +482,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
             ETALine line = new ETALine(tel, j * lineSpacing, j++, i);
             this.lines.add(line);
             i += line.str.length();
-            System.out.println(line.str.length());
-            Profile.adjustCharCount(line.str.length());
+            //System.out.println(line.str.length());
+            //Profile.adjustCharCount(line.str.length());
         }
     }
 
