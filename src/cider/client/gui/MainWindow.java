@@ -1,0 +1,964 @@
+package cider.client.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.net.URL;
+import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Hashtable;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+
+import org.jivesoftware.smack.XMPPException;
+
+import cider.common.network.Client;
+import cider.common.processes.Profile;
+import cider.common.processes.TypingEventList;
+import cider.specialcomponents.Base64;
+
+class MainWindow implements Runnable
+{
+    JTabbedPane tabbedPane = new JTabbedPane();
+    JFrame w;
+    public String currentDir = System.getProperty("user.dir");
+    public String currentFileName = "Unsaved Document 1";
+    public String currentFileContents = "";
+    public int currentTab = 0;
+
+    Client client;
+    private JSplitPane dirSourceEditorSeletionSplit;
+    private JSplitPane editorChatSplit;
+    private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+    private DirectoryViewComponent dirView;
+    private String username;
+
+    public ArrayList<JTextArea> messageReceiveBoxes = new ArrayList<JTextArea>();
+    public JPanel receivePanel = pnlReceive();
+    public JList userList;
+    public JLabel userCount = new JLabel();
+    public DefaultListModel userListModel = new DefaultListModel();
+    JTabbedPane receiveTabs = new JTabbedPane();
+    public JTextArea messageSendBox;
+
+    /**
+     * These variable are for the profiles
+     * 
+     * @author Jon
+     */
+    public long startTime;
+    private Profile myProfile;
+
+    MainWindow(String username, String password, String host, int port,
+            String serviceName, Client c) throws XMPPException
+    {
+        // TODO: Should more stuff be in the constructor rather than the
+        // mainArea method? The variables look a bit of a mess
+        dirView = new DirectoryViewComponent();
+        myProfile = new Profile(username);
+        startTime = System.currentTimeMillis();
+        this.username = username;
+        
+        client = c;
+        client.registerGUIComponents(dirView, tabbedPane, openTabs,
+                userListModel, userCount, messageReceiveBoxes.get(0) );
+        dirView.setClient(client);
+        client.getFileListFromBot();
+    }
+
+    public static void addMenuItem(JMenu menu, String name, int keyEvent,
+            ActionListener a)
+    {
+        JMenuItem menuItem = new JMenuItem(name);
+        menuItem.addActionListener(a);
+        if (keyEvent != -1)
+            menuItem.setAccelerator(KeyStroke.getKeyStroke(keyEvent,
+                    ActionEvent.CTRL_MASK));
+        menu.add(menuItem);
+    }
+
+    public ActionListener newAction()
+    {
+        ActionListener AL = new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                String action = e.getActionCommand();
+                if (action.equals("Quit"))
+                {
+                    int response;
+                    response = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you wish to quit without saving?");
+                    if (response == 0)
+                        System.exit(0);
+
+                }
+                else if (action.equals("My Profile"))
+                {
+                    showMyProfile();
+                }
+                else if (action.equals("Reset My Profile"))
+                {
+                    restartProfile();
+                }
+                else if (action.equals("Send"))
+                {
+                    messageSendBox.setText("boogaloo");
+                }
+                else if (action.equals("Logout"))
+                {
+                    LoginUI.login.setVisible(true);
+                    w.setVisible(false);
+                }
+                else if (action.equals("About"))
+                {
+                    showAbout();
+                }
+                else if (action.equals("Change Username"))
+                {
+                    String s = (String) JOptionPane.showInputDialog(
+                            new JPanel(), "Enter new username:",
+                            "New username", JOptionPane.PLAIN_MESSAGE);
+                    System.out.println("*************************\n"
+                            + "USERNAME CHANGED TO: \"" + s + "\"\n"
+                            + "*************************\n");
+                }
+                else if (action.equals("Change Profile Colour"))
+                {
+                    changeColour();
+                }
+                else if (action.equals("DEV: Pretend to quit"))
+                {
+                    myProfile.updateTimeSpent(startTime);
+                    startTime = System.currentTimeMillis();
+                    myProfile.updateProfileInfo();
+                }
+                else if (action.equals("DEV: Push profile to server"))
+                {
+                    sendProfileToBot();
+                }
+                else if (action.equals("Close File"))
+                {
+                    closeFile(action);
+                }
+                else if (action.equals("Open"))
+                {
+                    openFile();
+                }
+                else if (action.equals("New"))
+                {
+                    newFile();
+                }
+                else if (action.equals("Export"))// (action.equals("Save") ||
+                                                 // action.equals("Save As"))
+                {
+                    saveFile(action);
+                }
+                else if (action.equals("DEV: Terminate Bot Remotely"))
+                {
+                    client.terminateBotRemotely();
+                }
+            }
+
+            private void changeColour()
+            {
+                final JColorChooser colorChooser = new JColorChooser(
+                        myProfile.userColour);
+                ActionListener okListener = new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent action)
+                    {
+                        myProfile.updateColour(
+                                colorChooser.getColor().getRed(), colorChooser
+                                        .getColor().getGreen(), colorChooser
+                                        .getColor().getBlue());
+                    }
+                };
+
+                ActionListener cancelListener = new ActionListener()
+                {
+                    public void actionPerformed(ActionEvent action)
+                    {
+                        System.out.println("Colour change cancelled");
+                    }
+                };
+
+                final JDialog dialog = JColorChooser.createDialog(null,
+                        "Change user colour", true, colorChooser, okListener,
+                        cancelListener);
+
+                URL x = this.getClass().getResource("icon.png");
+                ImageIcon image = new ImageIcon(x);
+                Image test = image.getImage();
+                dialog.setIconImage(test);
+
+                dialog.setVisible(true);
+
+            }
+
+            @Deprecated
+            public void openFile()
+            {
+                // JFileChooser fc = new JFileChooser();
+                // int rVal = fc.showOpenDialog(null);
+                // if (rVal == JFileChooser.APPROVE_OPTION)
+                // {
+                // String temp;
+                // currentDir = fc.getSelectedFile().getAbsolutePath();
+                // currentFileName = fc.getSelectedFile().getName();
+                // try
+                // {
+                // FileInputStream fis = new FileInputStream(currentDir);
+                // BufferedInputStream bis = new BufferedInputStream(fis);
+                // BufferedReader br = new BufferedReader(
+                // new InputStreamReader(bis));
+                // currentFileContents = "";
+                // while ((temp = br.readLine()) != null)
+                // {
+                // currentFileContents = currentFileContents + temp
+                // + "\n";
+                // }
+                // }
+                // catch (IOException e)
+                // {
+                // System.err.println("Error: " + e.getMessage());
+                // System.exit(0);
+                // }
+                //
+                // // tabbedPane.addTab(currentFileName, new SourceEditor(
+                // // currentFileContents, currentDir));
+                // tabbedPane.setSelectedIndex(++currentTab);
+                // }
+            }
+
+            @Deprecated
+            public void saveFile(String action)
+            {
+                JFileChooser fc = new JFileChooser();
+                File f = new File(client.getCurrentDocument().name /* + ".java" */);
+                fc.setSelectedFile(f);
+
+                if (currentFileName.equals("Unsaved Document 1")
+                        || action.equals("Export"))
+                {
+                    int watdo = fc.showSaveDialog(null);
+                    if (watdo != JFileChooser.APPROVE_OPTION)
+                    {
+                        return;
+                    }
+
+                    currentFileName = fc.getSelectedFile().getName();
+                    currentDir = fc.getSelectedFile().getAbsolutePath();
+                }
+                try
+                {
+                    FileWriter fstream = new FileWriter(currentDir);
+                    BufferedWriter out = new BufferedWriter(fstream);
+                    out.write(client.getCurrentDocument().toString()/* currentFileContents */);
+                    out.close();
+                }
+                catch (IOException e1)
+                {
+                    System.err.println("Error: " + e1.getMessage());
+                }
+                tabbedPane.setTitleAt(currentTab, currentFileName);
+            }
+
+            @Deprecated
+            public void closeFile(String action)
+            {
+                // saveFile(action);
+                // // closes tab regardless of save or cancel
+                // tabbedPane.remove(tabbedPane.getSelectedIndex());
+                // tabbedPane.setSelectedIndex(--currentTab);
+            }
+
+            @Deprecated
+            public void newFile()
+            {
+                // closes tab regardless of save or cancel
+                // tabbedPane.addTab("Unsaved Document 1", new SourceEditor("",
+                // "\\."));
+                // tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+            }
+
+            private void restartProfile()
+            {
+                int response = JOptionPane.showConfirmDialog(null,
+                        "Are you sure you wish to reset your profile?");
+                if (response == 0)
+                {
+                    File f = new File(username + ".txt");
+                    try
+                    {
+                        if (!f.exists())
+                            System.err.println("Error: profile create failed!");
+                        else
+                        {
+                            f.delete();
+                            f.createNewFile();
+                            FileWriter fw = new FileWriter(f);
+                            BufferedWriter out = new BufferedWriter(fw);
+                            System.out
+                                    .println("Profile has been reset, new credentials are:");
+                            System.out
+                                    .println(username
+                                            + "\n"
+                                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
+                            out.write(username
+                                    + "\n"
+                                    + "chars: 0\ntimespent: 0\nlastonline: Never!");
+                            out.close();
+                        }
+                    }
+                    catch (IOException e)
+                    {
+                        e.printStackTrace();
+                    }
+                    myProfile = new Profile(username);
+                    startTime = System.currentTimeMillis();
+                }
+                else
+                    return;
+            }
+        };
+        return AL;
+    }
+
+    private void showMyProfile()
+    {
+        System.out.println(myProfile.timeSpent);
+        myProfile.updateTimeSpent(startTime);
+        System.out.println(myProfile.timeSpent);
+        startTime = System.currentTimeMillis();
+        
+        int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(count);
+        
+        JFrame profileFrame = new JFrame("My Profile- " + username);
+        Container content = profileFrame.getContentPane();
+        content.setLayout(new GridLayout(10, 2));
+
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        profileFrame.setIconImage(test);
+
+        profileFrame.setBounds(100, 100, 400, 350);
+        profileFrame.setResizable(false);
+        // profileFrame.pack();
+        profileFrame.show();
+        profileFrame.setLocationRelativeTo(null);
+
+        JLabel uName = new JLabel("Username: " + username);
+        uName.setHorizontalAlignment(JLabel.LEFT);
+        uName.setVerticalAlignment(JLabel.TOP);
+        content.add(uName);
+
+        // JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
+        // uPwd.setHorizontalAlignment(JLabel.LEFT);
+        // uPwd.setVerticalAlignment(JLabel.TOP);
+        // content.add(uPwd);
+
+        JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
+        //System.out.println(TypingEventList.countCharactersFor(username));
+        chars.setHorizontalAlignment(JLabel.LEFT);
+        chars.setVerticalAlignment(JLabel.TOP);
+        content.add(chars);
+
+        Time t = new Time(myProfile.timeSpent);
+        System.out.println("TS = " + myProfile.timeSpent);
+        JLabel time = new JLabel("Total time spent: " + t);
+        time.setHorizontalAlignment(JLabel.LEFT);
+        time.setVerticalAlignment(JLabel.TOP);
+        content.add(time);
+
+        JLabel lastonline = new JLabel("You were last seen: "
+                + myProfile.lastOnline);
+        lastonline.setHorizontalAlignment(JLabel.LEFT);
+        lastonline.setVerticalAlignment(JLabel.TOP);
+        content.add(lastonline);
+
+        profileFrame.setVisible(true);
+    }
+
+    private void showAbout()
+    {
+        JFrame frame = new JFrame("About CIDEr");
+        Container content = frame.getContentPane();
+        content.setLayout(new GridLayout(10, 2));
+
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        frame.setIconImage(test);
+
+        frame.setBounds(100, 100, 400, 350);
+        frame.setResizable(false);
+        frame.show();
+        frame.setLocationRelativeTo(null);
+
+        JLabel chars = new JLabel(
+                "CIDEr- Collaborative Integrated Development EnviRonment.");
+        content.add(chars);
+
+        frame.setVisible(true);
+    }
+
+    public void sendProfileToBot()
+    {
+    	//FIXME:
+    	int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(0);
+        myProfile.updateTimeSpent(startTime);
+        myProfile.updateProfileInfo();
+        System.out.println(myProfile.toString());
+        try
+        {
+            String s = myProfile.toString();
+            s = "userprofile:  " + s;
+            System.out.println(s);
+            client.botChat.sendMessage(Base64.encodeBytes(s.getBytes()));
+        }
+        catch (XMPPException e1)
+        {
+            e1.printStackTrace();
+        }
+    }
+
+    private void tabClicked(MouseEvent e)
+    {
+        if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1)
+        { // if is right-click
+
+            // create popup with Close menuitem
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem closeBtn = new JMenuItem("Close");
+            closeBtn.addActionListener(new ActionListener()
+            {
+                public void actionPerformed(ActionEvent e)
+                {
+                    SwingUtilities.invokeLater(new Runnable()
+                    {
+                        public void run()
+                        {
+                            // closeFile("Close File");
+                        }
+                    });
+                }
+            });
+            popupMenu.add(closeBtn);
+
+            // display popup near location of mouse click
+            popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+        }
+    }
+
+    public JMenuBar mainMenuBar()
+    {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu menu;
+
+        // menu 1
+        menu = new JMenu("File");
+        menuBar.add(menu);
+
+        ActionListener aL = newAction();
+
+        addMenuItem(menu, "New", KeyEvent.VK_N, aL);
+        addMenuItem(menu, "Open", KeyEvent.VK_O, aL);
+        // addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
+        addMenuItem(menu, "Export", KeyEvent.VK_A, aL);
+        addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
+        addMenuItem(menu, "Logout", KeyEvent.VK_L, aL);
+        addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
+
+        // menu 2
+        menu = new JMenu("Edit");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "Cut", KeyEvent.VK_X, aL);
+        addMenuItem(menu, "Copy", KeyEvent.VK_C, aL);
+        addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
+
+        // menu 3
+        menu = new JMenu("Help");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "About", -1, aL);
+
+        // menu 4
+        menu = new JMenu("Profile");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "My Profile", -1, aL);
+        addMenuItem(menu, "Change Profile Colour", -1, aL);
+        addMenuItem(menu, "Change Username", -1, aL);
+        addMenuItem(menu, "Reset My Profile", -1, aL);
+
+        // the DEV(eloper) menu is for us to test back-end things such as saving
+        // and pushing
+        // NYI = not yet implemented
+        menu = new JMenu("DEV");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "DEV: Push profile to server", -1, aL);
+        addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
+        // addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
+        addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
+
+        addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
+
+        return menuBar;
+    }
+
+    public JPanel sourceEditorSection()
+    {
+        // tabbedPane.addTab(currentFileName, new SourceEditor(
+        // currentFileContents, currentDir));
+        // tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setPreferredSize(new Dimension(640, 480));
+        panel.add(this.tabbedPane);
+        return panel;
+    }
+
+    public JPanel pnlUsers()
+    {
+        /* panel for the list of online users */
+        JPanel panel = new JPanel(new BorderLayout());
+
+        Border emptyBorder = BorderFactory.createEmptyBorder();
+
+        userList = new JList(userListModel);
+        userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        /*
+         * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =
+         * userList.getModel().getElementAt(i);
+         * userList.setForeground(Color.red); //TODO looking at using different
+         * colours for each user }
+         */
+
+        /* this can be used to initiate a private chat- Alex */
+        MouseListener mouseListener = new MouseAdapter()
+        {
+            public void mouseClicked(MouseEvent e)
+            {
+                int i = userList.locationToIndex(e.getPoint());
+                if (e.getClickCount() == 2)
+                {
+                    System.out.println("Double clicked on Item " + i);
+                    System.out.println("Double clicked on Item: "
+                            + userList.getModel().getElementAt(i));
+                    initiateAChat( (String) userList.getSelectedValue() );
+                }
+                else if ((e.getButton() == MouseEvent.BUTTON3)
+                        && (userList.locationToIndex(e.getPoint()) != -1))
+                {
+                    /* pop up for viewing users profile/stats etc"); */
+                    userList.setSelectedIndex(userList.locationToIndex(e
+                            .getPoint()));
+
+                    JPopupMenu popupMenu = new JPopupMenu();
+                    JMenuItem chat = new JMenuItem("Chat with User");
+                    JMenuItem showProfile = new JMenuItem("Show User's Profile");
+                    
+                    
+                    chat.addActionListener(new ActionListener()
+                    {
+                        public void actionPerformed(ActionEvent e)
+                        {
+                            SwingUtilities.invokeLater(new Runnable()
+                            {
+                                public void run()
+                                {
+                                    initiateAChat( (String) userList.getSelectedValue() );
+                                }
+                            });
+                        }
+                    });
+                    popupMenu.add(chat);
+
+                    showProfile.addActionListener(new ActionListener()
+                    {
+                        public void actionPerformed(ActionEvent e)
+                        {
+                            SwingUtilities.invokeLater(new Runnable()
+                            {
+                                public void run()
+                                {
+                                    showMyProfile(); // TODO could this be
+                                    // parsed the username that
+                                    // you want to see the
+                                    // profile of?
+                                }
+                            });
+                        }
+                    });
+                    popupMenu.add(showProfile);
+
+                    // display popup near location of mouse click
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+                }
+            }
+        };
+        userList.addMouseListener(mouseListener);
+
+        JScrollPane userListScroll = new JScrollPane(userList);
+        // userListScroll.setBorder(emptyBorder);
+
+        userCount.setText(" " + userListModel.getSize() + " Users Online");
+        panel.add(userCount, BorderLayout.NORTH);
+        panel.add(userListScroll);
+        panel.setMinimumSize(new Dimension(0, 100));
+        return panel;
+    }
+
+    public void initiateAChat(String user)
+    {
+        /* should create a messageReceiveBox object */
+    	
+    	/* If there is not already a chat open with this user
+    	 * and you are not trying to chat with yourself.
+    	 */
+        if (receiveTabs.indexOfTab(user) == -1 && !user.equals( username ) )
+        {
+        	System.out.println("Chat initiated with " + user);
+            JTextArea messageReceiveBox = new JTextArea();
+            messageReceiveBox.setLineWrap(true);
+            messageReceiveBox.setWrapStyleWord(true);
+            Font receiveFont = new Font("Dialog", 2, 12);
+            messageReceiveBox.setFont(receiveFont);
+            messageReceiveBox.setEditable(false);
+            messageReceiveBoxes.add( messageReceiveBox );
+            
+            JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+            receiveTabs.add(messageReceiveBoxScroll);
+            receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
+        }
+        // TODO: Else switch to the already open private conversation?
+    }
+
+    public JPanel pnlReceive()
+    {
+        /*
+         * this should only create the panel- initiateAChat) should create the
+         * chat's both group and private to fill the tabbed pane- Alex
+         */
+        /* panel for the chat conversation */
+        JPanel panel = new JPanel(new BorderLayout());
+        
+        
+        // messageReceiveBox.addActionListener(); TODO
+        /*
+         * Format of output:[bold]username[/bold] timestamp: message
+         */
+        
+        // messageReceiveBoxScroll.setBorder(emptyBorder);
+
+        receiveTabs = new JTabbedPane();
+
+        panel.add(new JLabel(" User Chat" ), BorderLayout.NORTH);
+        panel.add(receiveTabs/* messageReceiveBoxScroll */, BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(0, 800));
+        initiateAChat( "Group chat" );
+        
+        return panel;
+    }
+
+    public JPanel pnlSend()
+    {
+        /**/
+        JPanel panel = new JPanel(new BorderLayout());
+
+        /* Text field for message text */
+        messageSendBox = new JTextArea();
+        messageSendBox.setLineWrap(true);
+        messageSendBox.setWrapStyleWord(true);
+        Font sendFont = new Font("Dialog", 1, 12);
+        messageSendBox.setFont(sendFont);
+        messageSendBox.addKeyListener(new KeyListener()
+        {
+
+            @Override
+            public void keyTyped(KeyEvent e)
+            {
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e)
+            {
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e)
+            {
+                int c = e.getKeyCode();
+                if (c == KeyEvent.VK_ENTER)
+                {
+                    sendChatMessage();
+                }
+            }
+
+        });
+        // ActionListener aL = newAction(); //TODO - Alex doesn't know what he
+        // be doing with action listeners
+        // messageSendBox.setActionCommand("Send");
+        messageSendBox.addMouseListener(new MouseAdapter()
+        {
+            /*
+             * public void mouseClicked(MouseEvent e) { if
+             * (messageSendBox.getText().equals(initialMessage)) //TODO could
+             * use an edited flag instead { messageSendBox.setText("boogaloo");
+             * messageSendBox.setText(""); } }
+             */
+        });
+        JScrollPane messageSendBoxScroll = new JScrollPane(messageSendBox);
+        panel.add(messageSendBoxScroll, BorderLayout.CENTER);
+
+        JButton btnSend = new JButton("Send");
+        btnSend.setMinimumSize(new Dimension(0, 40));
+
+        btnSend.setToolTipText("Click to send message");
+
+        // btnSend.addActionListener(); TODO need an action listener for the
+        // enter key
+        btnSend.getInputMap().put(KeyStroke.getKeyStroke("ENTER"),
+                "doSomething");
+        btnSend.getActionMap().put("doSomething", null); // TODO call the
+        // mouseclicked code
+        // below
+
+        btnSend.addMouseListener(new MouseAdapter()
+        {
+            public void mouseClicked(MouseEvent e)
+            {
+                sendChatMessage();
+            }
+        });
+        panel.add(btnSend, BorderLayout.EAST);
+        panel.setMaximumSize(new Dimension(10, 40));
+
+        return panel;
+    }
+
+    protected void sendChatMessage()
+    {
+        String message = messageSendBox.getText();
+        if (!message.equals("")) // TODO disable send button if no
+        // meaningful text entered
+        {
+            // DateFormat dateFormat = new
+            // SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            // Date date = new Date();
+
+            // System.out.println(dateFormat.format(date) + " " +
+            // message);
+
+            // client.updateChatLog(username, date, message);
+            client.sendMessageChatroom(message);
+            messageSendBox.setText("");
+        }
+
+    }
+
+    public JPanel mainArea()
+    {
+        /* Chat panel stuffs- Alex */
+        Border emptyBorder = BorderFactory.createEmptyBorder();
+
+        JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                pnlUsers(), receivePanel);
+        usersReceive.setBorder(emptyBorder);
+        usersReceive.setOneTouchExpandable(true);
+
+        JSplitPane chat = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                usersReceive, pnlSend());
+        chat.setBorder(emptyBorder);
+        chat.setOneTouchExpandable(true);
+        chat.setDividerLocation(800);
+        /* End of Chat panel stuffs */
+
+        JLabel test = new JLabel("i have no idea how to call the java compiler"); /*
+                                                                                   * and
+                                                                                   * when
+                                                                                   * i
+                                                                                   * google
+                                                                                   * ,
+                                                                                   * i
+                                                                                   * get
+                                                                                   * instructions
+                                                                                   * for
+                                                                                   * how
+                                                                                   * to
+                                                                                   * run
+                                                                                   * java
+                                                                                   * ,
+                                                                                   * not
+                                                                                   * the
+                                                                                   * code
+                                                                                   * to
+                                                                                   * run
+                                                                                   * java
+                                                                                   */
+        JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                this.sourceEditorSection(), test);
+        EditorDebugSplit.setBorder(emptyBorder);
+        EditorDebugSplit.setOneTouchExpandable(true);
+        EditorDebugSplit.setDividerLocation(800);
+
+        JPanel panel = new JPanel(new BorderLayout());
+        dirSourceEditorSeletionSplit = new JSplitPane(
+                JSplitPane.HORIZONTAL_SPLIT, dirView, EditorDebugSplit);
+        // dirSourceEditorSeletionSplit = new
+        // JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView,
+        // this.sourceEditorSection());
+
+        dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
+        dirSourceEditorSeletionSplit.setBorder(emptyBorder);
+
+        editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                dirSourceEditorSeletionSplit, chat);
+        editorChatSplit.setOneTouchExpandable(true);
+        this.editorChatSplit.setResizeWeight(1.0);
+
+        // Provide minimum sizes for the two components in the split pane
+        panel.add(editorChatSplit);
+        return panel;
+    }
+
+    // TODO: Update chatlog moved to Client for now
+
+    public void run()
+    {
+        w = new JFrame("CIDEr - Logged in as " + username);
+        w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        w.setIconImage(test);
+
+        JPanel p = new JPanel(new BorderLayout());
+        p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
+        p.add(this.mainArea());
+        w.add(p);
+        w.pack();
+        this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
+        this.editorChatSplit.setDividerLocation(0.75);
+        w.setLocationByPlatform(true);
+        w.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        w.setVisible(true);
+        w.addWindowListener(new WindowListener()
+        {
+
+            @Override
+            public void windowActivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowClosed(WindowEvent arg0)
+            {
+            }
+
+            @Override
+            public void windowClosing(WindowEvent arg0)
+            {
+                myProfile.updateTimeSpent(startTime);
+                myProfile.updateProfileInfo();
+                sendProfileToBot();
+                System.out.println("disconnecting");
+                client.disconnect();
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowIconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowOpened(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+        });
+    }
+
+    public class Error
+    {
+        public void errorMessage(String message, String title)
+        {
+            JOptionPane.showMessageDialog(w, message, title,
+                    JOptionPane.ERROR_MESSAGE);
+            // JOptionPane.showMessageDialog(w, "OMG you broken somethings.",
+            // "You fail", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public void killWindow()
+    {
+        w.dispose();
+    }
+}
