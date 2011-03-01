@@ -41,18 +41,12 @@ public class ClientChatroomMessageListener implements PacketListener
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                // TODO Auto-generated catch block=
                 e.printStackTrace();
             }
             if (body.startsWith("filelist=") || body.startsWith("pushto(")
                     || body.startsWith("empty"))
-            {
-                if (body.contains("true"))
-                {
-                    System.out.println("\t[locked]");
-                }
                 client.processDocumentMessages(body);
-            }
             else
                 client.updateChatLog(msg.getFrom(), msg.getSubject(), body);
         }
