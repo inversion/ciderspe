@@ -56,7 +56,9 @@ import javax.swing.border.Border;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.Client;
+import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
+import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEventList;
 import cider.specialcomponents.Base64;
 
@@ -251,6 +253,10 @@ class MainWindow implements Runnable
             		String temp;
             		currentDir = fc.getSelectedFile().getAbsolutePath();
             		currentFileName = fc.getSelectedFile().getName();
+            		
+            		//this.liveFolder = new LiveFolder("Bot", "root");
+            		//SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+            		//client.openTabFor(currentDir);
             		try
             		{
             			//FileInputStream fis = new FileInputStream(currentDir + currentFileName);
@@ -315,14 +321,20 @@ class MainWindow implements Runnable
                 // tabbedPane.remove(tabbedPane.getSelectedIndex());
                 // tabbedPane.setSelectedIndex(--currentTab);
             }
-
-            @Deprecated
+           
             public void newFile()
             {
-                // closes tab regardless of save or cancel
-                // tabbedPane.addTab("Unsaved Document 1", new SourceEditor("",
-                // "\\."));
-                // tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+            	String s = (String) JOptionPane.showInputDialog(  new JPanel(), "Enter a filename:", "New File", JOptionPane.PLAIN_MESSAGE);
+            	if (s == null)
+            	{
+            		return;
+            	}
+            	//LiveFolder liveFolder = new LiveFolder(username, this.client.getLiveFolder());
+            	//liveFolder.makeDocument(s);
+            	//TODO: create directory tree object with 's' then open it
+            	JLabel TEMP = new JLabel("blah blah blah");
+            	tabbedPane.addTab(s,TEMP);// new SourceEditor(currentFileContents, currentDir)); //new SourceEditor("", "\\."));
+            	tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
             }
 
             private void restartProfile()
