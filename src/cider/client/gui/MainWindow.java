@@ -403,7 +403,10 @@ class MainWindow implements Runnable
         myProfile.updateTimeSpent(startTime);
         System.out.println(myProfile.timeSpent);
         startTime = System.currentTimeMillis();
-
+        
+        int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(count);
+        
         JFrame profileFrame = new JFrame("My Profile- " + username);
         Container content = profileFrame.getContentPane();
         content.setLayout(new GridLayout(10, 2));
@@ -476,6 +479,9 @@ class MainWindow implements Runnable
 
     public void sendProfileToBot()
     {
+    	//FIXME:
+    	int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(0);
         myProfile.updateTimeSpent(startTime);
         myProfile.updateProfileInfo();
         System.out.println(myProfile.toString());

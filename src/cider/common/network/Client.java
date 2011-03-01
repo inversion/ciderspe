@@ -398,12 +398,12 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
-        TypingEvent anchor = eta.getTypingEventList().get(
-                eta.getCaretPosition());
+        //TypingEvent anchor = eta.getTypingEventList().get(
+        //        eta.getCaretPosition());
         eta.getCodeLocation().push(typingEvents);
         eta.setWaiting(false);
         eta.updateText();
-        eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(anchor));
+        //eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(anchor));
         if (eta.getLastUpdate() >= this.lastUpdate)
             this.lastUpdate = eta.getLastUpdate();
     }
