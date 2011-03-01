@@ -456,7 +456,8 @@ public class Client
         try
         {
             this.botChat.sendMessage(Base64
-                    .encodeBytes("Sir, blame it on your ISP".getBytes()));
+                    .encodeBytes("You play 2 hours to die like this?"
+                            .getBytes()));
         }
         catch (XMPPException e)
         {

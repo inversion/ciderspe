@@ -130,7 +130,7 @@ public class BotMessageListener implements MessageListener
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
                     .simplified(t).events());
         }
-        else if (body.startsWith("Sir, blame it on your ISP"))
+        else if (body.startsWith("You play 2 hours to die like this?"))
         {
             Toolkit.getDefaultToolkit().beep();
             System.err
