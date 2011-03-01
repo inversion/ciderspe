@@ -98,7 +98,7 @@ public class Client
 
     public SourceDocument getCurrentDocument()
     {
-        return this.currentDoc;//.playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
+        return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
     }
 
     /**
@@ -398,12 +398,19 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
-        //TypingEvent anchor = eta.getTypingEventList().get(
-        //        eta.getCaretPosition());
+        int position = eta.getCaretPosition();
+        TypingEvent anchor;
+        if (position >= 0 && position < eta.getTypingEventList().length())
+            anchor = eta.getTypingEventList().get(position);
+        else
+            anchor = null;
         eta.getCodeLocation().push(typingEvents);
         eta.setWaiting(false);
         eta.updateText();
-        //eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(anchor));
+        if (anchor != null)
+            eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(
+                    anchor));
+
         if (eta.getLastUpdate() >= this.lastUpdate)
             this.lastUpdate = eta.getLastUpdate();
     }
