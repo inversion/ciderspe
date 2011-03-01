@@ -20,6 +20,7 @@ import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
 import cider.common.processes.ICodeLocation;
+import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
@@ -452,6 +453,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     .eventsSince(this.lastUpdateTime))
             {
                 events.add(te);
+                //Profile.adjustCharCount(1); //TODO treats all presses as +1, including delete key
                 if (latest <= te.time)
                     latest = te.time + 1;
             }
@@ -469,6 +471,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     private void refreshLines()
     {
+    	System.out.println(this.lines.size());
+    	Profile.adjustCharCount(-this.lines.size());
         this.lines.clear();
         LinkedList<TypingEventList> split = this.str.split("\n");
         int j = 1;
@@ -478,6 +482,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
             ETALine line = new ETALine(tel, j * lineSpacing, j++, i);
             this.lines.add(line);
             i += line.str.length();
+            System.out.println(line.str.length());
+            Profile.adjustCharCount(line.str.length());
         }
     }
 

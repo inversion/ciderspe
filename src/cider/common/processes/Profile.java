@@ -18,7 +18,7 @@ import java.util.Date;
 public class Profile 
 {
 	public String uname;
-	public int typedChars;
+	public static int typedChars;
 	public long timeSpent;
 	public String lastOnline;
 	public Color userColour;
@@ -127,9 +127,15 @@ public class Profile
 		}
 	}
 	
-	public void incrementCharCount()
+	public static void incrementCharCount()
 	{
 		typedChars++;
+		return;
+	}
+	
+	public static void adjustCharCount(int adjustment)
+	{
+		typedChars+=adjustment;
 		return;
 	}
 
