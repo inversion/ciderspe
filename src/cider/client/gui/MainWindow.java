@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -70,12 +71,13 @@ class MainWindow implements Runnable
     private DirectoryViewComponent dirView;
     private String username;
 
+    public ArrayList<JTextArea> messageReceiveBoxes = new ArrayList<JTextArea>();
+    public JPanel receivePanel = pnlReceive();
     public JList userList;
     public JLabel userCount = new JLabel();
     public DefaultListModel userListModel = new DefaultListModel();
-    JTabbedPane receiveTabs;
+    JTabbedPane receiveTabs = new JTabbedPane();
     public JTextArea messageSendBox;
-    public JTextArea/* JEditorPane */messageReceiveBox = new JTextArea();
 
     /**
      * These variable are for the profiles
@@ -94,9 +96,10 @@ class MainWindow implements Runnable
         myProfile = new Profile(username);
         startTime = System.currentTimeMillis();
         this.username = username;
+        
         client = c;
         client.registerGUIComponents(dirView, tabbedPane, openTabs,
-                userListModel, userCount, messageReceiveBox);
+                userListModel, userCount, messageReceiveBoxes.get(0) );
         dirView.setClient(client);
         client.getFileListFromBot();
     }
@@ -580,7 +583,7 @@ class MainWindow implements Runnable
                     System.out.println("Double clicked on Item " + i);
                     System.out.println("Double clicked on Item: "
                             + userList.getModel().getElementAt(i));
-                    initiateAChat((String) userList.getModel().getElementAt(i));
+                    initiateAChat( (String) userList.getSelectedValue() );
                 }
                 else if ((e.getButton() == MouseEvent.BUTTON3)
                         && (userList.locationToIndex(e.getPoint()) != -1))
@@ -592,6 +595,8 @@ class MainWindow implements Runnable
                     JPopupMenu popupMenu = new JPopupMenu();
                     JMenuItem chat = new JMenuItem("Chat with User");
                     JMenuItem showProfile = new JMenuItem("Show User's Profile");
+                    
+                    
                     chat.addActionListener(new ActionListener()
                     {
                         public void actionPerformed(ActionEvent e)
@@ -600,7 +605,7 @@ class MainWindow implements Runnable
                             {
                                 public void run()
                                 {
-                                    // initiatePrivateChat(userList.getModel().getElementAt(i));
+                                    initiateAChat( (String) userList.getSelectedValue() );
                                 }
                             });
                         }
@@ -642,15 +647,29 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    void initiateAChat(String user)
+    public void initiateAChat(String user)
     {
         /* should create a messageReceiveBox object */
-        if (receiveTabs.indexOfTab(user) == -1)
+    	
+    	/* If there is not already a chat open with this user
+    	 * and you are not trying to chat with yourself.
+    	 */
+        if (receiveTabs.indexOfTab(user) == -1 && !user.equals( username ) )
         {
-            JLabel temp = new JLabel("testing");
-            receiveTabs.add(temp);
+        	System.out.println("Chat initiated with " + user);
+            JTextArea messageReceiveBox = new JTextArea();
+            messageReceiveBox.setLineWrap(true);
+            messageReceiveBox.setWrapStyleWord(true);
+            Font receiveFont = new Font("Dialog", 2, 12);
+            messageReceiveBox.setFont(receiveFont);
+            messageReceiveBox.setEditable(false);
+            messageReceiveBoxes.add( messageReceiveBox );
+            
+            JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+            receiveTabs.add(messageReceiveBoxScroll);
             receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
         }
+        // TODO: Else switch to the already open private conversation?
     }
 
     public JPanel pnlReceive()
@@ -661,27 +680,22 @@ class MainWindow implements Runnable
          */
         /* panel for the chat conversation */
         JPanel panel = new JPanel(new BorderLayout());
-
-        messageReceiveBox.setLineWrap(true);
-        messageReceiveBox.setWrapStyleWord(true);
-        Font receiveFont = new Font("Dialog", 2, 12);
-        messageReceiveBox.setFont(receiveFont);
-        messageReceiveBox.setEditable(false);
+        
+        
         // messageReceiveBox.addActionListener(); TODO
         /*
          * Format of output:[bold]username[/bold] timestamp: message
          */
-        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+        
         // messageReceiveBoxScroll.setBorder(emptyBorder);
 
         receiveTabs = new JTabbedPane();
-        receiveTabs.add(messageReceiveBoxScroll);
-        receiveTabs.setTitleAt(currentTab, "Group Chat");
 
-        panel.add(new JLabel(" User Chat"), BorderLayout.NORTH);
+        panel.add(new JLabel(" User Chat" ), BorderLayout.NORTH);
         panel.add(receiveTabs/* messageReceiveBoxScroll */, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 800));
-
+        initiateAChat( "Group chat" );
+        
         return panel;
     }
 
@@ -787,7 +801,7 @@ class MainWindow implements Runnable
         Border emptyBorder = BorderFactory.createEmptyBorder();
 
         JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                pnlUsers(), pnlReceive());
+                pnlUsers(), receivePanel);
         usersReceive.setBorder(emptyBorder);
         usersReceive.setOneTouchExpandable(true);
 
