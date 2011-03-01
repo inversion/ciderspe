@@ -2,6 +2,7 @@ package cider.common.processes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Random;
 
@@ -178,11 +179,31 @@ public class TypingEventList
     	int count = 0;
     	for(TypingEvent te : this.tel)
     	{
-    		if(te.owner.equals(user))
+    		if(te.owner.equals(user) && !te.text.equals("\n"))
     		{    			
     			count++;
     		}
     	}
     	return count;
+    }
+    
+    public Hashtable<String, Integer> countCharactersAll()
+    {
+    	Hashtable<String, Integer> results = new Hashtable<String, Integer>();
+    	for(TypingEvent te : this.tel)
+    	{
+    		if(!te.text.equals("\n"))
+    		{
+    			if(results.containsKey(te.owner))
+    			{
+    				results.put(te.owner, results.get(te.owner) + 1);
+    			}
+    			else
+    			{
+    				results.put(te.owner, 0);
+    			}
+    		}
+    	}
+    	return results;
     }
 }

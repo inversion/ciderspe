@@ -8,13 +8,16 @@ package cider.common.network;
  */
 
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.Queue;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 
+import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.specialcomponents.Base64;
 
@@ -45,6 +48,7 @@ public class BotChatroomMessageListener implements PacketListener
         if (body.startsWith("pushto("))
         {
             String[] instructions = body.split(" -> ");
+            Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
             for (String instruction : instructions)
             {
                 String[] preAndAfter = instruction.split("\\) ");
@@ -54,7 +58,15 @@ public class BotChatroomMessageListener implements PacketListener
                 Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
                 typingEvents.add(new TypingEvent(preAndAfter[1]));
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                this.bot.getRootFolder().path(dest).push(typingEvents);
+                SourceDocument doc = this.bot.getRootFolder().path(dest);
+                doc.push(typingEvents);
+                changedDocs.put(dest, doc);
+            }
+            
+            for(Entry<String, SourceDocument> entry : changedDocs.entrySet())
+            {
+            	Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry.getValue().playOutEvents(Long.MAX_VALUE).countCharactersAll();
+            	
             }
         }
     }
