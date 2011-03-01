@@ -76,13 +76,12 @@ class MainWindow implements Runnable
     private DirectoryViewComponent dirView;
     private String username;
 
-    public ArrayList<JTextArea> messageReceiveBoxes = new ArrayList<JTextArea>();
-    public JPanel receivePanel = pnlReceive();
     public JList userList;
     public JLabel userCount = new JLabel();
     public DefaultListModel userListModel = new DefaultListModel();
-    JTabbedPane receiveTabs = new JTabbedPane();
+    public JTabbedPane receiveTabs = new JTabbedPane();
     public JTextArea messageSendBox;
+    public JPanel receivePanel;
 
     /**
      * These variable are for the profiles
@@ -104,7 +103,8 @@ class MainWindow implements Runnable
         
         client = c;
         client.registerGUIComponents(dirView, tabbedPane, openTabs,
-                userListModel, userCount, messageReceiveBoxes.get(0) );
+                userListModel, userCount, client.messageReceiveBoxes.get(0), receiveTabs );
+        receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
     }
@@ -592,7 +592,7 @@ class MainWindow implements Runnable
                     System.out.println("Double clicked on Item " + i);
                     System.out.println("Double clicked on Item: "
                             + userList.getModel().getElementAt(i));
-                    initiateAChat( (String) userList.getSelectedValue() );
+                    client.initiateChat( (String) userList.getSelectedValue() );
                 }
                 else if ((e.getButton() == MouseEvent.BUTTON3)
                         && (userList.locationToIndex(e.getPoint()) != -1))
@@ -614,7 +614,7 @@ class MainWindow implements Runnable
                             {
                                 public void run()
                                 {
-                                    initiateAChat( (String) userList.getSelectedValue() );
+                                    client.initiateChat( (String) userList.getSelectedValue() );
                                 }
                             });
                         }
@@ -656,31 +656,6 @@ class MainWindow implements Runnable
         return panel;
     }
 
-    public void initiateAChat(String user)
-    {
-        /* should create a messageReceiveBox object */
-    	
-    	/* If there is not already a chat open with this user
-    	 * and you are not trying to chat with yourself.
-    	 */
-        if (receiveTabs.indexOfTab(user) == -1 && !user.equals( username ) )
-        {
-        	System.out.println("Chat initiated with " + user);
-            JTextArea messageReceiveBox = new JTextArea();
-            messageReceiveBox.setLineWrap(true);
-            messageReceiveBox.setWrapStyleWord(true);
-            Font receiveFont = new Font("Dialog", 2, 12);
-            messageReceiveBox.setFont(receiveFont);
-            messageReceiveBox.setEditable(false);
-            messageReceiveBoxes.add( messageReceiveBox );
-            
-            JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
-            receiveTabs.add(messageReceiveBoxScroll);
-            receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
-        }
-        // TODO: Else switch to the already open private conversation?
-    }
-
     public JPanel pnlReceive()
     {
         /*
@@ -698,12 +673,17 @@ class MainWindow implements Runnable
         
         // messageReceiveBoxScroll.setBorder(emptyBorder);
 
-        receiveTabs = new JTabbedPane();
+        //receiveTabs = new JTabbedPane();
 
         panel.add(new JLabel(" User Chat" ), BorderLayout.NORTH);
         panel.add(receiveTabs/* messageReceiveBoxScroll */, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 800));
-        initiateAChat( "Group chat" );
+        
+        /**
+         * We are not actually intiating the group chat here, so we just need to make
+         * the tab for it. The client handles the updating of its contents.
+         */
+        client.createChatTab( "Group chat" );
         
         return panel;
     }
