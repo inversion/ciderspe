@@ -182,6 +182,8 @@ public class Client
                 + "\n" + message);
         messageReceiveBox.append(StringUtils.parseResource(username) + " ("
                 + date + "):\n" + message + "\n");
+        
+        messageReceiveBox.setCaretPosition(messageReceiveBox.getDocument().getLength());
     }
 
     public void sendMessageChatroom(String message)
