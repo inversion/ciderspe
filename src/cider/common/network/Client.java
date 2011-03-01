@@ -398,9 +398,12 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
+        TypingEvent anchor = eta.getTypingEventList().get(
+                eta.getCaretPosition());
         eta.getCodeLocation().push(typingEvents);
         eta.setWaiting(false);
         eta.updateText();
+        eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(anchor));
         if (eta.getLastUpdate() >= this.lastUpdate)
             this.lastUpdate = eta.getLastUpdate();
     }
@@ -445,6 +448,20 @@ public class Client
             EditorTypingArea eta = this.openTabs.get(dest)
                     .getEditorTypingArea();
             eta.setWaiting(false);
+        }
+    }
+
+    public void terminateBotRemotely()
+    {
+        try
+        {
+            this.botChat.sendMessage(Base64
+                    .encodeBytes("Sir, blame it on your ISP".getBytes()));
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

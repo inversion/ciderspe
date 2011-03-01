@@ -630,9 +630,29 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public void moveCaret(int spaces)
     {
-        if (this.caretPosition < this.str.length() - 1)
-            this.caretPosition += spaces;
+        this.caretPosition += spaces;
+        constrain();
+        this.updateUI();
+    }
+
+    public void setCaretPosition(int position)
+    {
+        this.caretPosition = position;
+        constrain();
 
         this.updateUI();
+    }
+
+    private void constrain()
+    {
+        if (this.caretPosition > this.str.length())
+            this.caretPosition = this.str.length() - 1;
+        if (this.caretPosition < -1)
+            this.caretPosition = -1;
+    }
+
+    public TypingEventList getTypingEventList()
+    {
+        return this.str;
     }
 }

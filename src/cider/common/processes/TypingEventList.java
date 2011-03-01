@@ -166,4 +166,9 @@ public class TypingEventList
             telh.set(i, new TypingEvent(telh.get(i), t++, i,
                     TypingEventMode.insert));
     }
+
+    public int getLastPositionOf(TypingEvent te)
+    {
+        return this.tel.lastIndexOf(te);
+    }
 }
