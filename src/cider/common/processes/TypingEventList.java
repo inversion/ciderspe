@@ -171,4 +171,18 @@ public class TypingEventList
     {
         return this.tel.lastIndexOf(te);
     }
+    
+    //TODO lolwut
+    public int countCharactersFor(String user)
+    {
+    	int count = 0;
+    	for(TypingEvent te : this.tel)
+    	{
+    		if(te.owner.equals(user))
+    		{    			
+    			count++;
+    		}
+    	}
+    	return count;
+    }
 }

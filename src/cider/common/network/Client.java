@@ -98,7 +98,7 @@ public class Client
 
     public SourceDocument getCurrentDocument()
     {
-        return this.currentDoc;
+        return this.currentDoc;//.playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
     }
 
     /**
