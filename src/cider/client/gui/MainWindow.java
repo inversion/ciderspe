@@ -85,40 +85,6 @@ class MainWindow implements Runnable
     public long startTime;
     private Profile myProfile;
 
-    // Main method and no parameter constructor for running without login box
-    public static void main(String[] args)
-    {
-        MainWindow main = null;
-        try
-        {
-            main = new MainWindow();
-        }
-        catch (XMPPException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        SwingUtilities.invokeLater(main);
-    }
-
-    MainWindow() throws XMPPException
-    {
-        myProfile = new Profile(username);
-        startTime = System.currentTimeMillis();
-        dirView = new DirectoryViewComponent();
-        username = "ciderclient";
-        // client = new Client(dirView, tabbedPane, openTabs, userListModel,
-        // userCount, messageReceiveBox, username, "clientpw",
-        // "xmpp.org.uk", 5222, "xmpp.org.uk");
-        /*
-         * client = new Client(dirView, tabbedPane, openTabs, userListModel,
-         * userCount, messageReceiveBox, username, "clientpw", "192.168.0.2",
-         * 5222, "192.168.0.2");
-         */
-        dirView.setClient(client);
-        client.getFileListFromBot();
-    }
-
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c) throws XMPPException
     {
@@ -884,7 +850,7 @@ class MainWindow implements Runnable
 
     public void run()
     {
-        w = new JFrame("CIDEr");
+        w = new JFrame("CIDEr - Logged in as " + username);
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");

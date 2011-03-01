@@ -1,6 +1,6 @@
 package cider.common.network;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 
@@ -9,7 +9,8 @@ import org.jivesoftware.smack.ChatManagerListener;
 
 /**
  * 
- * Listen for newly created private client <-> client chats and assign them a message listener.
+ * Listen for newly created private client <-> client chats 
+ * and assign them a message listener.
  * 
  * @author Andrew
  *
@@ -17,20 +18,20 @@ import org.jivesoftware.smack.ChatManagerListener;
 
 public class ClientPrivateChatListener implements ChatManagerListener {
 	
-	// TODO: Not sure if there's any point in this chats array
-	private ArrayList<Chat> chats;
+	private HashMap<String,Chat> chats;
 	private ClientPrivateChatMessageListener userChatMessageListener;
 
 	ClientPrivateChatListener(DefaultListModel userListModel)
 	{
-		chats = new ArrayList<Chat>();
+		chats = new HashMap<String,Chat>();
 		userChatMessageListener = new ClientPrivateChatMessageListener();
 	}
 	
 	@Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		// TODO Auto-generated method stub
-		chats.add( chat );
+		chats.put( chat.getParticipant(), chat );
+		System.out.println("Private chat accepted from " + chat.getParticipant() );
 		chat.addMessageListener( userChatMessageListener );
 	}
 

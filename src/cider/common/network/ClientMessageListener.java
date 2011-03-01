@@ -14,7 +14,7 @@ import cider.specialcomponents.Base64;
 
 /**
  * This class waits for a message to be received by the client on its chat
- * session with the server.
+ * session with the bot.
  * 
  * @author Andrew + Lawrence
  * 
