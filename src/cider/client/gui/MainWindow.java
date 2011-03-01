@@ -523,12 +523,6 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
 
         // menu 3
-        menu = new JMenu("Help");
-        menuBar.add(menu);
-
-        addMenuItem(menu, "About", -1, aL);
-
-        // menu 4
         menu = new JMenu("Profile");
         menuBar.add(menu);
 
@@ -536,6 +530,12 @@ class MainWindow implements Runnable
         addMenuItem(menu, "Change Profile Colour", -1, aL);
         addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
+
+        // menu 4
+        menu = new JMenu("Help");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "About", -1, aL);
 
         // the DEV(eloper) menu is for us to test back-end things such as saving
         // and pushing
@@ -547,8 +547,6 @@ class MainWindow implements Runnable
         addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
         // addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
         addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
-
-        addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
         return menuBar;
     }
@@ -709,7 +707,6 @@ class MainWindow implements Runnable
 
     public JPanel pnlSend()
     {
-        /**/
         JPanel panel = new JPanel(new BorderLayout());
 
         /* Text field for message text */
@@ -720,7 +717,6 @@ class MainWindow implements Runnable
         messageSendBox.setFont(sendFont);
         messageSendBox.addKeyListener(new KeyListener()
         {
-
             @Override
             public void keyTyped(KeyEvent e)
             {
@@ -737,70 +733,41 @@ class MainWindow implements Runnable
                 int c = e.getKeyCode();
                 if (c == KeyEvent.VK_ENTER)
                 {
-                    sendChatMessage();
+                    sendChatMessage(messageSendBox.getText());
                 }
             }
+        });
 
-        });
-        // ActionListener aL = newAction(); //TODO - Alex doesn't know what he
-        // be doing with action listeners
-        // messageSendBox.setActionCommand("Send");
-        messageSendBox.addMouseListener(new MouseAdapter()
-        {
-            /*
-             * public void mouseClicked(MouseEvent e) { if
-             * (messageSendBox.getText().equals(initialMessage)) //TODO could
-             * use an edited flag instead { messageSendBox.setText("boogaloo");
-             * messageSendBox.setText(""); } }
-             */
-        });
         JScrollPane messageSendBoxScroll = new JScrollPane(messageSendBox);
         panel.add(messageSendBoxScroll, BorderLayout.CENTER);
 
         JButton btnSend = new JButton("Send");
         btnSend.setMinimumSize(new Dimension(0, 40));
-
         btnSend.setToolTipText("Click to send message");
-
-        // btnSend.addActionListener(); TODO need an action listener for the
-        // enter key
-        btnSend.getInputMap().put(KeyStroke.getKeyStroke("ENTER"),
-                "doSomething");
-        btnSend.getActionMap().put("doSomething", null); // TODO call the
-        // mouseclicked code
-        // below
-
+        btnSend.getInputMap().put(KeyStroke.getKeyStroke("ENTER"), "doSomething");
+        btnSend.getActionMap().put("doSomething", null); 
         btnSend.addMouseListener(new MouseAdapter()
         {
             public void mouseClicked(MouseEvent e)
             {
-                sendChatMessage();
+                sendChatMessage(messageSendBox.getText());
             }
         });
+        
         panel.add(btnSend, BorderLayout.EAST);
         panel.setMaximumSize(new Dimension(10, 40));
 
         return panel;
     }
 
-    protected void sendChatMessage()
+    protected void sendChatMessage(String message)
     {
-        String message = messageSendBox.getText();
-        if (!message.equals("")) // TODO disable send button if no
-        // meaningful text entered
+        if (!message.equals("") && !message.equals("\n"))
         {
-            // DateFormat dateFormat = new
-            // SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-            // Date date = new Date();
-
-            // System.out.println(dateFormat.format(date) + " " +
-            // message);
-
-            // client.updateChatLog(username, date, message);
             client.sendMessageChatroom(message);
             messageSendBox.setText("");
+            //messageReceiveBoxes.setCaretPosition(messageReceiveBoxes.getDocument().getLength());
         }
-
     }
 
     public JPanel mainArea()
