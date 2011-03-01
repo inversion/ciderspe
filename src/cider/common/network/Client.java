@@ -1,8 +1,11 @@
 package cider.common.network;
 
+import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -12,6 +15,7 @@ import java.util.TimerTask;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
@@ -71,22 +75,24 @@ public class Client
     private String serviceName;
     private String password;
 
-    // Listen for private chat sessions with other users
-    // TODO: Not yet implemented
-    // private ClientPrivateChatListener userChatListener;
+    // Private chat sessions with other users
+    // TODO: Merge into 1 hash map?
+    public HashMap<String,Chat> chats = new HashMap<String,Chat>();
+    public HashMap<String,JTextArea> messageReceiveBoxes = new HashMap<String,JTextArea>();
+    public JTabbedPane receiveTabs;
+    private ClientPrivateChatListener userChatListener;
 
     // Chatroom
     private String chatroomName;
     private MultiUserChat chatroom;
 
-    private JTextArea messageReceiveBox;
+    private JTextArea chatroomMessageReceiveBox;
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
 
     public Client(String username, String password, String host, int port,
             String serviceName)
     {
-
         // Assign objects from parameters
         this.username = username;
         this.chatroomName = "ciderchat" + "@conference." + serviceName;
@@ -100,6 +106,59 @@ public class Client
     {
         return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
     }
+    
+    /**
+     * Initiate a chat session with someone, the tab is created when the 
+     * @param user
+     * @author Andrew
+     * @return the new chat session that was created, or if it already existed the existing one
+     */
+    public Chat initiateChat( String user )
+    {
+    	if( chats.containsKey( user ) )
+    		return chats.get( user );
+    	
+    	Chat current = chatmanager.createChat( user + "@" + serviceName, new ClientPrivateChatMessageListener( this ) );
+    	createChatTab( user );
+    	chats.put( user, current );
+		return current;
+    }
+    
+    /**
+     * Add a chat tab with the specified user to the GUI.
+     * 
+     * @param user
+     * @author Andrew
+     * @return
+     */
+    public JTextArea createChatTab(String user)
+    {
+        /* should create a messageReceiveBox object */
+    	
+    	/* If there is not already a chat tab open with this user
+    	 * and you are not trying to chat with yourself.
+    	 */
+        if (receiveTabs.indexOfTab(user) == -1 && !user.equals( username ) )
+        {
+        	// GUI Stuff
+        	System.out.println("Chat initiated with " + user);
+            JTextArea messageReceiveBox = new JTextArea();
+            messageReceiveBox.setLineWrap(true);
+            messageReceiveBox.setWrapStyleWord(true);
+            Font receiveFont = new Font("Dialog", 2, 12);
+            messageReceiveBox.setFont(receiveFont);
+            messageReceiveBox.setEditable(false);
+            messageReceiveBoxes.put( user, messageReceiveBox );
+            
+            JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+            receiveTabs.add(messageReceiveBoxScroll);
+            receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
+            
+            return messageReceiveBox;
+        }
+        return null;
+        // TODO: Else switch to the already open private conversation?
+    }
 
     /**
      * Register GUI components from the Main Window
@@ -110,12 +169,13 @@ public class Client
     public void registerGUIComponents(DirectoryViewComponent dirView,
             JTabbedPane tabbedPane, Hashtable<String, SourceEditor> openTabs,
             DefaultListModel userListModel, JLabel userCount,
-            JTextArea messageReceiveBox)
+            JTextArea messageReceiveBox, JTabbedPane receiveTabs)
     {
         this.dirView = dirView;
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
-        this.messageReceiveBox = messageReceiveBox;
+        this.chatroomMessageReceiveBox = messageReceiveBox;
+        this.receiveTabs = receiveTabs;
 
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
@@ -170,7 +230,6 @@ public class Client
 
     public void updateChatLog(String username, String date, String message)
     {
-
         // messageReceiveBox.setContentType("text/html");
         // String oldText = messageReceiveBox.getText();
         // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
@@ -180,10 +239,30 @@ public class Client
         // "):\n");
         System.out.println(StringUtils.parseResource(username) + "\n" + date
                 + "\n" + message);
-        messageReceiveBox.append(StringUtils.parseResource(username) + " ("
+        chatroomMessageReceiveBox.append(StringUtils.parseResource(username) + " ("
                 + date + "):\n" + message + "\n");
         
-        messageReceiveBox.setCaretPosition(messageReceiveBox.getDocument().getLength());
+        chatroomMessageReceiveBox.setCaretPosition(chatroomMessageReceiveBox.getDocument().getLength());
+    }
+    
+    public void updatePrivateChatLog(String username, String date, String message)
+    {
+        // messageReceiveBox.setContentType("text/html");
+        // String oldText = messageReceiveBox.getText();
+        // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
+        // + dateFormat.format(date) + "):<br>" + message + "<br></html>");
+
+        // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
+        // "):\n");
+        System.out.println(StringUtils.parseResource(username) + "\n" + date
+                + "\n" + message);
+        
+        JTextArea current = messageReceiveBoxes.get( username );
+        
+        current.append(StringUtils.parseResource(username) + " ("
+                + date + "):\n" + message + "\n");
+        
+        current.setCaretPosition( current.getDocument().getLength() );
     }
 
     public void sendMessageChatroom(String message)
@@ -202,6 +281,8 @@ public class Client
             e.printStackTrace();
         }
     }
+    
+    
 
     public String getUsername()
     {
