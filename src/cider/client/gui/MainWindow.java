@@ -102,10 +102,10 @@ class MainWindow implements Runnable
         myProfile = new Profile(username);
         startTime = System.currentTimeMillis();
         this.username = username;
-        
-        client = c;
+       
+        client = c;      
         client.registerGUIComponents(dirView, tabbedPane, openTabs,
-                userListModel, userCount, client.messageReceiveBoxes.get(0), receiveTabs );
+                userListModel, userCount, receiveTabs );
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
