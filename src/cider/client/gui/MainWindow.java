@@ -62,7 +62,7 @@ import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEventList;
 import cider.specialcomponents.Base64;
 
-class MainWindow implements Runnable
+public class MainWindow implements Runnable
 {
     JTabbedPane tabbedPane = new JTabbedPane();
     JFrame w;
@@ -81,9 +81,10 @@ class MainWindow implements Runnable
     public JList userList;
     public JLabel userCount = new JLabel();
     public DefaultListModel userListModel = new DefaultListModel();
+    public static final String GROUPCHAT_TITLE = "Group Chat";
     public JTabbedPane receiveTabs = new JTabbedPane();
-    public JTextArea messageSendBox;
     public JPanel receivePanel;
+    public JTextArea messageSendBox;
 
     /**
      * These variable are for the profiles
@@ -695,7 +696,7 @@ class MainWindow implements Runnable
          * We are not actually intiating the group chat here, so we just need to make
          * the tab for it. The client handles the updating of its contents.
          */
-        client.createChatTab( "Group chat" );
+        client.createChatTab( GROUPCHAT_TITLE );
         
         return panel;
     }
@@ -757,7 +758,7 @@ class MainWindow implements Runnable
     {
         if (!message.equals("") && !message.equals("\n"))
         {
-            client.sendMessageChatroom(message);
+            client.sendChatMessage(message);
             messageSendBox.setText("");
         }
     }

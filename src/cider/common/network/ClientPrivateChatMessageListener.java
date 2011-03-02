@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.StringUtils;
 
 import cider.specialcomponents.Base64;
 
@@ -39,7 +40,10 @@ public class ClientPrivateChatMessageListener implements MessageListener {
             // TODO Auto-generated catch block=
             e.printStackTrace();
         }
-        System.out.println("Received message on private chat from " + chat.getParticipant() + ", " + body);
-		client.updatePrivateChatLog( chat.getParticipant(), message.getSubject(), body );
+        
+        if( Client.DEBUG )
+        	System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
+        
+		client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
 	}
 }

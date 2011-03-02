@@ -1,5 +1,10 @@
 package cider.common.network;
 
+import java.util.HashMap;
+
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.util.StringUtils;
@@ -15,31 +20,44 @@ import org.jivesoftware.smack.util.StringUtils;
 
 public class ClientPrivateChatListener implements ChatManagerListener {
 	
-	private ClientPrivateChatMessageListener privateChatMessageListener;
+	protected HashMap<String,Chat> privateChats = new HashMap<String,Chat>();
 	private Client client;
 
 	ClientPrivateChatListener( Client caller )
 	{
 		client = caller;
-		privateChatMessageListener = new ClientPrivateChatMessageListener( client );
 	}
 	
 	@Override
-	public void chatCreated(Chat chat, boolean createdLocally) {
-		// TODO Auto-generated method stub
+	public void chatCreated(Chat chat, boolean createdLocally) 
+	{
+		// The "friendly" name of the participant without the domain etc.
+		String name = StringUtils.parseName( chat.getParticipant() );
 		
-		if( StringUtils.parseName( chat.getParticipant() ).equals( Bot.CHATROOM_NAME ) )
+		if( name.equals( Bot.CHATROOM_NAME ) )
 			return;
 		
-		if( client.chats.containsKey( StringUtils.parseName( chat.getParticipant() ) ) )
+		if( client.receiveTabs.indexOfTab( name ) != -1 )
 		{
-			System.out.println( "Received private chat from " + StringUtils.parseName( chat.getParticipant() ) + " but already existed, replacing.");
+			System.out.println( "Received private chat from " + name + " but already existed, replacing.");
 		}
 		
-		System.out.println("Private chat accepted from " + StringUtils.parseName( chat.getParticipant() ) );
-		client.createChatTab( StringUtils.parseName( chat.getParticipant() ) );
-		chat.addMessageListener( privateChatMessageListener );
-		client.chats.put( StringUtils.parseName( chat.getParticipant() ), chat );
+		if( Client.DEBUG )
+			System.out.println("Private chat accepted from " + name );
+		
+		// Add this chat to the hash table of chats
+		// TODO: handle dupes
+		privateChats.put( name, chat );
+		
+		// Create a new tab for this chat
+		JScrollPane newTab = client.createChatTab( name );
+		client.tabsToChats.put( newTab, chat );
+		
+		chat.addMessageListener( new ClientPrivateChatMessageListener( client ) );
+		
+		if( Client.DEBUG )
+			System.out.println("Added to chats by listener: " + name );
+		
 	}
 
 }
