@@ -72,7 +72,7 @@ public class Client
     private String username;
     private String host;
     private int port;
-    private String serviceName;
+    public String serviceName;
     private String password;
 
     // Private chat sessions with other users
@@ -95,7 +95,7 @@ public class Client
     {
         // Assign objects from parameters
         this.username = username;
-        this.chatroomName = "ciderchat" + "@conference." + serviceName;
+        this.chatroomName = Bot.CHATROOM_NAME + "@conference." + serviceName;
         this.host = host;
         this.port = port;
         this.serviceName = serviceName;
@@ -115,9 +115,13 @@ public class Client
      */
     public Chat initiateChat( String user )
     {
-    	if( chats.containsKey( user ) )
+    	if( chats.containsKey( user ) || user.equals( username ) )
+    	{
+    		System.out.println( "Chat with " + user + " already exists or trying to chat to self, returning..." );
     		return chats.get( user );
+    	}
     	
+    	System.out.println("Chat initiated with " + user);
     	Chat current = chatmanager.createChat( user + "@" + serviceName, new ClientPrivateChatMessageListener( this ) );
     	createChatTab( user );
     	chats.put( user, current );
@@ -138,25 +142,26 @@ public class Client
     	/* If there is not already a chat tab open with this user
     	 * and you are not trying to chat with yourself.
     	 */
-        if (receiveTabs.indexOfTab(user) == -1 && !user.equals( username ) )
-        {
-        	// GUI Stuff
-        	System.out.println("Chat initiated with " + user);
-            JTextArea messageReceiveBox = new JTextArea();
-            messageReceiveBox.setLineWrap(true);
-            messageReceiveBox.setWrapStyleWord(true);
-            Font receiveFont = new Font("Dialog", 2, 12);
-            messageReceiveBox.setFont(receiveFont);
-            messageReceiveBox.setEditable(false);
-            messageReceiveBoxes.put( user, messageReceiveBox );
-            
-            JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
-            receiveTabs.add(messageReceiveBoxScroll);
-            receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
-            
-            return messageReceiveBox;
-        }
-        return null;
+    	
+    	// GUI Stuff
+        JTextArea messageReceiveBox = new JTextArea();
+        messageReceiveBox.setLineWrap(true);
+        messageReceiveBox.setWrapStyleWord(true);
+        Font receiveFont = new Font("Dialog", 2, 12);
+        messageReceiveBox.setFont(receiveFont);
+        messageReceiveBox.setEditable(false);
+        messageReceiveBoxes.put( user, messageReceiveBox );
+        
+        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+        receiveTabs.add(messageReceiveBoxScroll);
+        receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
+     
+    	if( user.equals( "Group chat" ) )
+    	{
+    		this.chatroomMessageReceiveBox = messageReceiveBox;
+    	}
+        
+        return messageReceiveBox;
         // TODO: Else switch to the already open private conversation?
     }
 
@@ -168,13 +173,11 @@ public class Client
      */
     public void registerGUIComponents(DirectoryViewComponent dirView,
             JTabbedPane tabbedPane, Hashtable<String, SourceEditor> openTabs,
-            DefaultListModel userListModel, JLabel userCount,
-            JTextArea messageReceiveBox, JTabbedPane receiveTabs)
+            DefaultListModel userListModel, JLabel userCount, JTabbedPane receiveTabs)
     {
         this.dirView = dirView;
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
-        this.chatroomMessageReceiveBox = messageReceiveBox;
         this.receiveTabs = receiveTabs;
 
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
@@ -208,24 +211,25 @@ public class Client
         if (DEBUG)
             System.out.println("Logged into XMPP server, username=" + username
                     + "/" + rand);
-        connection.addPacketListener(new DebugPacketListener(),
-                new DebugPacketFilter());
+        
+        
+        //connection.addPacketListener(new DebugPacketListener(), new DebugPacketFilter());
 
-        // Add listener for new user chats
         chatmanager = this.connection.getChatManager();
-        // userChatListener = new ClientPrivateChatListener( userListModel );
-        // chatmanager.addChatListener(userChatListener);
-
+                
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(this);
         botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
                 botChatListener);
-
+        
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username));
-
+        
+        // Add listener for new user chats
+        userChatListener = new ClientPrivateChatListener( this );
+        chatmanager.addChatListener(userChatListener);
     }
 
     public void updateChatLog(String username, String date, String message)

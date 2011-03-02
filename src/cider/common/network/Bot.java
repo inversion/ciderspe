@@ -23,19 +23,17 @@ public class Bot
     public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
-    // public static final String HOST = "192.168.0.2";
-    // public static final String SERVICE_NAME = "192.168.0.2";
     public static final String HOST = "xmpp.org.uk";
     public static final String SERVICE_NAME = "xmpp.org.uk";
     public static final int PORT = 5222;
     public static final String BOT_USERNAME = "ciderbot";
     public static final String BOT_PASSWORD = "botpassword";
+    public static final String CHATROOM_NAME = "ciderchat";
     private ConnectionConfiguration config = new ConnectionConfiguration(HOST,
             PORT, SERVICE_NAME);
 
     // Chatroom
     protected MultiUserChat chatroom;
-    private final String CHATROOM_NAME = "ciderchat";
 
     private XMPPConnection connection;
     private ChatManager chatmanager;

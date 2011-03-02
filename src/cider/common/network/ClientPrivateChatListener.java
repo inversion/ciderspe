@@ -2,6 +2,7 @@ package cider.common.network;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
+import org.jivesoftware.smack.util.StringUtils;
 
 /**
  * 
@@ -14,13 +15,11 @@ import org.jivesoftware.smack.ChatManagerListener;
 
 public class ClientPrivateChatListener implements ChatManagerListener {
 	
-//	private HashMap<String,Chat> chats;
 	private ClientPrivateChatMessageListener privateChatMessageListener;
 	private Client client;
 
 	ClientPrivateChatListener( Client caller )
 	{
-//		chats = new HashMap<String,Chat>();
 		client = caller;
 		privateChatMessageListener = new ClientPrivateChatMessageListener( client );
 	}
@@ -28,10 +27,19 @@ public class ClientPrivateChatListener implements ChatManagerListener {
 	@Override
 	public void chatCreated(Chat chat, boolean createdLocally) {
 		// TODO Auto-generated method stub
-//		chats.put( chat.getParticipant(), chat );
-		System.out.println("Private chat accepted from " + chat.getParticipant() );
-		client.createChatTab( chat.getParticipant() );
+		
+		if( StringUtils.parseName( chat.getParticipant() ).equals( Bot.CHATROOM_NAME ) )
+			return;
+		
+		if( client.chats.containsKey( StringUtils.parseName( chat.getParticipant() ) ) )
+		{
+			System.out.println( "Received private chat from " + StringUtils.parseName( chat.getParticipant() ) + " but already existed, replacing.");
+		}
+		
+		System.out.println("Private chat accepted from " + StringUtils.parseName( chat.getParticipant() ) );
+		client.createChatTab( StringUtils.parseName( chat.getParticipant() ) );
 		chat.addMessageListener( privateChatMessageListener );
+		client.chats.put( StringUtils.parseName( chat.getParticipant() ), chat );
 	}
 
 }
