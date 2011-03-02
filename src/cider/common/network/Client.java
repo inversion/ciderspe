@@ -29,6 +29,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
+import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
@@ -76,9 +77,13 @@ public class Client
     private String password;
 
     // Private chat sessions with other users
-    // TODO: Merge into 1 hash map?
-    public HashMap<String,Chat> chats = new HashMap<String,Chat>();
-    public HashMap<String,JTextArea> messageReceiveBoxes = new HashMap<String,JTextArea>();
+    public HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
+    
+    /* Abstract because it can be a private chat or multi user chat
+     * and smack represents them as different types
+     */
+    public HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
+    
     public JTabbedPane receiveTabs;
     private ClientPrivateChatListener userChatListener;
 
@@ -105,64 +110,6 @@ public class Client
     public SourceDocument getCurrentDocument()
     {
         return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
-    }
-    
-    /**
-     * Initiate a chat session with someone, the tab is created when the 
-     * @param user
-     * @author Andrew
-     * @return the new chat session that was created, or if it already existed the existing one
-     */
-    public Chat initiateChat( String user )
-    {
-    	if( chats.containsKey( user ) || user.equals( username ) )
-    	{
-    		System.out.println( "Chat with " + user + " already exists or trying to chat to self, returning..." );
-    		return chats.get( user );
-    	}
-    	
-    	System.out.println("Chat initiated with " + user);
-    	Chat current = chatmanager.createChat( user + "@" + serviceName, new ClientPrivateChatMessageListener( this ) );
-    	createChatTab( user );
-    	chats.put( user, current );
-		return current;
-    }
-    
-    /**
-     * Add a chat tab with the specified user to the GUI.
-     * 
-     * @param user
-     * @author Andrew
-     * @return
-     */
-    public JTextArea createChatTab(String user)
-    {
-        /* should create a messageReceiveBox object */
-    	
-    	/* If there is not already a chat tab open with this user
-    	 * and you are not trying to chat with yourself.
-    	 */
-    	
-    	// GUI Stuff
-        JTextArea messageReceiveBox = new JTextArea();
-        messageReceiveBox.setLineWrap(true);
-        messageReceiveBox.setWrapStyleWord(true);
-        Font receiveFont = new Font("Dialog", 2, 12);
-        messageReceiveBox.setFont(receiveFont);
-        messageReceiveBox.setEditable(false);
-        messageReceiveBoxes.put( user, messageReceiveBox );
-        
-        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
-        receiveTabs.add(messageReceiveBoxScroll);
-        receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
-     
-    	if( user.equals( "Group chat" ) )
-    	{
-    		this.chatroomMessageReceiveBox = messageReceiveBox;
-    	}
-        
-        return messageReceiveBox;
-        // TODO: Else switch to the already open private conversation?
     }
 
     /**
@@ -241,8 +188,10 @@ public class Client
 
         // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
         // "):\n");
+    	
         System.out.println(StringUtils.parseResource(username) + "\n" + date
                 + "\n" + message);
+        System.out.println( "Trying to update chatroom box");
         chatroomMessageReceiveBox.append(StringUtils.parseResource(username) + " ("
                 + date + "):\n" + message + "\n");
         
@@ -250,7 +199,9 @@ public class Client
     }
     
     public void updatePrivateChatLog(String username, String date, String message)
-    {
+    {   
+    	JTextArea current;
+    	// HTML Stuff by alex that's not currently in use
         // messageReceiveBox.setContentType("text/html");
         // String oldText = messageReceiveBox.getText();
         // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
@@ -258,18 +209,90 @@ public class Client
 
         // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
         // "):\n");
-        System.out.println(StringUtils.parseResource(username) + "\n" + date
-                + "\n" + message);
+    	
+    	if( DEBUG )
+    		System.out.println( username + "\n" + date + "\n" + message);
         
-        JTextArea current = messageReceiveBoxes.get( username );
-        
-        current.append(StringUtils.parseResource(username) + " ("
-                + date + "):\n" + message + "\n");
-        
+    	/*
+    	 * If this has been called for a locally sent message, use the username 
+    	 * we are sending to, to select the right text area to update.
+    	 */
+    	if( username.equals( this.username ) )
+    		current = usersToAreas.get( receiveTabs.getSelectedComponent().getName() );
+    	else
+    		current = usersToAreas.get( username );
+    	
+        current.append( username + " (" + date + "):\n" + message + "\n" );
         current.setCaretPosition( current.getDocument().getLength() );
     }
+    
+    /**
+     * Initiate a chat session with someone, the tab is created when the 
+     * @param user
+     * @author Andrew
+     * @return the new chat session that was created, or if it already existed the existing one
+     */
+    public void initiateChat( String user )
+    {
+    	if( userChatListener.privateChats.containsKey( user ) || user.equals( username ) )
+    	{
+    		if( DEBUG )
+    			System.out.println( "Chat with " + user + " already exists or trying to chat to self, not creating one..." );
+    		return;
+    	}
+    	
+    	/*
+    	 * When you create a chat session with someone it gets bounced
+    	 * back and picked up by the userChatListener, which creates the tab
+    	 * etc.
+    	 */
+    	chatmanager.createChat( user + "@" + serviceName, null );
+    	
+    	if( DEBUG )
+    		System.out.println( "Chat initiated with " + user );
+    }
+    
+    /**
+     * Add a chat tab with the specified user as title to the GUI.
+     * 
+     * @param user
+     * @author Andrew
+     * @return The text area created to display messages in.
+     */
+    public JScrollPane createChatTab(String user)
+    {   	
+    	// GUI Stuff
+        JTextArea messageReceiveBox = new JTextArea();
+        messageReceiveBox.setLineWrap(true);
+        messageReceiveBox.setWrapStyleWord(true);
+        Font receiveFont = new Font("Dialog", 2, 12);
+        messageReceiveBox.setFont(receiveFont);
+        messageReceiveBox.setEditable(false);
+        usersToAreas.put( user, messageReceiveBox );
+        
+        JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
+        messageReceiveBoxScroll.setName( user );
+        receiveTabs.add(messageReceiveBoxScroll);
+        receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
+     
+    	if( user.equals( MainWindow.GROUPCHAT_TITLE ) )
+    	{
+    		this.chatroomMessageReceiveBox = messageReceiveBox;
+    		tabsToChats.put( messageReceiveBoxScroll, chatroom );
+    	}
+        
+        return messageReceiveBoxScroll;
+        // TODO: Else switch to the already open private conversation?
+    }
 
-    public void sendMessageChatroom(String message)
+    /**
+     * Send a message on the chat session corresponding to the currently
+     * selected receive tab in the Client GUI.
+     * 
+     * @author Andrew
+     * @param The message to be sent, as a string.
+     */
+    public void sendChatMessage(String message)
     {
         try
         {
@@ -277,7 +300,30 @@ public class Client
             Message msg = chatroom.createMessage();
             msg.setBody(Base64.encodeBytes(message.getBytes()));
             msg.setSubject(dateFormat.format(date));
-            chatroom.sendMessage(msg);
+            
+            if( receiveTabs.getSelectedComponent().getName().equals( MainWindow.GROUPCHAT_TITLE ) )
+            {
+            	/*
+            	 * If the message is being sent on a chatroom there is
+            	 * no need to display it here because all messages are reflected
+            	 * by XMPP chatrooms back to all members of the chatroom
+            	 * even if they sent the message in the first place.
+            	 * 
+            	 * Therefore the chatroom message listener will pick it up in this case.
+            	 */
+            	if( DEBUG )
+            		System.out.println( "Client: Sending message on group chat: " + message );
+            	chatroom.sendMessage( msg );
+            }
+            else
+            {
+            	if( DEBUG )
+            		System.out.println( "Client: Sending message on private chat to " +
+            				receiveTabs.getSelectedComponent().getName() + " contents: " +
+            				message );
+            	((Chat) tabsToChats.get( receiveTabs.getSelectedComponent() )).sendMessage( msg );
+            	updatePrivateChatLog( this.username, msg.getSubject(), message );
+            }	
         }
         catch (XMPPException e)
         {
@@ -286,8 +332,6 @@ public class Client
         }
     }
     
-    
-
     public String getUsername()
     {
         return this.username;

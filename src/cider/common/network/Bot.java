@@ -11,6 +11,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 
+
 /**
  * This is the class that implements the bot that connects to the XMPP server.
  * 
