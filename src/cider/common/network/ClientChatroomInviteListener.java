@@ -17,6 +17,8 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 
 public class ClientChatroomInviteListener implements InvitationListener {
 
+	private static final boolean DEBUG = true;
+	
 	private MultiUserChat chatroom;
 	private String nickname;
 	
@@ -29,9 +31,9 @@ public class ClientChatroomInviteListener implements InvitationListener {
 	@Override
 	public void invitationReceived(Connection conn, String room,
 			String inviter, String reason, String password, Message message) {
-		// TODO Auto-generated method stub
 		try {
-			System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
+			if( DEBUG )
+				System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
 			chatroom.join( this.nickname, password );				
 		} catch (XMPPException e) {
 			// TODO Auto-generated catch block

@@ -23,7 +23,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 public class BotChatListener implements ChatManagerListener
 {
 
-    public static final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
 
     private MultiUserChat chatroom;
     private Bot source;
