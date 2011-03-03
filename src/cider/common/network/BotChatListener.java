@@ -27,7 +27,7 @@ public class BotChatListener implements ChatManagerListener
 
     private MultiUserChat chatroom;
     private Bot source;
-    private HashMap<String, Chat> chats;
+    HashMap<String, Chat> chats;
 
     BotChatListener(Bot source)
     {
