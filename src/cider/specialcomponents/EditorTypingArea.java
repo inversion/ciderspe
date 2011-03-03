@@ -60,6 +60,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean CommentFound = false;
     private boolean CommentedLine = false;
     private boolean isKey = false;
+    private int CommentStartLoc = -1;
 
     @Override
     /**
@@ -256,11 +257,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
             	str = word.toString();
                 str = str.toLowerCase();
                 length = str.length();
-                if (CommentFound == false)
+                if ((CommentFound == false) || ((this.ln < CommentStartLoc) && (CommentStartLoc != -1) && (CommentFound == true)))
              	{
  	                if ( str.startsWith("/*") == true)
  	                {
  	                	CommentFound = true;
+ 	                	CommentStartLoc = this.ln;
  	                	wash(this.colors, Color.RED, i, i + length);
  	                }
  	                if ( SourceEditor.keywords.contains(str) )
