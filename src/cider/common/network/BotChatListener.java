@@ -7,9 +7,10 @@ import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.util.Base64;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+
+
 
 /**
  * 
@@ -26,7 +27,7 @@ public class BotChatListener implements ChatManagerListener
 
     private MultiUserChat chatroom;
     private Bot source;
-    HashMap<String, Chat> chats;
+    private HashMap<String, Chat> chats;
 
     BotChatListener(Bot source)
     {
@@ -51,7 +52,8 @@ public class BotChatListener implements ChatManagerListener
                                 + " initiated chat, but is already connected from another CIDER client, alerting new instance to quit...");
             try
             {
-                chat.sendMessage( Base64.encodeBytes( "quit".getBytes() ) );
+            	// No need to escape because it's alphanumeric
+                chat.sendMessage( "quit" );
             }
             catch (XMPPException e)
             {
@@ -77,6 +79,7 @@ public class BotChatListener implements ChatManagerListener
      * table.
      * 
      * @param user
+     * @author Andrew
      */
     protected void endSession(String user)
     {

@@ -30,8 +30,8 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
-import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
+import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.specialcomponents.EditorTypingArea;
@@ -50,7 +50,7 @@ public class Client
 	// TODO: Need to make sure usernames are all alpha numeric or at least don't mess up XML
 	
 	
-    public static final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
@@ -75,7 +75,7 @@ public class Client
     
     // Private chat sessions with other users
     private ClientPrivateChatListener userChatListener;
-    private HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
+    protected HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
     
     //The current user's profile
     public Profile profile = null;
@@ -84,7 +84,7 @@ public class Client
     /* Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
      */
-    public HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
+    protected HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
     
     // GUI components
     public JTabbedPane receiveTabs;
@@ -367,6 +367,17 @@ public class Client
         
         return messageReceiveBoxScroll;
         // TODO: Else switch to the already open private conversation?
+    }
+    
+    /**
+     * Close a chat with the specified user.
+     * 
+     * @author Andrew
+     * @param user
+     */
+    public void closeChat( String user )
+    {
+    	userChatListener.destroyChat( user );
     }
 
     /**

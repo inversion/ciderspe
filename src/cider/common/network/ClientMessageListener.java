@@ -25,7 +25,6 @@ import cider.common.processes.Profile;
 
 public class ClientMessageListener implements MessageListener, ActionListener
 {
-    // TODO: These probably shouldn't be public
     private Client client;
 
     public ClientMessageListener(Client client)
