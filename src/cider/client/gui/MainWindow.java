@@ -1,6 +1,7 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -23,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Time;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -136,13 +138,37 @@ public class MainWindow implements Runnable
         else
         	myProfile = client.profile;
         
+         
         //Inform the bot of the user's current colour
     	botColourChange(myProfile.userColour.getRed(),
     			myProfile.userColour.getGreen(),
     			myProfile.userColour.getBlue());
-        
+    	
+    	if (client.colours.containsKey(username))
+    		client.colours.remove(username);
+    	client.colours.put(username, myProfile.userColour);
         System.out.println(myProfile);
-		
+        
+        retrieveAllUserColours();
+		announceColourChange(myProfile.userColour.getRed(),
+				myProfile.userColour.getGreen(),
+				myProfile.userColour.getBlue());
+	}
+
+	private void retrieveAllUserColours() 
+	{
+		for (int i = 0; i < userListModel.getSize(); i++)
+		{
+			String focus = (String) userListModel.elementAt(i);
+			if (!focus.equals(username))
+			{
+				getUserColour(focus);
+				try {Thread.sleep(2000);} catch (InterruptedException e) {}
+				if (client.colours.containsKey(focus))
+					client.colours.remove(focus);
+				client.colours.put(focus, client.incomingColour);
+			}
+		}
 	}
 
 	public static void addMenuItem(JMenu menu, String name, int keyEvent,
@@ -155,6 +181,24 @@ public class MainWindow implements Runnable
                     ActionEvent.CTRL_MASK));
         menu.add(menuItem);
     }
+	
+	/**
+	 * When this method is called, the username and its colour will be added
+	 * to the hash table of user colours
+	 * @author Jon
+	 */
+	private void getUserColour(String user)
+	{
+		try 
+		{
+			client.botChat.sendMessage(StringUtils.encodeBase64("requestusercolour " + username + " " + user));
+			
+		} 
+		catch (XMPPException e) 
+		{
+			e.printStackTrace();
+		}
+	}
 
     public ActionListener newAction()
     {
@@ -222,6 +266,10 @@ public class MainWindow implements Runnable
                 {
                 	getProfileFromBot();
                 }
+                else if (action.equals("DEV: Show list of colours stored locally"))
+                {
+                	System.out.println(client.colours);
+                }
                 else if (action.equals("Close File"))
                 {
                     closeFile(action);
@@ -244,193 +292,195 @@ public class MainWindow implements Runnable
                     client.terminateBotRemotely();
                 }
             }
-
-            private void changeColour()
-            {
-                final JColorChooser colorChooser = new JColorChooser(
-                        myProfile.userColour);
-                ActionListener okListener = new ActionListener()
-                {
-                    public void actionPerformed(ActionEvent action)
-                    {
-                    	int R = colorChooser.getColor().getRed();
-                    	int G = colorChooser.getColor().getGreen();
-                    	int B = colorChooser.getColor().getBlue();
-                        myProfile.updateColour(R, G, B);
-                        botColourChange(R, G, B);
-                    }
-                };
-
-                ActionListener cancelListener = new ActionListener()
-                {
-                    public void actionPerformed(ActionEvent action)
-                    {
-                        System.out.println("Colour change cancelled");
-                    }
-                };
-
-                final JDialog dialog = JColorChooser.createDialog(null,
-                        "Change user colour", true, colorChooser, okListener,
-                        cancelListener);
-
-                URL x = this.getClass().getResource("icon.png");
-                ImageIcon image = new ImageIcon(x);
-                Image test = image.getImage();
-                dialog.setIconImage(test);
-
-                dialog.setVisible(true);
-
-            }
-
-			private void botColourChange(int r, int g, int b) 
-			{
-                try 
-                {
-					client.botChat.sendMessage(StringUtils.encodeBase64(
-							"colourchange: " + username + " " + r + " " + g + " " + b));
-				} 
-                catch (XMPPException e) 
-                {
-					e.printStackTrace();
-				}
-			}
-
-            
-            public void openFile()
-            {
-            	JFileChooser fc = new JFileChooser();
-            	int rVal = fc.showOpenDialog(null);
-            	if (rVal == JFileChooser.APPROVE_OPTION)
-            	{
-            		String temp;
-            		currentDir = fc.getSelectedFile().getAbsolutePath();
-            		currentFileName = fc.getSelectedFile().getName();
-            		
-            		//this.liveFolder = new LiveFolder("Bot", "root");
-            		//SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
-            		//client.openTabFor(currentDir);
-            		try
-            		{
-            			//FileInputStream fis = new FileInputStream(currentDir + currentFileName);
-            			//BufferedInputStream bis = new BufferedInputStream(fis);
-            			BufferedReader br = new BufferedReader(new FileReader(currentDir));
-            			currentFileContents = "";
-            			while ((temp = br.readLine()) != null)
-            			{
-            				currentFileContents = currentFileContents + temp + "\n";
-            			}
-            		}
-            		catch (IOException e)
-            		{
-            			System.err.println("Error: " + e.getMessage());
-            			System.exit(0);
-            		}
-
-            		// tabbedPane.addTab(currentFileName, new SourceEditor(
-            		// currentFileContents, currentDir));
-            		tabbedPane.setSelectedIndex(++currentTab);
-            	}
-            }
-
-            @Deprecated
-            public void saveFile(String action)
-            {
-                JFileChooser fc = new JFileChooser();
-                File f = new File(client.getCurrentDocument().name /* + ".java" */);
-                fc.setSelectedFile(f);
-
-                if (currentFileName.equals("Unsaved Document 1")
-                        || action.equals("Export"))
-                {
-                    int watdo = fc.showSaveDialog(null);
-                    if (watdo != JFileChooser.APPROVE_OPTION)
-                    {
-                        return;
-                    }
-
-                    currentFileName = fc.getSelectedFile().getName();
-                    currentDir = fc.getSelectedFile().getAbsolutePath();
-                }
-                try
-                {
-                    FileWriter fstream = new FileWriter(currentDir);
-                    BufferedWriter out = new BufferedWriter(fstream);
-                    out.write(client.getCurrentDocument().toString()/* currentFileContents */);
-                    out.close();
-                }
-                catch (IOException e1)
-                {
-                    System.err.println("Error: " + e1.getMessage());
-                }
-                tabbedPane.setTitleAt(currentTab, currentFileName);
-            }
-
-            @Deprecated
-            public void closeFile(String action)
-            {
-                // saveFile(action);
-                // // closes tab regardless of save or cancel
-                // tabbedPane.remove(tabbedPane.getSelectedIndex());
-                // tabbedPane.setSelectedIndex(--currentTab);
-            }
-           
-            public void newFile()
-            {
-            	String s = (String) JOptionPane.showInputDialog(  new JPanel(), "Enter a filename:", "New File", JOptionPane.PLAIN_MESSAGE);
-            	if (s == null)
-            	{
-            		return;
-            	}
-            	//LiveFolder liveFolder = new LiveFolder(username, this.client.getLiveFolder());
-            	//liveFolder.makeDocument(s);
-            	//TODO: create directory tree object with 's' then open it
-            	JLabel TEMP = new JLabel("blah blah blah");
-            	tabbedPane.addTab(s,TEMP);// new SourceEditor(currentFileContents, currentDir)); //new SourceEditor("", "\\."));
-            	tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
-            }
-
-            private void restartProfile()
-            {
-                int response = JOptionPane.showConfirmDialog(null,
-                        "Are you sure you wish to reset your profile?");
-                if (response == 0)
-                {
-                    File f = new File(username + ".txt");
-                    try
-                    {
-                        if (!f.exists())
-                            System.err.println("Error: profile create failed!");
-                        else
-                        {
-                            f.delete();
-                            f.createNewFile();
-                            FileWriter fw = new FileWriter(f);
-                            BufferedWriter out = new BufferedWriter(fw);
-                            System.out
-                                    .println("Profile has been reset, new credentials are:");
-                            System.out
-                                    .println(username
-                                            + "\n"
-                                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                            out.write(username
-                                    + "\n"
-                                    + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                            out.close();
-                        }
-                    }
-                    catch (IOException e)
-                    {
-                        e.printStackTrace();
-                    }
-                    myProfile = new Profile(username, client);
-                    startTime = System.currentTimeMillis();
-                }
-                else
-                    return;
-            }
         };
         return AL;
     }
+    
+    private void changeColour()
+    {
+        final JColorChooser colorChooser = new JColorChooser(
+                myProfile.userColour);
+        ActionListener okListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent action)
+            {
+            	int R = colorChooser.getColor().getRed();
+            	int G = colorChooser.getColor().getGreen();
+            	int B = colorChooser.getColor().getBlue();
+                myProfile.setColour(R, G, B);
+                announceColourChange(R, G, B);
+            	if (client.colours.containsKey(username))
+            		client.colours.remove(username);
+            	client.colours.put(username, myProfile.userColour);
+            }
+        };
+
+        ActionListener cancelListener = new ActionListener()
+        {
+            public void actionPerformed(ActionEvent action)
+            {
+                System.out.println("Colour change cancelled");
+            }
+        };
+
+        final JDialog dialog = JColorChooser.createDialog(null,
+                "Change user colour", true, colorChooser, okListener,
+                cancelListener);
+
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        dialog.setIconImage(test);
+
+        dialog.setVisible(true);
+
+    }
+
+    public void openFile()
+    {
+    	JFileChooser fc = new JFileChooser();
+    	int rVal = fc.showOpenDialog(null);
+    	if (rVal == JFileChooser.APPROVE_OPTION)
+    	{
+    		String temp;
+    		currentDir = fc.getSelectedFile().getAbsolutePath();
+    		currentFileName = fc.getSelectedFile().getName();
+    		
+    		//this.liveFolder = new LiveFolder("Bot", "root");
+    		//SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+    		//client.openTabFor(currentDir);
+    		try
+    		{
+    			//FileInputStream fis = new FileInputStream(currentDir + currentFileName);
+    			//BufferedInputStream bis = new BufferedInputStream(fis);
+    			BufferedReader br = new BufferedReader(new FileReader(currentDir));
+    			currentFileContents = "";
+    			while ((temp = br.readLine()) != null)
+    			{
+    				currentFileContents = currentFileContents + temp + "\n";
+    			}
+    		}
+    		catch (IOException e)
+    		{
+    			System.err.println("Error: " + e.getMessage());
+    			System.exit(0);
+    		}
+
+    		// tabbedPane.addTab(currentFileName, new SourceEditor(
+    		// currentFileContents, currentDir));
+    		tabbedPane.setSelectedIndex(++currentTab);
+    	}
+    }
+
+    @Deprecated
+    public void saveFile(String action)
+    {
+        JFileChooser fc = new JFileChooser();
+        File f = new File(client.getCurrentDocument().name /* + ".java" */);
+        fc.setSelectedFile(f);
+
+        if (currentFileName.equals("Unsaved Document 1")
+                || action.equals("Export"))
+        {
+            int watdo = fc.showSaveDialog(null);
+            if (watdo != JFileChooser.APPROVE_OPTION)
+            {
+                return;
+            }
+
+            currentFileName = fc.getSelectedFile().getName();
+            currentDir = fc.getSelectedFile().getAbsolutePath();
+        }
+        try
+        {
+            FileWriter fstream = new FileWriter(currentDir);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(client.getCurrentDocument().toString()/* currentFileContents */);
+            out.close();
+        }
+        catch (IOException e1)
+        {
+            System.err.println("Error: " + e1.getMessage());
+        }
+        tabbedPane.setTitleAt(currentTab, currentFileName);
+    }
+
+    @Deprecated
+    public void closeFile(String action)
+    {
+        // saveFile(action);
+        // // closes tab regardless of save or cancel
+        // tabbedPane.remove(tabbedPane.getSelectedIndex());
+        // tabbedPane.setSelectedIndex(--currentTab);
+    }
+   
+    public void newFile()
+    {
+    	String s = (String) JOptionPane.showInputDialog(  new JPanel(), "Enter a filename:", "New File", JOptionPane.PLAIN_MESSAGE);
+    	if (s == null)
+    	{
+    		return;
+    	}
+    	//LiveFolder liveFolder = new LiveFolder(username, this.client.getLiveFolder());
+    	//liveFolder.makeDocument(s);
+    	//TODO: create directory tree object with 's' then open it
+    	JLabel TEMP = new JLabel("blah blah blah");
+    	tabbedPane.addTab(s,TEMP);// new SourceEditor(currentFileContents, currentDir)); //new SourceEditor("", "\\."));
+    	tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+    }
+    
+    private void restartProfile()
+    {
+        int response = JOptionPane.showConfirmDialog(null,
+                "Are you sure you wish to reset your profile?");
+        if (response == 0)
+        {
+            File f = new File(username + ".txt");
+            try
+            {
+                if (!f.exists())
+                    System.err.println("Error: profile create failed!");
+                else
+                {
+                    f.delete();
+                    f.createNewFile();
+                    FileWriter fw = new FileWriter(f);
+                    BufferedWriter out = new BufferedWriter(fw);
+                    System.out
+                            .println("Profile has been reset, new credentials are:");
+                    System.out
+                            .println(username
+                                    + "\n"
+                                    + "chars: 0\ntimespent: 0\nlastonline: Never!");
+                    out.write(username
+                            + "\n"
+                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
+                    out.close();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            myProfile = new Profile(username, client);
+            startTime = System.currentTimeMillis();
+        }
+        else
+            return;
+    }
+    
+	public void announceColourChange(int r, int g, int b) 
+	{
+        try 
+        {
+			client.chatroom.sendMessage(StringUtils.encodeBase64(
+					"colourchange: " + username + " " + r + " " + g + " " + b));
+		} 
+        catch (XMPPException e) 
+        {
+			e.printStackTrace();
+		}
+	}
     
 	private void botColourChange(int r, int g, int b) 
 	{
@@ -639,6 +689,7 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
         addMenuItem(menu, "DEV: Get profile from server", -1, aL);
         addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
+        addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
 
         return menuBar;
     }
@@ -856,28 +907,7 @@ public class MainWindow implements Runnable
         chat.setDividerLocation(800);
         /* End of Chat panel stuffs */
 
-        JLabel test = new JLabel("i have no idea how to call the java compiler"); /*
-                                                                                   * and
-                                                                                   * when
-                                                                                   * i
-                                                                                   * google
-                                                                                   * ,
-                                                                                   * i
-                                                                                   * get
-                                                                                   * instructions
-                                                                                   * for
-                                                                                   * how
-                                                                                   * to
-                                                                                   * run
-                                                                                   * java
-                                                                                   * ,
-                                                                                   * not
-                                                                                   * the
-                                                                                   * code
-                                                                                   * to
-                                                                                   * run
-                                                                                   * java
-                                                                                   */
+        JLabel test = new JLabel("i have no idea how to call the java compiler");
         JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 this.sourceEditorSection(), test);
         EditorDebugSplit.setBorder(emptyBorder);

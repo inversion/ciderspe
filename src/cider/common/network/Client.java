@@ -1,5 +1,6 @@
 package cider.common.network;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -70,7 +71,7 @@ public class Client
 
     // Multi user chatroom
     private String chatroomName;
-    private MultiUserChat chatroom;
+    public MultiUserChat chatroom;
     private JTextArea chatroomMessageReceiveBox;
     
     // Private chat sessions with other users
@@ -80,6 +81,8 @@ public class Client
     //The current user's profile
     public Profile profile = null;
     public boolean profileFound;
+    public HashMap<String, Color> colours = new HashMap<String, Color>();
+    public Color incomingColour;
     
     /* Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
@@ -685,6 +688,18 @@ public class Client
             EditorTypingArea eta = this.openTabs.get(dest)
                     .getEditorTypingArea();
             eta.setWaiting(false);
+        }
+        else if (body.startsWith("colourchange:"))
+        {
+        	String[] split = body.split(" ");
+        	String changedUser = split[1];
+        	Color newColour = new Color(
+        			Integer.parseInt(split[2]),
+        			Integer.parseInt(split[3]),
+        			Integer.parseInt(split[4]));
+        	if (colours.containsKey(changedUser))
+        		colours.remove(changedUser);
+        	colours.put(changedUser, newColour);
         }
     }
     
