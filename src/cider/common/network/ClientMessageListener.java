@@ -1,0 +1,107 @@
+package cider.common.network;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.JOptionPane;
+
+import org.jivesoftware.smack.Chat;
+import org.jivesoftware.smack.MessageListener;
+import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.StringUtils;
+
+import cider.common.processes.Profile;
+
+
+
+/**
+ * This class waits for a message to be received by the client on its chat
+ * session with the bot.
+ * 
+ * @author Andrew + Lawrence
+ * 
+ */
+
+public class ClientMessageListener implements MessageListener, ActionListener
+{
+    private Client client;
+
+    public ClientMessageListener(Client client)
+    {
+        this.client = client;
+    }
+
+    @Override
+    public void processMessage(Chat chat, Message message)
+    {
+    	String body = new String( StringUtils.decodeBase64( message.getBody() ) );
+        if (body.startsWith("quit"))
+        {
+            client.disconnect();
+            System.err
+                    .println("Someone is already running a CIDER client with your username, disconnecting and quitting.");
+            System.exit(1);
+        }
+        else if (body.equals("notfound"))
+        {
+        	client.profileFound = false;
+        }
+        else if (body.startsWith("usercolour:"))
+        {
+        	String[] split = body.split(" ");
+        	Color c = new Color(Integer.parseInt(split[1]),
+        			Integer.parseInt(split[2]),
+        			Integer.parseInt(split[3]));
+        	client.incomingColour = c;
+        }
+        else if (body.startsWith("PROFILE* "))
+        {
+        	System.out.println(body);
+        	if (client.profile == null)
+        	{
+        		client.profile = new Profile(client.getUsername(), client);
+        	}
+        	client.profileFound = true;
+        	String[] splitLine = body.split(" ");
+        	if (splitLine[1].equals("chars:"))
+        	{
+        		client.profile.setChars(Integer.parseInt(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("timespent:"))
+        	{
+        		client.profile.setTime(Long.parseLong(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("lastonline:"))
+        	{
+        		String newsplit = body.substring(21);
+        		client.profile.setLastOnline(newsplit);
+        	}
+        	else if (splitLine[1].equals("colour:"))
+        	{
+        		client.profile.setColour(
+        				Integer.parseInt(splitLine[2]),
+        				Integer.parseInt(splitLine[3]),
+        				Integer.parseInt(splitLine[4]));
+        	}
+        	else
+        	{
+        		client.profile.uname = splitLine[2];
+        	}
+        }
+        else
+            this.client.processDocumentMessages(body);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent ae)
+    {
+        /*
+         * try { this.client.pullEventsFromBot(this.client.getLastUpdate()); }
+         * catch (Exception e) { e.printStackTrace();
+         * JOptionPane.showMessageDialog(null, "Cannot pull events: " +
+         * e.getMessage()); System.exit(1); }
+         */
+    }
+}
