@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -31,8 +32,8 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
-import cider.common.processes.Profile;
 import cider.common.processes.LiveFolder;
+import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.specialcomponents.EditorTypingArea;
@@ -48,9 +49,9 @@ import cider.specialcomponents.EditorTypingArea;
 
 public class Client
 {
-	// TODO: Need to make sure usernames are all alpha numeric or at least don't mess up XML
-	
-	
+    // TODO: Need to make sure usernames are all alpha numeric or at least don't
+    // mess up XML
+
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
@@ -73,22 +74,23 @@ public class Client
     private String chatroomName;
     public MultiUserChat chatroom;
     private JTextArea chatroomMessageReceiveBox;
-    
+
     // Private chat sessions with other users
     private ClientPrivateChatListener userChatListener;
-    protected HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
-    
-    //The current user's profile
+    protected HashMap<String, JTextArea> usersToAreas = new HashMap<String, JTextArea>();
+
+    // The current user's profile
     public Profile profile = null;
     public boolean profileFound;
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
-    
-    /* Abstract because it can be a private chat or multi user chat (chatroom)
+
+    /*
+     * Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
      */
-    protected HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
-    
+    protected HashMap<JScrollPane, Object> tabsToChats = new HashMap<JScrollPane, Object>();
+
     // GUI components
     public JTabbedPane receiveTabs;
     private DirectoryViewComponent dirView;
@@ -117,10 +119,10 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
     }
-    
+
     /**
-     * Tries to connect to the XMPP server, throwing an exception
-     * if it fails in any way.
+     * Tries to connect to the XMPP server, throwing an exception if it fails in
+     * any way.
      * 
      * @author Jon, Andrew
      */
@@ -131,7 +133,7 @@ public class Client
                 port, serviceName);
         connection = new XMPPConnection(config);
         connection.connect();
-        
+
         /*
          * Append a random string to the resource to prevent conflicts with
          * existing instances of the CIDER client from the same user.
@@ -144,32 +146,34 @@ public class Client
         if (DEBUG)
             System.out.println("Logged into XMPP server, username=" + username
                     + "/" + rand);
-        
-        // Prints out every packet received by the client, used when you want very verbose debugging
-        //connection.addPacketListener(new DebugPacketListener(), new DebugPacketFilter());
+
+        // Prints out every packet received by the client, used when you want
+        // very verbose debugging
+        // connection.addPacketListener(new DebugPacketListener(), new
+        // DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
-                
+
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(this);
         botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
                 botChatListener);
-        
+
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username));
-        
+
         // Add listener for new user chats
-        userChatListener = new ClientPrivateChatListener( this );
+        userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
     }
-        
+
     /**
      * Allows the bot to be killed remotely by clients.
      * 
-     * Used in development for example when someone leaves
-     * it running by accident.
+     * Used in development for example when someone leaves it running by
+     * accident.
      * 
      * @author Lawrence
      * 
@@ -178,7 +182,7 @@ public class Client
     {
         try
         {
-            sendBotMessage( "You play 2 hours to die like this?" );
+            sendBotMessage("You play 2 hours to die like this?");
         }
         catch (XMPPException e)
         {
@@ -186,7 +190,7 @@ public class Client
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Disconnect the client from the XMPP server.
      * 
@@ -197,8 +201,8 @@ public class Client
     {
         try
         {
-        	// Tell the bot that this client is quitting
-            sendBotMessage( "quit" );
+            // Tell the bot that this client is quitting
+            sendBotMessage("quit");
         }
         catch (XMPPException e1)
         {
@@ -207,7 +211,7 @@ public class Client
         }
         chatroom.leave();
         connection.disconnect();
-        
+
         // TODO: Is below stuff necessary?
         while (this.connection.isConnected())
             System.out.printf(".");
@@ -221,9 +225,9 @@ public class Client
             e.printStackTrace();
         }
         // TODO: Is above stuff necessary?
-        
-        if( DEBUG )
-        	System.out.println("Disconnected from XMPP server...");
+
+        if (DEBUG)
+            System.out.println("Disconnected from XMPP server...");
     }
 
     /**
@@ -234,7 +238,8 @@ public class Client
      */
     public void registerGUIComponents(DirectoryViewComponent dirView,
             JTabbedPane tabbedPane, Hashtable<String, SourceEditor> openTabs,
-            DefaultListModel userListModel, JLabel userCount, JTabbedPane receiveTabs)
+            DefaultListModel userListModel, JLabel userCount,
+            JTabbedPane receiveTabs)
     {
         this.dirView = dirView;
         this.tabbedPane = tabbedPane;
@@ -249,13 +254,17 @@ public class Client
     /**
      * Update the chatroom message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
-    protected void updateChatroomLog( String username, String date, String message )
+    protected void updateChatroomLog(String username, String date,
+            String message)
     {
         // messageReceiveBox.setContentType("text/html");
         // String oldText = messageReceiveBox.getText();
@@ -264,29 +273,35 @@ public class Client
 
         // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
         // "):\n");
-    	
-    	if( DEBUG )
-    		System.out.println( StringUtils.parseResource(username) + "\n" + date + "\n" + message );
 
-        chatroomMessageReceiveBox.append(StringUtils.parseResource(username) + " ("
-                + date + "):\n" + message + "\n");
-        
-        chatroomMessageReceiveBox.setCaretPosition(chatroomMessageReceiveBox.getDocument().getLength());
+        if (DEBUG)
+            System.out.println(StringUtils.parseResource(username) + "\n"
+                    + date + "\n" + message);
+
+        chatroomMessageReceiveBox.append(StringUtils.parseResource(username)
+                + " (" + date + "):\n" + message + "\n");
+
+        chatroomMessageReceiveBox.setCaretPosition(chatroomMessageReceiveBox
+                .getDocument().getLength());
     }
-    
+
     /**
      * Update a private chat message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
-    protected void updatePrivateChatLog( String username, String date, String message )
-    {   
-    	JTextArea current;
-    	// HTML Stuff by alex that's not currently in use
+    protected void updatePrivateChatLog(String username, String date,
+            String message)
+    {
+        JTextArea current;
+        // HTML Stuff by alex that's not currently in use
         // messageReceiveBox.setContentType("text/html");
         // String oldText = messageReceiveBox.getText();
         // messageReceiveBox.setText("<html>" + "<b>" + username + "</b>" + " ("
@@ -294,161 +309,178 @@ public class Client
 
         // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
         // "):\n");
-    	
-    	if( DEBUG )
-    		System.out.println( username + "\n" + date + "\n" + message);
-        
-    	/*
-    	 * If this has been called for a locally sent message, use the username 
-    	 * we are sending to in selecting the right text area to update.
-    	 */
-    	if( username.equals( this.username ) )
-    		current = usersToAreas.get( receiveTabs.getSelectedComponent().getName() );
-    	else
-    		current = usersToAreas.get( username );
-    	
-        current.append( username + " (" + date + "):\n" + message + "\n" );
-        current.setCaretPosition( current.getDocument().getLength() );
+
+        if (DEBUG)
+            System.out.println(username + "\n" + date + "\n" + message);
+
+        /*
+         * If this has been called for a locally sent message, use the username
+         * we are sending to in selecting the right text area to update.
+         */
+        if (username.equals(this.username))
+            current = usersToAreas.get(receiveTabs.getSelectedComponent()
+                    .getName());
+        else
+            current = usersToAreas.get(username);
+
+        current.append(username + " (" + date + "):\n" + message + "\n");
+        current.setCaretPosition(current.getDocument().getLength());
     }
-    
+
     /**
-     * Initiate a chat session with someone, essentially has no effect if the chat
-     * already exists, or if you try to chat with yourself.
+     * Initiate a chat session with someone, essentially has no effect if the
+     * chat already exists, or if you try to chat with yourself.
      * 
-     * @param The user to initiate a chat with.
+     * @param The
+     *            user to initiate a chat with.
      * @author Andrew
      */
-    public void initiateChat( String user )
+    public void initiateChat(String user)
     {
-    	if( userChatListener.privateChats.containsKey( user ) || user.equals( username ) )
-    	{
-    		if( DEBUG )
-    			System.out.println( "Chat with " + user + " already exists or trying to chat to self, not creating one..." );
-    		return;
-    	}
-    	
-    	/*
-    	 * When you create a chat session with someone it gets bounced
-    	 * back and picked up by the userChatListener, which creates the tab
-    	 * etc.
-    	 */
-    	chatmanager.createChat( user + "@" + serviceName, null );
-    	
-    	if( DEBUG )
-    		System.out.println( "Chat initiated with " + user );
+        if (userChatListener.privateChats.containsKey(user)
+                || user.equals(username))
+        {
+            if (DEBUG)
+                System.out
+                        .println("Chat with "
+                                + user
+                                + " already exists or trying to chat to self, not creating one...");
+            return;
+        }
+
+        /*
+         * When you create a chat session with someone it gets bounced back and
+         * picked up by the userChatListener, which creates the tab etc.
+         */
+        chatmanager.createChat(user + "@" + serviceName, null);
+
+        if (DEBUG)
+            System.out.println("Chat initiated with " + user);
     }
-    
+
     /**
      * Add a chat tab with the specified username as title to the GUI.
      * 
      * @param user
      * @author Andrew
-     * @return The new tab created, labelled with the username it corresponds to.
+     * @return The new tab created, labelled with the username it corresponds
+     *         to.
      */
     public JScrollPane createChatTab(String user)
-    {   	
-    	// Create the new message box and new tab
+    {
+        // Create the new message box and new tab
         JTextArea messageReceiveBox = new JTextArea();
         messageReceiveBox.setLineWrap(true);
         messageReceiveBox.setWrapStyleWord(true);
         Font receiveFont = new Font("Dialog", 2, 12);
         messageReceiveBox.setFont(receiveFont);
         messageReceiveBox.setEditable(false);
-        usersToAreas.put( user, messageReceiveBox );
-        
+        usersToAreas.put(user, messageReceiveBox);
+
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
-        messageReceiveBoxScroll.setName( user );
+        messageReceiveBoxScroll.setName(user);
         receiveTabs.add(messageReceiveBoxScroll);
         receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
-     
-        // If creating a tab for the chatroom, register the chatroom message receive box
-    	if( user.equals( MainWindow.GROUPCHAT_TITLE ) )
-    	{
-    		this.chatroomMessageReceiveBox = messageReceiveBox;
-    		tabsToChats.put( messageReceiveBoxScroll, chatroom );
-    	}
-        
+
+        // If creating a tab for the chatroom, register the chatroom message
+        // receive box
+        if (user.equals(MainWindow.GROUPCHAT_TITLE))
+        {
+            this.chatroomMessageReceiveBox = messageReceiveBox;
+            tabsToChats.put(messageReceiveBoxScroll, chatroom);
+        }
+
         return messageReceiveBoxScroll;
         // TODO: Else switch to the already open private conversation?
     }
-    
+
     /**
      * Close a chat with the specified user.
      * 
      * @author Andrew
      * @param user
      */
-    public void closeChat( String user )
+    public void closeChat(String user)
     {
-    	userChatListener.destroyChat( user );
+        userChatListener.destroyChat(user);
     }
 
     /**
      * Send a message to the bot, first encoding it to be sent over XMPP.
      * 
      * @author Andrew
-     * @throws XMPPException 
+     * @throws XMPPException
      */
-    public void sendBotMessage( String message ) throws XMPPException
+    public void sendBotMessage(String message) throws XMPPException
     {
-    	botChat.sendMessage( StringUtils.encodeBase64( message ) );
+        botChat.sendMessage(StringUtils.encodeBase64(message));
     }
-    
+
     /**
      * Send a message to the chatroom, first encoding it to be sent over XMPP.
      * 
      * @author Andrew
-     * @throws XMPPException 
+     * @throws XMPPException
      */
-    public void sendChatroomMessage( String message ) throws XMPPException
+    public void sendChatroomMessage(String message) throws XMPPException
     {
-    	chatroom.sendMessage( StringUtils.encodeBase64( message ) );
+        chatroom.sendMessage(StringUtils.encodeBase64(message));
     }
-    
+
     /**
      * Send a message on the chat session corresponding to the currently
      * selected receive tab in the Client GUI.
      * 
      * First encode it to be sent over XMPP.
-     *  
+     * 
      * @author Andrew
-     * @param The message to be sent, as a string.
+     * @param The
+     *            message to be sent, as a string.
      */
     public void sendChatMessageFromGUI(String message)
     {
         try
         {
             Date date = new Date();
-            // TODO: Potentially a problem that this is creating a MUC message then maybe sending it privately
+            // TODO: Potentially a problem that this is creating a MUC message
+            // then maybe sending it privately
             Message msg = chatroom.createMessage();
-            msg.setBody( StringUtils.encodeBase64( message ) );
+            msg.setBody(StringUtils.encodeBase64(message));
             msg.setSubject(dateFormat.format(date));
-            
-            if( receiveTabs.getSelectedComponent().getName().equals( MainWindow.GROUPCHAT_TITLE ) )
+
+            if (receiveTabs.getSelectedComponent().getName()
+                    .equals(MainWindow.GROUPCHAT_TITLE))
             {
-            	/*
-            	 * If the message is being sent on a chatroom there is
-            	 * no need to display it here because all messages are reflected
-            	 * by XMPP chatrooms back to all members of the chatroom
-            	 * even if they sent the message in the first place.
-            	 * 
-            	 * Therefore the chatroom message listener will pick it up in this case.
-            	 */
-            	if( DEBUG )
-            		System.out.println( "Client: Sending message on group chat: " + message );
-            	chatroom.sendMessage( msg );
+                /*
+                 * If the message is being sent on a chatroom there is no need
+                 * to display it here because all messages are reflected by XMPP
+                 * chatrooms back to all members of the chatroom even if they
+                 * sent the message in the first place.
+                 * 
+                 * Therefore the chatroom message listener will pick it up in
+                 * this case.
+                 */
+                if (DEBUG)
+                    System.out
+                            .println("Client: Sending message on group chat: "
+                                    + message);
+                chatroom.sendMessage(msg);
             }
             else
             {
-            	if( DEBUG )
-            		System.out.println( "Client: Sending message on private chat to " +
-            				receiveTabs.getSelectedComponent().getName() + " contents: " +
-            				message );
-            	((Chat) tabsToChats.get( receiveTabs.getSelectedComponent() )).sendMessage( msg );
-            	
-            	// Update the log with the message before it was encoded
-            	updatePrivateChatLog( this.username, msg.getSubject(), message );
-            }	
+                if (DEBUG)
+                    System.out
+                            .println("Client: Sending message on private chat to "
+                                    + receiveTabs.getSelectedComponent()
+                                            .getName()
+                                    + " contents: "
+                                    + message);
+                ((Chat) tabsToChats.get(receiveTabs.getSelectedComponent()))
+                        .sendMessage(msg);
+
+                // Update the log with the message before it was encoded
+                updatePrivateChatLog(this.username, msg.getSubject(), message);
+            }
         }
         catch (XMPPException e)
         {
@@ -456,14 +488,14 @@ public class Client
             e.printStackTrace();
         }
     }
-    
+
     // TODO: Below is all Lawrence's stuff so he needs to comment it!
-    
+
     public String getUsername()
     {
         return this.username;
     }
-    
+
     public SourceDocument getCurrentDocument()
     {
         return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
@@ -510,8 +542,8 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            sendBotMessage("pullSimplifiedEvents("
-                    + strPath + "," + String.valueOf(time) + ")");
+            sendBotMessage("pullSimplifiedEvents(" + strPath + ","
+                    + String.valueOf(time) + ")");
         }
         catch (XMPPException e)
         {
@@ -525,8 +557,8 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            sendBotMessage ("pullEvents(" + strPath
-                    + "," + String.valueOf(time) + ")");
+            sendBotMessage("pullEvents(" + strPath + "," + String.valueOf(time)
+                    + ")");
         }
         catch (XMPPException e)
         {
@@ -565,7 +597,7 @@ public class Client
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
-                                sendChatroomMessage( outgoingTypingEvents );
+                                sendChatroomMessage(outgoingTypingEvents);
                                 outgoingTypingEvents = "";
                                 lastBroardcast = System.currentTimeMillis();
                             }
@@ -583,7 +615,7 @@ public class Client
                 }
                 else
                 {
-                    sendChatroomMessage( this.outgoingTypingEvents );
+                    sendChatroomMessage(this.outgoingTypingEvents);
                     this.outgoingTypingEvents = "";
                     this.lastBroardcast = System.currentTimeMillis();
                 }
@@ -604,7 +636,7 @@ public class Client
     {
         try
         {
-            sendBotMessage( "getfilelist" );
+            sendBotMessage("getfilelist");
         }
         catch (XMPPException e)
         {
@@ -664,22 +696,26 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            // Bad horrible terrible dumb hack!!!!
-            // TODO:
-            // Need to make separate queues for different destinations
-            // Make sure the document is only repainted once.
             String[] instructions = body.split(" -> ");
+            Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
             for (String instruction : instructions)
             {
                 String[] preAndAfter = instruction.split("\\) ");
                 String[] pre = preAndAfter[0].split("\\(");
                 String dest = pre[1];
                 dest = dest.replace("root\\", "");
-                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-                typingEvents.add(new TypingEvent(preAndAfter[1]));
+                Queue<TypingEvent> queue = queues.get(dest);
+                if (queue == null)
+                {
+                    queue = new LinkedList<TypingEvent>();
+                    queues.put(dest, queue);
+                }
+                queue.add(new TypingEvent(preAndAfter[1]));
                 System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                this.push(typingEvents, dest);
             }
+
+            for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
+                this.push(entry.getValue(), entry.getKey());
 
         }
         else if (body.startsWith("isblank("))
@@ -691,25 +727,23 @@ public class Client
         }
         else if (body.startsWith("colourchange:"))
         {
-        	String[] split = body.split(" ");
-        	String changedUser = split[1];
-        	Color newColour = new Color(
-        			Integer.parseInt(split[2]),
-        			Integer.parseInt(split[3]),
-        			Integer.parseInt(split[4]));
-        	if (colours.containsKey(changedUser))
-        		colours.remove(changedUser);
-        	colours.put(changedUser, newColour);
+            String[] split = body.split(" ");
+            String changedUser = split[1];
+            Color newColour = new Color(Integer.parseInt(split[2]),
+                    Integer.parseInt(split[3]), Integer.parseInt(split[4]));
+            if (colours.containsKey(changedUser))
+                colours.remove(changedUser);
+            colours.put(changedUser, newColour);
         }
     }
-    
+
     public void updateProfile(Profile p)
     {
-    	profile = p;
+        profile = p;
     }
-    
+
     public Profile getProfile()
     {
-    	return profile;
+        return profile;
     }
 }
