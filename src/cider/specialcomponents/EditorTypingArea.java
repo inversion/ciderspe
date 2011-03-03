@@ -40,6 +40,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
     private Font font = new Font("monospaced", Font.PLAIN, 11);
+    private Font fontbold = new Font("monospaced", Font.BOLD, 11);
     private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private long lastUpdateTime = 0;
@@ -48,6 +49,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private int leftMargin = 32;
     private ArrayList<ETALine> lines = new ArrayList<ETALine>();
     private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
+    private ArrayList<Integer> KeyWord = new ArrayList<Integer>();
     private ETALine currentLine = null;
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
@@ -55,6 +57,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private static final int lineSpacing = 10;
     private static final int characterSpacing = 7;
     private boolean waiting = true;
+    private boolean CommentFound = false;
+    private boolean isKey = false;
 
     @Override
     /**
@@ -114,6 +118,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         line.paintCharacter(g, i);
                     }
                     ln++;
+                    KeyWord.clear();
+                    KeyWord.add(-1);
+                    KeyWord.add(-1);
                 }
                 p++;
             }
@@ -244,20 +251,33 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int length;
             for (TypingEventList word : words)
             {
-                str = word.toString();
-                str = str.toLowerCase();
-                length = str.length();
-                if (SourceEditor.keywords.contains(str))
-                    wash(this.colors, Color.BLUE, i, i + length);
-                if (isComment(str) == true)
-                    wash(this.colors, Color.RED, i, i + length);
-                if (isParsableToNum(str) == true)
-                    wash(this.colors, Color.GREEN, i, i + length);
-                if (i > 1)
-                    if ((this.colors[(i - 2)] == Color.RED)
-                            || (this.colors[(i - 1)] == Color.RED))
-                        wash(this.colors, Color.RED, i, i + length);
-                i += length + 1;
+            	 str = word.toString();
+                 str = str.toLowerCase();
+                 length = str.length();
+                 if (CommentFound == false)
+             	{
+ 	                if ( str.startsWith("/*") == true)
+ 	                {
+ 	                	CommentFound = true;
+ 	                	wash(this.colors, Color.RED, i, i + length);
+ 	                }
+ 	                if ( SourceEditor.keywords.contains(str) )
+ 	                {
+ 	                    wash(this.colors, Color.BLUE, i, i + length);
+ 	                    KeyWord.add(i);
+ 	                    KeyWord.add(i+length);
+ 	                }	
+ 	                if ( isParsableToNum(str) == true)
+ 	                	wash(this.colors, Color.GREEN, i, i + length);
+ 	                if ( str.startsWith("//") == true)
+ 	                	wash(this.colors, Color.RED, i, i + length);
+             	} else {
+ 	            	wash(this.colors, Color.RED, i, i + length);
+ 	            	if ( str.endsWith("*/") == true )
+ 	            		CommentFound = false;
+             	}
+                 i += length + 1;
+
             }
         }
 
@@ -266,16 +286,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
             g.setColor(Color.LIGHT_GRAY);
             g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
                     lineSpacing, 3, 3);
-        }
-
-        public boolean isComment(String str)
-        {
-            if (str.length() > 1)
-                if (str.startsWith("//") || str.startsWith("/*")
-                        || str.startsWith("*/") == true)
-                    return true;
-
-            return false;
         }
 
         public boolean isParsableToNum(String str)
@@ -315,9 +325,25 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int x = (i * characterSpacing) + leftMargin;
             int y = this.y;
 
+            isKey = false;
+            
             g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
-
-            g.drawString("" + str.get(i).text, x, y);
+            
+            for (int j = 0; j < KeyWord.size(); j = j + 2)
+            {
+	            if (( i >= KeyWord.get(j)) && ( i <= KeyWord.get(j+1)))
+	            	isKey = true;
+            }
+            System.out.println(isKey + " " + KeyWord.size());
+            if ( isKey == true )
+            {
+            	g.setFont(fontbold);
+        		g.drawString("" + str.get(i).text, x, y);
+        		g.setFont(font);
+            } else {
+            	g.setFont(font);
+        		g.drawString("" + str.get(i).text, x, y);
+            }
         }
 
         /**
