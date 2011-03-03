@@ -12,10 +12,11 @@ import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.processes.LocalisedTypingEvents;
 import cider.common.processes.TypingEvent;
-import cider.specialcomponents.Base64;
+
 
 /**
  * This class waits for a message to be received on a chat session and then
@@ -50,16 +51,7 @@ public class BotMessageListener implements MessageListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = null;
-        try
-        {
-            body = new String(Base64.decode(message.getBody()));
-        }
-        catch (IOException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+        String body = new String( StringUtils.decodeBase64( message.getBody() ) );
         // TODO: XML-ize this and get filelist??
         if (body.startsWith("quit"))
         {
@@ -93,8 +85,8 @@ public class BotMessageListener implements MessageListener
             try
             {
                 String xml = this.bot.getRootFolder().xml("");
-                chat.sendMessage(Base64.encodeBytes(("filelist=" + xml)
-                        .getBytes()));
+                chat.sendMessage( StringUtils.encodeBase64( ("filelist=" + xml) ) );
+                System.out.println( xml );
             }
             catch (XMPPException e)
             {
@@ -165,7 +157,7 @@ public class BotMessageListener implements MessageListener
                 instructions += "pushto(" + path + ") " + te.pack() + " -> ";
         try
         {
-            chat.sendMessage(Base64.encodeBytes(instructions.getBytes()));
+            chat.sendMessage( StringUtils.encodeBase64( instructions ) );
         }
         catch (XMPPException e)
         {
@@ -183,7 +175,7 @@ public class BotMessageListener implements MessageListener
                         + " -> ";
         try
         {
-            chat.sendMessage(Base64.encodeBytes(instructions.getBytes()));
+        	chat.sendMessage( StringUtils.encodeBase64( instructions ) );
         }
         catch (XMPPException e)
         {

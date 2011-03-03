@@ -9,8 +9,9 @@ import javax.swing.JOptionPane;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.util.StringUtils;
 
-import cider.specialcomponents.Base64;
+
 
 /**
  * This class waits for a message to be received by the client on its chat
@@ -33,16 +34,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = null;
-        try
-        {
-            body = new String(Base64.decode(message.getBody()));
-        }
-        catch (IOException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
+    	String body = new String( StringUtils.decodeBase64( message.getBody() ) );
         if (body.startsWith("quit"))
         {
             client.disconnect();
