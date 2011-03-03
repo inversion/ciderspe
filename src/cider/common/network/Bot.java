@@ -72,10 +72,10 @@ public class Bot
                     + "@conference." + SERVICE_NAME);
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
-            connection.addPacketListener(new DebugPacketListener(),
-                    new DebugPacketFilter());
-            connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                    new DebugPacketFilter());
+            
+            // Verbose debugging to print out every packet leaving or entering the bot
+            //connection.addPacketListener(new DebugPacketListener(),                   new DebugPacketFilter());
+            //connection.addPacketInterceptor(new DebugPacketInterceptor(),                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();

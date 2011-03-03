@@ -15,17 +15,14 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Time;
-import java.util.ArrayList;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -54,13 +51,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
-import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
-import cider.common.processes.SourceDocument;
-import cider.common.processes.TypingEventList;
-import cider.specialcomponents.Base64;
+
 
 public class MainWindow implements Runnable
 {
@@ -475,7 +470,7 @@ public class MainWindow implements Runnable
             String s = myProfile.toString();
             s = "userprofile:  " + s;
             System.out.println(s);
-            client.botChat.sendMessage(Base64.encodeBytes(s.getBytes()));
+            client.sendBotMessage( s );
         }
         catch (XMPPException e1)
         {
@@ -758,7 +753,7 @@ public class MainWindow implements Runnable
     {
         if (!message.equals("") && !message.equals("\n"))
         {
-            client.sendChatMessage(message);
+            client.sendChatMessageFromGUI(message);
             messageSendBox.setText("");
         }
     }

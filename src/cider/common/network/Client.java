@@ -3,7 +3,6 @@ package cider.common.network;
 import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -34,27 +33,59 @@ import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
-import cider.specialcomponents.Base64;
 import cider.specialcomponents.EditorTypingArea;
 
 /**
  * 
  * This implements the client side of the XMPP layer.
  * 
- * It also handles the networking side of user chats
+ * It also handles user chats and chatrooms.
  * 
- * @author Andrew + Lawrence
+ * @author Andrew, Lawrence
  */
 
 public class Client
 {
+	// TODO: Need to make sure usernames are all alpha numeric or at least don't mess up XML
+	
+	
     public static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
 
+    // XMPP Basics
     private XMPPConnection connection;
     private ChatManager chatmanager;
+    private String username;
+    private String host;
+    private int port;
+    private String serviceName;
+    private String password;
+
+    // Chat session with the Bot
+    private Chat botChat;
+    private ClientMessageListener botChatListener;
+
+    // Multi user chatroom
+    private String chatroomName;
+    private MultiUserChat chatroom;
+    private JTextArea chatroomMessageReceiveBox;
+    
+    // Private chat sessions with other users
+    private ClientPrivateChatListener userChatListener;
+    private HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
+    
+    /* Abstract because it can be a private chat or multi user chat (chatroom)
+     * and smack represents them as different types
+     */
+    public HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
+    
+    // GUI components
+    public JTabbedPane receiveTabs;
+    private DirectoryViewComponent dirView;
+
+    // Lawrence's source document stuff
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
@@ -64,34 +95,6 @@ public class Client
     private static final long minimumBroadcastDelay = 0;
     private String outgoingTypingEvents = "";
     private Timer broardcastTimer = new Timer();
-
-    private DirectoryViewComponent dirView;
-
-    // Chat session with the Bot
-    public Chat botChat;
-    private ClientMessageListener botChatListener;
-    private String username;
-    private String host;
-    private int port;
-    public String serviceName;
-    private String password;
-
-    // Private chat sessions with other users
-    public HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
-    
-    /* Abstract because it can be a private chat or multi user chat
-     * and smack represents them as different types
-     */
-    public HashMap<JScrollPane,Object> tabsToChats = new HashMap<JScrollPane,Object>();
-    
-    public JTabbedPane receiveTabs;
-    private ClientPrivateChatListener userChatListener;
-
-    // Chatroom
-    private String chatroomName;
-    private MultiUserChat chatroom;
-
-    private JTextArea chatroomMessageReceiveBox;
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
 
@@ -106,10 +109,113 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
     }
-
-    public SourceDocument getCurrentDocument()
+    
+    /**
+     * Tries to connect to the XMPP server, throwing an exception
+     * if it fails in any way.
+     * 
+     * @author Jon, Andrew
+     */
+    public void attemptConnection() throws XMPPException
     {
-        return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
+        // Connect and login to the XMPP server
+        ConnectionConfiguration config = new ConnectionConfiguration(host,
+                port, serviceName);
+        connection = new XMPPConnection(config);
+        connection.connect();
+        
+        /*
+         * Append a random string to the resource to prevent conflicts with
+         * existing instances of the CIDER client from the same user.
+         * 
+         * Later the Bot will alert the user if there is an existing instance of
+         * the CIDER client.
+         */
+        String rand = StringUtils.randomString(5);
+        connection.login(username, password, RESOURCE + rand);
+        if (DEBUG)
+            System.out.println("Logged into XMPP server, username=" + username
+                    + "/" + rand);
+        
+        // Prints out every packet received by the client, used when you want very verbose debugging
+        //connection.addPacketListener(new DebugPacketListener(), new DebugPacketFilter());
+
+        chatmanager = this.connection.getChatManager();
+                
+        // Establish chat session with the bot
+        botChatListener = new ClientMessageListener(this);
+        botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
+                botChatListener);
+        
+        // Listen for invitation to chatroom and set up message listener for it
+        chatroom = new MultiUserChat(connection, chatroomName);
+        MultiUserChat.addInvitationListener(connection,
+                new ClientChatroomInviteListener(chatroom, username));
+        
+        // Add listener for new user chats
+        userChatListener = new ClientPrivateChatListener( this );
+        chatmanager.addChatListener(userChatListener);
+    }
+        
+    /**
+     * Allows the bot to be killed remotely by clients.
+     * 
+     * Used in development for example when someone leaves
+     * it running by accident.
+     * 
+     * @author Lawrence
+     * 
+     */
+    public void terminateBotRemotely()
+    {
+        try
+        {
+            sendBotMessage( "You play 2 hours to die like this?" );
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Disconnect the client from the XMPP server.
+     * 
+     * @author Andrew, Jon
+     * 
+     */
+    public void disconnect()
+    {
+        try
+        {
+        	// Tell the bot that this client is quitting
+            sendBotMessage( "quit" );
+        }
+        catch (XMPPException e1)
+        {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        }
+        chatroom.leave();
+        connection.disconnect();
+        
+        // TODO: Is below stuff necessary?
+        while (this.connection.isConnected())
+            System.out.printf(".");
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        // TODO: Is above stuff necessary?
+        
+        if( DEBUG )
+        	System.out.println("Disconnected from XMPP server...");
     }
 
     /**
@@ -133,53 +239,15 @@ public class Client
     }
 
     /**
-     * Returns TRUE on successful connection, FALSE on failure
+     * Update the chatroom message log with a new message.
      * 
-     * Edited by Andrew to throw the exception.
+     * @param The username of the user who sent the message
+     * @param The date the message was originally sent (as Dateformat)
+     * @param The message body.
      * 
-     * @author Jon
+     * @author Andrew
      */
-    public void attemptConnection() throws XMPPException
-    {
-        // Connect and login to the XMPP server
-        ConnectionConfiguration config = new ConnectionConfiguration(host,
-                port, serviceName);
-        connection = new XMPPConnection(config);
-        connection.connect();
-        /**
-         * Append a random string to the resource to prevent conflicts with
-         * existing instances of the CIDER client from the same user.
-         * 
-         * Later the Bot will alert the user if there is an existing instance of
-         * the CIDER client.
-         */
-        String rand = StringUtils.randomString(5);
-        connection.login(username, password, RESOURCE + rand);
-        if (DEBUG)
-            System.out.println("Logged into XMPP server, username=" + username
-                    + "/" + rand);
-        
-        
-        //connection.addPacketListener(new DebugPacketListener(), new DebugPacketFilter());
-
-        chatmanager = this.connection.getChatManager();
-                
-        // Establish chat session with the bot
-        botChatListener = new ClientMessageListener(this);
-        botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
-                botChatListener);
-        
-        // Listen for invitation to chatroom and set up message listener for it
-        chatroom = new MultiUserChat(connection, chatroomName);
-        MultiUserChat.addInvitationListener(connection,
-                new ClientChatroomInviteListener(chatroom, username));
-        
-        // Add listener for new user chats
-        userChatListener = new ClientPrivateChatListener( this );
-        chatmanager.addChatListener(userChatListener);
-    }
-
-    public void updateChatLog(String username, String date, String message)
+    protected void updateChatroomLog( String username, String date, String message )
     {
         // messageReceiveBox.setContentType("text/html");
         // String oldText = messageReceiveBox.getText();
@@ -189,16 +257,25 @@ public class Client
         // messageReceiveBox.append(username + " (" + dateFormat.format(date) +
         // "):\n");
     	
-        System.out.println(StringUtils.parseResource(username) + "\n" + date
-                + "\n" + message);
-        System.out.println( "Trying to update chatroom box");
+    	if( DEBUG )
+    		System.out.println( StringUtils.parseResource(username) + "\n" + date + "\n" + message );
+
         chatroomMessageReceiveBox.append(StringUtils.parseResource(username) + " ("
                 + date + "):\n" + message + "\n");
         
         chatroomMessageReceiveBox.setCaretPosition(chatroomMessageReceiveBox.getDocument().getLength());
     }
     
-    public void updatePrivateChatLog(String username, String date, String message)
+    /**
+     * Update a private chat message log with a new message.
+     * 
+     * @param The username of the user who sent the message
+     * @param The date the message was originally sent (as Dateformat)
+     * @param The message body.
+     * 
+     * @author Andrew
+     */
+    protected void updatePrivateChatLog( String username, String date, String message )
     {   
     	JTextArea current;
     	// HTML Stuff by alex that's not currently in use
@@ -215,7 +292,7 @@ public class Client
         
     	/*
     	 * If this has been called for a locally sent message, use the username 
-    	 * we are sending to, to select the right text area to update.
+    	 * we are sending to in selecting the right text area to update.
     	 */
     	if( username.equals( this.username ) )
     		current = usersToAreas.get( receiveTabs.getSelectedComponent().getName() );
@@ -227,10 +304,11 @@ public class Client
     }
     
     /**
-     * Initiate a chat session with someone, the tab is created when the 
-     * @param user
+     * Initiate a chat session with someone, essentially has no effect if the chat
+     * already exists, or if you try to chat with yourself.
+     * 
+     * @param The user to initiate a chat with.
      * @author Andrew
-     * @return the new chat session that was created, or if it already existed the existing one
      */
     public void initiateChat( String user )
     {
@@ -253,15 +331,15 @@ public class Client
     }
     
     /**
-     * Add a chat tab with the specified user as title to the GUI.
+     * Add a chat tab with the specified username as title to the GUI.
      * 
      * @param user
      * @author Andrew
-     * @return The text area created to display messages in.
+     * @return The new tab created, labelled with the username it corresponds to.
      */
     public JScrollPane createChatTab(String user)
     {   	
-    	// GUI Stuff
+    	// Create the new message box and new tab
         JTextArea messageReceiveBox = new JTextArea();
         messageReceiveBox.setLineWrap(true);
         messageReceiveBox.setWrapStyleWord(true);
@@ -275,6 +353,7 @@ public class Client
         receiveTabs.add(messageReceiveBoxScroll);
         receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
      
+        // If creating a tab for the chatroom, register the chatroom message receive box
     	if( user.equals( MainWindow.GROUPCHAT_TITLE ) )
     	{
     		this.chatroomMessageReceiveBox = messageReceiveBox;
@@ -286,19 +365,44 @@ public class Client
     }
 
     /**
+     * Send a message to the bot, first encoding it to be sent over XMPP.
+     * 
+     * @author Andrew
+     * @throws XMPPException 
+     */
+    public void sendBotMessage( String message ) throws XMPPException
+    {
+    	botChat.sendMessage( StringUtils.encodeBase64( message ) );
+    }
+    
+    /**
+     * Send a message to the chatroom, first encoding it to be sent over XMPP.
+     * 
+     * @author Andrew
+     * @throws XMPPException 
+     */
+    public void sendChatroomMessage( String message ) throws XMPPException
+    {
+    	chatroom.sendMessage( StringUtils.encodeBase64( message ) );
+    }
+    
+    /**
      * Send a message on the chat session corresponding to the currently
      * selected receive tab in the Client GUI.
      * 
+     * First encode it to be sent over XMPP.
+     *  
      * @author Andrew
      * @param The message to be sent, as a string.
      */
-    public void sendChatMessage(String message)
+    public void sendChatMessageFromGUI(String message)
     {
         try
         {
             Date date = new Date();
+            // TODO: Potentially a problem that this is creating a MUC message then maybe sending it privately
             Message msg = chatroom.createMessage();
-            msg.setBody(Base64.encodeBytes(message.getBytes()));
+            msg.setBody( StringUtils.encodeBase64( message ) );
             msg.setSubject(dateFormat.format(date));
             
             if( receiveTabs.getSelectedComponent().getName().equals( MainWindow.GROUPCHAT_TITLE ) )
@@ -322,6 +426,8 @@ public class Client
             				receiveTabs.getSelectedComponent().getName() + " contents: " +
             				message );
             	((Chat) tabsToChats.get( receiveTabs.getSelectedComponent() )).sendMessage( msg );
+            	
+            	// Update the log with the message before it was encoded
             	updatePrivateChatLog( this.username, msg.getSubject(), message );
             }	
         }
@@ -332,36 +438,16 @@ public class Client
         }
     }
     
+    // TODO: Below is all Lawrence's stuff so he needs to comment it!
+    
     public String getUsername()
     {
         return this.username;
     }
-
-    public void disconnect()
+    
+    public SourceDocument getCurrentDocument()
     {
-        try
-        {
-            botChat.sendMessage(Base64.encodeBytes("quit".getBytes()));
-        }
-        catch (XMPPException e1)
-        {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        chatroom.leave();
-        connection.disconnect();
-        while (this.connection.isConnected())
-            System.out.printf(".");
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        System.out.println("Disconnected from XMPP server...");
+        return this.currentDoc;// .playOutEvents(Long.MAX_VALUE).countCharactersFor("user1");
     }
 
     public boolean updatesAutomatically()
@@ -405,8 +491,8 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage(Base64.encodeBytes(("pullSimplifiedEvents("
-                    + strPath + "," + String.valueOf(time) + ")").getBytes()));
+            sendBotMessage("pullSimplifiedEvents("
+                    + strPath + "," + String.valueOf(time) + ")");
         }
         catch (XMPPException e)
         {
@@ -420,8 +506,8 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage(Base64.encodeBytes(("pullEvents(" + strPath
-                    + "," + String.valueOf(time) + ")").getBytes()));
+            sendBotMessage ("pullEvents(" + strPath
+                    + "," + String.valueOf(time) + ")");
         }
         catch (XMPPException e)
         {
@@ -460,9 +546,7 @@ public class Client
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
-                                chatroom.sendMessage(Base64
-                                        .encodeBytes(outgoingTypingEvents
-                                                .getBytes()));
+                                sendChatroomMessage( outgoingTypingEvents );
                                 outgoingTypingEvents = "";
                                 lastBroardcast = System.currentTimeMillis();
                             }
@@ -480,8 +564,7 @@ public class Client
                 }
                 else
                 {
-                    this.chatroom.sendMessage(Base64
-                            .encodeBytes(this.outgoingTypingEvents.getBytes()));
+                    sendChatroomMessage( this.outgoingTypingEvents );
                     this.outgoingTypingEvents = "";
                     this.lastBroardcast = System.currentTimeMillis();
                 }
@@ -502,7 +585,7 @@ public class Client
     {
         try
         {
-            botChat.sendMessage(Base64.encodeBytes("getfilelist".getBytes()));
+            sendBotMessage( "getfilelist" );
         }
         catch (XMPPException e)
         {
@@ -586,21 +669,6 @@ public class Client
             EditorTypingArea eta = this.openTabs.get(dest)
                     .getEditorTypingArea();
             eta.setWaiting(false);
-        }
-    }
-
-    public void terminateBotRemotely()
-    {
-        try
-        {
-            this.botChat.sendMessage(Base64
-                    .encodeBytes("You play 2 hours to die like this?"
-                            .getBytes()));
-        }
-        catch (XMPPException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
     }
 }

@@ -1,12 +1,11 @@
 package cider.common.network;
 
-import java.io.IOException;
-
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.util.StringUtils;
 
-import cider.specialcomponents.Base64;
+
 
 /**
  * Listens for new messages in chatrooms.
@@ -34,21 +33,12 @@ public class ClientChatroomMessageListener implements PacketListener
         Message msg = (Message) packet;
         if (msg.getType() == Message.Type.groupchat)
         {
-            String body = null;
-            try
-            {
-                body = new String(Base64.decode(msg.getBody()));
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block=
-                e.printStackTrace();
-            }
+            String body = new String( StringUtils.decodeBase64( msg.getBody() ) );
             if (body.startsWith("filelist=") || body.startsWith("pushto(")
                     || body.startsWith("empty"))
                 client.processDocumentMessages(body);
             else
-                client.updateChatLog(msg.getFrom(), msg.getSubject(), body);
+                client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
         }
     }
 

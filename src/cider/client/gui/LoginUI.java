@@ -73,6 +73,7 @@ public class LoginUI
         }
         catch (Exception e)
         {
+        	System.err.println("Note: Can't use noire look and feel, add JTattoo.jar to your build path.");
         }
 
         JPanel main = new JPanel();
