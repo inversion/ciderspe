@@ -1,6 +1,8 @@
 package cider.common.network;
 
+import java.awt.Color;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -39,6 +41,9 @@ public class Bot
     private ChatManager chatmanager;
     private BotChatListener chatListener;
     private LiveFolder liveFolder;
+    
+    //Holds the colours for each user
+    public HashMap<String, Color> colours;
 
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
@@ -58,6 +63,7 @@ public class Bot
 
     public Bot()
     {
+    	colours = new HashMap<String, Color>();
         try
         {
             checkForBot();
