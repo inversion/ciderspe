@@ -20,7 +20,7 @@ import cider.common.processes.SourceDocument;
 
 public class Bot
 {
-    public static final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
     public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
@@ -33,7 +33,6 @@ public class Bot
     private ConnectionConfiguration config = new ConnectionConfiguration(HOST,
             PORT, SERVICE_NAME);
 
-    // Chatroom
     protected MultiUserChat chatroom;
 
     private XMPPConnection connection;
@@ -41,6 +40,7 @@ public class Bot
     private BotChatListener chatListener;
     private LiveFolder liveFolder;
 
+    // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
         @SuppressWarnings("unused")
@@ -90,8 +90,14 @@ public class Bot
         }
     }
 
-    // Connect to the server as a reserved user to check if the bot is already
-    // online from another location
+    /**
+     * Connect to the server as a reserved user to check if the bot is already
+     * logged on from another location. Alert the user on stderr if this is the case
+     * 
+     * @author Andrew
+     * @throws XMPPException
+     * 
+     */
     private void checkForBot() throws XMPPException
     {
         XMPPConnection conn = new XMPPConnection(config);
@@ -115,13 +121,19 @@ public class Bot
         conn.disconnect();
     }
 
-    // Leave the chatroom and disconnect from the server
+    /**
+     * Leave the chatroom and disconnect from the server.
+     * 
+     * @author Andrew
+     */
     public void disconnect()
     {
         chatroom.leave();
         connection.disconnect();
     }
 
+    // TODO: Lawrence needs to comment below
+    
     public void testTree()
     {
         this.liveFolder = new LiveFolder("Bot", "root");

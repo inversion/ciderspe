@@ -2,9 +2,6 @@ package cider.common.network;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-
-import javax.swing.JOptionPane;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
@@ -23,7 +20,6 @@ import org.jivesoftware.smack.util.StringUtils;
 
 public class ClientMessageListener implements MessageListener, ActionListener
 {
-    // TODO: These probably shouldn't be public
     private Client client;
 
     public ClientMessageListener(Client client)

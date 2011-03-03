@@ -51,7 +51,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;

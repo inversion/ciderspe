@@ -17,6 +17,8 @@ import org.jivesoftware.smack.util.StringUtils;
 
 public class ClientPrivateChatMessageListener implements MessageListener {
 
+	private static final boolean DEBUG = true;
+	
 	private Client client;
 	
 	public ClientPrivateChatMessageListener( Client caller ) 
@@ -30,7 +32,7 @@ public class ClientPrivateChatMessageListener implements MessageListener {
 		// TODO: Bit dodgy about null etc.
         String body = new String( StringUtils.decodeBase64( message.getBody() ) );
         
-        if( Client.DEBUG )
+        if( DEBUG )
         	System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
         
 		client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
