@@ -58,6 +58,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private static final int characterSpacing = 7;
     private boolean waiting = true;
     private boolean CommentFound = false;
+    private boolean CommentedLine = false;
     private boolean isKey = false;
 
     @Override
@@ -118,6 +119,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         line.paintCharacter(g, i);
                     }
                     ln++;
+                    CommentedLine = false;
                     KeyWord.clear();
                     KeyWord.add(-1);
                     KeyWord.add(-1);
@@ -251,10 +253,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int length;
             for (TypingEventList word : words)
             {
-            	 str = word.toString();
-                 str = str.toLowerCase();
-                 length = str.length();
-                 if (CommentFound == false)
+            	str = word.toString();
+                str = str.toLowerCase();
+                length = str.length();
+                if (CommentFound == false)
              	{
  	                if ( str.startsWith("/*") == true)
  	                {
@@ -270,13 +272,18 @@ public class EditorTypingArea extends JPanel implements MouseListener
  	                if ( isParsableToNum(str) == true)
  	                	wash(this.colors, Color.GREEN, i, i + length);
  	                if ( str.startsWith("//") == true)
+ 	                {
+ 	                	wash(this.colors, Color.RED, i, i + length);
+ 	                	CommentedLine = true;
+ 	                }
+ 	                if (CommentedLine == true)
  	                	wash(this.colors, Color.RED, i, i + length);
              	} else {
  	            	wash(this.colors, Color.RED, i, i + length);
  	            	if ( str.endsWith("*/") == true )
  	            		CommentFound = false;
              	}
-                 i += length + 1;
+                i += length + 1;
 
             }
         }
@@ -334,7 +341,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
 	            if (( i >= KeyWord.get(j)) && ( i <= KeyWord.get(j+1)))
 	            	isKey = true;
             }
-            System.out.println(isKey + " " + KeyWord.size());
             if ( isKey == true )
             {
             	g.setFont(fontbold);
