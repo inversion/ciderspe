@@ -1,5 +1,6 @@
 package cider.common.network;
 
+import java.awt.Color;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -61,6 +62,24 @@ public class BotMessageListener implements MessageListener
         if (body.startsWith("quit"))
         {
             source.endSession(name);
+        }
+        else if (body.startsWith("colourchange:"))
+        {
+        	String[] split = body.split(" ");
+        	int R = Integer.parseInt(split[2]);
+        	int G = Integer.parseInt(split[3]);
+        	int B = Integer.parseInt(split[4]);
+
+        	System.out.println("Colour change received from " 
+        			+ split[1] + ": "
+        			+ R + ", " 
+        			+ G + ", " 
+        			+ B);
+        	if (bot.colours.containsKey(split[1]))
+        	{
+        		bot.colours.remove(split[1]);
+        	}
+        	bot.colours.put(split[1], new Color(R, G, B));
         }
         else if (body.startsWith("userprofile:"))
         {

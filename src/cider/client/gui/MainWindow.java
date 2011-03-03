@@ -103,10 +103,14 @@ public class MainWindow implements Runnable
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
-        
-        /**
-         * This segment of code sets up the profile by asking the Bot
-         * if it has the user on it's record. If so, the profile
+        profileSetup(); 
+    }
+
+    private void profileSetup() 
+    {
+    	/**
+         * This method sets up the profile by asking the Bot
+         * if it has the user on its record. If so, the profile
          * updates appropriately. If not, a new profile is created.
          * 
          * @author Jon
@@ -115,21 +119,33 @@ public class MainWindow implements Runnable
         
         try 
         {
+        	/**
+        	 * This is to negate the effect of latency on checking the
+        	 * new profile
+        	 */
 			Thread.sleep(1000);
-		} catch (InterruptedException e) 
+		} 
+        catch (InterruptedException e) 
 		{
 			e.printStackTrace();
 		}
         if (client.profileFound == false)
+        {
         	myProfile = new Profile(username, client);
+        }
         else
         	myProfile = client.profile;
         
-        System.out.println(myProfile);
+        //Inform the bot of the user's current colour
+    	botColourChange(myProfile.userColour.getRed(),
+    			myProfile.userColour.getGreen(),
+    			myProfile.userColour.getBlue());
         
-    }
+        System.out.println(myProfile);
+		
+	}
 
-    public static void addMenuItem(JMenu menu, String name, int keyEvent,
+	public static void addMenuItem(JMenu menu, String name, int keyEvent,
             ActionListener a)
     {
         JMenuItem menuItem = new JMenuItem(name);
@@ -237,10 +253,11 @@ public class MainWindow implements Runnable
                 {
                     public void actionPerformed(ActionEvent action)
                     {
-                        myProfile.updateColour(
-                                colorChooser.getColor().getRed(), colorChooser
-                                        .getColor().getGreen(), colorChooser
-                                        .getColor().getBlue());
+                    	int R = colorChooser.getColor().getRed();
+                    	int G = colorChooser.getColor().getGreen();
+                    	int B = colorChooser.getColor().getBlue();
+                        myProfile.updateColour(R, G, B);
+                        botColourChange(R, G, B);
                     }
                 };
 
@@ -264,6 +281,19 @@ public class MainWindow implements Runnable
                 dialog.setVisible(true);
 
             }
+
+			private void botColourChange(int r, int g, int b) 
+			{
+                try 
+                {
+					client.botChat.sendMessage(StringUtils.encodeBase64(
+							"colourchange: " + username + " " + r + " " + g + " " + b));
+				} 
+                catch (XMPPException e) 
+                {
+					e.printStackTrace();
+				}
+			}
 
             
             public void openFile()
@@ -401,6 +431,19 @@ public class MainWindow implements Runnable
         };
         return AL;
     }
+    
+	private void botColourChange(int r, int g, int b) 
+	{
+        try 
+        {
+			client.botChat.sendMessage(StringUtils.encodeBase64(
+					"colourchange: " + username + " " + r + " " + g + " " + b));
+		} 
+        catch (XMPPException e) 
+        {
+			e.printStackTrace();
+		}
+	}
 
     private void showMyProfile()
     {
