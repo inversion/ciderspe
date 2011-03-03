@@ -56,7 +56,6 @@ import org.jivesoftware.smack.util.StringUtils;
 import cider.common.network.Client;
 import cider.common.processes.Profile;
 
-
 public class MainWindow implements Runnable
 {
     JTabbedPane tabbedPane = new JTabbedPane();
@@ -95,7 +94,6 @@ public class MainWindow implements Runnable
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
-        myProfile = new Profile(username);
         startTime = System.currentTimeMillis();
         this.username = username;
        
@@ -105,6 +103,30 @@ public class MainWindow implements Runnable
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
+        
+        /**
+         * This segment of code sets up the profile by asking the Bot
+         * if it has the user on it's record. If so, the profile
+         * updates appropriately. If not, a new profile is created.
+         * 
+         * @author Jon
+         */
+        getProfileFromBot();
+        
+        try 
+        {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) 
+		{
+			e.printStackTrace();
+		}
+        if (client.profileFound == false)
+        	myProfile = new Profile(username, client);
+        else
+        	myProfile = client.profile;
+        
+        System.out.println(myProfile);
+        
     }
 
     public static void addMenuItem(JMenu menu, String name, int keyEvent,
@@ -179,6 +201,10 @@ public class MainWindow implements Runnable
                 else if (action.equals("DEV: Push profile to server"))
                 {
                     sendProfileToBot();
+                }
+                else if (action.equals("DEV: Get profile from server"))
+                {
+                	getProfileFromBot();
                 }
                 else if (action.equals("Close File"))
                 {
@@ -366,7 +392,7 @@ public class MainWindow implements Runnable
                     {
                         e.printStackTrace();
                     }
-                    myProfile = new Profile(username);
+                    myProfile = new Profile(username, client);
                     startTime = System.currentTimeMillis();
                 }
                 else
@@ -383,8 +409,8 @@ public class MainWindow implements Runnable
         System.out.println(myProfile.timeSpent);
         startTime = System.currentTimeMillis();
         
-        int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
-    	myProfile.adjustCharCount(count);
+//        int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+//    	myProfile.adjustCharCount(count);
         
         JFrame profileFrame = new JFrame("My Profile- " + username);
         Container content = profileFrame.getContentPane();
@@ -470,12 +496,24 @@ public class MainWindow implements Runnable
             String s = myProfile.toString();
             s = "userprofile:  " + s;
             System.out.println(s);
-            client.sendBotMessage( s );
+            client.botChat.sendMessage(StringUtils.encodeBase64(s));
         }
         catch (XMPPException e1)
         {
             e1.printStackTrace();
         }
+    }
+    
+    private void getProfileFromBot()
+    {
+    	try 
+    	{
+			client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile " + username));
+			System.out.println("Requesting profile from server");
+		} catch (XMPPException e) 
+		{
+			e.printStackTrace();
+		}
     }
 
     private void tabClicked(MouseEvent e)
@@ -556,7 +594,7 @@ public class MainWindow implements Runnable
 
         addMenuItem(menu, "DEV: Push profile to server", -1, aL);
         addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
-        // addMenuItem(menu, "Pull item from server (NYI)", -1, aL);
+        addMenuItem(menu, "DEV: Get profile from server", -1, aL);
         addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
 
         return menuBar;

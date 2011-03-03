@@ -15,6 +15,8 @@ import java.io.Reader;
 import java.text.DateFormat;
 import java.util.Date;
 
+import cider.common.network.Client;
+
 public class Profile 
 {
 	public String uname;
@@ -22,23 +24,96 @@ public class Profile
 	public long timeSpent;
 	public String lastOnline;
 	public Color userColour;
+	public Client client;
 	
-	public static void main (String uname)
-	{
-		new Profile(uname);
-	}
+//	public static void main (String uname)
+//	{
+//		new Profile(uname);
+//	}
 
-	public Profile(String un) 
+	public Profile(String un, Client c) 
 	{
 		uname = un;
 		typedChars = 0;
 		timeSpent = 0;
 		lastOnline = "Never!";
 		userColour = new Color(150,150,150);
-		readProfileFile();
+		client = c;
+		//readProfileFileFromServer();
 	}
 	
-	public void readProfileFile()
+
+	
+	public static void incrementCharCount()
+	{
+		typedChars++;
+		return;
+	}
+	
+	public static void adjustCharCount(int adjustment)
+	{
+		typedChars+=adjustment;
+		return;
+	}
+
+	public void updateTimeSpent(Long start)
+	{
+		long end, spent;
+		end = System.currentTimeMillis();
+		spent = end-start;
+
+		System.out.println("UPDATING TIME " + spent + timeSpent);
+		timeSpent += spent;
+	}
+	
+	public void updateColour (int R, int G, int B)
+	{
+		userColour = new Color(R, G, B);
+		System.out.println("Colour updated to: " + R + " " + G + " " + B);
+	}
+	
+	public void updateProfileInfo() 
+	{
+		Date d = new Date();
+		DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
+		lastOnline = df.format(d);		
+	}
+	
+	public String toString()
+	{
+		return uname + "  " + "chars: " + typedChars + 
+		"  timespent: " + timeSpent + 
+		"  lastonline: " + lastOnline + 
+		"  colour: " + 
+		userColour.getRed() + " " + 
+		userColour.getGreen() + " " + 
+		userColour.getBlue();
+	}
+
+	public void addClient(Client c) 
+	{
+		client = c;
+	}
+
+	public void setChars(int parseInt) 
+	{
+		typedChars = parseInt;
+	}
+
+	public void setTime(long parseLong) {
+		timeSpent = parseLong;
+	}
+
+	public void setLastOnline(String string) {
+		lastOnline = string;
+	}
+
+	public void setColour(int R, int G, int B) {
+		userColour = new Color(R, G, B);
+	}
+	
+	@Deprecated
+	public void readProfileFileFromServer()
 	{
 		File f = new File (uname + ".txt");
 		if (f.exists())
@@ -125,77 +200,5 @@ public class Profile
 				e.printStackTrace();
 			}
 		}
-	}
-	
-	public static void incrementCharCount()
-	{
-		typedChars++;
-		return;
-	}
-	
-	public static void adjustCharCount(int adjustment)
-	{
-		typedChars+=adjustment;
-		return;
-	}
-
-	public void updateTimeSpent(Long start)
-	{
-		long end, spent;
-		end = System.currentTimeMillis();
-		spent = end-start;
-
-		System.out.println("UPDATING TIME " + spent + timeSpent);
-		timeSpent += spent;
-	}
-	
-	public void updateColour (int R, int G, int B)
-	{
-		userColour = new Color(R, G, B);
-		System.out.println("Colour updated to: " + R + " " + G + " " + B);
-	}
-	
-	public void updateProfileInfo() 
-	{
-		File f = new File (uname + ".txt");
-		try 
-		{
-			if (!f.exists())
-				System.out.println("Error: User Profile file was not generated");
-			else
-			{
-				f.delete();
-				f.createNewFile();
-				Date d = new Date();
-				DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
-				lastOnline = df.format(d);
-				FileWriter fw = new FileWriter(f);
-				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: " + typedChars + 
-						"\ntimespent: " + timeSpent + 
-						"\nlastonline: " + lastOnline + 
-						"\ncolour: " + 
-						userColour.getRed() + " " + 
-						userColour.getGreen() + " " + 
-						userColour.getBlue());
-				out.close();
-			}
-		} 
-		catch (IOException e) 
-		{
-			e.printStackTrace();
-		}
-		
-	}
-	
-	public String toString()
-	{
-		return uname + "  " + "chars: " + typedChars + 
-		"  timespent: " + timeSpent + 
-		"  lastonline: " + lastOnline + 
-		"  colour: " + 
-		userColour.getRed() + " " + 
-		userColour.getGreen() + " " + 
-		userColour.getBlue();
 	}
 }

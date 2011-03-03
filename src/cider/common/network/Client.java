@@ -31,6 +31,7 @@ import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
+import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.specialcomponents.EditorTypingArea;
@@ -64,7 +65,7 @@ public class Client
     private String password;
 
     // Chat session with the Bot
-    private Chat botChat;
+    public Chat botChat;
     private ClientMessageListener botChatListener;
 
     // Multi user chatroom
@@ -75,6 +76,10 @@ public class Client
     // Private chat sessions with other users
     private ClientPrivateChatListener userChatListener;
     private HashMap<String,JTextArea> usersToAreas = new HashMap<String,JTextArea>();
+    
+    //The current user's profile
+    public Profile profile = null;
+    public boolean profileFound;
     
     /* Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
@@ -670,5 +675,15 @@ public class Client
                     .getEditorTypingArea();
             eta.setWaiting(false);
         }
+    }
+    
+    public void updateProfile(Profile p)
+    {
+    	profile = p;
+    }
+    
+    public Profile getProfile()
+    {
+    	return profile;
     }
 }

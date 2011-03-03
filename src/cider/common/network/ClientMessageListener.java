@@ -11,6 +11,8 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
+import cider.common.processes.Profile;
+
 
 
 /**
@@ -41,6 +43,44 @@ public class ClientMessageListener implements MessageListener, ActionListener
             System.err
                     .println("Someone is already running a CIDER client with your username, disconnecting and quitting.");
             System.exit(1);
+        }
+        else if (body.equals("notfound"))
+        {
+        	client.profileFound = false;
+        }
+        else if (body.startsWith("PROFILE* "))
+        {
+        	System.out.println(body);
+        	if (client.profile == null)
+        	{
+        		client.profile = new Profile(client.getUsername(), client);
+        	}
+        	client.profileFound = true;
+        	String[] splitLine = body.split(" ");
+        	if (splitLine[1].equals("chars:"))
+        	{
+        		client.profile.setChars(Integer.parseInt(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("timespent:"))
+        	{
+        		client.profile.setTime(Long.parseLong(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("lastonline:"))
+        	{
+        		String newsplit = body.substring(21);
+        		client.profile.setLastOnline(newsplit);
+        	}
+        	else if (splitLine[1].equals("colour:"))
+        	{
+        		client.profile.setColour(
+        				Integer.parseInt(splitLine[2]),
+        				Integer.parseInt(splitLine[3]),
+        				Integer.parseInt(splitLine[4]));
+        	}
+        	else
+        	{
+        		client.profile.uname = splitLine[2];
+        	}
         }
         else
             this.client.processDocumentMessages(body);
