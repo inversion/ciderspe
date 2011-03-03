@@ -66,12 +66,6 @@ public class Profile
 		timeSpent += spent;
 	}
 	
-	public void updateColour (int R, int G, int B)
-	{
-		userColour = new Color(R, G, B);
-		System.out.println("Colour updated to: " + R + " " + G + " " + B);
-	}
-	
 	public void updateProfileInfo() 
 	{
 		Date d = new Date();
@@ -110,6 +104,7 @@ public class Profile
 
 	public void setColour(int R, int G, int B) {
 		userColour = new Color(R, G, B);
+		System.out.println("Colour updated to: " + R + " " + G + " " + B);
 	}
 	
 	@Deprecated

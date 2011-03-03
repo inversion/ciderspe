@@ -7,6 +7,7 @@ package cider.common.network;
  * 
  */
 
+import java.awt.Color;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map.Entry;
@@ -59,6 +60,23 @@ public class BotChatroomMessageListener implements PacketListener
             	Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry.getValue().playOutEvents(Long.MAX_VALUE).countCharactersAll();
             	
             }
+        }
+        else if (body.startsWith("colourchange:"))
+        {
+        	String[] split = body.split(" ");
+        	int R = Integer.parseInt(split[2]);
+        	int G = Integer.parseInt(split[3]);
+        	int B = Integer.parseInt(split[4]);
+        	System.out.println("Colour change received from " 
+        			+ split[1] + ": "
+        			+ R + ", " 
+        			+ G + ", " 
+        			+ B);
+        	if (bot.colours.containsKey(split[1]))
+        	{
+        		bot.colours.remove(split[1]);
+        	}
+        	bot.colours.put(split[1], new Color(R, G, B));
         }
     }
 }

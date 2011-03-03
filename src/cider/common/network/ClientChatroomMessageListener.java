@@ -34,8 +34,10 @@ public class ClientChatroomMessageListener implements PacketListener
         if (msg.getType() == Message.Type.groupchat)
         {
             String body = new String( StringUtils.decodeBase64( msg.getBody() ) );
-            if (body.startsWith("filelist=") || body.startsWith("pushto(")
-                    || body.startsWith("empty"))
+            if (body.startsWith("filelist=") 
+            		|| body.startsWith("pushto(")
+                    || body.startsWith("empty")
+                    || body.startsWith("colourchange:"))
                 client.processDocumentMessages(body);
             else
                 client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);

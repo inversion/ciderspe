@@ -1,5 +1,6 @@
 package cider.common.network;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -46,6 +47,14 @@ public class ClientMessageListener implements MessageListener, ActionListener
         else if (body.equals("notfound"))
         {
         	client.profileFound = false;
+        }
+        else if (body.startsWith("usercolour:"))
+        {
+        	String[] split = body.split(" ");
+        	Color c = new Color(Integer.parseInt(split[1]),
+        			Integer.parseInt(split[2]),
+        			Integer.parseInt(split[3]));
+        	client.incomingColour = c;
         }
         else if (body.startsWith("PROFILE* "))
         {

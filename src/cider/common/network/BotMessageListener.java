@@ -63,23 +63,21 @@ public class BotMessageListener implements MessageListener
         {
             source.endSession(name);
         }
-        else if (body.startsWith("colourchange:"))
+        else if (body.startsWith("requestusercolour"))
         {
         	String[] split = body.split(" ");
-        	int R = Integer.parseInt(split[2]);
-        	int G = Integer.parseInt(split[3]);
-        	int B = Integer.parseInt(split[4]);
-
-        	System.out.println("Colour change received from " 
-        			+ split[1] + ": "
-        			+ R + ", " 
-        			+ G + ", " 
-        			+ B);
-        	if (bot.colours.containsKey(split[1]))
+        	Color yaycolour = bot.colours.get(split[2]);
+        	try 
         	{
-        		bot.colours.remove(split[1]);
-        	}
-        	bot.colours.put(split[1], new Color(R, G, B));
+				source.chats.get(split[1]).sendMessage(StringUtils.encodeBase64("usercolour: " +
+						yaycolour.getRed() + " " +
+						yaycolour.getGreen() + " " +
+						yaycolour.getBlue()));
+			} 
+        	catch (XMPPException e) 
+        	{
+				e.printStackTrace();
+			}
         }
         else if (body.startsWith("userprofile:"))
         {
