@@ -69,7 +69,7 @@ public class LoginUI
         login.setResizable(false);
         try
         {
-            UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+            //UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
