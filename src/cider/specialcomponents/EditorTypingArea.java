@@ -3,6 +3,8 @@ package cider.specialcomponents;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -39,8 +41,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
 {
     private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
-    private Font font = new Font("monospaced", Font.PLAIN, 11);
-    private Font fontbold = new Font("monospaced", Font.BOLD, 11);
+    private Font font = new Font("Monospaced", Font.PLAIN, 14);
+    private Font fontbold = new Font("Monospaced", Font.BOLD, 14);
     private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private long lastUpdateTime = 0;
@@ -54,8 +56,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
-    private static final int lineSpacing = 10;
-    private static final int characterSpacing = 7;
+    private static final int lineSpacing = 15;
+    private static final int characterSpacing = 8;
     private boolean waiting = true;
     private boolean CommentFound = false;
     private boolean CommentedLine = false;
@@ -66,15 +68,19 @@ public class EditorTypingArea extends JPanel implements MouseListener
     /**
      * calls paint methods on the ETALines
      */
-    public void paintComponent(Graphics g)
+    public void paintComponent(Graphics g2)
     {
+    	Graphics2D g = (Graphics2D) g2;
         super.paintComponent(g);
 
         if (this.waiting)
+        {
             this.paintWaitingSign(g);
+        }
         else
         {
             g.setFont(font);
+            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g.setColor(Color.WHITE);
             g.fillRect(0, 0, this.getWidth(), this.getHeight());
             int p = 0;
@@ -136,7 +142,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public void paintWaitingSign(Graphics g)
     {
-        g.setFont(new Font("ariel", Font.PLAIN, 14));
+        g.setFont(new Font("SansSerif", Font.PLAIN, 14));
         g.drawString("Retrieving document from server... ", 32, 32);
     }
 

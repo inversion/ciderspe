@@ -739,7 +739,7 @@ public class MainWindow implements Runnable
             g.fillRect(0, 0, getWidth(), getHeight());
             
             // draw coloured rectangle and name
-            g.setColor(Color.BLACK); //get unique user color here
+            g.setColor(client.colours.get(name)); //get unique user color here
             g.fillRect(6, 6, 13, 13);
             g.drawString(name, 25, 17);
         }
@@ -753,11 +753,11 @@ public class MainWindow implements Runnable
         Border emptyBorder = BorderFactory.createEmptyBorder();
 
         // temporarily added so there were always users online
-        userListModel.add(0, "Person 1");
+        /*userListModel.add(0, "Person 1");
         userListModel.add(1, "Person 2");
         userListModel.add(2, "Person 3");
         userListModel.add(3, "Person 4");
-        userListModel.add(4, "Person 5");
+        userListModel.add(4, "Person 5");*/
         
         userList = new JList(userListModel);
         userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
