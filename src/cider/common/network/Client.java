@@ -1,14 +1,18 @@
 package cider.common.network;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.ProgressMonitor;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -85,6 +90,8 @@ public class Client
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
 
+    private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
+
     /*
      * Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
@@ -108,6 +115,8 @@ public class Client
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
     private long clockOffset = 0;
+    private boolean synchronised = false;
+    private PriorityQueue<Long> latencyList = new PriorityQueue<Long>();
 
     public Client(String username, String password, String host, int port,
             String serviceName)
@@ -168,9 +177,62 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
+    }
 
+    public void startClockSynchronisation(Component parentComponent)
+    {
+        final int requiredSamples = 5;
+        final ProgressMonitor progressMonitor = new ProgressMonitor(
+                parentComponent, "Synchronising watch...", "", 0,
+                requiredSamples + 1);
+        progressMonitor.setMillisToDecideToPopup(0);
+
+        final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+            int samplesTaken = 0;
+
+            @Override
+            public void run()
+            {
+                if (samplesTaken < 5)
+                {
+                    sampleLatency();
+                    this.samplesTaken++;
+                    progressMonitor.setProgress(requiredSamples);
+                }
+                else
+                {
+                    updateClockOffset();
+                    synchronised = true;
+                    progressMonitor.setProgress(requiredSamples);
+                    progressMonitor.setNote("Getting file list...");
+                    getFileListFromBot();
+                    progressMonitor.setProgress(requiredSamples + 1);
+                    progressMonitor.close();
+                    timer.cancel();
+                }
+            }
+
+        }, 0, 2000);
+    }
+
+    private void sampleLatency()
+    {
         // Synchronise clock
+
+        // 1: Client stamps current local time on a "time request" packet and
+        // sends to server
         long currentLocalTime = System.currentTimeMillis();
+        try
+        {
+            this.sendBotMessage("timeRequest(" + currentLocalTime + ")");
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -749,5 +811,26 @@ public class Client
     public Profile getProfile()
     {
         return profile;
+    }
+
+    public long getClockOffset()
+    {
+        return this.clockOffset;
+    }
+
+    public void addLatencySample(long latency)
+    {
+        this.latencyList.add(latency);
+    }
+
+    public void updateClockOffset()
+    {
+        int mid = this.latencyList.size() / 2;
+        int i = mid;
+        while (i-- > 0)
+            this.latencyList.poll();
+
+        this.clockOffset = this.latencyList.peek();
+        System.out.println("Clock offset set to " + this.clockOffset);
     }
 }

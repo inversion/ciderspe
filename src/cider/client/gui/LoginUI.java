@@ -29,7 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -37,31 +36,33 @@ import cider.common.network.Client;
 
 public class LoginUI
 {
-	public String currentDir = "src\\cider\\client\\gui\\"; //this is from MainWindow.java
+    public String currentDir = "src\\cider\\client\\gui\\"; // this is from
+                                                            // MainWindow.java
 
     static JFrame login; // TODO changed from private to static?
     private JFrame connecting;
-    
+
     // Default values for login box
     public static final String DEFAULT_HOST = "xmpp.org.uk";
     // TODO: Should be numeric really
     public static final String DEFAULT_PORT = "5222";
     public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
-    
+
     // Login box fields
     JTextField txtUsername;
     JPasswordField txtPassword;
     JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
-    
-	MainWindow program;
-    
-    JCheckBox chkRemember ;
+
+    MainWindow program;
+
+    JCheckBox chkRemember;
 
     public void displayLogin()
     {
-    	// TODO: Can we make it connect when you press enter on one of the textFields
+        // TODO: Can we make it connect when you press enter on one of the
+        // textFields
         // Setup JFrame
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,18 +70,18 @@ public class LoginUI
         login.setResizable(false);
         try
         {
-            //UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+            // UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
-        	System.err.println("Note: Can't use noire look and feel, add JTattoo.jar to your build path.");
+            System.err
+                    .println("Note: Can't use noire look and feel, add JTattoo.jar to your build path.");
         }
 
         JPanel main = new JPanel();
         main.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
         Box box = Box.createVerticalBox();
-        
-        
+
         ActionListener aL = newAction();
 
         // CIDEr Image
@@ -90,8 +91,8 @@ public class LoginUI
         lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         box.add(lblImage);
-        
-        //JFrame icon
+
+        // JFrame icon
         URL x = this.getClass().getResource("icon.png");
         ImageIcon image2 = new ImageIcon(x);
         Image test = image2.getImage();
@@ -107,75 +108,73 @@ public class LoginUI
 
         JLabel lblUser = new JLabel("Username:");
         JLabel lblPass = new JLabel("Password:");
-        JLabel lblServiceName = new JLabel( "Service Name: " );
+        JLabel lblServiceName = new JLabel("Service Name: ");
         JLabel lblHost = new JLabel("Host Address:  ");
         JLabel lblPort = new JLabel("Port Number:");
         txtUsername = new JTextField(13);
         txtPassword = new JPasswordField(13);
         txtServiceName = new JTextField(13);
-        txtServiceName.setText( DEFAULT_SERVICE_NAME );
+        txtServiceName.setText(DEFAULT_SERVICE_NAME);
         txtHost = new JTextField(13);
-        txtHost.setText( DEFAULT_HOST );
+        txtHost.setText(DEFAULT_HOST);
         // TODO: Make this numeric?
         txtPort = new JTextField(13);
-        txtPort.setText( DEFAULT_PORT );
-        
+        txtPort.setText(DEFAULT_PORT);
+
         txtUsername.addKeyListener(new KeyAdapter()
         {
-        	public void keyPressed(KeyEvent e)
-        	{
-        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-        		{
-        			checkLogin();
-        		}
-        	}
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    checkLogin();
+                }
+            }
         });
-        
+
         txtPassword.addKeyListener(new KeyAdapter()
         {
-        	public void keyPressed(KeyEvent e)
-        	{
-        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-        		{
-        			checkLogin();
-        		}
-        	}
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    checkLogin();
+                }
+            }
         });
-        
+
         txtServiceName.addKeyListener(new KeyAdapter()
         {
-        	public void keyPressed(KeyEvent e)
-        	{
-        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-        		{
-        			checkLogin();
-        		}
-        	}
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    checkLogin();
+                }
+            }
         });
-        
+
         txtHost.addKeyListener(new KeyAdapter()
         {
-        	public void keyPressed(KeyEvent e)
-        	{
-        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-        		{
-        			checkLogin();
-        		}
-        	}
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    checkLogin();
+                }
+            }
         });
-        
+
         txtPort.addKeyListener(new KeyAdapter()
         {
-        	public void keyPressed(KeyEvent e)
-        	{
-        		if (e.getKeyCode() == KeyEvent.VK_ENTER) 
-        		{
-        			checkLogin();
-        		}
-        	}
+            public void keyPressed(KeyEvent e)
+            {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                {
+                    checkLogin();
+                }
+            }
         });
-
-
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -227,7 +226,7 @@ public class LoginUI
         chkRemember.setBorder(BorderFactory.createEmptyBorder(0, 0, 25, 0));
         chkRemember.setAlignmentX(Component.CENTER_ALIGNMENT);
         box.add(chkRemember);
-        
+
         fetchLogin();
 
         // Submit Button
@@ -244,132 +243,141 @@ public class LoginUI
         login.setLocationByPlatform(true);
         login.setVisible(true);
     }
-    
-    private void fetchLogin() 
+
+    private void fetchLogin()
     {
-    	/*Checks for login.txt file and fills in the details if found- Alex*/
-    	try 
-    	{
-			FileReader fstream = new FileReader(currentDir + "login.txt");
-			BufferedReader in = new BufferedReader(fstream);
+        /* Checks for login.txt file and fills in the details if found- Alex */
+        try
+        {
+            FileReader fstream = new FileReader(currentDir + "login.txt");
+            BufferedReader in = new BufferedReader(fstream);
 
-			String line;
-			int i = 0;
-			String [] text = new String [5];
+            String line;
+            int i = 0;
+            String[] text = new String[5];
 
-			while((line = in.readLine()) != null)
-			{
-				StringTokenizer token = new StringTokenizer(line, ",");
-				while (token.hasMoreTokens())
-				{
-					text[i] = passwordEncrypt.decrypt(token.nextToken());
-					i++;
-				}
-			}
-			in.close();
+            while ((line = in.readLine()) != null)
+            {
+                StringTokenizer token = new StringTokenizer(line, ",");
+                while (token.hasMoreTokens())
+                {
+                    text[i] = passwordEncrypt.decrypt(token.nextToken());
+                    i++;
+                }
+            }
+            in.close();
 
-			txtUsername.setText(text[0]);
-			txtPassword.setText(text[1]);
-			txtServiceName.setText(text[2]);
-			txtHost.setText(text[3]);
-			txtPort.setText(text[4]);
-			chkRemember.setSelected(true);
-		} 
-    	catch (FileNotFoundException e) 
-		{
-    		//System.out.println("File not found");
-		}
-    	catch (IOException e) 
-    	{
-    		//System.out.println("File not found");
-		}
-	}
-    
+            txtUsername.setText(text[0]);
+            txtPassword.setText(text[1]);
+            txtServiceName.setText(text[2]);
+            txtHost.setText(text[3]);
+            txtPort.setText(text[4]);
+            chkRemember.setSelected(true);
+        }
+        catch (FileNotFoundException e)
+        {
+            // System.out.println("File not found");
+        }
+        catch (IOException e)
+        {
+            // System.out.println("File not found");
+        }
+    }
+
     boolean checkLogin()
     {
-    	// TODO: Can we have some commenting on what methods actually do please GUI people
-    	if (chkRemember.isSelected() == true)
-		{
-			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
-		}
-		else
-		{
-			String fileName = currentDir + "login.txt";
-			File file = new File(fileName);
-			
-			try
-			{
-				file.delete();
-			}
-			catch(IllegalArgumentException err)
-			{
-				System.out.println("Deletion failed: " + fileName);
-			}
-		}
-		if (showConnectBox())
-			return true;
-		else
-		{
-			displayLogin();
-			//program.killWindow();
-		}
-		return false;
+        // TODO: Can we have some commenting on what methods actually do please
+        // GUI people
+        if (chkRemember.isSelected() == true)
+        {
+            saveLoginDetails(txtUsername.getText(),
+                    new String(txtPassword.getPassword()),
+                    txtServiceName.getText(), txtHost.getText(),
+                    txtPort.getText());
+        }
+        else
+        {
+            String fileName = currentDir + "login.txt";
+            File file = new File(fileName);
+
+            try
+            {
+                file.delete();
+            }
+            catch (IllegalArgumentException err)
+            {
+                System.out.println("Deletion failed: " + fileName);
+            }
+        }
+        if (showConnectBox())
+            return true;
+        else
+        {
+            displayLogin();
+            // program.killWindow();
+        }
+        return false;
     }
 
-	public ActionListener newAction()
+    public ActionListener newAction()
     {
-    	ActionListener AL = new ActionListener() 
-    	{
-    		@Override
-    		public void actionPerformed(ActionEvent e) {
-    			String action = e.getActionCommand();
-    			checkLogin();
-    		}
-    	};
-    	return AL;
-    } 
-
-    void saveLoginDetails(String txtUsername, String txtPassword, String txtServiceName, String txtHost, String txtPort)
-    {
-    	// TODO password encryption / encrypt everything
-    	System.out.println("Saving login details for '" + txtUsername + "' in directory: " + currentDir);
-    	
-    	try
-    	{
-    		FileWriter fstream = new FileWriter(currentDir + "login.txt");
-    		BufferedWriter out = new BufferedWriter(fstream);
-    		out.write(passwordEncrypt.encrypt(txtUsername) + "," + passwordEncrypt.encrypt(txtPassword) + "," + passwordEncrypt.encrypt(txtServiceName) + "," + passwordEncrypt.encrypt(txtHost) + "," + passwordEncrypt.encrypt(txtPort));
-    		out.close();
-    	}
-    	catch (IOException e)
-    	{
-    		System.err.println("Error: " + e.getMessage());
-    		System.exit(0);
-    	}
+        ActionListener AL = new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                String action = e.getActionCommand();
+                checkLogin();
+            }
+        };
+        return AL;
     }
-    
+
+    void saveLoginDetails(String txtUsername, String txtPassword,
+            String txtServiceName, String txtHost, String txtPort)
+    {
+        // TODO password encryption / encrypt everything
+        System.out.println("Saving login details for '" + txtUsername
+                + "' in directory: " + currentDir);
+
+        try
+        {
+            FileWriter fstream = new FileWriter(currentDir + "login.txt");
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(passwordEncrypt.encrypt(txtUsername) + ","
+                    + passwordEncrypt.encrypt(txtPassword) + ","
+                    + passwordEncrypt.encrypt(txtServiceName) + ","
+                    + passwordEncrypt.encrypt(txtHost) + ","
+                    + passwordEncrypt.encrypt(txtPort));
+            out.close();
+        }
+        catch (IOException e)
+        {
+            System.err.println("Error: " + e.getMessage());
+            System.exit(0);
+        }
+    }
+
     boolean showConnectBox()
     {
-    	login.setVisible(false);
-    	
-    	// Create New JFrame
-    	connecting = new JFrame();
+        login.setVisible(false);
+
+        // Create New JFrame
+        connecting = new JFrame();
         connecting.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
         connecting.setTitle("CIDEr - Connecting");
         connecting.setResizable(false);
-        
+
         JPanel panel = new JPanel();
-        /*try
-        {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }
-        catch (Exception e)
-        {
-        }*/
-        
+        /*
+         * try {
+         * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+         * } catch (Exception e) { }
+         */
+
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         Box box = Box.createHorizontalBox();
-        
+
         // Connecting Image
         URL u = this.getClass().getResource("connectingimage.gif");
         ImageIcon image = new ImageIcon(u);
@@ -377,71 +385,76 @@ public class LoginUI
         lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
         box.add(lblImage);
-        
+
         // Status Text
         JLabel lblStatus = new JLabel("Connecting to the server...");
         box.add(lblStatus);
-        
+
         // Finalise JFrame
         panel.add(box);
         connecting.add(panel);
         connecting.pack();
-        int x = (int) (login.getX() + login.getWidth()/2);
-        int y = (int) (login.getY() + login.getHeight()/2);
-        connecting.setLocation(x - connecting.getWidth()/2, y - connecting.getHeight()/3);
+        int x = (int) (login.getX() + login.getWidth() / 2);
+        int y = (int) (login.getY() + login.getHeight() / 2);
+        connecting.setLocation(x - connecting.getWidth() / 2,
+                y - connecting.getHeight() / 3);
         connecting.setVisible(true);
-        
-//        Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried to simulate waiting but it kills the animation :D
-//    	try
-//    	{
-//    		thisThread.sleep(2000);
-//    	}
-//    	catch (InterruptedException e)
-//    	{
-//    		e.printStackTrace();
-//    	}
+
+        // Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried
+        // to simulate waiting but it kills the animation :D
+        // try
+        // {
+        // thisThread.sleep(2000);
+        // }
+        // catch (InterruptedException e)
+        // {
+        // e.printStackTrace();
+        // }
         if (connect())
-        	return true;
+            return true;
         else
         {
-        	connecting.dispose();
-        	return false;
+            connecting.dispose();
+            return false;
         }
     }
 
     boolean connect()
     {
-    	// TODO Connection Code
-    	// On connect, close login and connect JFrames, run MainWindow
-    	
-    	//System.out.println(passwordEncrypt.encrypt(new String(txtPassword.getPassword())));
-		Client client;
-		try {
-			// TODO: Recommended to zero bytes of password after use
-			// TODO: Check that fields aren't null/validation stuff
-			client = new Client(
-	                txtUsername.getText(), 
-	                new String(txtPassword.getPassword()), 
-	                txtHost.getText(), 
-	                Integer.parseInt( txtPort.getText() ),
-	                txtServiceName.getText());
-			client.attemptConnection();
-			program = new MainWindow( txtUsername.getText(), 
-					/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
-									  txtHost.getText(), 
-									  Integer.parseInt( txtPort.getText() ),
-									  txtServiceName.getText() ,
-									  client);
-			        SwingUtilities.invokeLater(program);
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Couldn't login: " + e.getMessage());
-			return false;
-		}
-		connecting.setVisible(false);
-		return true;
+        // TODO Connection Code
+        // On connect, close login and connect JFrames, run MainWindow
+
+        // System.out.println(passwordEncrypt.encrypt(new
+        // String(txtPassword.getPassword())));
+        Client client;
+        try
+        {
+            // TODO: Recommended to zero bytes of password after use
+            // TODO: Check that fields aren't null/validation stuff
+            client = new Client(txtUsername.getText(), new String(
+                    txtPassword.getPassword()), txtHost.getText(),
+                    Integer.parseInt(txtPort.getText()),
+                    txtServiceName.getText());
+            client.attemptConnection();
+            program = new MainWindow(txtUsername.getText(),
+            /*
+             * passwordEncrypt.encrypt(new String(txtPassword.getPassword()))
+             */new String(txtPassword.getPassword()), txtHost.getText(),
+                    Integer.parseInt(txtPort.getText()),
+                    txtServiceName.getText(), client);
+
+            SwingUtilities.invokeLater(program);
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            System.err.println("Couldn't login: " + e.getMessage());
+            return false;
+        }
+        connecting.setVisible(false);
+        return true;
     }
-    
+
     public static void main(String[] args)
     {
 

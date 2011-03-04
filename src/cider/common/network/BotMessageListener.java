@@ -65,19 +65,20 @@ public class BotMessageListener implements MessageListener
         }
         else if (body.startsWith("requestusercolour"))
         {
-        	String[] split = body.split(" ");
-        	Color yaycolour = bot.colours.get(split[2]);
-        	try 
-        	{
-				source.chats.get(split[1]).sendMessage(StringUtils.encodeBase64("usercolour: " +
-						yaycolour.getRed() + " " +
-						yaycolour.getGreen() + " " +
-						yaycolour.getBlue()));
-			} 
-        	catch (XMPPException e) 
-        	{
-				e.printStackTrace();
-			}
+            String[] split = body.split(" ");
+            Color yaycolour = bot.colours.get(split[2]);
+            try
+            {
+                source.chats.get(split[1]).sendMessage(
+                        StringUtils.encodeBase64("usercolour: "
+                                + yaycolour.getRed() + " "
+                                + yaycolour.getGreen() + " "
+                                + yaycolour.getBlue()));
+            }
+            catch (XMPPException e)
+            {
+                e.printStackTrace();
+            }
         }
         else if (body.startsWith("userprofile:"))
         {
@@ -92,7 +93,8 @@ public class BotMessageListener implements MessageListener
                 String s = splitProfile[1] + "\n" + splitProfile[2] + "\n"
                         + splitProfile[3] + "\n" + splitProfile[4] + "\n"
                         + splitProfile[5];
-                System.out.println("**********RECEIVED PROFILE**********\n" + s);
+                System.out
+                        .println("**********RECEIVED PROFILE**********\n" + s);
                 System.out.println("************************************");
                 out.write(s);
                 out.close();
@@ -104,39 +106,46 @@ public class BotMessageListener implements MessageListener
         }
         else if (body.startsWith("requestprofile"))
         {
-        	String[] splitbody = body.split(" ");
-        	try
-        	{
-        		File f = new File("profile_" + splitbody[1] + ".txt");
-	        	if (f.exists())
-	        	{
-	        		FileInputStream fis = new FileInputStream(f);
-					DataInputStream dis = new DataInputStream(fis);
-					BufferedReader br = new BufferedReader(new InputStreamReader(dis));
-					String line;
-					System.out.println("Reading profile, sending:\n");
-					while ((line = br.readLine()) != null)
-					{
-						System.out.println(line);
-						//Send profile file to client
-						source.chats.get(splitbody[1]).sendMessage(StringUtils.encodeBase64("PROFILE* " + line));
-					}
-	        	}
-	        	else
-	        	{
-	        		//Send message indicating no profile was found
-	        		source.chats.get(splitbody[1]).sendMessage(StringUtils.encodeBase64("notfound"));
-	        		System.out.println("Profile not found!");
-	        	}
-        	}
-        	catch (IOException e)
-        	{
-        		System.err.println("Error: IO error when retrieving profile for " + splitbody[1]);
-        	}
-        	catch (XMPPException e)
-        	{
-        		System.err.println("XMPP Exception whilst retrieving profile. Error message: " + e.getMessage());
-        	}
+            String[] splitbody = body.split(" ");
+            try
+            {
+                File f = new File("profile_" + splitbody[1] + ".txt");
+                if (f.exists())
+                {
+                    FileInputStream fis = new FileInputStream(f);
+                    DataInputStream dis = new DataInputStream(fis);
+                    BufferedReader br = new BufferedReader(
+                            new InputStreamReader(dis));
+                    String line;
+                    System.out.println("Reading profile, sending:\n");
+                    while ((line = br.readLine()) != null)
+                    {
+                        System.out.println(line);
+                        // Send profile file to client
+                        source.chats.get(splitbody[1]).sendMessage(
+                                StringUtils.encodeBase64("PROFILE* " + line));
+                    }
+                }
+                else
+                {
+                    // Send message indicating no profile was found
+                    source.chats.get(splitbody[1]).sendMessage(
+                            StringUtils.encodeBase64("notfound"));
+                    System.out.println("Profile not found!");
+                }
+            }
+            catch (IOException e)
+            {
+                System.err
+                        .println("Error: IO error when retrieving profile for "
+                                + splitbody[1]);
+            }
+            catch (XMPPException e)
+            {
+                System.err
+                        .println("XMPP Exception whilst retrieving profile. Error message: "
+                                + e.getMessage());
+            }
         }
         else if (body.equals("getfilelist"))
         {
@@ -185,6 +194,22 @@ public class BotMessageListener implements MessageListener
             System.err
                     .println("The bot has been shut down by a backdoor routine");
             System.exit(1);
+        }
+        else if (body.startsWith("timeRequest("))
+        {
+            // 2: Upon receipt by server, server stamps server-time and returns
+            try
+            {
+                String sentTime = body.split("\\(")[1];
+                sentTime = sentTime.split("\\)")[0];
+                chat.sendMessage(StringUtils.encodeBase64("timeReply("
+                        + sentTime + "," + System.currentTimeMillis() + ")"));
+            }
+            catch (XMPPException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         // probably not useful anymore \/
         else if (body.startsWith("pushto("))
