@@ -216,9 +216,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     class ETALine
     {
-        TypingEventList str;
+        public TypingEventList str;
         int y;
-        int ln;
+        int lineNum;
         public int start;
         Color[] colors;
 
@@ -234,10 +234,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
          * @param start
          *            the caret position of the first character of this line
          */
-        public ETALine(TypingEventList tel, int y, int ln, int start)
+        public ETALine(TypingEventList tel, int y, int lineNum, int start)
         {
             this.start = start;
-            this.ln = ln;
+            this.lineNum = lineNum;
             this.y = y;
             this.str = tel;
             this.colors = new Color[this.str.length()];
@@ -263,12 +263,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
             	str = word.toString();
                 str = str.toLowerCase();
                 length = str.length();
-                if ((CommentFound == false) || ((this.ln < CommentStartLoc) && (CommentStartLoc != -1) && (CommentFound == true)))
+                if ((CommentFound == false) || ((this.lineNum < CommentStartLoc) && (CommentStartLoc != -1) && (CommentFound == true)))
              	{
  	                if ( str.startsWith("/*") == true)
  	                {
  	                	CommentFound = true;
- 	                	CommentStartLoc = this.ln;
+ 	                	CommentStartLoc = this.lineNum;
  	                	wash(this.colors, Color.RED, i, i + length);
  	                }
  	                if ( SourceEditor.keywords.contains(str) )
@@ -324,7 +324,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         public void paintMargin(Graphics g)
         {
             g.setColor(Color.GRAY);
-            g.drawString("" + this.ln, 5, this.y);
+            g.drawString("" + this.lineNum, 5, this.y);
         }
 
         /**
@@ -569,11 +569,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.moveLeft();
         else
         {
-            int ln = this.currentLine.ln - 1;
-            if (ln < 1)
-                ln = 1;
-            ETALine line = this.lines.get(ln - 1);
-            int start = line.start + line.ln - 2;
+            int lineNum = this.currentLine.lineNum - 1;
+            if (lineNum < 1)
+            	lineNum = 1;
+            ETALine line = this.lines.get(lineNum - 1);
+            int start = line.start + line.lineNum - 2;
             int length = line.str.length();
             if (this.currentColNum >= length)
                 this.currentColNum = length;
@@ -588,11 +588,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.moveRight();
         else
         {
-            int ln = this.currentLine.ln + 1;
-            if (ln > this.lines.size())
-                ln = this.lines.size();
-            ETALine line = this.lines.get(ln - 1);
-            int start = line.start + line.ln - 2;
+            int lineNum = this.currentLine.lineNum + 1;
+            if (lineNum > this.lines.size())
+            	lineNum = this.lines.size();
+            ETALine line = this.lines.get(lineNum - 1);
+            int start = line.start + line.lineNum - 2;
             int length = line.str.length();
             if (this.currentColNum >= length)
                 this.currentColNum = length;
@@ -600,6 +600,45 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.updateUI();
         }
     }
+    
+    /**
+     * Move the caret to the beginning of the current line and update the UI.
+     * @author Andrew
+     */
+    public void moveHome()
+    {
+    	this.caretPosition = this.currentLine.start - 1;
+    	this.updateUI();
+    }
+    
+    /**
+     * Move the caret to the end of the current line and update the UI.
+     * @author Andrew
+     */
+    public void moveEnd()
+    {
+    	this.caretPosition = this.currentLine.start + (this.currentLine.str.length()-1);
+    	this.updateUI();
+    }
+    
+    /**
+     * Move the caret up a page and update the UI.
+     * @author Andrew
+     */
+    public void movePageUp()
+    {
+    	// TODO: Not implemented yet
+    }
+    
+    /**
+     * Move the caret down a page and update the UI.
+     * @author Andrew
+     */
+    public void movePageDown()
+    {
+    	// TODO: Not implemented yet
+    }
+    
 
     /**
      * used to retrieve the object from which typing events stored in this
