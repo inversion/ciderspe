@@ -107,6 +107,7 @@ public class Client
     private Timer broardcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
+    private long clockOffset = 0;
 
     public Client(String username, String password, String host, int port,
             String serviceName)
@@ -167,6 +168,9 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
+
+        // Synchronise clock
+        long currentLocalTime = System.currentTimeMillis();
     }
 
     /**
