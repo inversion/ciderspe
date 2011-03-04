@@ -229,7 +229,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
          *            the screen from lift to right
          * @param y
          *            the number of pixels down the screen
-         * @param ln
+         * @param lineNum
          *            the line number
          * @param start
          *            the caret position of the first character of this line
@@ -603,22 +603,27 @@ public class EditorTypingArea extends JPanel implements MouseListener
     
     /**
      * Move the caret to the beginning of the current line and update the UI.
-     * @author Andrew
+     * 
+     * @author Andrew, Lawrence
      */
     public void moveHome()
     {
-    	this.caretPosition = this.currentLine.start - 1;
-    	this.updateUI();
+        int start = this.currentLine.start + this.currentLine.lineNum - 2;
+        this.caretPosition = start;
+        this.updateUI();
     }
-    
+
     /**
      * Move the caret to the end of the current line and update the UI.
-     * @author Andrew
+     * 
+     * @author Andrew, Lawrence
      */
     public void moveEnd()
     {
-    	this.caretPosition = this.currentLine.start + (this.currentLine.str.length()-1);
-    	this.updateUI();
+        int start = this.currentLine.start + this.currentLine.lineNum - 2;
+        int length = this.currentLine.str.length();
+        this.caretPosition = start + length;
+        this.updateUI();
     }
     
     /**

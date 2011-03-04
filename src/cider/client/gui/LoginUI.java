@@ -29,7 +29,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -354,7 +353,7 @@ public class LoginUI
     	
     	// Create New JFrame
     	connecting = new JFrame();
-        connecting.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
+        connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         connecting.setTitle("CIDEr - Connecting");
         connecting.setResizable(false);
         
