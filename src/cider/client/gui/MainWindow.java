@@ -2,9 +2,11 @@ package cider.client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -48,6 +50,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -705,6 +708,43 @@ public class MainWindow implements Runnable
         return panel;
     }
 
+    @SuppressWarnings("serial")
+	class MyListCellRenderer extends JLabel implements ListCellRenderer
+    {
+    	boolean selected = false;
+    	int index;
+    	String name;
+
+        public Component getListCellRendererComponent(JList paramlist, Object value, int index, boolean isSelected, boolean cellHasFocus)
+        {
+        	this.selected = isSelected;
+        	this.index = index;
+        	this.name = value.toString();
+        	
+            return this;
+        }
+        
+        public void paint(Graphics g)
+        {
+        	Color bg;
+        	
+            if (selected) {
+              bg = Color.LIGHT_GRAY;
+            } else {
+              bg = Color.WHITE;
+            }
+
+            // fill background
+            g.setColor(bg);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            
+            // draw coloured rectangle and name
+            g.setColor(Color.BLACK); //get unique user color here
+            g.fillRect(6, 6, 13, 13);
+            g.drawString(name, 25, 17);
+        }
+    }
+    
     public JPanel pnlUsers()
     {
         /* panel for the list of online users */
@@ -712,8 +752,25 @@ public class MainWindow implements Runnable
 
         Border emptyBorder = BorderFactory.createEmptyBorder();
 
+        // temporarily added so there were always users online
+        userListModel.add(0, "Person 1");
+        userListModel.add(1, "Person 2");
+        userListModel.add(2, "Person 3");
+        userListModel.add(3, "Person 4");
+        userListModel.add(4, "Person 5");
+        
         userList = new JList(userListModel);
         userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        userList.setCellRenderer(new MyListCellRenderer());
+        userList.setFixedCellWidth(25);
+        userList.setFixedCellHeight(25);
+        
+        
+
+        
+        
+        
         /*
          * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =
          * userList.getModel().getElementAt(i);
