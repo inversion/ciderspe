@@ -53,6 +53,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.border.Border;
 
 import org.jivesoftware.smack.XMPPException;
@@ -109,6 +110,8 @@ public class MainWindow implements Runnable
         dirView.setClient(client);
         client.getFileListFromBot();
         profileSetup(); 
+        
+        //tabFlash.flash(0);
     }
 
     private void profileSetup() 
@@ -744,6 +747,63 @@ public class MainWindow implements Runnable
             g.drawString(name, 25, 17);
         }
     }
+    
+    public class tabFlash extends JTabbedPane 
+    {
+    	private int tabIndex;
+    	private Color background;
+    	private Color foreground;
+    	private Color oldBackground;
+    	private Color oldForeground;
+
+    	private boolean flashon = false;
+    	private Timer timer = new Timer(1000, new ActionListener() {
+    		public void actionPerformed(ActionEvent e) 
+    		{
+    			flash(flashon);
+    			flashon = !flashon;
+    		}
+    	});
+
+    	private void flash(boolean flashon) 
+    	{
+    		if (flashon) 
+    		{
+    			if (foreground != null) 
+    			{
+    				setForegroundAt(tabIndex, foreground);
+    			}
+    			if (background != null) 
+    			{
+    				setBackgroundAt(tabIndex, background);
+    			}
+    		} 
+    		else 
+    		{
+    			if (oldForeground != null) 
+    			{
+    				setForegroundAt(tabIndex, oldForeground);
+    			}
+    			if (oldBackground != null) 
+    			{
+    				setBackgroundAt(tabIndex, oldBackground);
+    			}
+    		}
+    		repaint();
+    	}
+    	 
+    	
+    	public void flash(int requiredTabIndex)
+    	{
+    		tabIndex = requiredTabIndex;
+    		oldForeground = receiveTabs.getForeground();
+    		oldBackground = receiveTabs.getBackground();
+    		foreground = Color.RED;
+    		background = Color.BLACK;
+    		timer.start();
+    	}
+    }
+   
     
     public JPanel pnlUsers()
     {
