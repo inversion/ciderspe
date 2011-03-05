@@ -272,24 +272,6 @@ public class MainWindow implements Runnable
                 {
                     changeColour();
                 }
-                else if (action.equals("DEV: Pretend to quit"))
-                {
-                    myProfile.updateTimeSpent(startTime);
-                    startTime = System.currentTimeMillis();
-                    myProfile.updateProfileInfo();
-                }
-                else if (action.equals("DEV: Push profile to server"))
-                {
-                    sendProfileToBot();
-                }
-                else if (action.equals("DEV: Get profile from server"))
-                {
-                	getProfileFromBot();
-                }
-                else if (action.equals("DEV: Show list of colours stored locally"))
-                {
-                	System.out.println(client.colours);
-                }
                 else if (action.equals("Close File"))
                 {
                     closeFile(action);
@@ -307,9 +289,31 @@ public class MainWindow implements Runnable
                 {
                     saveFile(action);
                 }
+                /**
+                 * Developer menu options
+                 * @author Jon
+                 */
                 else if (action.equals("DEV: Terminate Bot Remotely"))
                 {
                     client.terminateBotRemotely();
+                }
+                else if (action.equals("DEV: Pretend to quit"))
+                {
+                    myProfile.updateTimeSpent(startTime);
+                    startTime = System.currentTimeMillis();
+                    myProfile.updateProfileInfo();
+                }
+                else if (action.equals("DEV: Push profile to server"))
+                {
+                    sendProfileToBot();
+                }
+                else if (action.equals("DEV: Get profile from server"))
+                {
+                	getProfileFromBot();
+                }
+                else if (action.equals("DEV: Show list of colours stored locally"))
+                {
+                	System.out.println(client.colours);
                 }
             }
         };
@@ -867,16 +871,21 @@ public class MainWindow implements Runnable
 
                     showProfile.addActionListener(new ActionListener()
                     {
-                        public void actionPerformed(ActionEvent e)
+                        public void actionPerformed(final ActionEvent e)
                         {
                             SwingUtilities.invokeLater(new Runnable()
                             {
                                 public void run()
                                 {
-                                    showMyProfile(); // TODO could this be
-                                    // parsed the username that
-                                    // you want to see the
-                                    // profile of?
+                                	/**
+                                	 * TODO:
+                                	 * - Get the name from the thing the user right clicked
+                                	 * - Send "requestprofile USERNAME" to the bot
+                                	 * - Wait for 500ms
+                                	 * - Check in Client to see the new Profile that has appeared :)
+                                	 */
+                                	System.out.println("******************" + e.toString());
+                                    //client.botChat.sendMessage("requestprofile");
                                 }
                             });
                         }
@@ -944,15 +953,8 @@ public class MainWindow implements Runnable
         messageSendBox.setFont(sendFont);
         messageSendBox.addKeyListener(new KeyListener()
         {
-            @Override
-            public void keyTyped(KeyEvent e)
-            {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e)
-            {
-            }
+            public void keyTyped(KeyEvent e) {}
+            public void keyPressed(KeyEvent e){}
 
             @Override
             public void keyReleased(KeyEvent e)
@@ -1062,19 +1064,6 @@ public class MainWindow implements Runnable
         w.setVisible(true);
         w.addWindowListener(new WindowListener()
         {
-
-            @Override
-            public void windowActivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowClosed(WindowEvent arg0)
-            {
-            }
-
             @Override
             public void windowClosing(WindowEvent arg0)
             {
@@ -1084,34 +1073,13 @@ public class MainWindow implements Runnable
                 System.out.println("disconnecting");
                 client.disconnect();
             }
-
-            @Override
-            public void windowDeactivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowIconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowOpened(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
+            
+            public void windowDeactivated(WindowEvent arg0) {}
+            public void windowDeiconified(WindowEvent arg0) {}
+            public void windowIconified(WindowEvent arg0) {}
+            public void windowOpened(WindowEvent arg0) {}
+            public void windowClosed(WindowEvent arg0) {}
+            public void windowActivated(WindowEvent arg0) {}
 
         });
     }
@@ -1122,8 +1090,6 @@ public class MainWindow implements Runnable
         {
             JOptionPane.showMessageDialog(w, message, title,
                     JOptionPane.ERROR_MESSAGE);
-            // JOptionPane.showMessageDialog(w, "OMG you broken somethings.",
-            // "You fail", JOptionPane.ERROR_MESSAGE);
         }
     }
 
