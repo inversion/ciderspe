@@ -2,6 +2,7 @@ package cider.common.network;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -744,6 +745,7 @@ public class Client
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
             parent.userList.repaint();
+            EditorTypingArea.highlightMargin(new Graphics2D()); //update current line colour when user changes profile colour
         }
     }
 
