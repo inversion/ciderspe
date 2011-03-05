@@ -63,7 +63,6 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
-import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
@@ -73,6 +72,8 @@ public class MainWindow implements Runnable
     public String currentFileName = "Unsaved Document 1";
     public String currentFileContents = "";
     public int currentTab = 0;
+    
+    LoginUI login;
 
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
@@ -98,17 +99,18 @@ public class MainWindow implements Runnable
     private Profile myProfile;
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c) throws XMPPException
+            String serviceName, Client c, LoginUI loginUI) throws XMPPException
     {
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         startTime = System.currentTimeMillis();
         this.username = username;
+        login = loginUI;
        
         client = c;      
         client.registerGUIComponents( dirView, tabbedPane, openTabs,
-                userListModel, userCount, receiveTabs );
+                userListModel, userCount, receiveTabs);
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
@@ -242,8 +244,16 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Logout"))
                 {
-                    LoginUI.login.setVisible(true);
-                    w.setVisible(false);
+                    int response;
+                    response = JOptionPane.showConfirmDialog(
+                    		new JPanel(), 
+                    		"Are you sure you wish to log out?", 
+                    		"Logout", 
+                    		JOptionPane.YES_NO_OPTION);
+                    if (response == 0)
+                    {
+                    	login.logout();
+                    }
                 }
                 else if (action.equals("About"))
                 {
@@ -300,23 +310,6 @@ public class MainWindow implements Runnable
                 else if (action.equals("DEV: Terminate Bot Remotely"))
                 {
                     client.terminateBotRemotely();
-                }
-                else if(action.equals("Line Home"))
-                {
-                	//System.out.println("FFUUU");
-                	//TODO: EditorTypingArea.moveHome();
-                }
-                else if(action.equals("Line End"))
-                {
-                	//EditorTypingArea.moveEnd();
-                }
-                else if(action.equals("Document Home"))
-                {
-                	//EditorTypingArea.moveDocHome();
-                }
-                else if(action.equals("Document End"))
-                {
-                	//EditorTypingArea.moveDocEnd();
                 }
             }
         };
@@ -389,8 +382,8 @@ public class MainWindow implements Runnable
     		}
     		catch (IOException e)
     		{
-    			System.err.println("Error: " + e.getMessage());
-    			System.exit(0);
+    			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+    			return;
     		}
 
     		// tabbedPane.addTab(currentFileName, new SourceEditor(
@@ -399,27 +392,27 @@ public class MainWindow implements Runnable
     	}
     }
 
-    @Deprecated
+
     public void saveFile(String action)
     {
-        JFileChooser fc = new JFileChooser();
-        File f = new File(client.getCurrentDocument().name /* + ".java" */);
-        fc.setSelectedFile(f);
-
-        if (currentFileName.equals("Unsaved Document 1")
-                || action.equals("Export"))
-        {
-            int watdo = fc.showSaveDialog(null);
-            if (watdo != JFileChooser.APPROVE_OPTION)
-            {
-                return;
-            }
-
-            currentFileName = fc.getSelectedFile().getName();
-            currentDir = fc.getSelectedFile().getAbsolutePath();
-        }
         try
         {
+	        JFileChooser fc = new JFileChooser();
+	        File f = new File(client.getCurrentDocument().name /* + ".java" */);
+	        fc.setSelectedFile(f);
+	
+	        if (currentFileName.equals("Unsaved Document 1")
+	                || action.equals("Export"))
+	        {
+	            int watdo = fc.showSaveDialog(null);
+	            if (watdo != JFileChooser.APPROVE_OPTION)
+	            {
+	                return;
+	            }
+	
+	            currentFileName = fc.getSelectedFile().getName();
+	            currentDir = fc.getSelectedFile().getAbsolutePath();
+	        }
             FileWriter fstream = new FileWriter(currentDir);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(client.getCurrentDocument().toString()/* currentFileContents */);
@@ -427,8 +420,14 @@ public class MainWindow implements Runnable
         }
         catch (IOException e1)
         {
-            System.err.println("Error: " + e1.getMessage());
+			JOptionPane.showMessageDialog(new JPanel(), ("Error: " + e1.getMessage()));
+			return;
         }
+		catch (NullPointerException e)
+		{
+			JOptionPane.showMessageDialog(new JPanel(), "Error: There is no document open!");
+			return;
+		}
         tabbedPane.setTitleAt(currentTab, currentFileName);
     }
 
@@ -462,34 +461,9 @@ public class MainWindow implements Runnable
                 "Are you sure you wish to reset your profile?");
         if (response == 0)
         {
-            File f = new File(username + ".txt");
-            try
-            {
-                if (!f.exists())
-                    System.err.println("Error: profile create failed!");
-                else
-                {
-                    f.delete();
-                    f.createNewFile();
-                    FileWriter fw = new FileWriter(f);
-                    BufferedWriter out = new BufferedWriter(fw);
-                    System.out
-                            .println("Profile has been reset, new credentials are:");
-                    System.out
-                            .println(username
-                                    + "\n"
-                                    + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                    out.write(username
-                            + "\n"
-                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                    out.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
             myProfile = new Profile(username, client);
+            myProfile.setColour(150,150,150);
+            announceColourChange(150,150,150);
             startTime = System.currentTimeMillis();
         }
         else
@@ -505,7 +479,8 @@ public class MainWindow implements Runnable
 		} 
         catch (XMPPException e) 
         {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+			return;
 		}
 	}
     
@@ -518,7 +493,8 @@ public class MainWindow implements Runnable
 		} 
         catch (XMPPException e) 
         {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+			return;
 		}
 	}
 
@@ -551,11 +527,6 @@ public class MainWindow implements Runnable
         uName.setHorizontalAlignment(JLabel.LEFT);
         uName.setVerticalAlignment(JLabel.TOP);
         content.add(uName);
-
-        // JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
-        // uPwd.setHorizontalAlignment(JLabel.LEFT);
-        // uPwd.setVerticalAlignment(JLabel.TOP);
-        // content.add(uPwd);
 
         JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
         //System.out.println(TypingEventList.countCharactersFor(username));
@@ -690,10 +661,6 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Cut", KeyEvent.VK_X, aL);
         addMenuItem(menu, "Copy", KeyEvent.VK_C, aL);
         addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
-        addMenuItem(menu, "Line Home", KeyEvent.VK_HOME, aL);
-        addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
-        addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
-        addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
 
         // menu 3
         menu = new JMenu("Profile");
@@ -850,11 +817,6 @@ public class MainWindow implements Runnable
         userList.setCellRenderer(new MyListCellRenderer());
         userList.setFixedCellWidth(25);
         userList.setFixedCellHeight(25);
-        
-        
-
-        
-        
         
         /*
          * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =

@@ -16,6 +16,7 @@ import java.util.TimerTask;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -30,6 +31,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
+import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
@@ -53,6 +55,7 @@ public class Client
     // mess up XML
 	
 	private MainWindow parent;
+	private LoginUI login;
 
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
@@ -111,7 +114,7 @@ public class Client
     private SourceDocument currentDoc = null;
 
     public Client(String username, String password, String host, int port,
-            String serviceName)
+            String serviceName, LoginUI log)
     {
         // Assign objects from parameters
         this.username = username;
@@ -120,6 +123,7 @@ public class Client
         this.port = port;
         this.serviceName = serviceName;
         this.password = password;
+        this.login = log;
         
         EditorTypingArea.addParent(this);
     }
@@ -166,7 +170,7 @@ public class Client
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
-                new ClientChatroomInviteListener(chatroom, username));
+                new ClientChatroomInviteListener(chatroom, username, this));
 
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
@@ -176,6 +180,16 @@ public class Client
     public void addParent(MainWindow p)
     {
     	parent = p;
+    }
+    
+    public MainWindow getParent()
+    {
+    	return parent;
+    }
+    
+    public LoginUI getLogin()
+    {
+    	return login;
     }
 
     /**
@@ -215,7 +229,6 @@ public class Client
         }
         catch (XMPPException e1)
         {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         chatroom.leave();
@@ -230,7 +243,6 @@ public class Client
         }
         catch (InterruptedException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         // TODO: Is above stuff necessary?
@@ -263,12 +275,9 @@ public class Client
     /**
      * Update the chatroom message log with a new message.
      * 
-     * @param The
-     *            username of the user who sent the message
-     * @param The
-     *            date the message was originally sent (as Dateformat)
-     * @param The
-     *            message body.
+     * @param The username of the user who sent the message
+     * @param The date the message was originally sent (as Dateformat)
+     * @param The message body.
      * 
      * @author Andrew
      */
@@ -297,12 +306,9 @@ public class Client
     /**
      * Update a private chat message log with a new message.
      * 
-     * @param The
-     *            username of the user who sent the message
-     * @param The
-     *            date the message was originally sent (as Dateformat)
-     * @param The
-     *            message body.
+     * @param The username of the user who sent the message
+     * @param The date the message was originally sent (as Dateformat)
+     * @param The message body.
      * 
      * @author Andrew
      */
@@ -340,8 +346,7 @@ public class Client
      * Initiate a chat session with someone, essentially has no effect if the
      * chat already exists, or if you try to chat with yourself.
      * 
-     * @param The
-     *            user to initiate a chat with.
+     * @param The user to initiate a chat with.
      * @author Andrew
      */
     public void initiateChat(String user)
@@ -634,9 +639,7 @@ public class Client
         {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
-                    null,
-                    "Client failed to send message across bot chat: "
-                            + e.getMessage());
+                    null, "Client failed to send message across bot chat: " + e.getMessage());
             System.exit(1);
         }
     }
@@ -649,8 +652,9 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			JOptionPane.showMessageDialog(
+					new JPanel(), "Error retrieving file list: " + e.getMessage());
+			return;
         }
     }
 
@@ -756,6 +760,4 @@ public class Client
     {
         return profile;
     }
-    
-    
 }

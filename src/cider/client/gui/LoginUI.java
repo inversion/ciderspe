@@ -25,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -404,6 +405,7 @@ public class LoginUI
         else
         {
         	connecting.dispose();
+        	JOptionPane.showMessageDialog(new JPanel(), "Error: Incorrect login details!");
         	return false;
         }
     }
@@ -423,27 +425,36 @@ public class LoginUI
 	                new String(txtPassword.getPassword()), 
 	                txtHost.getText(), 
 	                Integer.parseInt( txtPort.getText() ),
-	                txtServiceName.getText());
+	                txtServiceName.getText(),
+	                this);
 			client.attemptConnection();
 			program = new MainWindow( txtUsername.getText(), 
 					/*passwordEncrypt.encrypt(new String(txtPassword.getPassword()))*/new String(txtPassword.getPassword()), 
 									  txtHost.getText(), 
 									  Integer.parseInt( txtPort.getText() ),
 									  txtServiceName.getText() ,
-									  client);
+									  client,
+									  this);
 			        SwingUtilities.invokeLater(program);
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Couldn't login: " + e.getMessage());
+		} 
+		catch (XMPPException e) 
+		{
 			return false;
 		}
 		connecting.setVisible(false);
 		return true;
     }
     
+    public void logout()
+    {
+    	program.client.disconnect();
+    	program.killWindow();
+    	LoginUI ui = new LoginUI();
+    	ui.displayLogin();
+    }
+    
     public static void main(String[] args)
     {
-
         LoginUI ui = new LoginUI();
         ui.displayLogin();
     }

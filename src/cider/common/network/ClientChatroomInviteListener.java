@@ -1,10 +1,15 @@
 package cider.common.network;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+
+import cider.client.gui.LoginUI;
 
 /**
  * Listens for invitations to chatrooms.
@@ -21,11 +26,13 @@ public class ClientChatroomInviteListener implements InvitationListener {
 	
 	private MultiUserChat chatroom;
 	private String nickname;
+	private Client parent;
 	
-	public ClientChatroomInviteListener( MultiUserChat source, String nickname )
+	public ClientChatroomInviteListener( MultiUserChat source, String nickname, Client parent0 )
 	{
 		this.nickname = nickname;
 		chatroom = source;
+		parent = parent0;
 	}
 	
 	@Override
@@ -35,9 +42,11 @@ public class ClientChatroomInviteListener implements InvitationListener {
 			if( DEBUG )
 				System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
 			chatroom.join( this.nickname, password );				
-		} catch (XMPPException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} 
+		catch (XMPPException e)
+		{
+			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+			parent.getLogin().logout();
 		}
 	}
 }
