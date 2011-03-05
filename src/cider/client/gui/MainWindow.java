@@ -55,6 +55,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.util.StringUtils;
@@ -104,11 +106,12 @@ public class MainWindow implements Runnable
         this.username = username;
        
         client = c;      
-        client.registerGUIComponents(dirView, tabbedPane, openTabs,
+        client.registerGUIComponents( dirView, tabbedPane, openTabs,
                 userListModel, userCount, receiveTabs );
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.getFileListFromBot();
+        client.addParent(this);
         profileSetup(); 
         
         //tabFlash.flash(0);

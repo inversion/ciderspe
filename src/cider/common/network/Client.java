@@ -51,6 +51,8 @@ public class Client
 {
     // TODO: Need to make sure usernames are all alpha numeric or at least don't
     // mess up XML
+	
+	private MainWindow parent;
 
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
@@ -167,6 +169,11 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
+    }
+    
+    public void addParent(MainWindow p)
+    {
+    	parent = p;
     }
 
     /**
@@ -734,6 +741,7 @@ public class Client
             if (colours.containsKey(changedUser))
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
+            parent.userList.repaint();
         }
     }
 
@@ -746,4 +754,6 @@ public class Client
     {
         return profile;
     }
+    
+    
 }
