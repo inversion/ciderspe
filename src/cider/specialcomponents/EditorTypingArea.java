@@ -258,6 +258,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int i = 0;
             String str;
             int length;
+            Color customColor = null;
             for (TypingEventList word : words)
             {
             	str = word.toString();
@@ -273,12 +274,13 @@ public class EditorTypingArea extends JPanel implements MouseListener
  	                }
  	                if ( SourceEditor.keywords.contains(str) )
  	                {
- 	                    wash(this.colors, Color.BLUE, i, i + length);
- 	                    KeyWord.add(i);
- 	                    KeyWord.add(i+length);
- 	                }	
+ 	                	wash(this.colors, Color.BLUE, i, i + length);
+ 	                	KeyWord.add(i);
+ 	                	KeyWord.add(i+length);
+ 	                }	 	                
  	                if ( isParsableToNum(str) == true)
- 	                	wash(this.colors, Color.GREEN, i, i + length);
+ 	                	customColor = new Color(0,100,0);
+ 	                	wash(this.colors, customColor, i, i + length);
  	                if ( str.startsWith("//") == true)
  	                {
  	                	wash(this.colors, Color.RED, i, i + length);
@@ -287,15 +289,20 @@ public class EditorTypingArea extends JPanel implements MouseListener
  	                if (CommentedLine == true)
  	                	wash(this.colors, Color.RED, i, i + length);
              	} else {
- 	            	wash(this.colors, Color.RED, i, i + length);
- 	            	if ( str.endsWith("*/") == true )
- 	            		CommentFound = false;
+             		wash(this.colors, Color.RED, i, i + length);
+             		if ( str.endsWith("*/") == true )
+             			CommentFound = false;
              	}
                 i += length + 1;
 
             }
         }
 
+        /**
+         * Draws around the current line number that the user is currently on
+         * 
+         * @param g
+         */
         public void highlightMargin(Graphics g)
         {
             g.setColor(Color.LIGHT_GRAY);
@@ -623,6 +630,31 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int start = this.currentLine.start + this.currentLine.lineNum - 2;
         int length = this.currentLine.str.length();
         this.caretPosition = start + length;
+        this.updateUI();
+    }
+    
+    /**
+     * Move the caret to the start of the file and update the UI.
+     * 
+     */
+    public void moveDocHome()
+    {
+        int start = -1;
+        this.caretPosition = start;
+        this.updateUI();
+    }
+    
+    /**
+     * Move the caret to the end of the file and update the UI.
+     * 
+     */
+    public void moveDocEnd()
+    {
+        int numLines = this.lines.size();        
+        ETALine line = this.lines.get(numLines - 1);
+        int startLastLine = line.start + numLines - 2;
+        int length = line.str.length();
+        this.caretPosition = startLastLine + length ;
         this.updateUI();
     }
     

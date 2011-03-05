@@ -63,6 +63,7 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
@@ -299,6 +300,23 @@ public class MainWindow implements Runnable
                 else if (action.equals("DEV: Terminate Bot Remotely"))
                 {
                     client.terminateBotRemotely();
+                }
+                else if(action.equals("Line Home"))
+                {
+                	//System.out.println("FFUUU");
+                	//TODO: EditorTypingArea.moveHome();
+                }
+                else if(action.equals("Line End"))
+                {
+                	//EditorTypingArea.moveEnd();
+                }
+                else if(action.equals("Document Home"))
+                {
+                	//EditorTypingArea.moveDocHome();
+                }
+                else if(action.equals("Document End"))
+                {
+                	//EditorTypingArea.moveDocEnd();
                 }
             }
         };
@@ -672,6 +690,10 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Cut", KeyEvent.VK_X, aL);
         addMenuItem(menu, "Copy", KeyEvent.VK_C, aL);
         addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
+        addMenuItem(menu, "Line Home", KeyEvent.VK_HOME, aL);
+        addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
+        addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
+        addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
 
         // menu 3
         menu = new JMenu("Profile");
