@@ -21,6 +21,7 @@ import java.util.TimerTask;
 import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
+import cider.common.network.Client;
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -63,6 +64,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean CommentedLine = false;
     private boolean isKey = false;
     private int CommentStartLoc = -1;
+    
+    private static Client parent;
 
     @Override
     /**
@@ -305,9 +308,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
          */
         public void highlightMargin(Graphics g)
         {
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
-                    lineSpacing, 3, 3);
+        	g.setColor(parent.colours.get(parent.getUsername()));
+        	//currentLine.highlight(g, 5, Color.ORANGE);
+        	g.fillRoundRect(3, this.y - lineSpacing, leftMargin - 8, lineSpacing, 3, 3);
+        	g.setColor(Color.LIGHT_GRAY);
+        	g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8, lineSpacing, 3, 3);
+        	paintMargin(g);
         }
 
         public boolean isParsableToNum(String str)
@@ -776,5 +782,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public TypingEventList getTypingEventList()
     {
         return this.str;
+    }
+
+    public static void addParent(Client p)
+    {
+    	parent = p;
     }
 }

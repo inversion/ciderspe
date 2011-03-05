@@ -120,6 +120,8 @@ public class Client
         this.port = port;
         this.serviceName = serviceName;
         this.password = password;
+        
+        EditorTypingArea.addParent(this);
     }
 
     /**
