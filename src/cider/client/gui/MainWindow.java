@@ -54,6 +54,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.util.StringUtils;
@@ -84,6 +86,8 @@ public class MainWindow implements Runnable
     public JTabbedPane receiveTabs = new JTabbedPane();
     public JPanel receivePanel;
     public JTextArea messageSendBox;
+    
+    tabsFlash tabbing = new tabsFlash();
 
     LoginUI login;
 
@@ -112,8 +116,7 @@ public class MainWindow implements Runnable
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.addParent(this);
-        profileSetup();
-        // tabFlash.flash(0);
+        profileSetup();       
     }
 
     private void profileSetup()
@@ -790,60 +793,84 @@ public class MainWindow implements Runnable
         }
     }
 
-    public class tabFlash extends JTabbedPane
+    public class tabsFlash extends JTabbedPane
     {
-        private int tabIndex;
-        private Color background;
-        private Color foreground;
-        private Color oldBackground;
-        private Color oldForeground;
+    	public TabFlash tabflash (int requiredTabIndex)
+    	{
+    		TabFlash tabflash= new TabFlash(requiredTabIndex);
+    		tabflash.start();
+    		return tabflash;
+    	}
+    	
+    	public void tabflashstop (int requiredTabIndex)
+    	{
+    		//tabflash.stopflash();
+    	}
 
-        private boolean flashon = false;
-        private Timer timer = new Timer(1000, new ActionListener()
-        {
-            public void actionPerformed(ActionEvent e)
-            {
-                flash(flashon);
-                flashon = !flashon;
-            }
-        });
+    	public class TabFlash implements ActionListener
+    	{
+    		private Color background;
+    		private Color foreground;
+    		private Color oldBackground;
+    		private Color oldForeground;
+    		private int requiredTabIndex;
+    		private boolean flashon = false;
+    		private Timer timer = new Timer(1000, this);
 
-        private void flash(boolean flashon)
-        {
-            if (flashon)
-            {
-                if (foreground != null)
-                {
-                    setForegroundAt(tabIndex, foreground);
-                }
-                if (background != null)
-                {
-                    setBackgroundAt(tabIndex, background);
-                }
-            }
-            else
-            {
-                if (oldForeground != null)
-                {
-                    setForegroundAt(tabIndex, oldForeground);
-                }
-                if (oldBackground != null)
-                {
-                    setBackgroundAt(tabIndex, oldBackground);
-                }
-            }
-            repaint();
-        }
+    		public TabFlash(int requiredTabIndex)
+    		{
+    			this.requiredTabIndex = requiredTabIndex;
+    			this.oldForeground = receiveTabs.getForeground();
+    			this.oldBackground = receiveTabs.getBackground();
+    			this.foreground = Color.BLACK;
+    			this.background = Color.ORANGE;
+			}
 
-        public void flash(int requiredTabIndex)
-        {
-            tabIndex = requiredTabIndex;
-            oldForeground = receiveTabs.getForeground();
-            oldBackground = receiveTabs.getBackground();
-            foreground = Color.RED;
-            background = Color.BLACK;
-            timer.start();
-        }
+			public void start()
+			{
+				timer.start();
+			}
+
+			public void actionPerformed(ActionEvent e)
+			{
+				flash(flashon);
+				flashon = !flashon;
+			}
+    	
+			public void flash(boolean flashon)
+			{
+				if (flashon)
+				{
+					if (foreground != null)
+					{
+						setForegroundAt(requiredTabIndex, foreground);
+					}
+					if (background != null)
+					{
+						setBackgroundAt(requiredTabIndex, background);
+					}
+				}
+				else
+				{
+					if (oldForeground != null)
+					{
+						setForegroundAt(requiredTabIndex, oldForeground);
+					}
+					if (oldBackground != null)
+					{
+						setBackgroundAt(requiredTabIndex, oldBackground);
+					}
+				}
+				repaint();
+			}
+			
+			public void stopflash()
+			{
+				timer.stop();
+				setForegroundAt(requiredTabIndex, oldForeground);
+				setBackgroundAt(requiredTabIndex, oldBackground);
+			}
+    	}
     }
 
     public JPanel pnlUsers()
@@ -976,6 +1003,19 @@ public class MainWindow implements Runnable
          * make the tab for it. The client handles the updating of its contents.
          */
         client.createChatTab(GROUPCHAT_TITLE);
+        
+
+        ChangeListener changeListener = new ChangeListener()
+        {
+        	public void stateChanged(ChangeEvent changeEvent)
+        	{
+        		JTabbedPane tp = (JTabbedPane) changeEvent.getSource();
+        		int i = tp.getSelectedIndex();
+        		tabbing.tabflashstop(i);
+        		System.out.println("Stop flashing " + tp.getTitleAt(i));
+        	}
+        };
+        tabbing.addChangeListener(changeListener);
 
         return panel;
     }
@@ -1104,7 +1144,16 @@ public class MainWindow implements Runnable
         JPanel p = new JPanel(new BorderLayout());
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
         p.add(this.mainArea());
-        w.add(p);
+        w.add(p);       
+        
+        
+        tabbing.addTab("Tab 1", new JLabel("oh"));
+        tabbing.addTab("Tab 2", new JLabel("hai"));
+        tabbing.addTab("Tab 3", new JLabel("guise"));
+        tabbing.tabflash(0);
+        tabbing.tabflash(1);
+        //w.add(tabbing);
+        
         w.pack();
         this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
         this.editorChatSplit.setDividerLocation(0.75);
