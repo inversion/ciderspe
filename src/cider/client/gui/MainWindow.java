@@ -85,6 +85,8 @@ public class MainWindow implements Runnable
     public JPanel receivePanel;
     public JTextArea messageSendBox;
 
+    LoginUI login;
+
     /**
      * These variable are for the profiles
      * 
@@ -94,13 +96,14 @@ public class MainWindow implements Runnable
     private Profile myProfile;
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c) throws XMPPException
+            String serviceName, Client c, LoginUI loginUI) throws XMPPException
     {
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         dirView = new DirectoryViewComponent();
         startTime = System.currentTimeMillis();
         this.username = username;
+        login = loginUI;
 
         client = c;
         client.registerGUIComponents(dirView, tabbedPane, openTabs,
@@ -108,6 +111,7 @@ public class MainWindow implements Runnable
 
         receivePanel = pnlReceive();
         dirView.setClient(client);
+        client.addParent(this);
         profileSetup();
         // tabFlash.flash(0);
     }
@@ -244,6 +248,14 @@ public class MainWindow implements Runnable
                 {
                     LoginUI.login.setVisible(true);
                     w.setVisible(false);
+                    int response;
+                    response = JOptionPane.showConfirmDialog(new JPanel(),
+                            "Are you sure you wish to log out?", "Logout",
+                            JOptionPane.YES_NO_OPTION);
+                    if (response == 0)
+                    {
+                        login.logout();
+                    }
                 }
                 else if (action.equals("About"))
                 {
@@ -386,7 +398,6 @@ public class MainWindow implements Runnable
         }
     }
 
-    @Deprecated
     public void saveFile(String action)
     {
         JFileChooser fc = new JFileChooser();
@@ -478,6 +489,8 @@ public class MainWindow implements Runnable
                 e.printStackTrace();
             }
             myProfile = new Profile(username, client);
+            myProfile.setColour(150, 150, 150);
+            announceColourChange(150, 150, 150);
             startTime = System.currentTimeMillis();
         }
         else
@@ -495,6 +508,9 @@ public class MainWindow implements Runnable
         catch (XMPPException e)
         {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: " + e.getMessage());
+            return;
         }
     }
 
@@ -686,6 +702,10 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Cut", KeyEvent.VK_X, aL);
         addMenuItem(menu, "Copy", KeyEvent.VK_C, aL);
         addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
+        addMenuItem(menu, "Line Home", KeyEvent.VK_HOME, aL);
+        addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
+        addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
+        addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
 
         // menu 3
         menu = new JMenu("Profile");

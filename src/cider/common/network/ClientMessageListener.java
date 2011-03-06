@@ -3,6 +3,8 @@ package cider.common.network;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.jivesoftware.smack.Chat;
@@ -35,8 +37,10 @@ public class ClientMessageListener implements MessageListener, ActionListener
         String body = new String(StringUtils.decodeBase64(message.getBody()));
         if (body.startsWith("quit"))
         {
-			JOptionPane.showMessageDialog(new JPanel(), 
-					"Error: Someone is already running a CIDER client with your username, disconnecting and quitting.");
+            JOptionPane
+                    .showMessageDialog(
+                            new JPanel(),
+                            "Error: Someone is already running a CIDER client with your username, disconnecting and quitting.");
             client.disconnect();
             System.exit(1);
         }
