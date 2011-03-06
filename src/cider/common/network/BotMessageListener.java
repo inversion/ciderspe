@@ -64,25 +64,25 @@ public class BotMessageListener implements MessageListener
         }
         else if (body.startsWith("requestusercolour"))
         {
-        	String[] split = body.split(" ");
-        	Color yaycolour = bot.colours.get(split[2]);
-        	try 
-        	{
-				source.chats.get(split[1]).sendMessage(StringUtils.encodeBase64("usercolour: " +
-						yaycolour.getRed() + " " +
-						yaycolour.getGreen() + " " +
-						yaycolour.getBlue()));
-			} 
-        	catch (XMPPException e) 
-        	{
-				e.printStackTrace();
-			}
+            String[] split = body.split(" ");
+            Color yaycolour = bot.colours.get(split[2]);
+            try
+            {
+                source.chats.get(split[1]).sendMessage(
+                        StringUtils.encodeBase64("usercolour: "
+                                + yaycolour.getRed() + " "
+                                + yaycolour.getGreen() + " "
+                                + yaycolour.getBlue()));
+            }
+            catch (XMPPException e)
+            {
+                e.printStackTrace();
+            }
         }
         else if (body.startsWith("userprofile:"))
         {
             String[] splitProfile = body.split("  ");
             File f = new File("profile_" + splitProfile[1] + ".txt");
-            System.out.println(splitProfile[2]);
             try
             {
                 f.createNewFile();
@@ -91,7 +91,8 @@ public class BotMessageListener implements MessageListener
                 String s = splitProfile[1] + "\n" + splitProfile[2] + "\n"
                         + splitProfile[3] + "\n" + splitProfile[4] + "\n"
                         + splitProfile[5];
-                System.out.println("**********RECEIVED PROFILE**********\n" + s);
+                System.out
+                        .println("**********RECEIVED PROFILE**********\n" + s);
                 System.out.println("************************************");
                 out.write(s);
                 out.close();
@@ -104,6 +105,13 @@ public class BotMessageListener implements MessageListener
         else if (body.startsWith("requestprofile"))
         {
         	String[] splitbody = body.split(" ");
+        	System.out.println(body);
+        	boolean notme = false;
+        	for (int i = 0; i < splitbody.length; i++)
+        	{
+        		if (splitbody[i].equals("notme"))
+        			notme = true;
+        	}
         	try
         	{
         		File f = new File("profile_" + splitbody[1] + ".txt");
@@ -118,7 +126,10 @@ public class BotMessageListener implements MessageListener
 					{
 						System.out.println(line);
 						//Send profile file to client
-						source.chats.get(splitbody[1]).sendMessage(StringUtils.encodeBase64("PROFILE* " + line));
+						if (notme)
+							chat.sendMessage(StringUtils.encodeBase64("PROFILE$ " + line));
+						else
+							source.chats.get(splitbody[1]).sendMessage(StringUtils.encodeBase64("PROFILE* " + line));
 					}
 	        	}
 	        	else
@@ -148,24 +159,6 @@ public class BotMessageListener implements MessageListener
             {
                 e.printStackTrace();
             }
-        }
-        else if (body.startsWith("timeRequest("))
-        {
-	        {
-	        	// 2: Upon receipt by server, server stamps server-time and returns
-	        	try
-	        	{
-	        		String sentTime = body.split("\\(")[1];
-	        		sentTime = sentTime.split("\\)")[0];
-	        		chat.sendMessage(StringUtils.encodeBase64("timeReply("
-	        		    + sentTime + "," + System.currentTimeMillis() + ")"));
-	        	}
-	        	catch (XMPPException e)
-	        	{
-	        		// TODO Auto-generated catch block
-	        		e.printStackTrace();
-	        	}
-	        }
         }
         // This part is still important for when a file is opened
         else if (body.startsWith("pullEvents("))
@@ -197,6 +190,22 @@ public class BotMessageListener implements MessageListener
                     .println("The bot has been shut down by a backdoor routine");
             System.exit(1);
         }
+        else if (body.startsWith("timeRequest("))
+        {
+            // 2: Upon receipt by server, server stamps server-time and returns
+            try
+            {
+                String sentTime = body.split("\\(")[1];
+                sentTime = sentTime.split("\\)")[0];
+                chat.sendMessage(StringUtils.encodeBase64("timeReply("
+                        + sentTime + "," + System.currentTimeMillis() + ")"));
+            }
+            catch (XMPPException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
         // probably not useful anymore \/
         else if (body.startsWith("pushto("))
         {
@@ -222,8 +231,8 @@ public class BotMessageListener implements MessageListener
             instructions += "isblank(" + path + ")";
         else
         {
-        	instructions += "pushto(" + path + ") ";
-        	for (TypingEvent te : queue)
+            instructions += "pushto(" + path + ") ";
+            for (TypingEvent te : queue)
                 instructions += te.pack() + "%%";
         }
         try
