@@ -38,7 +38,7 @@ public class BotChatroomMessageListener implements PacketListener
         String body = new String(StringUtils.decodeBase64(msg.getBody()));
         if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split(" -> ");
+            String[] instructions = body.split("%%");
             Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
             for (String instruction : instructions)
             {
