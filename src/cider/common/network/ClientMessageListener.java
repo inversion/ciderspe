@@ -57,7 +57,6 @@ public class ClientMessageListener implements MessageListener, ActionListener
         }
         else if (body.startsWith("PROFILE* "))
         {
-        	System.out.println(body);
         	if (client.profile == null)
         	{
         		client.profile = new Profile(client.getUsername(), client);
@@ -70,6 +69,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
         	}
         	else if (splitLine[1].equals("timespent:"))
         	{
+        		System.out.println("whatthe");
         		client.profile.setTime(Long.parseLong(splitLine[2]));
         	}
         	else if (splitLine[1].equals("lastonline:"))
@@ -84,26 +84,27 @@ public class ClientMessageListener implements MessageListener, ActionListener
         				Integer.parseInt(splitLine[3]),
         				Integer.parseInt(splitLine[4]));
         	}
-        	else if (body.startsWith("timeReply("))
-            {
-                String str = body.split("\\(")[1];
-                str = str.split("\\)")[0];
-                String[] args = str.split(",");
-                long sentTime = Long.parseLong(args[0]);
-                long currentTime = System.currentTimeMillis()
-                        + this.client.getClockOffset();
-                long halfLatency = (currentTime - sentTime) / 2;
-                long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
-
-                if (this.client.getClockOffset() == 0)
-                    this.client.setTimeDelta(delta);
-
-                this.client.addTimeDeltaSample(delta);
-            }
         	else
         	{
         		client.profile.uname = splitLine[2];
         	}
+        }
+    	else if (body.startsWith("timeReply("))
+        {
+    		System.out.println("time reply yo" + body);
+            String str = body.split("\\(")[1];
+            str = str.split("\\)")[0];
+            String[] args = str.split(",");
+            long sentTime = Long.parseLong(args[0]);
+            long currentTime = System.currentTimeMillis()
+                    + this.client.getClockOffset();
+            long halfLatency = (currentTime - sentTime) / 2;
+            long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
+
+            if (this.client.getClockOffset() == 0)
+                this.client.setTimeDelta(delta);
+
+            this.client.addTimeDeltaSample(delta);
         }
         else
             this.client.processDocumentMessages(body);
