@@ -3,8 +3,10 @@ package cider.common.network;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -14,6 +16,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -55,14 +58,14 @@ public class Client
 {
     // TODO: Need to make sure usernames are all alpha numeric or at least don't
     // mess up XML
-	
-	private MainWindow parent;
-	private LoginUI login;
 
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
+
+    private LoginUI login;
+    private MainWindow parent;
 
     // XMPP Basics
     private XMPPConnection connection;
@@ -88,6 +91,7 @@ public class Client
 
     // The current user's profile
     public Profile profile = null;
+    public Profile notMyProfile = null;
     public boolean profileFound;
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
@@ -117,8 +121,8 @@ public class Client
     private Timer broardcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
-    private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
     private long clockOffset = 0;
+    private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
     //FIXME: synchronised is never read!
     @SuppressWarnings("unused")
 	private boolean synchronised = false;
@@ -134,7 +138,9 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
         this.login = log;
-        
+
+        // FIXME
+        // Alex... just... WTF!?!?
         EditorTypingArea.addParent(this);
     }
 
@@ -186,7 +192,7 @@ public class Client
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
     }
-    
+
     /**
      * 
      * @param parentComponent
@@ -242,24 +248,11 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error retrieving file list: " + e.getMessage());
+            return;
         }
-    }
-    
-    public void addParent(MainWindow p)
-    {
-    	parent = p;
-    }
-    
-    public MainWindow getParent()
-    {
-    	return parent;
-    }
-    
-    public LoginUI getLogin()
-    {
-    	return login;
     }
 
     /**
@@ -657,7 +650,7 @@ public class Client
         for (TypingEvent te : typingEvents)
         {
             this.outgoingTypingEvents += "pushto(" + path + ") " + te.pack()
-                    + " -> ";
+                    + "%%";
         }
         try
         {
@@ -709,7 +702,9 @@ public class Client
         {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
-                    null, "Client failed to send message across bot chat: " + e.getMessage());
+                    null,
+                    "Client failed to send message across bot chat: "
+                            + e.getMessage());
             System.exit(1);
         }
     }
@@ -724,6 +719,7 @@ public class Client
         {
 			JOptionPane.showMessageDialog(
 					new JPanel(), "Error retrieving file list: " + e.getMessage());
+			e.printStackTrace();
 			return;
         }
     }
@@ -779,22 +775,31 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split(" -> ");
+            String[] instructions = body.split("%%");
             Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
+            String dest = "";
+            String packedEvent = "";
             for (String instruction : instructions)
             {
-                String[] preAndAfter = instruction.split("\\) ");
-                String[] pre = preAndAfter[0].split("\\(");
-                String dest = pre[1];
-                dest = dest.replace("root\\", "");
+                if (instruction.startsWith("pushto"))
+                {
+                    String[] preAndAfter = instruction.split("\\) ");
+                    String[] pre = preAndAfter[0].split("\\(");
+                    dest = pre[1];
+                    dest = dest.replace("root\\", "");
+                    packedEvent = preAndAfter[1];
+                }
+                else
+                    packedEvent = instruction;
+
                 Queue<TypingEvent> queue = queues.get(dest);
                 if (queue == null)
                 {
                     queue = new LinkedList<TypingEvent>();
                     queues.put(dest, queue);
                 }
-                queue.add(new TypingEvent(preAndAfter[1]));
-                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                queue.add(new TypingEvent(packedEvent));
+                System.out.println("Push " + packedEvent + " to " + dest);
             }
 
             for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
@@ -831,7 +836,7 @@ public class Client
     {
         return profile;
     }
-    
+
     public long getClockOffset()
     {
         return this.clockOffset;
@@ -858,6 +863,21 @@ public class Client
     public void setTimeDelta(long delta)
     {
         this.clockOffset = System.currentTimeMillis() - delta;
+    }
+
+    public MainWindow getParent()
+    {
+        return parent;
+    }
+
+    public LoginUI getLogin()
+    {
+        return login;
+    }
+
+    public void addParent(MainWindow p)
+    {
+        parent = p;
     }
 }
 
