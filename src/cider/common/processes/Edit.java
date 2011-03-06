@@ -40,7 +40,9 @@ public class Edit implements java.io.Serializable {
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	@SuppressWarnings("unused")
 	private String path; // Full path of the file to perform the edit on
+						 // FIXME: path is unused!
 	private int offset; // Byte offset from start of file to work at
 	private int length; // Length of the plaintext patch
 	private boolean replace; // true = replace, false = insert

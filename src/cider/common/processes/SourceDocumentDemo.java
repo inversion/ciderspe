@@ -199,20 +199,21 @@ public class SourceDocumentDemo
                     e.printStackTrace();
                     System.exit(1);
                 }
-
+                /*
                 for (TypingEvent te : events)
                 {
 
-                    /*
-                     * switch (te.mode) { case insert: if (te.position >=
-                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
-                     * break; case overwrite: if (te.position >=
-                     * panel.eta.getCaretPosition()) panel.eta.moveRight();
-                     * break; case backspace: if (te.position >=
-                     * panel.eta.getCaretPosition()) panel.eta.moveLeft();
-                     * break; }
-                     */
+                    
+                     switch (te.mode) { case insert: if (te.position >=
+                     panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     break; case overwrite: if (te.position >=
+                     panel.eta.getCaretPosition()) panel.eta.moveRight();
+                     break; case backspace: if (te.position >=
+                     panel.eta.getCaretPosition()) panel.eta.moveLeft();
+                     break; }
+                     
                 }
+                */
             }
         }
 
@@ -244,7 +245,8 @@ public class SourceDocumentDemo
 
     public class SDDemoPanel extends JPanel
     {
-        EditorTypingArea eta;
+		private static final long serialVersionUID = 1L;
+		EditorTypingArea eta;
         ICodeLocation server;
         ICodeLocation client;
         int id;

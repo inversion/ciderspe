@@ -59,7 +59,9 @@ public class BotChatroomMessageListener implements PacketListener
 
             for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
             {
-                Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry
+            	//FIXME: UNUSED VARIABLE!
+                @SuppressWarnings("unused")
+				Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry
                         .getValue().playOutEvents(Long.MAX_VALUE)
                         .countCharactersAll();
 

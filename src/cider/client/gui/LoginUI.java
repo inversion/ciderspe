@@ -30,6 +30,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
 
@@ -55,23 +56,20 @@ public class LoginUI
     JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
-
-    MainWindow program;
-
-    JCheckBox chkRemember;
+    
+	MainWindow program;
+    
+    JCheckBox chkRemember ;
 
     public void displayLogin()
     {
-        // TODO: Can we make it connect when you press enter on one of the
-        // textFields
-        // Setup JFrame
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
         try
         {
-            // UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+            UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
@@ -143,7 +141,7 @@ public class LoginUI
                 }
             }
         });
-
+        
         txtServiceName.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -154,7 +152,7 @@ public class LoginUI
                 }
             }
         });
-
+        
         txtHost.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -165,7 +163,7 @@ public class LoginUI
                 }
             }
         });
-
+        
         txtPort.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -176,6 +174,8 @@ public class LoginUI
                 }
             }
         });
+
+
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -327,7 +327,6 @@ public class LoginUI
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                String action = e.getActionCommand();
                 checkLogin();
             }
         };
@@ -359,7 +358,8 @@ public class LoginUI
         }
     }
 
-    boolean showConnectBox()
+    @SuppressWarnings("static-access")
+	boolean showConnectBox()
     {
         login.setVisible(false);
 
