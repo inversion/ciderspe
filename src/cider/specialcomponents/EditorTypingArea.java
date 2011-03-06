@@ -23,7 +23,6 @@ import javax.swing.JPanel;
 import cider.client.gui.SourceEditor;
 import cider.common.network.Client;
 import cider.common.processes.ICodeLocation;
-import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
@@ -40,7 +39,8 @@ import cider.common.processes.TypingEventMode;
  */
 public class EditorTypingArea extends JPanel implements MouseListener
 {
-    private TypingEventList str = new TypingEventList();
+	private static final long serialVersionUID = 1L;
+	private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
     private Font font = new Font("Monospaced", Font.PLAIN, 14);
     private Font fontbold = new Font("Monospaced", Font.BOLD, 14);
@@ -89,7 +89,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int p = 0;
             int ln = 0;
             boolean caretFound = false;
-            Color[] colors;
             try
             {
                 for (ETALine line : this.lines)

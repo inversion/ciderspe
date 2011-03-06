@@ -126,7 +126,11 @@ public class SourceEditor extends JPanel
 
     // ////// End of workaround ////////
 
-    private ComponentListener newTabSelectionFocusGainListener()
+    /**
+     * FIXME: UNUSED METHOD!
+     */
+    @SuppressWarnings("unused")
+	private ComponentListener newTabSelectionFocusGainListener()
     {
         // TODO Auto-generated method stub
         return null;
@@ -309,7 +313,8 @@ public class SourceEditor extends JPanel
                             }
 
                             TypingEvent te = new TypingEvent(
-                                    System.currentTimeMillis(), mode,
+                                    System.currentTimeMillis()
+                                    	+ client.getClockOffset(), mode,
                                     eta.getCaretPosition(), chr.length(), chr,
                                     client.getUsername());
                             ArrayList<TypingEvent> particles = te.explode();

@@ -1,7 +1,6 @@
 package cider.common.processes;
 
 import java.awt.Color;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -11,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -20,7 +18,7 @@ import cider.common.network.Client;
 public class Profile 
 {
 	public String uname;
-	public static int typedChars;
+	public int typedChars;
 	public long timeSpent;
 	public String lastOnline;
 	public Color userColour;
@@ -44,13 +42,13 @@ public class Profile
 	
 
 	
-	public static void incrementCharCount()
+	public void incrementCharCount()
 	{
 		typedChars++;
 		return;
 	}
 	
-	public static void adjustCharCount(int adjustment)
+	public void adjustCharCount(int adjustment)
 	{
 		typedChars+=adjustment;
 		return;

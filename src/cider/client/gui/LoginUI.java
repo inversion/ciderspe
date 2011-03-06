@@ -290,7 +290,10 @@ public class LoginUI
     	// TODO: Can we have some commenting on what methods actually do please GUI people
     	if (chkRemember.isSelected() == true)
 		{
-			saveLoginDetails(txtUsername.getText(), new String(txtPassword.getPassword()), txtServiceName.getText(), txtHost.getText(), txtPort.getText());
+			saveLoginDetails(txtUsername.getText(), 
+					new String(txtPassword.getPassword()), 
+					txtServiceName.getText(), txtHost.getText(), 
+					txtPort.getText());
 		}
 		else
 		{
@@ -322,7 +325,7 @@ public class LoginUI
     	{
     		@Override
     		public void actionPerformed(ActionEvent e) {
-    			String action = e.getActionCommand();
+    			//String action = e.getActionCommand();
     			checkLogin();
     		}
     	};
@@ -338,7 +341,11 @@ public class LoginUI
     	{
     		FileWriter fstream = new FileWriter(currentDir + "login.txt");
     		BufferedWriter out = new BufferedWriter(fstream);
-    		out.write(passwordEncrypt.encrypt(txtUsername) + "," + passwordEncrypt.encrypt(txtPassword) + "," + passwordEncrypt.encrypt(txtServiceName) + "," + passwordEncrypt.encrypt(txtHost) + "," + passwordEncrypt.encrypt(txtPort));
+    		out.write(passwordEncrypt.encrypt(txtUsername) + "," 
+    				+ passwordEncrypt.encrypt(txtPassword) + "," 
+    				+ passwordEncrypt.encrypt(txtServiceName) 
+    				+ "," + passwordEncrypt.encrypt(txtHost) 
+    				+ "," + passwordEncrypt.encrypt(txtPort));
     		out.close();
     	}
     	catch (IOException e)

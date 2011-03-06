@@ -20,7 +20,6 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.Base64;
 import org.jivesoftware.smack.util.StringUtils;
 
-import cider.common.processes.LocalisedTypingEvents;
 import cider.common.processes.TypingEvent;
 
 /**
@@ -147,14 +146,26 @@ public class BotMessageListener implements MessageListener
             }
             catch (XMPPException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            // catch (IOException e)
-            // {
-            // TODO Auto-generated catch block
-            // e.printStackTrace();
-            // }
+        }
+        else if (body.startsWith("timeRequest("))
+        {
+	        {
+	        	// 2: Upon receipt by server, server stamps server-time and returns
+	        	try
+	        	{
+	        		String sentTime = body.split("\\(")[1];
+	        		sentTime = sentTime.split("\\)")[0];
+	        		chat.sendMessage(StringUtils.encodeBase64("timeReply("
+	        		    + sentTime + "," + System.currentTimeMillis() + ")"));
+	        	}
+	        	catch (XMPPException e)
+	        	{
+	        		// TODO Auto-generated catch block
+	        		e.printStackTrace();
+	        	}
+	        }
         }
         // This part is still important for when a file is opened
         else if (body.startsWith("pullEvents("))
@@ -210,8 +221,11 @@ public class BotMessageListener implements MessageListener
         if (queue.size() == 0)
             instructions += "isblank(" + path + ")";
         else
-            for (TypingEvent te : queue)
-                instructions += "pushto(" + path + ") " + te.pack() + " -> ";
+        {
+        	instructions += "pushto(" + path + ") ";
+        	for (TypingEvent te : queue)
+                instructions += te.pack() + "%%";
+        }
         try
         {
             chat.sendMessage(StringUtils.encodeBase64(instructions));
@@ -223,13 +237,18 @@ public class BotMessageListener implements MessageListener
         }
     }
 
+    
+    /**
+     * FIXME: Unused method!
+     * 
+     */
+    /*
     private void pushBack(Chat chat, Queue<LocalisedTypingEvents> events)
     {
         String instructions = "";
         for (LocalisedTypingEvents ltes : events)
             for (TypingEvent te : ltes.typingEvents)
-                instructions += "pushto(" + ltes.path + ") " + te.pack()
-                        + " -> ";
+                instructions += "pushto(" + ltes.path + ") " + te.pack() + ">";
         try
         {
             chat.sendMessage(StringUtils.encodeBase64(instructions));
@@ -240,4 +259,5 @@ public class BotMessageListener implements MessageListener
             e.printStackTrace();
         }
     }
+    */
 }

@@ -1,8 +1,8 @@
 package cider.common.network;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
-import java.awt.Graphics2D;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -10,10 +10,10 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -21,6 +21,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.ProgressMonitor;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -90,6 +91,9 @@ public class Client
     public boolean profileFound;
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
+    
+    //FIXME: UNUSED VARIABLE
+    //private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
 
     /*
      * Abstract because it can be a private chat or multi user chat (chatroom)
@@ -108,11 +112,16 @@ public class Client
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
-    private static final long minimumBroadcastDelay = 0;
+    private static final long minimumBroadcastDelay = 400;
     private String outgoingTypingEvents = "";
     private Timer broardcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
+    private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
+    private long clockOffset = 0;
+    //FIXME: synchronised is never read!
+    @SuppressWarnings("unused")
+	private boolean synchronised = false;
 
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log)
@@ -176,6 +185,66 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
+    }
+    
+    /**
+     * 
+     * @param parentComponent
+     */
+    public void startClockSynchronisation(Component parentComponent)
+    {
+        final int requiredSamples = 5;
+        final ProgressMonitor progressMonitor = new ProgressMonitor(
+                parentComponent, "Synchronising clocks...", "", 0,
+                requiredSamples + 1);
+        progressMonitor.setMillisToDecideToPopup(0);
+
+        final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+            int requestsMade = 0;
+
+            @Override
+            public void run()
+            {
+                if (this.requestsMade < 5)
+                {
+                    timeRequest();
+                    this.requestsMade++;
+                    progressMonitor.setProgress(this.requestsMade);
+                }
+                else
+                {
+                    updateClockOffset();
+                    synchronised = true;
+                    progressMonitor.setProgress(requiredSamples);
+                    progressMonitor.setNote("Getting file list...");
+                    getFileListFromBot();
+                    progressMonitor.setProgress(requiredSamples + 1);
+                    progressMonitor.close();
+                    timer.cancel();
+                }
+            }
+
+        }, 0, 2000);
+    }
+
+    private void timeRequest()
+    {
+        // Synchronise clock
+
+        // 1: Client stamps current local time on a "time request" packet and
+        // sends to server
+        long currentLocalTime = System.currentTimeMillis();
+        try
+        {
+            this.sendBotMessage("timeRequest(" + currentLocalTime + ")");
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
     
     public void addParent(MainWindow p)
@@ -762,4 +831,33 @@ public class Client
     {
         return profile;
     }
+    
+    public long getClockOffset()
+    {
+        return this.clockOffset;
+    }
+
+    public void addTimeDeltaSample(long latency)
+    {
+        this.timeDeltaList.add(latency);
+    }
+
+    public void updateClockOffset()
+    {
+        int mid = this.timeDeltaList.size() / 2;
+        int i = mid;
+        while (i-- > 0)
+            this.timeDeltaList.poll();
+
+        this.clockOffset = System.currentTimeMillis()
+                - this.timeDeltaList.peek();
+        System.out.println("Clock offset set to " + this.clockOffset);
+        this.timeDeltaList.clear();
+    }
+
+    public void setTimeDelta(long delta)
+    {
+        this.clockOffset = System.currentTimeMillis() - delta;
+    }
 }
+
