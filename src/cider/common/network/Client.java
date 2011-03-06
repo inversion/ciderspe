@@ -675,14 +675,16 @@ public class Client
                             try
                             {
                                 isWaitingToBroadcast = false;
-                                long currentTime = System.currentTimeMillis();
+                                long currentTime = System.currentTimeMillis()
+                                        + getClockOffset();
                                 if (currentTime - lastBroardcast < minimumBroadcastDelay)
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
                                 sendChatroomMessage(outgoingTypingEvents);
                                 outgoingTypingEvents = "";
-                                lastBroardcast = System.currentTimeMillis();
+                                lastBroardcast = System.currentTimeMillis()
+                                        + getClockOffset();
                             }
                             catch (XMPPException e)
                             {
@@ -861,8 +863,7 @@ public class Client
         while (i-- > 0)
             this.timeDeltaList.poll();
 
-        this.clockOffset = System.currentTimeMillis()
-                - this.timeDeltaList.peek();
+        this.clockOffset = this.timeDeltaList.peek();
         System.out.println("Clock offset set to " + this.clockOffset);
         this.timeDeltaList.clear();
     }
