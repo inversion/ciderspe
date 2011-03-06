@@ -85,10 +85,43 @@ public class ClientMessageListener implements MessageListener, ActionListener
             }
             else
             {
-                client.profile.uname = splitLine[2];
+                client.profile.uname = body.substring(9);
             }
         }
-        else if (body.startsWith("timeReply("))
+        else if (body.startsWith("PROFILE$ "))
+        {
+        	if (client.notMyProfile == null)
+        	{
+        		client.notMyProfile = new Profile("notme", client);
+        	}
+        	client.profileFound = true;
+        	String[] splitLine = body.split(" ");
+        	if (splitLine[1].equals("chars:"))
+        	{
+        		client.notMyProfile.setChars(Integer.parseInt(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("timespent:"))
+        	{
+        		client.notMyProfile.setTime(Long.parseLong(splitLine[2]));
+        	}
+        	else if (splitLine[1].equals("lastonline:"))
+        	{
+        		String newsplit = body.substring(21);
+        		client.notMyProfile.setLastOnline(newsplit);
+        	}
+        	else if (splitLine[1].equals("colour:"))
+        	{
+        		client.notMyProfile.setColour(
+        				Integer.parseInt(splitLine[2]),
+        				Integer.parseInt(splitLine[3]),
+        				Integer.parseInt(splitLine[4]));
+        	}
+        	else
+        	{
+        		client.notMyProfile.uname = body.substring(9);
+        	}
+        }
+    	else if (body.startsWith("timeReply("))
         {
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];

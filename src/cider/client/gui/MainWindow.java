@@ -71,6 +71,8 @@ public class MainWindow implements Runnable
     public String currentFileName = "Unsaved Document 1";
     public String currentFileContents = "";
     public int currentTab = 0;
+    
+    LoginUI login;
 
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
@@ -87,9 +89,7 @@ public class MainWindow implements Runnable
     public JPanel receivePanel;
     public JTextArea messageSendBox;
     
-    tabsFlash tabbing = new tabsFlash();
-
-    LoginUI login;
+    tabFlash tabbing = new tabFlash();
 
     /**
      * These variable are for the profiles
@@ -112,19 +112,20 @@ public class MainWindow implements Runnable
         client = c;
         client.registerGUIComponents(dirView, tabbedPane, openTabs,
                 userListModel, userCount, receiveTabs);
-
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.addParent(this);
-        profileSetup();       
+        profileSetup(); 
+        
+        //tabFlash.flash(0);
     }
 
-    private void profileSetup()
+    private void profileSetup() 
     {
-        /**
-         * This method sets up the profile by asking the Bot if it has the user
-         * on its record. If so, the profile updates appropriately. If not, a
-         * new profile is created.
+    	/**
+         * This method sets up the profile by asking the Bot
+         * if it has the user on its record. If so, the profile
+         * updates appropriately. If not, a new profile is created.
          * 
          * @author Jon
          */
@@ -195,27 +196,24 @@ public class MainWindow implements Runnable
                     ActionEvent.CTRL_MASK));
         menu.add(menuItem);
     }
-
-    /**
-     * When this method is called, the username and its colour will be added to
-     * the hash table of user colours
-     * 
-     * @author Jon
-     */
-    private void getUserColour(String user)
-    {
-        try
-        {
-            client.botChat
-                    .sendMessage(StringUtils.encodeBase64("requestusercolour "
-                            + username + " " + user));
-
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
-    }
+	
+	/**
+	 * When this method is called, the username and its colour will be added
+	 * to the hash table of user colours
+	 * @author Jon
+	 */
+	private void getUserColour(String user)
+	{
+		try 
+		{
+			client.botChat.sendMessage(StringUtils.encodeBase64("requestusercolour " + username + " " + user));
+			
+		} 
+		catch (XMPPException e) 
+		{
+			e.printStackTrace();
+		}
+	}
 
     public ActionListener newAction()
     {
@@ -237,7 +235,7 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("My Profile"))
                 {
-                    showMyProfile();
+                    showMyProfile(myProfile);
                 }
                 else if (action.equals("Reset My Profile"))
                 {
@@ -249,15 +247,13 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Logout"))
                 {
-                    LoginUI.login.setVisible(true);
-                    w.setVisible(false);
                     int response;
                     response = JOptionPane.showConfirmDialog(new JPanel(),
                             "Are you sure you wish to log out?", "Logout",
                             JOptionPane.YES_NO_OPTION);
                     if (response == 0)
                     {
-                        login.logout();
+                    	login.logout();
                     }
                 }
                 else if (action.equals("About"))
@@ -277,25 +273,6 @@ public class MainWindow implements Runnable
                 {
                     changeColour();
                 }
-                else if (action.equals("DEV: Pretend to quit"))
-                {
-                    myProfile.updateTimeSpent(startTime);
-                    startTime = System.currentTimeMillis();
-                    myProfile.updateProfileInfo();
-                }
-                else if (action.equals("DEV: Push profile to server"))
-                {
-                    sendProfileToBot();
-                }
-                else if (action.equals("DEV: Get profile from server"))
-                {
-                    getProfileFromBot();
-                }
-                else if (action
-                        .equals("DEV: Show list of colours stored locally"))
-                {
-                    System.out.println(client.colours);
-                }
                 else if (action.equals("Close File"))
                 {
                     closeFile(action);
@@ -313,9 +290,31 @@ public class MainWindow implements Runnable
                 {
                     saveFile(action);
                 }
+                /**
+                 * Developer menu options
+                 * @author Jon
+                 */
                 else if (action.equals("DEV: Terminate Bot Remotely"))
                 {
                     client.terminateBotRemotely();
+                }
+                else if (action.equals("DEV: Pretend to quit"))
+                {
+                    myProfile.updateTimeSpent(startTime);
+                    startTime = System.currentTimeMillis();
+                    myProfile.updateProfileInfo();
+                }
+                else if (action.equals("DEV: Push profile to server"))
+                {
+                    sendProfileToBot();
+                }
+                else if (action.equals("DEV: Get profile from server"))
+                {
+                	getProfileFromBot();
+                }
+                else if (action.equals("DEV: Show list of colours stored locally"))
+                {
+                	System.out.println(client.colours);
                 }
             }
         };
@@ -364,63 +363,61 @@ public class MainWindow implements Runnable
 
     public void openFile()
     {
-        JFileChooser fc = new JFileChooser();
-        int rVal = fc.showOpenDialog(null);
-        if (rVal == JFileChooser.APPROVE_OPTION)
-        {
-            String temp;
-            currentDir = fc.getSelectedFile().getAbsolutePath();
-            currentFileName = fc.getSelectedFile().getName();
+    	JFileChooser fc = new JFileChooser();
+    	int rVal = fc.showOpenDialog(null);
+    	if (rVal == JFileChooser.APPROVE_OPTION)
+    	{
+    		String temp;
+    		currentDir = fc.getSelectedFile().getAbsolutePath();
+    		currentFileName = fc.getSelectedFile().getName();
+    		
+    		//this.liveFolder = new LiveFolder("Bot", "root");
+    		//SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+    		//client.openTabFor(currentDir);
+    		try
+    		{
+    			//FileInputStream fis = new FileInputStream(currentDir + currentFileName);
+    			//BufferedInputStream bis = new BufferedInputStream(fis);
+    			BufferedReader br = new BufferedReader(new FileReader(currentDir));
+    			currentFileContents = "";
+    			while ((temp = br.readLine()) != null)
+    			{
+    				currentFileContents = currentFileContents + temp + "\n";
+    			}
+    		}
+    		catch (IOException e)
+    		{
+    			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+    			return;
+    		}
 
-            // this.liveFolder = new LiveFolder("Bot", "root");
-            // SourceDocument t1 =
-            // this.liveFolder.makeDocument("t1.SourceDocument");
-            // client.openTabFor(currentDir);
-            try
-            {
-                // FileInputStream fis = new FileInputStream(currentDir +
-                // currentFileName);
-                // BufferedInputStream bis = new BufferedInputStream(fis);
-                BufferedReader br = new BufferedReader(new FileReader(
-                        currentDir));
-                currentFileContents = "";
-                while ((temp = br.readLine()) != null)
-                {
-                    currentFileContents = currentFileContents + temp + "\n";
-                }
-            }
-            catch (IOException e)
-            {
-                System.err.println("Error: " + e.getMessage());
-                System.exit(0);
-            }
-
-            // tabbedPane.addTab(currentFileName, new SourceEditor(
-            // currentFileContents, currentDir));
-            tabbedPane.setSelectedIndex(++currentTab);
-        }
+    		// tabbedPane.addTab(currentFileName, new SourceEditor(
+    		// currentFileContents, currentDir));
+    		tabbedPane.setSelectedIndex(++currentTab);
+    	}
     }
+
 
     public void saveFile(String action)
     {
-        JFileChooser fc = new JFileChooser();
-        File f = new File(client.getCurrentDocument().name /* + ".java" */);
-        fc.setSelectedFile(f);
-
-        if (currentFileName.equals("Unsaved Document 1")
-                || action.equals("Export"))
-        {
-            int watdo = fc.showSaveDialog(null);
-            if (watdo != JFileChooser.APPROVE_OPTION)
-            {
-                return;
-            }
-
-            currentFileName = fc.getSelectedFile().getName();
-            currentDir = fc.getSelectedFile().getAbsolutePath();
-        }
         try
         {
+	        JFileChooser fc = new JFileChooser();
+	        File f = new File(client.getCurrentDocument().name /* + ".java" */);
+	        fc.setSelectedFile(f);
+	
+	        if (currentFileName.equals("Unsaved Document 1")
+	                || action.equals("Export"))
+	        {
+	            int watdo = fc.showSaveDialog(null);
+	            if (watdo != JFileChooser.APPROVE_OPTION)
+	            {
+	                return;
+	            }
+	
+	            currentFileName = fc.getSelectedFile().getName();
+	            currentDir = fc.getSelectedFile().getAbsolutePath();
+	        }
             FileWriter fstream = new FileWriter(currentDir);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(client.getCurrentDocument().toString()/* currentFileContents */);
@@ -428,8 +425,14 @@ public class MainWindow implements Runnable
         }
         catch (IOException e1)
         {
-            System.err.println("Error: " + e1.getMessage());
+			JOptionPane.showMessageDialog(new JPanel(), ("Error: " + e1.getMessage()));
+			return;
         }
+		catch (NullPointerException e)
+		{
+			JOptionPane.showMessageDialog(new JPanel(), "Error: There is no document open!");
+			return;
+		}
         tabbedPane.setTitleAt(currentTab, currentFileName);
     }
 
@@ -441,7 +444,7 @@ public class MainWindow implements Runnable
         // tabbedPane.remove(tabbedPane.getSelectedIndex());
         // tabbedPane.setSelectedIndex(--currentTab);
     }
-
+   
     public void newFile()
     {
         String s = (String) JOptionPane.showInputDialog(new JPanel(),
@@ -460,89 +463,64 @@ public class MainWindow implements Runnable
                                    // "\\."));
         tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
     }
-
+    
     private void restartProfile()
     {
         int response = JOptionPane.showConfirmDialog(null,
                 "Are you sure you wish to reset your profile?");
         if (response == 0)
         {
-            File f = new File(username + ".txt");
-            try
-            {
-                if (!f.exists())
-                    System.err.println("Error: profile create failed!");
-                else
-                {
-                    f.delete();
-                    f.createNewFile();
-                    FileWriter fw = new FileWriter(f);
-                    BufferedWriter out = new BufferedWriter(fw);
-                    System.out
-                            .println("Profile has been reset, new credentials are:");
-                    System.out.println(username + "\n"
-                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                    out.write(username + "\n"
-                            + "chars: 0\ntimespent: 0\nlastonline: Never!");
-                    out.close();
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
             myProfile = new Profile(username, client);
-            myProfile.setColour(150, 150, 150);
-            announceColourChange(150, 150, 150);
+            myProfile.setColour(150,150,150);
+            announceColourChange(150,150,150);
             startTime = System.currentTimeMillis();
         }
         else
             return;
     }
+    
+	public void announceColourChange(int r, int g, int b) 
+	{
+        try 
+        {
+			client.chatroom.sendMessage(StringUtils.encodeBase64(
+					"colourchange: " + username + " " + r + " " + g + " " + b));
+		} 
+        catch (XMPPException e) 
+        {
+			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+			return;
+		}
+	}
+    
+	private void botColourChange(int r, int g, int b) 
+	{
+        try 
+        {
+			client.botChat.sendMessage(StringUtils.encodeBase64(
+					"colourchange: " + username + " " + r + " " + g + " " + b));
+		} 
+        catch (XMPPException e) 
+        {
+			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+			return;
+		}
+	}
 
-    public void announceColourChange(int r, int g, int b)
+    private void showMyProfile(Profile myProfile)
     {
-        try
-        {
-            client.chatroom.sendMessage(StringUtils
-                    .encodeBase64("colourchange: " + username + " " + r + " "
-                            + g + " " + b));
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(new JPanel(),
-                    "Error: " + e.getMessage());
-            return;
-        }
-    }
-
-    private void botColourChange(int r, int g, int b)
-    {
-        try
-        {
-            client.botChat.sendMessage(StringUtils
-                    .encodeBase64("colourchange: " + username + " " + r + " "
-                            + g + " " + b));
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    private void showMyProfile()
-    {
-        System.out.println(myProfile.timeSpent);
-        myProfile.updateTimeSpent(startTime);
-        System.out.println(myProfile.timeSpent);
-        startTime = System.currentTimeMillis();
-
-        // int count =
-        // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
-        // myProfile.adjustCharCount(count);
-
-        JFrame profileFrame = new JFrame("My Profile- " + username);
+    	if (username.equals(myProfile.uname))
+    	{
+	        System.out.println(myProfile.timeSpent);
+	        myProfile.updateTimeSpent(startTime);
+	        System.out.println(myProfile.timeSpent);
+	        startTime = System.currentTimeMillis();
+    	}
+        
+//        int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+//    	myProfile.adjustCharCount(count);
+        
+        JFrame profileFrame = new JFrame("My Profile- " + myProfile.uname);
         Container content = profileFrame.getContentPane();
         content.setLayout(new GridLayout(10, 2));
 
@@ -554,21 +532,16 @@ public class MainWindow implements Runnable
         profileFrame.setBounds(100, 100, 400, 350);
         profileFrame.setResizable(false);
         // profileFrame.pack();
-        profileFrame.show();
+        profileFrame.isDisplayable();
         profileFrame.setLocationRelativeTo(null);
 
-        JLabel uName = new JLabel("Username: " + username);
+        JLabel uName = new JLabel("Username: " + myProfile.uname);
         uName.setHorizontalAlignment(JLabel.LEFT);
         uName.setVerticalAlignment(JLabel.TOP);
         content.add(uName);
 
-        // JLabel uPwd = new JLabel("Password: " + client.CLIENT_USERNAME);
-        // uPwd.setHorizontalAlignment(JLabel.LEFT);
-        // uPwd.setVerticalAlignment(JLabel.TOP);
-        // content.add(uPwd);
-
         JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
-        // System.out.println(TypingEventList.countCharactersFor(username));
+        //System.out.println(TypingEventList.countCharactersFor(username));
         chars.setHorizontalAlignment(JLabel.LEFT);
         chars.setVerticalAlignment(JLabel.TOP);
         content.add(chars);
@@ -602,7 +575,7 @@ public class MainWindow implements Runnable
 
         frame.setBounds(100, 100, 400, 350);
         frame.setResizable(false);
-        frame.show();
+        frame.isDisplayable();
         frame.setLocationRelativeTo(null);
 
         JLabel chars = new JLabel(
@@ -614,13 +587,10 @@ public class MainWindow implements Runnable
 
     public void sendProfileToBot()
     {
-        // FIXME:
-        /*
-         * int count =
-         * this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE
-         * ).countCharactersFor(username); myProfile.adjustCharCount(0);
-         */
-
+    	//FIXME:
+    	/*int count = this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+    	myProfile.adjustCharCount(0);*/
+    	
         myProfile.updateTimeSpent(startTime);
         myProfile.updateProfileInfo();
         System.out.println(myProfile.toString());
@@ -636,22 +606,25 @@ public class MainWindow implements Runnable
             e1.printStackTrace();
         }
     }
-
+    
     private void getProfileFromBot()
     {
-        try
-        {
-            client.botChat.sendMessage(StringUtils
-                    .encodeBase64("requestprofile " + username));
-            System.out.println("Requesting profile from server");
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
+    	try 
+    	{
+			client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile " + username));
+			System.out.println("Requesting profile from server");
+		} catch (XMPPException e) 
+		{
+			e.printStackTrace();
+		}
     }
 
-    private void tabClicked(MouseEvent e)
+    /**
+     * FIXME: UNUSED METHOD!
+     * 
+     */
+    /*
+	private void tabClicked(MouseEvent e)
     {
         if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1)
         { // if is right-click
@@ -678,6 +651,7 @@ public class MainWindow implements Runnable
             popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
         }
     }
+    */
 
     public JMenuBar mainMenuBar()
     {
@@ -752,11 +726,11 @@ public class MainWindow implements Runnable
     }
 
     @SuppressWarnings("serial")
-    class MyListCellRenderer extends JLabel implements ListCellRenderer
+	class MyListCellRenderer extends JLabel implements ListCellRenderer
     {
-        boolean selected = false;
-        int index;
-        String name;
+    	boolean selected = false;
+    	int index;
+    	String name;
 
         public Component getListCellRendererComponent(JList paramlist,
                 Object value, int index, boolean isSelected,
@@ -768,7 +742,7 @@ public class MainWindow implements Runnable
 
             return this;
         }
-
+        
         public void paint(Graphics g)
         {
             Color bg;
@@ -792,8 +766,9 @@ public class MainWindow implements Runnable
             g.drawString(name, 25, 17);
         }
     }
-
-    public class tabsFlash extends JTabbedPane
+    
+    @SuppressWarnings("serial")
+	public class tabFlash extends JTabbedPane 
     {
     	public TabFlash tabflash (int requiredTabIndex)
     	{
@@ -878,22 +853,26 @@ public class MainWindow implements Runnable
         /* panel for the list of online users */
         JPanel panel = new JPanel(new BorderLayout());
 
-        Border emptyBorder = BorderFactory.createEmptyBorder();
+        /**
+         * FIXME: this variable is never used!
+         */
+        @SuppressWarnings("unused")
+		Border emptyBorder = BorderFactory.createEmptyBorder();
 
         // temporarily added so there were always users online
-        /*
-         * userListModel.add(0, "Person 1"); userListModel.add(1, "Person 2");
-         * userListModel.add(2, "Person 3"); userListModel.add(3, "Person 4");
-         * userListModel.add(4, "Person 5");
-         */
-
+        /*userListModel.add(0, "Person 1");
+        userListModel.add(1, "Person 2");
+        userListModel.add(2, "Person 3");
+        userListModel.add(3, "Person 4");
+        userListModel.add(4, "Person 5");*/
+        
         userList = new JList(userListModel);
         userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
+        
         userList.setCellRenderer(new MyListCellRenderer());
         userList.setFixedCellWidth(25);
         userList.setFixedCellHeight(25);
-
+        
         /*
          * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =
          * userList.getModel().getElementAt(i);
@@ -943,16 +922,45 @@ public class MainWindow implements Runnable
 
                     showProfile.addActionListener(new ActionListener()
                     {
-                        public void actionPerformed(ActionEvent e)
+                        public void actionPerformed(final ActionEvent e)
                         {
                             SwingUtilities.invokeLater(new Runnable()
                             {
                                 public void run()
                                 {
-                                    showMyProfile(); // TODO could this be
-                                    // parsed the username that
-                                    // you want to see the
-                                    // profile of?
+                                	/**
+                                	 * TODO:
+                                	 * - Get the name from the thing the user right clicked
+                                	 * - Send "requestprofile USERNAME" to the bot
+                                	 * - Wait for 500ms
+                                	 * - Check in Client to see the new Profile that has appeared :)
+                                	 */
+                                    try 
+                                    {
+										System.out.println(client.profileFound);
+										client.botChat.sendMessage(StringUtils.encodeBase64(
+												"requestprofile " + userList.getSelectedValue() + " notme"));
+										Thread.sleep(500);
+										System.out.println(client.profileFound);
+										if (!client.profileFound)
+											JOptionPane.showMessageDialog(new JPanel(), 
+													"Error: user profile not found on server");
+										else
+										{
+											showMyProfile(client.notMyProfile);
+											client.profileFound = false;
+											client.notMyProfile = null;
+										}
+									} 
+                                    catch (XMPPException e) 
+                                    {
+                                    	JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
+										e.printStackTrace();
+									} 
+                                    catch (InterruptedException e) 
+									{
+										e.printStackTrace();
+									}
                                 }
                             });
                         }
@@ -989,7 +997,7 @@ public class MainWindow implements Runnable
         /*
          * Format of output:[bold]username[/bold] timestamp: message
          */
-
+        
         // messageReceiveBoxScroll.setBorder(emptyBorder);
 
         // receiveTabs = new JTabbedPane();
@@ -1032,15 +1040,8 @@ public class MainWindow implements Runnable
         messageSendBox.setFont(sendFont);
         messageSendBox.addKeyListener(new KeyListener()
         {
-            @Override
-            public void keyTyped(KeyEvent e)
-            {
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e)
-            {
-            }
+            public void keyTyped(KeyEvent e) {}
+            public void keyPressed(KeyEvent e){}
 
             @Override
             public void keyReleased(KeyEvent e)
@@ -1133,7 +1134,7 @@ public class MainWindow implements Runnable
         w = new JFrame("CIDEr - Logged in as " + username);
 
         client.startClockSynchronisation(w);
-
+        
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");
@@ -1162,19 +1163,6 @@ public class MainWindow implements Runnable
         w.setVisible(true);
         w.addWindowListener(new WindowListener()
         {
-
-            @Override
-            public void windowActivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowClosed(WindowEvent arg0)
-            {
-            }
-
             @Override
             public void windowClosing(WindowEvent arg0)
             {
@@ -1184,34 +1172,13 @@ public class MainWindow implements Runnable
                 System.out.println("disconnecting");
                 client.disconnect();
             }
-
-            @Override
-            public void windowDeactivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowIconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
-
-            @Override
-            public void windowOpened(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-
-            }
+            
+            public void windowDeactivated(WindowEvent arg0) {}
+            public void windowDeiconified(WindowEvent arg0) {}
+            public void windowIconified(WindowEvent arg0) {}
+            public void windowOpened(WindowEvent arg0) {}
+            public void windowClosed(WindowEvent arg0) {}
+            public void windowActivated(WindowEvent arg0) {}
 
         });
     }
@@ -1222,8 +1189,6 @@ public class MainWindow implements Runnable
         {
             JOptionPane.showMessageDialog(w, message, title,
                     JOptionPane.ERROR_MESSAGE);
-            // JOptionPane.showMessageDialog(w, "OMG you broken somethings.",
-            // "You fail", JOptionPane.ERROR_MESSAGE);
         }
     }
 

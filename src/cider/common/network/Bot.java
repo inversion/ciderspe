@@ -22,7 +22,8 @@ import cider.common.processes.SourceDocument;
 
 public class Bot
 {
-    private static final boolean DEBUG = true;
+    @SuppressWarnings("unused")
+	private static final boolean DEBUG = true;
     public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
@@ -143,7 +144,9 @@ public class Bot
     public void testTree()
     {
         this.liveFolder = new LiveFolder("Bot", "root");
-        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        //FIXME: t1 is unused
+        @SuppressWarnings("unused")
+		SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
