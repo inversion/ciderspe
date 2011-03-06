@@ -13,7 +13,6 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 
-
 /**
  * This is the class that implements the bot that connects to the XMPP server.
  * 
@@ -23,7 +22,7 @@ import cider.common.processes.SourceDocument;
 public class Bot
 {
     @SuppressWarnings("unused")
-	private static final boolean DEBUG = true;
+    private static final boolean DEBUG = true;
     public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
@@ -42,8 +41,8 @@ public class Bot
     private ChatManager chatmanager;
     private BotChatListener chatListener;
     private LiveFolder liveFolder;
-    
-    //Holds the colours for each user
+
+    // Holds the colours for each user
     public HashMap<String, Color> colours;
 
     // TODO: Temporary method of running the bot from the command line.
@@ -64,7 +63,7 @@ public class Bot
 
     public Bot()
     {
-    	colours = new HashMap<String, Color>();
+        colours = new HashMap<String, Color>();
         try
         {
             checkForBot();
@@ -79,10 +78,13 @@ public class Bot
                     + "@conference." + SERVICE_NAME);
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
-            
-            // Verbose debugging to print out every packet leaving or entering the bot
-            //connection.addPacketListener(new DebugPacketListener(),                   new DebugPacketFilter());
-            //connection.addPacketInterceptor(new DebugPacketInterceptor(),                    new DebugPacketFilter());
+
+            // Verbose debugging to print out every packet leaving or entering
+            // the bot
+            // connection.addPacketListener(new DebugPacketListener(), new
+            // DebugPacketFilter());
+            // connection.addPacketInterceptor(new DebugPacketInterceptor(), new
+            // DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
@@ -99,7 +101,8 @@ public class Bot
 
     /**
      * Connect to the server as a reserved user to check if the bot is already
-     * logged on from another location. Alert the user on stderr if this is the case
+     * logged on from another location. Alert the user on stderr if this is the
+     * case
      * 
      * @author Andrew
      * @throws XMPPException
@@ -140,13 +143,13 @@ public class Bot
     }
 
     // TODO: Lawrence needs to comment below
-    
+
     public void testTree()
     {
         this.liveFolder = new LiveFolder("Bot", "root");
-        //FIXME: t1 is unused
+        // FIXME: t1 is unused
         @SuppressWarnings("unused")
-		SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));

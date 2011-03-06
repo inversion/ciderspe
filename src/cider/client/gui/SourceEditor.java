@@ -130,7 +130,7 @@ public class SourceEditor extends JPanel
      * FIXME: UNUSED METHOD!
      */
     @SuppressWarnings("unused")
-	private ComponentListener newTabSelectionFocusGainListener()
+    private ComponentListener newTabSelectionFocusGainListener()
     {
         // TODO Auto-generated method stub
         return null;
@@ -224,30 +224,38 @@ public class SourceEditor extends JPanel
                     eta.moveDown();
                     break;
                 case KeyEvent.VK_HOME:
-                	eta.moveHome();
-                	break;
+                    eta.moveHome();
+                    break;
                 case KeyEvent.VK_END:
-                	eta.moveEnd();
-                	break;
+                    eta.moveEnd();
+                    break;
                 case KeyEvent.VK_PAGE_UP:
-                	eta.movePageUp();
-                	break;
+                    eta.movePageUp();
+                    break;
                 case KeyEvent.VK_PAGE_DOWN:
-                	eta.movePageDown();
-                	break;
-                case KeyEvent.VK_CONTROL: //&& KeyEvent.VK_HOME:
-                	//switch (ke.getKeyCode())
-                	{
-                	//case  KeyEvent.VK_HOME:
-                		eta.moveDocHome();
-                		break;
-                	//case KeyEvent.VK_SHIFT:
-                		//eta.moveDocEnd();
-                		//break;
-                	}
+                    eta.movePageDown();
+                    break;
+                case KeyEvent.VK_CONTROL: // && KeyEvent.VK_HOME:
+                    // switch (ke.getKeyCode())
+                {
+                    // case KeyEvent.VK_HOME:
+
+                    eta.moveDocHome();
+                    break;
+                    // case KeyEvent.VK_SHIFT:
+                    // eta.moveDocEnd();
+                    // break;
+                }
                 case KeyEvent.VK_SHIFT:
-                	eta.moveDocEnd();
-                	break;
+                {
+                    // <lawrence> : You've probably already done this
+                    // Alex, it's just that I kept pressing
+                    // shift by accident. Don't forget to
+                    // test for empty document btw.
+                    if (ke.getKeyCode() == KeyEvent.VK_HOME)
+                        eta.moveDocEnd();
+                }
+                    break;
                 }
             }
 
@@ -314,7 +322,7 @@ public class SourceEditor extends JPanel
 
                             TypingEvent te = new TypingEvent(
                                     System.currentTimeMillis()
-                                    	+ client.getClockOffset(), mode,
+                                            + client.getClockOffset(), mode,
                                     eta.getCaretPosition(), chr.length(), chr,
                                     client.getUsername());
                             ArrayList<TypingEvent> particles = te.explode();

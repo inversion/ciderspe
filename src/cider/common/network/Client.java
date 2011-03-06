@@ -3,10 +3,8 @@ package cider.common.network;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -95,9 +93,9 @@ public class Client
     public boolean profileFound;
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
-    
-    //FIXME: UNUSED VARIABLE
-    //private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
+
+    // FIXME: UNUSED VARIABLE
+    // private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
 
     /*
      * Abstract because it can be a private chat or multi user chat (chatroom)
@@ -123,9 +121,9 @@ public class Client
     private SourceDocument currentDoc = null;
     private long clockOffset = 0;
     private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
-    //FIXME: synchronised is never read!
+    // FIXME: synchronised is never read!
     @SuppressWarnings("unused")
-	private boolean synchronised = false;
+    private boolean synchronised = false;
 
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log)
@@ -338,9 +336,12 @@ public class Client
     /**
      * Update the chatroom message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
@@ -369,9 +370,12 @@ public class Client
     /**
      * Update a private chat message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
@@ -409,7 +413,8 @@ public class Client
      * Initiate a chat session with someone, essentially has no effect if the
      * chat already exists, or if you try to chat with yourself.
      * 
-     * @param The user to initiate a chat with.
+     * @param The
+     *            user to initiate a chat with.
      * @author Andrew
      */
     public void initiateChat(String user)
@@ -610,7 +615,7 @@ public class Client
             sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
             this.openTabs.put(strPath, sourceEditor);
             this.pullSimplifiedEventsFromBot(strPath,
-                    System.currentTimeMillis());
+                    System.currentTimeMillis() + this.getClockOffset());
         }
     }
 
@@ -654,7 +659,8 @@ public class Client
         }
         try
         {
-            long currentTime = System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis()
+                    + this.getClockOffset();
             long interval = currentTime - this.lastBroardcast;
             if (!this.isWaitingToBroadcast)
             {
@@ -717,10 +723,10 @@ public class Client
         }
         catch (XMPPException e)
         {
-			JOptionPane.showMessageDialog(
-					new JPanel(), "Error retrieving file list: " + e.getMessage());
-			e.printStackTrace();
-			return;
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error retrieving file list: " + e.getMessage());
+            e.printStackTrace();
+            return;
         }
     }
 
@@ -823,7 +829,8 @@ public class Client
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
             parent.userList.repaint();
-            //EditorTypingArea.highlightMargin(); //FIXME update current line colour when user changes profile colour
+            // EditorTypingArea.highlightMargin(); //FIXME update current line
+            // colour when user changes profile colour
         }
     }
 
@@ -862,7 +869,7 @@ public class Client
 
     public void setTimeDelta(long delta)
     {
-        this.clockOffset = System.currentTimeMillis() - delta;
+        this.clockOffset = delta;
     }
 
     public MainWindow getParent()
@@ -880,4 +887,3 @@ public class Client
         parent = p;
     }
 }
-
