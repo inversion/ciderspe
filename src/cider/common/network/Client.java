@@ -330,7 +330,7 @@ public class Client
 
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
-                userListModel, userCount));
+                userListModel, userCount, this));
     }
 
     /**

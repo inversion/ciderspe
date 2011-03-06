@@ -72,7 +72,7 @@ public class MainWindow implements Runnable
     public String currentFileContents = "";
     public int currentTab = 0;
 
-    LoginUI login;
+    public LoginUI login;
 
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
