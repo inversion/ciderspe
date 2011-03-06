@@ -3,6 +3,7 @@ package cider.common.network;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -12,8 +13,6 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.processes.Profile;
-
-
 
 /**
  * This class waits for a message to be received by the client on its chat
@@ -35,63 +34,95 @@ public class ClientMessageListener implements MessageListener, ActionListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-    	String body = new String( StringUtils.decodeBase64( message.getBody() ) );
+        String body = new String(StringUtils.decodeBase64(message.getBody()));
         if (body.startsWith("quit"))
         {
-			JOptionPane.showMessageDialog(new JPanel(), 
-					"Error: Someone is already running a CIDER client with your username, disconnecting and quitting.");
+            JOptionPane
+                    .showMessageDialog(
+                            new JPanel(),
+                            "Error: Someone is already running a CIDER client with your username, disconnecting and quitting.");
             client.disconnect();
             System.exit(1);
         }
         else if (body.equals("notfound"))
         {
-        	client.profileFound = false;
+            client.profileFound = false;
         }
         else if (body.startsWith("usercolour:"))
         {
-        	String[] split = body.split(" ");
-        	Color c = new Color(Integer.parseInt(split[1]),
-        			Integer.parseInt(split[2]),
-        			Integer.parseInt(split[3]));
-        	client.incomingColour = c;
+            String[] split = body.split(" ");
+            Color c = new Color(Integer.parseInt(split[1]),
+                    Integer.parseInt(split[2]), Integer.parseInt(split[3]));
+            client.incomingColour = c;
         }
         else if (body.startsWith("PROFILE* "))
         {
-        	if (client.profile == null)
+            System.out.println(body);
+            if (client.profile == null)
+            {
+                client.profile = new Profile(client.getUsername(), client);
+            }
+            client.profileFound = true;
+            String[] splitLine = body.split(" ");
+            if (splitLine[1].equals("chars:"))
+            {
+                client.profile.setChars(Integer.parseInt(splitLine[2]));
+            }
+            else if (splitLine[1].equals("timespent:"))
+            {
+                client.profile.setTime(Long.parseLong(splitLine[2]));
+            }
+            else if (splitLine[1].equals("lastonline:"))
+            {
+                String newsplit = body.substring(21);
+                client.profile.setLastOnline(newsplit);
+            }
+            else if (splitLine[1].equals("colour:"))
+            {
+                client.profile.setColour(Integer.parseInt(splitLine[2]),
+                        Integer.parseInt(splitLine[3]),
+                        Integer.parseInt(splitLine[4]));
+            }
+            else
+            {
+                client.profile.uname = body.substring(9);
+            }
+        }
+        else if (body.startsWith("PROFILE$ "))
+        {
+        	if (client.notMyProfile == null)
         	{
-        		client.profile = new Profile(client.getUsername(), client);
+        		client.notMyProfile = new Profile("notme", client);
         	}
         	client.profileFound = true;
         	String[] splitLine = body.split(" ");
         	if (splitLine[1].equals("chars:"))
         	{
-        		client.profile.setChars(Integer.parseInt(splitLine[2]));
+        		client.notMyProfile.setChars(Integer.parseInt(splitLine[2]));
         	}
         	else if (splitLine[1].equals("timespent:"))
         	{
-        		System.out.println("whatthe");
-        		client.profile.setTime(Long.parseLong(splitLine[2]));
+        		client.notMyProfile.setTime(Long.parseLong(splitLine[2]));
         	}
         	else if (splitLine[1].equals("lastonline:"))
         	{
         		String newsplit = body.substring(21);
-        		client.profile.setLastOnline(newsplit);
+        		client.notMyProfile.setLastOnline(newsplit);
         	}
         	else if (splitLine[1].equals("colour:"))
         	{
-        		client.profile.setColour(
+        		client.notMyProfile.setColour(
         				Integer.parseInt(splitLine[2]),
         				Integer.parseInt(splitLine[3]),
         				Integer.parseInt(splitLine[4]));
         	}
         	else
         	{
-        		client.profile.uname = splitLine[2];
+        		client.notMyProfile.uname = body.substring(9);
         	}
         }
     	else if (body.startsWith("timeReply("))
         {
-    		System.out.println("time reply yo" + body);
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];
             String[] args = str.split(",");

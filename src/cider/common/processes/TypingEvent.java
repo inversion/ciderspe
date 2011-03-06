@@ -52,7 +52,6 @@ public class TypingEvent
         this.owner = typingEvent.owner;
     }
 
-
     public TypingEvent(String str)
     {
         String[] split = str.split("~");
