@@ -89,9 +89,15 @@ public class ClientMessageListener implements MessageListener, ActionListener
             str = str.split("\\)")[0];
             String[] args = str.split(",");
             long sentTime = Long.parseLong(args[0]);
-            long currentTime = System.currentTimeMillis();
-            long latency = (currentTime - sentTime) / 2;
-            this.client.addLatencySample(latency);
+            long currentTime = System.currentTimeMillis()
+                    + this.client.getClockOffset();
+            long halfLatency = (currentTime - sentTime) / 2;
+            long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
+
+            if (this.client.getClockOffset() == 0)
+                this.client.setTimeDelta(delta);
+
+            this.client.addTimeDeltaSample(delta);
         }
         else
             this.client.processDocumentMessages(body);

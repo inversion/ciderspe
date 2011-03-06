@@ -235,8 +235,11 @@ public class BotMessageListener implements MessageListener
         if (queue.size() == 0)
             instructions += "isblank(" + path + ")";
         else
+        {
+            instructions += "pushto(" + path + ") ";
             for (TypingEvent te : queue)
-                instructions += "pushto(" + path + ") " + te.pack() + " -> ";
+                instructions += te.pack() + "%%";
+        }
         try
         {
             chat.sendMessage(StringUtils.encodeBase64(instructions));
@@ -253,8 +256,7 @@ public class BotMessageListener implements MessageListener
         String instructions = "";
         for (LocalisedTypingEvents ltes : events)
             for (TypingEvent te : ltes.typingEvents)
-                instructions += "pushto(" + ltes.path + ") " + te.pack()
-                        + " -> ";
+                instructions += "pushto(" + ltes.path + ") " + te.pack() + ">";
         try
         {
             chat.sendMessage(StringUtils.encodeBase64(instructions));

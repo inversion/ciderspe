@@ -285,7 +285,7 @@ public class SourceEditor extends JPanel
 
                             TypingEvent te = new TypingEvent(
                                     System.currentTimeMillis()
-                                            + client.getClockOffset(), mode,
+                                            - client.getClockOffset(), mode,
                                     eta.getCaretPosition(), chr.length(), chr,
                                     client.getUsername());
                             ArrayList<TypingEvent> particles = te.explode();

@@ -109,14 +109,14 @@ public class Client
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
-    private static final long minimumBroadcastDelay = 0;
+    private static final long minimumBroadcastDelay = 400;
     private String outgoingTypingEvents = "";
     private Timer broardcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
     private long clockOffset = 0;
     private boolean synchronised = false;
-    private PriorityQueue<Long> latencyList = new PriorityQueue<Long>();
+    private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
 
     public Client(String username, String password, String host, int port,
             String serviceName)
@@ -179,27 +179,31 @@ public class Client
         chatmanager.addChatListener(userChatListener);
     }
 
+    /**
+     * 
+     * @param parentComponent
+     */
     public void startClockSynchronisation(Component parentComponent)
     {
         final int requiredSamples = 5;
         final ProgressMonitor progressMonitor = new ProgressMonitor(
-                parentComponent, "Synchronising watch...", "", 0,
+                parentComponent, "Synchronising clocks...", "", 0,
                 requiredSamples + 1);
         progressMonitor.setMillisToDecideToPopup(0);
 
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask()
         {
-            int samplesTaken = 0;
+            int requestsMade = 0;
 
             @Override
             public void run()
             {
-                if (samplesTaken < 5)
+                if (this.requestsMade < 5)
                 {
-                    sampleLatency();
-                    this.samplesTaken++;
-                    progressMonitor.setProgress(requiredSamples);
+                    timeRequest();
+                    this.requestsMade++;
+                    progressMonitor.setProgress(this.requestsMade);
                 }
                 else
                 {
@@ -217,7 +221,7 @@ public class Client
         }, 0, 2000);
     }
 
-    private void sampleLatency()
+    private void timeRequest()
     {
         // Synchronise clock
 
@@ -639,7 +643,7 @@ public class Client
         for (TypingEvent te : typingEvents)
         {
             this.outgoingTypingEvents += "pushto(" + path + ") " + te.pack()
-                    + " -> ";
+                    + "%%";
         }
         try
         {
@@ -762,22 +766,31 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split(" -> ");
+            String[] instructions = body.split("%%");
             Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
+            String dest = "";
+            String packedEvent = "";
             for (String instruction : instructions)
             {
-                String[] preAndAfter = instruction.split("\\) ");
-                String[] pre = preAndAfter[0].split("\\(");
-                String dest = pre[1];
-                dest = dest.replace("root\\", "");
+                if (instruction.startsWith("pushto"))
+                {
+                    String[] preAndAfter = instruction.split("\\) ");
+                    String[] pre = preAndAfter[0].split("\\(");
+                    dest = pre[1];
+                    dest = dest.replace("root\\", "");
+                    packedEvent = preAndAfter[1];
+                }
+                else
+                    packedEvent = instruction;
+
                 Queue<TypingEvent> queue = queues.get(dest);
                 if (queue == null)
                 {
                     queue = new LinkedList<TypingEvent>();
                     queues.put(dest, queue);
                 }
-                queue.add(new TypingEvent(preAndAfter[1]));
-                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                queue.add(new TypingEvent(packedEvent));
+                System.out.println("Push " + packedEvent + " to " + dest);
             }
 
             for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
@@ -818,19 +831,26 @@ public class Client
         return this.clockOffset;
     }
 
-    public void addLatencySample(long latency)
+    public void addTimeDeltaSample(long latency)
     {
-        this.latencyList.add(latency);
+        this.timeDeltaList.add(latency);
     }
 
     public void updateClockOffset()
     {
-        int mid = this.latencyList.size() / 2;
+        int mid = this.timeDeltaList.size() / 2;
         int i = mid;
         while (i-- > 0)
-            this.latencyList.poll();
+            this.timeDeltaList.poll();
 
-        this.clockOffset = this.latencyList.peek();
+        this.clockOffset = System.currentTimeMillis()
+                - this.timeDeltaList.peek();
         System.out.println("Clock offset set to " + this.clockOffset);
+        this.timeDeltaList.clear();
+    }
+
+    public void setTimeDelta(long delta)
+    {
+        this.clockOffset = System.currentTimeMillis() - delta;
     }
 }
