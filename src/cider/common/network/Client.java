@@ -1,15 +1,18 @@
 package cider.common.network;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,10 +20,10 @@ import java.util.TimerTask;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+import javax.swing.ProgressMonitor;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -32,7 +35,6 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
-import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
@@ -54,9 +56,6 @@ public class Client
 {
     // TODO: Need to make sure usernames are all alpha numeric or at least don't
     // mess up XML
-	
-	private MainWindow parent;
-	private LoginUI login;
 
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
@@ -91,6 +90,8 @@ public class Client
     public HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
 
+    private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
+
     /*
      * Abstract because it can be a private chat or multi user chat (chatroom)
      * and smack represents them as different types
@@ -108,14 +109,17 @@ public class Client
     private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
-    private static final long minimumBroadcastDelay = 0;
+    private static final long minimumBroadcastDelay = 400;
     private String outgoingTypingEvents = "";
     private Timer broardcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
+    private long clockOffset = 0;
+    private boolean synchronised = false;
+    private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
 
     public Client(String username, String password, String host, int port,
-            String serviceName, LoginUI log)
+            String serviceName)
     {
         // Assign objects from parameters
         this.username = username;
@@ -124,9 +128,6 @@ public class Client
         this.port = port;
         this.serviceName = serviceName;
         this.password = password;
-        this.login = log;
-        
-        EditorTypingArea.addParent(this);
     }
 
     /**
@@ -171,26 +172,71 @@ public class Client
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
-                new ClientChatroomInviteListener(chatroom, username, this));
+                new ClientChatroomInviteListener(chatroom, username));
 
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
     }
-    
-    public void addParent(MainWindow p)
+
+    /**
+     * 
+     * @param parentComponent
+     */
+    public void startClockSynchronisation(Component parentComponent)
     {
-    	parent = p;
+        final int requiredSamples = 5;
+        final ProgressMonitor progressMonitor = new ProgressMonitor(
+                parentComponent, "Synchronising clocks...", "", 0,
+                requiredSamples + 1);
+        progressMonitor.setMillisToDecideToPopup(0);
+
+        final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+            int requestsMade = 0;
+
+            @Override
+            public void run()
+            {
+                if (this.requestsMade < 5)
+                {
+                    timeRequest();
+                    this.requestsMade++;
+                    progressMonitor.setProgress(this.requestsMade);
+                }
+                else
+                {
+                    updateClockOffset();
+                    synchronised = true;
+                    progressMonitor.setProgress(requiredSamples);
+                    progressMonitor.setNote("Getting file list...");
+                    getFileListFromBot();
+                    progressMonitor.setProgress(requiredSamples + 1);
+                    progressMonitor.close();
+                    timer.cancel();
+                }
+            }
+
+        }, 0, 2000);
     }
-    
-    public MainWindow getParent()
+
+    private void timeRequest()
     {
-    	return parent;
-    }
-    
-    public LoginUI getLogin()
-    {
-    	return login;
+        // Synchronise clock
+
+        // 1: Client stamps current local time on a "time request" packet and
+        // sends to server
+        long currentLocalTime = System.currentTimeMillis();
+        try
+        {
+            this.sendBotMessage("timeRequest(" + currentLocalTime + ")");
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -230,6 +276,7 @@ public class Client
         }
         catch (XMPPException e1)
         {
+            // TODO Auto-generated catch block
             e1.printStackTrace();
         }
         chatroom.leave();
@@ -244,6 +291,7 @@ public class Client
         }
         catch (InterruptedException e)
         {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         // TODO: Is above stuff necessary?
@@ -276,9 +324,12 @@ public class Client
     /**
      * Update the chatroom message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
@@ -307,9 +358,12 @@ public class Client
     /**
      * Update a private chat message log with a new message.
      * 
-     * @param The username of the user who sent the message
-     * @param The date the message was originally sent (as Dateformat)
-     * @param The message body.
+     * @param The
+     *            username of the user who sent the message
+     * @param The
+     *            date the message was originally sent (as Dateformat)
+     * @param The
+     *            message body.
      * 
      * @author Andrew
      */
@@ -347,7 +401,8 @@ public class Client
      * Initiate a chat session with someone, essentially has no effect if the
      * chat already exists, or if you try to chat with yourself.
      * 
-     * @param The user to initiate a chat with.
+     * @param The
+     *            user to initiate a chat with.
      * @author Andrew
      */
     public void initiateChat(String user)
@@ -588,7 +643,7 @@ public class Client
         for (TypingEvent te : typingEvents)
         {
             this.outgoingTypingEvents += "pushto(" + path + ") " + te.pack()
-                    + " -> ";
+                    + "%%";
         }
         try
         {
@@ -640,7 +695,9 @@ public class Client
         {
             e.printStackTrace();
             JOptionPane.showMessageDialog(
-                    null, "Client failed to send message across bot chat: " + e.getMessage());
+                    null,
+                    "Client failed to send message across bot chat: "
+                            + e.getMessage());
             System.exit(1);
         }
     }
@@ -653,9 +710,8 @@ public class Client
         }
         catch (XMPPException e)
         {
-			JOptionPane.showMessageDialog(
-					new JPanel(), "Error retrieving file list: " + e.getMessage());
-			return;
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -710,22 +766,31 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            String[] instructions = body.split(" -> ");
+            String[] instructions = body.split("%%");
             Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
+            String dest = "";
+            String packedEvent = "";
             for (String instruction : instructions)
             {
-                String[] preAndAfter = instruction.split("\\) ");
-                String[] pre = preAndAfter[0].split("\\(");
-                String dest = pre[1];
-                dest = dest.replace("root\\", "");
+                if (instruction.startsWith("pushto"))
+                {
+                    String[] preAndAfter = instruction.split("\\) ");
+                    String[] pre = preAndAfter[0].split("\\(");
+                    dest = pre[1];
+                    dest = dest.replace("root\\", "");
+                    packedEvent = preAndAfter[1];
+                }
+                else
+                    packedEvent = instruction;
+
                 Queue<TypingEvent> queue = queues.get(dest);
                 if (queue == null)
                 {
                     queue = new LinkedList<TypingEvent>();
                     queues.put(dest, queue);
                 }
-                queue.add(new TypingEvent(preAndAfter[1]));
-                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+                queue.add(new TypingEvent(packedEvent));
+                System.out.println("Push " + packedEvent + " to " + dest);
             }
 
             for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
@@ -748,8 +813,6 @@ public class Client
             if (colours.containsKey(changedUser))
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
-            parent.userList.repaint();
-            //EditorTypingArea.highlightMargin(); //FIXME update current line colour when user changes profile colour
         }
     }
 
@@ -761,5 +824,33 @@ public class Client
     public Profile getProfile()
     {
         return profile;
+    }
+
+    public long getClockOffset()
+    {
+        return this.clockOffset;
+    }
+
+    public void addTimeDeltaSample(long latency)
+    {
+        this.timeDeltaList.add(latency);
+    }
+
+    public void updateClockOffset()
+    {
+        int mid = this.timeDeltaList.size() / 2;
+        int i = mid;
+        while (i-- > 0)
+            this.timeDeltaList.poll();
+
+        this.clockOffset = System.currentTimeMillis()
+                - this.timeDeltaList.peek();
+        System.out.println("Clock offset set to " + this.clockOffset);
+        this.timeDeltaList.clear();
+    }
+
+    public void setTimeDelta(long delta)
+    {
+        this.clockOffset = System.currentTimeMillis() - delta;
     }
 }

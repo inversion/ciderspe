@@ -60,13 +60,14 @@ public class TypingEvent
         // telling the difference.
         try
         {
-            this.mode = TypingEventMode.valueOf(split[0]);
+            this.mode = TypingEventMode.values()[Integer.parseInt(split[0])];
             this.text = split[1];
-            this.position = Integer.parseInt(split[2]);
+            this.position = Integer.parseInt(split[2], 35);
             this.length = Integer.parseInt(split[3]);
-            this.time = Long.parseLong(split[4]);
+            this.time = Long.parseLong(split[4], 35);
             this.owner = split[5];
-            this.locked = Boolean.parseBoolean(split[6]);
+            if (split.length == 7)
+                this.locked = true;
         }
         catch (Exception e)
         {
@@ -76,9 +77,10 @@ public class TypingEvent
 
     public String pack()
     {
-        return this.mode + "~" + this.text + "~" + this.position + "~"
-                + this.length + "~" + this.time + "~" + this.owner + "~"
-                + this.locked;
+        return this.mode.ordinal() + "~" + this.text + "~"
+                + Integer.toString(this.position, 35) + "~" + this.length + "~"
+                + Long.toString(this.time, 35) + "~" + this.owner
+                + (this.locked ? "~1" : "");
     }
 
     public ArrayList<TypingEvent> explode()
