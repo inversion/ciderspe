@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
@@ -24,16 +26,18 @@ public class ClientChatroomParticipantListener implements PacketListener {
 
 	public DefaultListModel list;
 	private JLabel userCount;
+	private Client parentClient;
 	
 	// Maintain table of users online/offline
 	// TODO: Implement some sort of greyed out status in the GUI for users that have been 'seen' but are offline
 	private HashMap<String,Boolean> users;
 	
-	public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal ) 
+	public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal , Client parent) 
 	{
 		list = userListModel;
 		users = new HashMap<String,Boolean>();
 		userCount = userTotal;
+		parentClient = parent;
 	}
 
 	@Override
@@ -57,7 +61,10 @@ public class ClientChatroomParticipantListener implements PacketListener {
 			System.out.println( "Presence from: " + nickname + " NOT AVAILABLE" );
 			// TODO: GUI people display error box for this?
 			if( nickname.equals( Bot.BOT_USERNAME ) )
-				System.err.println( "Bot has gone offline, CIDER will stop working properly." );
+			{
+				JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
+				parentClient.getParent().login.logout();
+			}
 			
 			if( users.containsKey( nickname ) )
 			{
