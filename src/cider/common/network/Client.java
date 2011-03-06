@@ -20,6 +20,7 @@ import java.util.TimerTask;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -35,6 +36,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.DirectoryViewComponent;
+import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
 import cider.common.processes.LiveFolder;
@@ -61,6 +63,9 @@ public class Client
     public static final String RESOURCE = "CIDER";
     public final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
+
+    private LoginUI login;
+    private MainWindow parent;
 
     // XMPP Basics
     private XMPPConnection connection;
@@ -119,7 +124,7 @@ public class Client
     private PriorityQueue<Long> timeDeltaList = new PriorityQueue<Long>();
 
     public Client(String username, String password, String host, int port,
-            String serviceName)
+            String serviceName, LoginUI log)
     {
         // Assign objects from parameters
         this.username = username;
@@ -128,6 +133,11 @@ public class Client
         this.port = port;
         this.serviceName = serviceName;
         this.password = password;
+        this.login = log;
+
+        // FIXME
+        // Alex... just... WTF!?!?
+        EditorTypingArea.addParent(this);
     }
 
     /**
@@ -172,7 +182,7 @@ public class Client
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
-                new ClientChatroomInviteListener(chatroom, username));
+                new ClientChatroomInviteListener(chatroom, username, this));
 
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
@@ -234,8 +244,10 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error retrieving file list: " + e.getMessage());
+            return;
         }
     }
 
@@ -813,6 +825,7 @@ public class Client
             if (colours.containsKey(changedUser))
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
+            parent.userList.repaint();
         }
     }
 
@@ -852,5 +865,20 @@ public class Client
     public void setTimeDelta(long delta)
     {
         this.clockOffset = System.currentTimeMillis() - delta;
+    }
+
+    public MainWindow getParent()
+    {
+        return parent;
+    }
+
+    public LoginUI getLogin()
+    {
+        return login;
+    }
+
+    public void addParent(MainWindow p)
+    {
+        parent = p;
     }
 }

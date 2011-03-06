@@ -220,30 +220,31 @@ public class SourceEditor extends JPanel
                     eta.moveDown();
                     break;
                 case KeyEvent.VK_HOME:
-                	eta.moveHome();
-                	break;
+                    eta.moveHome();
+                    break;
                 case KeyEvent.VK_END:
-                	eta.moveEnd();
-                	break;
+                    eta.moveEnd();
+                    break;
                 case KeyEvent.VK_PAGE_UP:
-                	eta.movePageUp();
-                	break;
+                    eta.movePageUp();
+                    break;
                 case KeyEvent.VK_PAGE_DOWN:
-                	eta.movePageDown();
-                	break;
-                case KeyEvent.VK_CONTROL: //&& KeyEvent.VK_HOME:
-                	//switch (ke.getKeyCode())
-                	{
-                	//case  KeyEvent.VK_HOME:
-                		eta.moveDocHome();
-                		break;
-                	//case KeyEvent.VK_SHIFT:
-                		//eta.moveDocEnd();
-                		//break;
-                	}
+                    eta.movePageDown();
+                    break;
+                case KeyEvent.VK_CONTROL: // && KeyEvent.VK_HOME:
+                    // switch (ke.getKeyCode())
+                {
+                    // case KeyEvent.VK_HOME:
+                    eta.moveDocHome();
+                    break;
+                    // case KeyEvent.VK_SHIFT:
+                    // eta.moveDocEnd();
+                    // break;
+                }
                 case KeyEvent.VK_SHIFT:
-                	eta.moveDocEnd();
-                	break;
+                    // FIXME: What is this about?
+                    // eta.moveDocEnd();
+                    break;
                 }
             }
 

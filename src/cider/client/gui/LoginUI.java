@@ -25,6 +25,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -415,6 +416,8 @@ public class LoginUI
         else
         {
             connecting.dispose();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: Incorrect login details!");
             return false;
         }
     }
@@ -434,14 +437,14 @@ public class LoginUI
             client = new Client(txtUsername.getText(), new String(
                     txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText());
+                    txtServiceName.getText(), this);
             client.attemptConnection();
             program = new MainWindow(txtUsername.getText(),
             /*
              * passwordEncrypt.encrypt(new String(txtPassword.getPassword()))
              */new String(txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), client);
+                    txtServiceName.getText(), client, this);
 
             SwingUtilities.invokeLater(program);
         }
@@ -453,6 +456,14 @@ public class LoginUI
         }
         connecting.setVisible(false);
         return true;
+    }
+
+    public void logout()
+    {
+        program.client.disconnect();
+        program.killWindow();
+        LoginUI ui = new LoginUI();
+        ui.displayLogin();
     }
 
     public static void main(String[] args)
