@@ -231,6 +231,19 @@ public class SourceEditor extends JPanel
                 case KeyEvent.VK_PAGE_DOWN:
                 	eta.movePageDown();
                 	break;
+                case KeyEvent.VK_CONTROL: //&& KeyEvent.VK_HOME:
+                	//switch (ke.getKeyCode())
+                	{
+                	//case  KeyEvent.VK_HOME:
+                		eta.moveDocHome();
+                		break;
+                	//case KeyEvent.VK_SHIFT:
+                		//eta.moveDocEnd();
+                		//break;
+                	}
+                case KeyEvent.VK_SHIFT:
+                	eta.moveDocEnd();
+                	break;
                 }
             }
 

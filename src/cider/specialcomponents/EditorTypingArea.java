@@ -21,6 +21,7 @@ import java.util.TimerTask;
 import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
+import cider.common.network.Client;
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -63,6 +64,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean CommentedLine = false;
     private boolean isKey = false;
     private int CommentStartLoc = -1;
+    
+    private static Client parent;
 
     @Override
     /**
@@ -229,7 +232,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
          *            the screen from lift to right
          * @param y
          *            the number of pixels down the screen
-         * @param ln
+         * @param lineNum
          *            the line number
          * @param start
          *            the caret position of the first character of this line
@@ -258,6 +261,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int i = 0;
             String str;
             int length;
+            Color customColor = null;
             for (TypingEventList word : words)
             {
             	str = word.toString();
@@ -273,12 +277,13 @@ public class EditorTypingArea extends JPanel implements MouseListener
  	                }
  	                if ( SourceEditor.keywords.contains(str) )
  	                {
- 	                    wash(this.colors, Color.BLUE, i, i + length);
- 	                    KeyWord.add(i);
- 	                    KeyWord.add(i+length);
- 	                }	
+ 	                	wash(this.colors, Color.BLUE, i, i + length);
+ 	                	KeyWord.add(i);
+ 	                	KeyWord.add(i+length);
+ 	                }	 	                
  	                if ( isParsableToNum(str) == true)
- 	                	wash(this.colors, Color.GREEN, i, i + length);
+ 	                	customColor = new Color(0,100,0);
+ 	                	wash(this.colors, customColor, i, i + length);
  	                if ( str.startsWith("//") == true)
  	                {
  	                	wash(this.colors, Color.RED, i, i + length);
@@ -287,20 +292,28 @@ public class EditorTypingArea extends JPanel implements MouseListener
  	                if (CommentedLine == true)
  	                	wash(this.colors, Color.RED, i, i + length);
              	} else {
- 	            	wash(this.colors, Color.RED, i, i + length);
- 	            	if ( str.endsWith("*/") == true )
- 	            		CommentFound = false;
+             		wash(this.colors, Color.RED, i, i + length);
+             		if ( str.endsWith("*/") == true )
+             			CommentFound = false;
              	}
                 i += length + 1;
 
             }
         }
 
+        /**
+         * Draws around the current line number that the user is currently on
+         * 
+         * @param g
+         */
         public void highlightMargin(Graphics g)
         {
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
-                    lineSpacing, 3, 3);
+        	g.setColor(parent.colours.get(parent.getUsername()));
+        	//currentLine.highlight(g, 5, Color.ORANGE);
+        	g.fillRoundRect(3, this.y - lineSpacing, leftMargin - 8, lineSpacing, 3, 3);
+        	g.setColor(Color.LIGHT_GRAY);
+        	g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8, lineSpacing, 3, 3);
+        	paintMargin(g);
         }
 
         public boolean isParsableToNum(String str)
@@ -603,22 +616,52 @@ public class EditorTypingArea extends JPanel implements MouseListener
     
     /**
      * Move the caret to the beginning of the current line and update the UI.
-     * @author Andrew
+     * 
+     * @author Andrew, Lawrence
      */
     public void moveHome()
     {
-    	this.caretPosition = this.currentLine.start - 1;
-    	this.updateUI();
+        int start = this.currentLine.start + this.currentLine.lineNum - 2;
+        this.caretPosition = start;
+        this.updateUI();
     }
-    
+
     /**
      * Move the caret to the end of the current line and update the UI.
-     * @author Andrew
+     * 
+     * @author Andrew, Lawrence
      */
     public void moveEnd()
     {
-    	this.caretPosition = this.currentLine.start + (this.currentLine.str.length()-1);
-    	this.updateUI();
+        int start = this.currentLine.start + this.currentLine.lineNum - 2;
+        int length = this.currentLine.str.length();
+        this.caretPosition = start + length;
+        this.updateUI();
+    }
+    
+    /**
+     * Move the caret to the start of the file and update the UI.
+     * 
+     */
+    public void moveDocHome()
+    {
+        int start = -1;
+        this.caretPosition = start;
+        this.updateUI();
+    }
+    
+    /**
+     * Move the caret to the end of the file and update the UI.
+     * 
+     */
+    public void moveDocEnd()
+    {
+        int numLines = this.lines.size();        
+        ETALine line = this.lines.get(numLines - 1);
+        int startLastLine = line.start + numLines - 2;
+        int length = line.str.length();
+        this.caretPosition = startLastLine + length ;
+        this.updateUI();
     }
     
     /**
@@ -739,5 +782,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public TypingEventList getTypingEventList()
     {
         return this.str;
+    }
+
+    public static void addParent(Client p)
+    {
+    	parent = p;
     }
 }
