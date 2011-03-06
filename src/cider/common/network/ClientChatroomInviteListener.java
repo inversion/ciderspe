@@ -9,8 +9,6 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
-import cider.client.gui.LoginUI;
-
 /**
  * Listens for invitations to chatrooms.
  * 

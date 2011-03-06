@@ -3,8 +3,6 @@ package cider.common.network;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -86,6 +84,22 @@ public class ClientMessageListener implements MessageListener, ActionListener
         				Integer.parseInt(splitLine[3]),
         				Integer.parseInt(splitLine[4]));
         	}
+        	else if (body.startsWith("timeReply("))
+            {
+                String str = body.split("\\(")[1];
+                str = str.split("\\)")[0];
+                String[] args = str.split(",");
+                long sentTime = Long.parseLong(args[0]);
+                long currentTime = System.currentTimeMillis()
+                        + this.client.getClockOffset();
+                long halfLatency = (currentTime - sentTime) / 2;
+                long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
+
+                if (this.client.getClockOffset() == 0)
+                    this.client.setTimeDelta(delta);
+
+                this.client.addTimeDeltaSample(delta);
+            }
         	else
         	{
         		client.profile.uname = splitLine[2];

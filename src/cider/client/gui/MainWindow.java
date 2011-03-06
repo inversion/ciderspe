@@ -26,7 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Time;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 import javax.swing.BorderFactory;
@@ -55,9 +54,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.util.StringUtils;
 
@@ -524,7 +520,7 @@ public class MainWindow implements Runnable
         profileFrame.setBounds(100, 100, 400, 350);
         profileFrame.setResizable(false);
         // profileFrame.pack();
-        profileFrame.show();
+        profileFrame.isDisplayable();
         profileFrame.setLocationRelativeTo(null);
 
         JLabel uName = new JLabel("Username: " + username);
@@ -567,7 +563,7 @@ public class MainWindow implements Runnable
 
         frame.setBounds(100, 100, 400, 350);
         frame.setResizable(false);
-        frame.show();
+        frame.isDisplayable();
         frame.setLocationRelativeTo(null);
 
         JLabel chars = new JLabel(
@@ -611,7 +607,12 @@ public class MainWindow implements Runnable
 		}
     }
 
-    private void tabClicked(MouseEvent e)
+    /**
+     * FIXME: UNUSED METHOD!
+     * 
+     */
+    /*
+	private void tabClicked(MouseEvent e)
     {
         if (e.getButton() != MouseEvent.BUTTON1 && e.getClickCount() == 1)
         { // if is right-click
@@ -638,6 +639,7 @@ public class MainWindow implements Runnable
             popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
         }
     }
+    */
 
     public JMenuBar mainMenuBar()
     {
@@ -744,7 +746,8 @@ public class MainWindow implements Runnable
         }
     }
     
-    public class tabFlash extends JTabbedPane 
+    @SuppressWarnings("serial")
+	public class tabFlash extends JTabbedPane 
     {
     	private int tabIndex;
     	private Color background;
@@ -806,7 +809,11 @@ public class MainWindow implements Runnable
         /* panel for the list of online users */
         JPanel panel = new JPanel(new BorderLayout());
 
-        Border emptyBorder = BorderFactory.createEmptyBorder();
+        /**
+         * FIXME: this variable is never used!
+         */
+        @SuppressWarnings("unused")
+		Border emptyBorder = BorderFactory.createEmptyBorder();
 
         // temporarily added so there were always users online
         /*userListModel.add(0, "Person 1");
@@ -1045,6 +1052,9 @@ public class MainWindow implements Runnable
     public void run()
     {
         w = new JFrame("CIDEr - Logged in as " + username);
+        
+        client.startClockSynchronisation(w);
+        
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");

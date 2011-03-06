@@ -33,6 +33,7 @@ public class CiderFile implements Serializable {
 	private boolean open;
 	
 	// TODO: Eventually this arraylist will be of type 'User'
+	@SuppressWarnings({ "rawtypes", "unused" })
 	private ArrayList opened_by;
 	
 	public CiderFile( String path ) throws IOException

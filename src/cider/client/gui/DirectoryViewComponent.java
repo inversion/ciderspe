@@ -5,7 +5,6 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Hashtable;
 import java.util.List;
 
 import javax.swing.JLabel;
@@ -32,8 +31,6 @@ public class DirectoryViewComponent extends JPanel
     private static final long serialVersionUID = 1L;
 
     private DefaultMutableTreeNode top;
-    // TODO type checking?
-    private Hashtable<String, DefaultMutableTreeNode> nodePaths;
     private Client client;
     private JTree tree;
     private LiveFolder rootFolder = new LiveFolder("Bot", "root");
@@ -55,15 +52,11 @@ public class DirectoryViewComponent extends JPanel
 
         JScrollPane scrollpane = new JScrollPane(tree);
 
-        // split pane
-        JLabel label;
-        label = new JLabel("directory tree");
+        new JLabel("directory tree");
 
-        JLabel label2;
-        label2 = new JLabel("code");
+        new JLabel("code");
 
-        JLabel label3;
-        label3 = new JLabel("chat, oh hai");
+        new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
         this.add(new JLabel(" File Explorer"), BorderLayout.NORTH);

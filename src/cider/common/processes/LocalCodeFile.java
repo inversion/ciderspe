@@ -40,7 +40,6 @@ public class LocalCodeFile implements ICodeLocation
     public static String testfile()
     {
         Date date = new Date();
-        final String testStr = "the time is " + date;
         File file = new File("testfile.txt");
         try
         {
