@@ -870,7 +870,7 @@ public class Client
 
     public void setTimeDelta(long delta)
     {
-        this.clockOffset = delta;
+        this.clockOffset = -delta;
     }
 
     public MainWindow getParent()
