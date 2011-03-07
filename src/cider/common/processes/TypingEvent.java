@@ -18,7 +18,7 @@ public class TypingEvent
     public final String owner;
 
     public TypingEvent(long time, final TypingEventMode mode, int position,
-            int length, String text, String owner)
+            int length, String text, String owner, String lockingGroup)
     {
         this.time = time;
         this.mode = mode;
@@ -26,6 +26,7 @@ public class TypingEvent
         this.text = text;
         this.length = length;
         this.owner = owner;
+        this.lockingGroup = lockingGroup;
     }
 
     public TypingEvent(TypingEvent typingEvent, long time, int position,
@@ -68,6 +69,8 @@ public class TypingEvent
             this.owner = split[5];
             if (split.length == 7)
                 this.lockingGroup = split[6];
+            else
+                this.lockingGroup = null;
         }
         catch (Exception e)
         {

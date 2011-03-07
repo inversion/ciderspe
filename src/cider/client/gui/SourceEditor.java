@@ -323,7 +323,8 @@ public class SourceEditor extends JPanel
                                     System.currentTimeMillis()
                                             + client.getClockOffset(), mode,
                                     eta.getCaretPosition(), chr.length(), chr,
-                                    client.getUsername());
+                                    client.getUsername(), r == 1 ? client
+                                            .getUsername() : null);
                             ArrayList<TypingEvent> particles = te.explode();
 
                             for (TypingEvent particle : particles)
@@ -335,9 +336,6 @@ public class SourceEditor extends JPanel
 
                             for (TypingEvent particle : particles)
                             {
-                                if (r == 1)
-                                    particle.lockingGroup = client
-                                            .getUsername();
                                 outgoingEvents.add(particle);
                                 internal.add(particle);
                             }
