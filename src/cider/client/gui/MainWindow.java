@@ -89,6 +89,7 @@ public class MainWindow implements Runnable
     private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
     private DirectoryViewComponent dirView;
     private String username;
+    private ArrayList<String> savedFiles = new ArrayList<String>();
 
     public JList userList;
     public JLabel userCount = new JLabel();
@@ -300,10 +301,9 @@ public class MainWindow implements Runnable
                 {
                     newFile();
                 }
-                else if (action.equals("Export"))// (action.equals("Save") ||
-                                                 // action.equals("Save As"))
+                else if (action.equals("Export"))
                 {
-                    saveFile(action);
+                    exportFile(action);
                 }
                 /**
                  * Developer menu options
@@ -438,7 +438,7 @@ public class MainWindow implements Runnable
         }
     }
 
-    public void saveFile(String action)
+    public void exportFile(String action)
     {
         try
         {
@@ -447,14 +447,14 @@ public class MainWindow implements Runnable
             fc.setSelectedFile(f);
 
             if (currentFileName.equals("Unsaved Document 1")
-                    || action.equals("Export"))
+                    || savedFiles.contains(client.getCurrentDocument().name) == false)
             {
                 int watdo = fc.showSaveDialog(null);
                 if (watdo != JFileChooser.APPROVE_OPTION)
                 {
                     return;
                 }
-
+                savedFiles.add(client.getCurrentDocument().name);
                 currentFileName = fc.getSelectedFile().getName();
                 currentDir = fc.getSelectedFile().getAbsolutePath();
             }
@@ -856,8 +856,7 @@ public class MainWindow implements Runnable
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Import", KeyEvent.VK_O, aL);
-        // addMenuItem(menu, "Save", KeyEvent.VK_S, aL);
-        addMenuItem(menu, "Export", KeyEvent.VK_A, aL);
+        addMenuItem(menu, "Export", KeyEvent.VK_S, aL);
         addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
         addMenuItem(menu, "Logout", KeyEvent.VK_L, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
@@ -1141,7 +1140,7 @@ public class MainWindow implements Runnable
                                         client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile "
                                                 + userList.getSelectedValue()
                                                 + " notme"));
-                                        Thread.sleep(500);
+                                        Thread.sleep(1000);
                                         System.out.println(client.profileFound);
                                         if (!client.profileFound)
                                             JOptionPane
