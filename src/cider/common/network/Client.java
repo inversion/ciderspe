@@ -138,8 +138,6 @@ public class Client
         this.password = password;
         this.login = log;
 
-        // FIXME
-        // Alex... just... WTF!?!?
         EditorTypingArea.addParent(this);
     }
 
