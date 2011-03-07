@@ -64,6 +64,7 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
@@ -330,6 +331,14 @@ public class MainWindow implements Runnable
                 else if (action.equals("Run"))
                 {
                 	runFile();
+                }
+                else if (action.equals("Syntax Highlighting"))
+                {
+                    FlipHighlighting(0);
+                }
+                else if (action.equals("User Highlighting"))
+                {
+                    FlipHighlighting(1);
                 }
             }
         };
@@ -745,6 +754,8 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
         addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
         addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
+        addMenuItem(menu, "Syntax Highlighting", -1, aL);
+        addMenuItem(menu, "User Highlighting", -1, aL);
 
         // menu x
         menu = new JMenu("Run");
@@ -1101,6 +1112,11 @@ public class MainWindow implements Runnable
         return panel;
     }
 
+    private void FlipHighlighting(int i)
+    {
+    	 EditorTypingArea.Highlighting = i;
+    }
+    
     public JPanel pnlSend()
     {
         JPanel panel = new JPanel(new BorderLayout());
