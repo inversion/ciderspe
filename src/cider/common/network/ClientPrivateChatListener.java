@@ -86,7 +86,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
 			if( currentTab.getName().equals( name ) )
 			{
 				client.tabsToChats.remove( currentTab );
-				client.receiveTabs.remove( currentTab );
+				client.shared.receiveTabs.remove( currentTab );
 				client.usersToAreas.remove( name );
 				break;
 			}

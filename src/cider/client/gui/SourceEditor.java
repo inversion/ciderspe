@@ -20,6 +20,7 @@ import javax.swing.JTabbedPane;
 
 import cider.common.network.Client;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventList;
 import cider.common.processes.TypingEventMode;
 import cider.specialcomponents.EditorTypingArea;
 
@@ -35,7 +36,6 @@ public class SourceEditor extends JPanel
 {
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
-    public static HashSet<String> comments = new HashSet<String>();
 
     private EditorTypingArea eta;
     private Component tabHandle = null;
@@ -58,9 +58,6 @@ public class SourceEditor extends JPanel
         for (int i = 0; i < keywordArray.length; i++)
             keywords.add(keywordArray[i]);
 
-        String[] CommentArray = "/* */".split(" ");
-        for (int i = 0; i < CommentArray.length; i++)
-            comments.add(CommentArray[i]);
     }
 
     private ActionListener lockingActionListener()
@@ -288,10 +285,24 @@ public class SourceEditor extends JPanel
                             {
                             case '\u007F':
                             {
-                                if (eta.getCaretPosition() >= 0)
+                                /* int CurLine;
+                                 * int CurxLine;
+                                 * CurLine = eta.GetCurLine() - 1;
+                                 * CurxLine = eta.GetCurxLen(); */
+								if (eta.getCaretPosition() >= -1)
                                 {
-                                    mode = TypingEventMode.backspace;
-                                    chr = " ";
+                                	/* Needs CurxLine working properly
+                                	 * 
+                                	 * if ((eta.lines.size() == CurLine) && (eta.lines.get(CurLine).str.length() <= CurxLine))
+                                	 * {
+                                	 * TypingEventList.DeleteType = 0;
+                                	 * mode = TypingEventMode.backspace;
+                                	 *  chr = " ";
+                                	 *  } else { */
+                                		TypingEventList.DeleteType = 1;
+	                                    mode = TypingEventMode.backspace;
+	                                    chr = " ";
+                                	// }
                                 }
                                 else
                                     return;
@@ -301,6 +312,7 @@ public class SourceEditor extends JPanel
                             {
                                 if (eta.getCaretPosition() >= 0)
                                 {
+                                	TypingEventList.DeleteType = 0;
                                     mode = TypingEventMode.backspace;
                                     chr = " ";
                                 }
@@ -353,7 +365,8 @@ public class SourceEditor extends JPanel
                                 eta.moveCaret(particles.size());
                                 break;
                             case backspace:
-                                eta.moveLeft();
+                            	if (TypingEventList.DeleteType == 0)
+                            		eta.moveLeft();
                                 break;
                             }
                         }
