@@ -217,6 +217,8 @@ public class SourceDocument implements ICodeLocation
     {
         if (typingEvent.mode == TypingEventMode.lockRegion)
         {
+            System.out.println(typingEvent.owner + " locked a region at "
+                    + typingEvent.time);
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
 
             for (int i = 0; i < tel.length(); i++)
@@ -228,11 +230,17 @@ public class SourceDocument implements ICodeLocation
         }
         else if (typingEvent.mode == TypingEventMode.unlockRegion)
         {
+            System.out.println(typingEvent.owner + " unlocked a region at "
+                    + typingEvent.time);
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
+            TypingEvent te;
             for (int i = 0; i < tel.length(); i++)
-                if (tel.get(i).owner.equals(typingEvent.owner)
+            {
+                te = tel.get(i);
+                if (te.lockingGroup.equals(typingEvent.owner)
                         && this.insideRegion(typingEvent, i, 1))
-                    tel.get(i).lockingGroup = null;
+                    te.lockingGroup = null;
+            }
             // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
             this.typingEvents.add(typingEvent);
             return true;
