@@ -110,6 +110,8 @@ public class Client
     // GUI components
     public JTabbedPane receiveTabs;
     private DirectoryViewComponent dirView;
+	public DefaultListModel userListModel;
+	public JLabel userCount;
 
     // Lawrence's source document stuff
     private boolean autoUpdate = false;
@@ -129,7 +131,9 @@ public class Client
     private boolean synchronised = false;
 
     public Client(String username, String password, String host, int port,
-            String serviceName, LoginUI log)
+            String serviceName, LoginUI log, DefaultListModel userListModel, JLabel userCount, 
+            DirectoryViewComponent dirView, JTabbedPane tabbedPane, 
+            Hashtable<String, SourceEditor> openTabs, JTabbedPane receiveTabs)
     {
         // Assign objects from parameters
         this.username = username;
@@ -139,7 +143,15 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
         this.login = log;
-
+        
+        // GUI Components shared with MainWindow
+        this.userListModel = userListModel;
+        this.userCount = userCount;
+        this.dirView = dirView;
+        this.tabbedPane = tabbedPane;
+        this.openTabs = openTabs;
+        this.receiveTabs = receiveTabs;
+        
         EditorTypingArea.addParent(this);
     }
 
@@ -170,10 +182,10 @@ public class Client
             System.out.println("Logged into XMPP server, username=" + username
                     + "/" + rand);
 
-        // Prints out every packet received by the client, used when you want
-        // very verbose debugging
-        // connection.addPacketListener(new DebugPacketListener(), new
-        // DebugPacketFilter());
+//        Prints out every packet received by the client, used when you want
+//         very verbose debugging
+//         connection.addPacketListener(new DebugPacketListener(), new
+//         DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
 
@@ -186,6 +198,9 @@ public class Client
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
+        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
+                userListModel, userCount, this));
+        chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
@@ -261,27 +276,6 @@ public class Client
 
         if (DEBUG)
             System.out.println("Disconnected from XMPP server...");
-    }
-
-    /**
-     * Register GUI components from the Main Window
-     * 
-     * @author Andrew
-     * 
-     */
-    public void registerGUIComponents(DirectoryViewComponent dirView,
-            JTabbedPane tabbedPane, Hashtable<String, SourceEditor> openTabs,
-            DefaultListModel userListModel, JLabel userCount,
-            JTabbedPane receiveTabs)
-    {
-        this.dirView = dirView;
-        this.tabbedPane = tabbedPane;
-        this.openTabs = openTabs;
-        this.receiveTabs = receiveTabs;
-        
-        chatroom.addMessageListener(new ClientChatroomMessageListener(this));
-        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
-                userListModel, userCount, this));
     }
 
     /**

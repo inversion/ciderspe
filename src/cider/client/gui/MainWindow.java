@@ -79,7 +79,7 @@ import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
-    JTabbedPane tabbedPane = new JTabbedPane();
+    JTabbedPane tabbedPane;
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
@@ -91,16 +91,16 @@ public class MainWindow implements Runnable
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
-    private Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+    private Hashtable<String, SourceEditor> openTabs;
     private DirectoryViewComponent dirView;
     private String username;
     private ArrayList<String> savedFiles = new ArrayList<String>();
 
     public JList userList;
     public JLabel userCount = new JLabel();
-    public DefaultListModel userListModel = new DefaultListModel();
+    public DefaultListModel userListModel;
     public static final String GROUPCHAT_TITLE = "Group Chat";
-    public JTabbedPane receiveTabs = new JTabbedPane();
+    public JTabbedPane receiveTabs;
     public JPanel receivePanel;
     public JTextArea messageSendBox;
     public static boolean LockingEnabled = true;
@@ -118,22 +118,27 @@ public class MainWindow implements Runnable
     public long startTime;
     private Profile myProfile;
     
-    
-    
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c, LoginUI loginUI) throws XMPPException
+            String serviceName, Client c, LoginUI loginUI, DefaultListModel userListModel, JLabel userTotal, JTabbedPane tabbedPane, 
+            DirectoryViewComponent dirView, Hashtable<String, SourceEditor> openTabs, JTabbedPane receiveTabs) throws XMPPException
     {
+        // Register GUI components shared with client
+        this.userListModel = userListModel;
+        this.userCount = userTotal;
+        this.tabbedPane = tabbedPane;
+        this.dirView = dirView;
+        this.openTabs = openTabs;
+        this.receiveTabs = receiveTabs;
+        this.dirView = dirView;
+    	
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
-        dirView = new DirectoryViewComponent();
         startTime = System.currentTimeMillis();
         this.username = username;
         login = loginUI;
 
         client = c;
-        client.registerGUIComponents(dirView, tabbedPane, openTabs,
-                userListModel, userCount, receiveTabs);
         receivePanel = pnlReceive();
         dirView.setClient(client);
         client.addParent(this);
