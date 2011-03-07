@@ -14,16 +14,13 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
-import cider.client.gui.MainWindow;
 import cider.common.network.Client;
-import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
@@ -45,9 +42,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private int caretPosition = -1;
     private Font font = new Font("Monospaced", Font.PLAIN, 14);
     private Font fontbold = new Font("Monospaced", Font.BOLD, 14);
-    private ICodeLocation codeLocation = null;
+    // private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
-    private long lastUpdateTime = 0;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
     private int leftMargin = 32;
@@ -65,9 +61,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean CommentedLine = false;
     private boolean isKey = false;
     private int CommentStartLoc = -1;
-    public static int Highlighting = 0;
 
     private static Client parent;
+    public static int Highlighting;
 
     @Override
     /**
@@ -98,11 +94,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 {
                     line.paintMargin(g);
                     line.characterColors();
+                    String owner;
 
                     // Paints locking regions
                     for (int i = 0; i < line.str.length(); i++)
-                        if (line.locked(i))
-                            line.highlight(g, i, Color.LIGHT_GRAY);
+                        if ((owner = line.locked(i)) != null)
+                            line.highlight(g, i, parent.colours.get(owner));
 
                     // If the caret is placed just after a newline
                     // that line might not actually have any text in it
@@ -137,8 +134,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     KeyWord.add(-1);
                 }
                 p++;
-                CommentFound = false;
-                CommentStartLoc = -1;
             }
             catch (ConcurrentModificationException e)
             {
@@ -189,24 +184,28 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
             if (me.getX() < this.leftMargin)
             {
-            	if (MainWindow.LockingEnabled == true )
-            	{
-	                TypingEventMode tem;
-	
-	                if (length > 0 && line.locked(0))
-	                    tem = TypingEventMode.unlockRegion;
-	                else
-	                    tem = TypingEventMode.lockRegion;
-	
-	                TypingEvent te = new TypingEvent(System.currentTimeMillis()
-	                        + parent.getClockOffset(), tem, start, length, "",
-	                        this.doc.getOwner());
-	
-	                for (ActionListener al : this.als)
-	                    al.actionPerformed(new ActionEvent(te,
-	                            tem == TypingEventMode.lockRegion ? LINE_LOCKED
-	                                    : LINE_UNLOCKED, "Locking event"));
-            	}
+                TypingEventMode tem;
+                String owner = line.locked(0);
+
+                if (length > 0 && owner != null
+                        && owner.equals(parent.getUsername()))
+                    tem = TypingEventMode.unlockRegion;
+                else if (owner == null)
+                    tem = TypingEventMode.lockRegion;
+                else
+                    tem = null;
+
+                if (tem != null)
+                {
+                    TypingEvent te = new TypingEvent(System.currentTimeMillis()
+                            + parent.getClockOffset(), tem, start, length, "",
+                            parent.getUsername());
+
+                    for (ActionListener al : this.als)
+                        al.actionPerformed(new ActionEvent(te,
+                                tem == TypingEventMode.lockRegion ? LINE_LOCKED
+                                        : LINE_UNLOCKED, "Locking event"));
+                }
             }
             else
             {
@@ -275,46 +274,39 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 str = word.toString();
                 str = str.toLowerCase();
                 length = str.length();
-                if (Highlighting == 0)
+                if ((CommentFound == false)
+                        || ((this.lineNum < CommentStartLoc)
+                                && (CommentStartLoc != -1) && (CommentFound == true)))
                 {
-	                if ((CommentFound == false)
-	                        || ((this.lineNum < CommentStartLoc)
-	                                && (CommentStartLoc != -1) && (CommentFound == true)))
-	                {
-	                    if (str.startsWith("/*") == true)
-	                    {
-	                        CommentFound = true;
-	                        CommentStartLoc = this.lineNum;
-	                        wash(this.colors, Color.RED, i, i + length);
-	                    }
-	                    if (SourceEditor.keywords.contains(str))
-	                    {
-	                        wash(this.colors, Color.BLUE, i, i + length);
-	                        KeyWord.add(i);
-	                        KeyWord.add(i + length);
-	                    }
-	                    if (isParsableToNum(str) == true)
-	                        customColor = new Color(0, 100, 0);
-	                    wash(this.colors, customColor, i, i + length);
-	                    if (str.startsWith("//") == true)
-	                    {
-	                        wash(this.colors, Color.RED, i, i + length);
-	                        CommentedLine = true;
-	                    }
-	                    if (CommentedLine == true)
-	                        wash(this.colors, Color.RED, i, i + length);
-	                }
-	                else
-	                {
-	                    wash(this.colors, Color.RED, i, i + length);
-	                    if (str.endsWith("*/") == true)
-	                        CommentFound = false;
-	                }
+                    if (str.startsWith("/*") == true)
+                    {
+                        CommentFound = true;
+                        CommentStartLoc = this.lineNum;
+                        wash(this.colors, Color.RED, i, i + length);
+                    }
+                    if (SourceEditor.keywords.contains(str))
+                    {
+                        wash(this.colors, Color.BLUE, i, i + length);
+                        KeyWord.add(i);
+                        KeyWord.add(i + length);
+                    }
+                    if (isParsableToNum(str) == true)
+                        customColor = new Color(0, 100, 0);
+                    wash(this.colors, customColor, i, i + length);
+                    if (str.startsWith("//") == true)
+                    {
+                        wash(this.colors, Color.RED, i, i + length);
+                        CommentedLine = true;
+                    }
+                    if (CommentedLine == true)
+                        wash(this.colors, Color.RED, i, i + length);
                 }
-                if (Highlighting == 1)
+                else
                 {
-                	userwash(this.colors, this.lineNum, i, i + length);
-                }                
+                    wash(this.colors, Color.RED, i, i + length);
+                    if (str.endsWith("*/") == true)
+                        CommentFound = false;
+                }
                 i += length + 1;
 
             }
@@ -439,9 +431,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
          * @param i
          * @return
          */
-        public boolean locked(int i)
+        public String locked(int i)
         {
-            return this.str.get(i).locked;
+            return this.str.get(i).lockingGroup;
         }
     }
 
@@ -452,23 +444,22 @@ public class EditorTypingArea extends JPanel implements MouseListener
         for (int i = start; i < end; i++)
             target[i] = color;
     }
-    
 
     public void userwash(Color[] target, int LineNo, int start, int end)
     {
-    	String uname;
-    	Color usercolor;
+        String uname;
+        Color usercolor;
         start = start < 0 ? 0 : start;
         end = end < target.length ? end : target.length;
-        
+
         for (int i = start; i < end; i++)
-        {	
-        	/* TODO
-        	 * text owned by offline users who have not had their 
-        	 * profile downloaded from the bot will be black/blank
-        	 */
-        	uname = lines.get(LineNo-1).str.get(i).owner;
-        	System.out.println(uname);
+        {
+            /*
+             * TODO text owned by offline users who have not had their profile
+             * downloaded from the bot will be black/blank
+             */
+            uname = lines.get(LineNo - 1).str.get(i).owner;
+            System.out.println(uname);
             usercolor = Client.colours.get(uname);
             target[i] = usercolor;
         }
@@ -479,11 +470,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
      * @param owner
      * @param codeLocation
      */
-    public EditorTypingArea(String owner, ICodeLocation codeLocation)
+    public EditorTypingArea(String owner, SourceDocument doc)
     {
-        this.codeLocation = codeLocation;
-        this.doc = new SourceDocument(owner, "ETA Private Document");
-        this.doc.push(this.codeLocation.events());
+        this.doc = doc;
         this.str = this.doc.playOutEvents(Long.MAX_VALUE);
         this.setupCaretFlashing();
         this.addMouseListener(this);
@@ -542,24 +531,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     public void updateText()
     {
-        if (this.codeLocation != null)
+        if (this.doc != null)
         {
-            Queue<TypingEvent> events = new LinkedList<TypingEvent>();
-            long latest = this.lastUpdateTime;
-            for (TypingEvent te : this.codeLocation
-                    .eventsSince(this.lastUpdateTime))
-            {
-                events.add(te);
-                // Profile.adjustCharCount(1); //TODO treats all presses as +1,
-                // including delete key
-                if (latest <= te.time)
-                    latest = te.time + 1;
-            }
-            this.doc.push(events);
             this.str = this.doc.playOutEvents(Long.MAX_VALUE);
             this.refreshLines();
             this.updateUI();
-            this.lastUpdateTime = latest;
         }
     }
 
@@ -729,27 +705,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
         // TODO: Not implemented yet
     }
 
-    /**
-     * used to retrieve the object from which typing events stored in this
-     * EditorTypingArea's SourceDocument are drawn from
-     * 
-     * @return
-     */
-    public ICodeLocation getCodeLocation()
-    {
-        return this.codeLocation;
-    }
-
-    /**
-     * the last time that this document was updated
-     * 
-     * @return
-     */
-    public long getLastUpdate()
-    {
-        return this.lastUpdateTime;
-    }
-
     @Override
     public void mouseClicked(MouseEvent arg0)
     {
@@ -796,10 +751,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
      * @param offset
      * @return
      */
-    public boolean currentPositionLocked(int offset)
+    public boolean currentPositionLocked(int offset, String user)
     {
         int pos = this.caretPosition + offset;
-        return pos >= 0 && pos < this.str.length() && this.str.locked(pos);
+        return pos >= 0 && pos < this.str.length()
+                && this.str.locked(pos, user);
     }
 
     public void moveCaret(int spaces)
@@ -833,5 +789,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public static void addParent(Client p)
     {
         parent = p;
+    }
+
+    public SourceDocument getSourceDocument()
+    {
+        return this.doc;
     }
 }

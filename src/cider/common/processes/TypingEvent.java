@@ -9,7 +9,7 @@ import java.util.ArrayList;
  */
 public class TypingEvent
 {
-    public boolean locked = false;
+    public String lockingGroup = null;
     public final TypingEventMode mode;
     public final long time;
     public final int position;
@@ -34,7 +34,7 @@ public class TypingEvent
         this.time = time;
         this.position = position;
         this.mode = mode;
-        this.locked = typingEvent.locked;
+        this.lockingGroup = typingEvent.lockingGroup;
         this.length = typingEvent.length;
         this.text = typingEvent.text;
         this.owner = typingEvent.owner;
@@ -46,7 +46,7 @@ public class TypingEvent
         this.time = time;
         this.position = typingEvent.position;
         this.mode = typingEvent.mode;
-        this.locked = typingEvent.locked;
+        this.lockingGroup = typingEvent.lockingGroup;
         this.text = text;
         this.length = text.length();
         this.owner = typingEvent.owner;
@@ -67,7 +67,7 @@ public class TypingEvent
             this.time = Long.parseLong(split[4], 35);
             this.owner = split[5];
             if (split.length == 7)
-                this.locked = true;
+                this.lockingGroup = split[6];
         }
         catch (Exception e)
         {
@@ -80,7 +80,7 @@ public class TypingEvent
         return this.mode.ordinal() + "~" + this.text + "~"
                 + Integer.toString(this.position, 35) + "~" + this.length + "~"
                 + Long.toString(this.time, 35) + "~" + this.owner
-                + (this.locked ? "~1" : "");
+                + (this.lockingGroup == null ? "" : "~" + this.lockingGroup);
     }
 
     public ArrayList<TypingEvent> explode()
@@ -100,9 +100,9 @@ public class TypingEvent
         return particles;
     }
 
-    public void setLocked(boolean locked)
+    public void setLockingGroup(String lockingGroup)
     {
-        this.locked = locked;
+        this.lockingGroup = lockingGroup;
     }
 
     @Override
@@ -110,7 +110,7 @@ public class TypingEvent
     {
         return "time " + this.time + "\t" + this.position + "\t" + this.length
                 + "\t" + this.mode.toString() + "\t" + this.text + "\t"
-                + this.locked;
+                + this.lockingGroup;
     }
 
     public boolean existsIn(TypingEvent[] tes)

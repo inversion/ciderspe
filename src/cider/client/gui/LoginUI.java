@@ -59,10 +59,10 @@ public class LoginUI
     JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
-    
-	MainWindow program;
-    
-    JCheckBox chkRemember ;
+
+    MainWindow program;
+
+    JCheckBox chkRemember;
     
     String errmsg;
 
@@ -146,7 +146,7 @@ public class LoginUI
                 }
             }
         });
-        
+
         txtServiceName.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -157,7 +157,7 @@ public class LoginUI
                 }
             }
         });
-        
+
         txtHost.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -168,7 +168,7 @@ public class LoginUI
                 }
             }
         });
-        
+
         txtPort.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -179,8 +179,6 @@ public class LoginUI
                 }
             }
         });
-
-
 
         GroupLayout.SequentialGroup leftToRight = infoLayout
                 .createSequentialGroup();
@@ -373,7 +371,7 @@ public class LoginUI
     }
 
 	@SuppressWarnings("static-access")
-	boolean showConnectBox()
+    boolean showConnectBox()
     {   	
         login.setVisible(false);
 
