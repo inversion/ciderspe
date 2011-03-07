@@ -112,8 +112,10 @@ public class SourceDocument implements ICodeLocation
     protected static String lengthTest()
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, 1, "<", "na"));
-        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, 1, ">", "na"));
+        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, 1, "<", "na",
+                null));
+        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, 1, ">", "na",
+                null));
 
         String bigString = "";
         final String alphabet = "10";
@@ -177,13 +179,13 @@ public class SourceDocument implements ICodeLocation
             if (mode == TypingEventMode.backspace)
             {
                 tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
-                        "\0", text));
+                        "\0", text, null));
                 cp--;
             }
             else
             {
                 tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
-                        "" + text.charAt(i), owner));
+                        "" + text.charAt(i), owner, null));
                 cp++;
             }
             i++;

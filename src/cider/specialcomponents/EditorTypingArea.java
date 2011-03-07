@@ -200,7 +200,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 {
                     TypingEvent te = new TypingEvent(System.currentTimeMillis()
                             + parent.getClockOffset(), tem, start, length, "",
-                            parent.getUsername());
+                            parent.getUsername(), null);
 
                     for (ActionListener al : this.als)
                         al.actionPerformed(new ActionEvent(te,

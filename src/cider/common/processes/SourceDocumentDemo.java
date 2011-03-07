@@ -326,7 +326,7 @@ public class SourceDocumentDemo
 
                         TypingEvent te = new TypingEvent(t, mode, eta
                                 .getCaretPosition(), 1, String.valueOf(ke
-                                .getKeyChar()), "Demo User " + id);
+                                .getKeyChar()), "Demo User " + id, null);
                         System.out.println("push to server: " + te);
                         outgoingEvents.add(te);
 
