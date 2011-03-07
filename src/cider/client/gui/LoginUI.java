@@ -454,8 +454,8 @@ public class LoginUI
                     txtServiceName.getText(), this);
             if (!client.attemptConnection())
             {
-//            	errmsg = "Bot is not online";
-//            	return false;
+            	errmsg = "Bot is not online";
+            	return false;
             }
             program = new MainWindow(txtUsername.getText(),
             		new String(txtPassword.getPassword()), txtHost.getText(),
