@@ -45,8 +45,10 @@ public class ClientChatroomParticipantListener implements PacketListener {
 		{
 			if( DEBUG )
 				System.out.println( "Presence from: " + nickname + " AVAILABLE" );
-			if( !list.contains( nickname ) && !nickname.equals(Bot.BOT_USERNAME) )
+			if( !list.contains( nickname ) && !nickname.equals(Bot.BOT_USERNAME) && !nickname.equals( "ciderchecker" ) )
 			{
+				if( DEBUG )
+					System.out.println( "Adding " + nickname + " to list...");
 				list.addElement( nickname );
 				userCount.setText(" " + list.getSize() + " Users Online");
 			}
