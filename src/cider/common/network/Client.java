@@ -92,7 +92,7 @@ public class Client
     public Profile profile = null;
     public Profile notMyProfile = null;
     public boolean profileFound;
-    public HashMap<String, Color> colours = new HashMap<String, Color>();
+    public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
 
     // FIXME: UNUSED VARIABLE
