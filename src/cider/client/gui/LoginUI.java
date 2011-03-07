@@ -1,6 +1,9 @@
 package cider.client.gui;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -60,6 +63,8 @@ public class LoginUI
 	MainWindow program;
     
     JCheckBox chkRemember ;
+    
+    String errmsg;
 
     public void displayLogin()
     {
@@ -357,10 +362,19 @@ public class LoginUI
             System.exit(0);
         }
     }
-
-    @SuppressWarnings("static-access")
-	boolean showConnectBox()
+    
+    void splashFrame (Graphics2D g)
     {
+    	g.setComposite(AlphaComposite.Clear);
+    	g.fillRect(100,100,100,100);
+    	g.setPaintMode();
+    	g.setColor(Color.BLACK);
+    	g.drawString("Connecting...", 5, 50);
+    }
+
+	@SuppressWarnings("static-access")
+	boolean showConnectBox()
+    {   	
         login.setVisible(false);
 
         // Create New JFrame
@@ -417,7 +431,7 @@ public class LoginUI
         {
             connecting.dispose();
             JOptionPane.showMessageDialog(new JPanel(),
-                    "Error: Incorrect login details!");
+                    errmsg);
             return false;
         }
     }
@@ -450,9 +464,14 @@ public class LoginUI
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
-            System.err.println("Couldn't login: " + e.getMessage());
+            errmsg = "Incorrect login details";
+            System.err.println(errmsg);
             return false;
+        }
+        catch (NumberFormatException e)
+        {
+        	errmsg = "Invalid port number";
+        	return false;
         }
         connecting.setVisible(false);
         return true;
@@ -468,7 +487,6 @@ public class LoginUI
 
     public static void main(String[] args)
     {
-
         LoginUI ui = new LoginUI();
         ui.displayLogin();
     }
