@@ -91,6 +91,7 @@ public class MainWindow implements Runnable
     public JTabbedPane receiveTabs = new JTabbedPane();
     public JPanel receivePanel;
     public JTextArea messageSendBox;
+    public static boolean LockingEnabled = true;
 
     tabFlash tabbing = new tabFlash();
 
@@ -340,6 +341,10 @@ public class MainWindow implements Runnable
                 {
                     FlipHighlighting(1);
                 }
+                else if (action.equals("Line Locking"))
+                {
+                    ChangeLocking();
+                }
             }
         };
         return AL;
@@ -538,6 +543,30 @@ public class MainWindow implements Runnable
     void runFile()
     {
     	
+    }
+    
+    private void ChangeLocking()
+    {
+    	if (LockingEnabled == true) {
+        int response = JOptionPane.showConfirmDialog(null,
+                "Are you sure you wish to disable line locking");
+        if (response == 0)
+        {
+            LockingEnabled = false;
+        }  else
+            return;
+        
+	    } else {
+	    int response = JOptionPane.showConfirmDialog(null,
+	        	"Are you sure you wish to enable line locking?");
+	    if (response == 0)
+        {
+            LockingEnabled = true;
+        }  else
+            return;
+	    
+	    }
+        
     }
 
     private void restartProfile()
@@ -756,6 +785,7 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
         addMenuItem(menu, "Syntax Highlighting", -1, aL);
         addMenuItem(menu, "User Highlighting", -1, aL);
+        addMenuItem(menu, "Line Locking", -1, aL);
 
         // menu x
         menu = new JMenu("Run");
