@@ -1211,7 +1211,11 @@ public class MainWindow implements Runnable
     {
         w = new JFrame("CIDEr - Logged in as " + username);
 
-        client.startClockSynchronisation(w);
+        // FIXME: Work out why events take a long time to appear sometimes
+        // client.startClockSynchronisation(w);
+
+        // FIXME: comment this out when using clock synchronisation
+        client.getFileListFromBot();
 
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

@@ -200,20 +200,18 @@ public class SourceDocumentDemo
                     System.exit(1);
                 }
                 /*
-                for (TypingEvent te : events)
-                {
-
-                    
-                     switch (te.mode) { case insert: if (te.position >=
-                     panel.eta.getCaretPosition()) panel.eta.moveRight();
-                     break; case overwrite: if (te.position >=
-                     panel.eta.getCaretPosition()) panel.eta.moveRight();
-                     break; case backspace: if (te.position >=
-                     panel.eta.getCaretPosition()) panel.eta.moveLeft();
-                     break; }
-                     
-                }
-                */
+                 * for (TypingEvent te : events) {
+                 * 
+                 * 
+                 * switch (te.mode) { case insert: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
+                 * case overwrite: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
+                 * case backspace: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveLeft(); break; }
+                 * 
+                 * }
+                 */
             }
         }
 
@@ -245,8 +243,8 @@ public class SourceDocumentDemo
 
     public class SDDemoPanel extends JPanel
     {
-		private static final long serialVersionUID = 1L;
-		EditorTypingArea eta;
+        private static final long serialVersionUID = 1L;
+        EditorTypingArea eta;
         ICodeLocation server;
         ICodeLocation client;
         int id;
@@ -305,7 +303,8 @@ public class SourceDocumentDemo
                         case '\u0008':
                         {
                             if (eta.getCaretPosition() > 0
-                                    && !eta.currentPositionLocked(-1))
+                                    && !eta.currentPositionLocked(-1,
+                                            "Demo User " + id))
                             {
                                 mode = TypingEventMode.backspace;
                             }
@@ -318,7 +317,7 @@ public class SourceDocumentDemo
                         // break;
                         default:
                         {
-                            if (eta.currentPositionLocked(0))
+                            if (eta.currentPositionLocked(0, "Demo User " + id))
                                 return;
                         }
                         }

@@ -111,7 +111,6 @@ public class Client
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
     private JTabbedPane tabbedPane;
-    private long lastUpdate = 0;
     private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
     private static final long minimumBroadcastDelay = 400;
@@ -189,68 +188,6 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
-    }
-
-    /**
-     * 
-     * @param parentComponent
-     */
-    public void startClockSynchronisation(Component parentComponent)
-    {
-        final int requiredSamples = 5;
-        final ProgressMonitor progressMonitor = new ProgressMonitor(
-                parentComponent, "Synchronising clocks...", "", 0,
-                requiredSamples + 1);
-        progressMonitor.setMillisToDecideToPopup(0);
-
-        final Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask()
-        {
-            int requestsMade = 0;
-
-            @Override
-            public void run()
-            {
-                if (this.requestsMade < 5)
-                {
-                    timeRequest();
-                    this.requestsMade++;
-                    progressMonitor.setProgress(this.requestsMade);
-                }
-                else
-                {
-                    updateClockOffset();
-                    synchronised = true;
-                    progressMonitor.setProgress(requiredSamples);
-                    progressMonitor.setNote("Getting file list...");
-                    getFileListFromBot();
-                    progressMonitor.setProgress(requiredSamples + 1);
-                    progressMonitor.close();
-                    timer.cancel();
-                }
-            }
-
-        }, 0, 2000);
-    }
-
-    private void timeRequest()
-    {
-        // Synchronise clock
-
-        // 1: Client stamps current local time on a "time request" packet and
-        // sends to server
-        long currentLocalTime = System.currentTimeMillis();
-        try
-        {
-            this.sendBotMessage("timeRequest(" + currentLocalTime + ")");
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(new JPanel(),
-                    "Error retrieving file list: " + e.getMessage());
-            return;
-        }
     }
 
     /**
@@ -756,20 +693,12 @@ public class Client
             anchor = eta.getTypingEventList().get(position);
         else
             anchor = null;
-        eta.getCodeLocation().push(typingEvents);
+        eta.getSourceDocument().push(typingEvents);
         eta.setWaiting(false);
         eta.updateText();
         if (anchor != null)
             eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(
                     anchor));
-
-        if (eta.getLastUpdate() >= this.lastUpdate)
-            this.lastUpdate = eta.getLastUpdate();
-    }
-
-    public long getLastUpdate()
-    {
-        return this.lastUpdate;
     }
 
     public void processDocumentMessages(String body)
@@ -848,7 +777,72 @@ public class Client
 
     public long getClockOffset()
     {
-        return this.clockOffset;
+        // FIXME
+        // return this.clockOffset;
+        return 0;
+
+    }
+
+    /**
+     * 
+     * @param parentComponent
+     */
+    public void startClockSynchronisation(Component parentComponent)
+    {
+        final int requiredSamples = 5;
+        final ProgressMonitor progressMonitor = new ProgressMonitor(
+                parentComponent, "Synchronising clocks...", "", 0,
+                requiredSamples + 1);
+        progressMonitor.setMillisToDecideToPopup(0);
+
+        final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask()
+        {
+            int requestsMade = 0;
+
+            @Override
+            public void run()
+            {
+                if (this.requestsMade < 5)
+                {
+                    timeRequest();
+                    this.requestsMade++;
+                    progressMonitor.setProgress(this.requestsMade);
+                }
+                else
+                {
+                    updateClockOffset();
+                    synchronised = true;
+                    progressMonitor.setProgress(requiredSamples);
+                    progressMonitor.setNote("Getting file list...");
+                    getFileListFromBot();
+                    progressMonitor.setProgress(requiredSamples + 1);
+                    progressMonitor.close();
+                    timer.cancel();
+                }
+            }
+
+        }, 0, 2000);
+    }
+
+    private void timeRequest()
+    {
+        // Synchronise clock
+
+        // 1: Client stamps current local time on a "time request" packet and
+        // sends to server
+        long currentLocalTime = System.currentTimeMillis();
+        try
+        {
+            this.sendBotMessage("timeRequest(" + currentLocalTime + ")");
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error retrieving file list: " + e.getMessage());
+            return;
+        }
     }
 
     public void addTimeDeltaSample(long latency)

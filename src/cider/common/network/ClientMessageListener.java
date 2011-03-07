@@ -129,7 +129,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
             long currentTime = System.currentTimeMillis()
                     + this.client.getClockOffset();
             long halfLatency = (currentTime - sentTime) / 2;
-            long delta = currentTime - Long.parseLong(args[1]) - halfLatency;
+            long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
 
             if (this.client.getClockOffset() == 0)
                 this.client.setTimeDelta(delta);

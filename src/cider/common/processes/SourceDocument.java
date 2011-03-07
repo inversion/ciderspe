@@ -215,15 +215,22 @@ public class SourceDocument implements ICodeLocation
     {
         if (typingEvent.mode == TypingEventMode.lockRegion)
         {
-            for (TypingEvent te : this.typingEvents)
-                te.locked = te.locked || this.insideRegion(typingEvent, te);
+            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
+            for (TypingEvent te : tel.events())
+                if (this.insideRegion(typingEvent, te))
+                    te.lockingGroup = typingEvent.owner;
+            // te.locked = te.locked || this.insideRegion(typingEvent, te);
             this.typingEvents.add(typingEvent);
             return true;
         }
         else if (typingEvent.mode == TypingEventMode.unlockRegion)
         {
-            for (TypingEvent te : this.typingEvents)
-                te.locked = !this.insideRegion(typingEvent, te) && te.locked;
+            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
+            for (TypingEvent te : tel.events())
+                if (te.owner.equals(typingEvent.owner)
+                        && this.insideRegion(typingEvent, te))
+                    te.lockingGroup = null;
+            // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
             this.typingEvents.add(typingEvent);
             return true;
         }

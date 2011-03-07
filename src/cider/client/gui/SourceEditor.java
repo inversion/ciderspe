@@ -269,7 +269,7 @@ public class SourceEditor extends JPanel
             @Override
             public void keyTyped(KeyEvent ke)
             {
-                if (eta.currentPositionLocked(0))
+                if (eta.currentPositionLocked(0, eta.getName()))
                 {
                     System.out.println("Current position locked!");
                 }
@@ -340,7 +340,7 @@ public class SourceEditor extends JPanel
                                 internal.add(particle);
                             }
 
-                            eta.getCodeLocation().push(internal);
+                            eta.getSourceDocument().push(internal);
                             eta.updateText();
                             client.broadcastTypingEvents(outgoingEvents, path);
 
