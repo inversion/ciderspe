@@ -24,9 +24,12 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -57,6 +60,9 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
@@ -92,6 +98,8 @@ public class MainWindow implements Runnable
     public JPanel receivePanel;
     public JTextArea messageSendBox;
     public static boolean LockingEnabled = true;
+    
+    private DebugWindow debugwindow;
 
     tabFlash tabbing = new tabFlash();
 
@@ -525,11 +533,31 @@ public class MainWindow implements Runnable
          catch (IOException e1)
          {
          }
-    	
+         
+
+         String sourceFile = currentDir;
+         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
+         List<File> sourceFileList = new ArrayList<File>();
+         sourceFileList.add(new File(sourceFile));
+         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFileList);
+         CompilationTask task = compiler.getTask(null, fileManager, null, null, null, compilationUnits);
+         boolean result = task.call();
+         if (result) 
+         {
+        	 System.out.println("Compilation was successful");
+         } 
+         else 
+         {
+        	 System.out.println("Compilation failed");
+         }
+         //fileManager.close();
+
 
          
-    	JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-    	int results = javac.run(System.in, System.out, System.err, currentDir/*"C:\\Users\\Alex\\Desktop\\test.java"*/); //TODO: fails here, can't find the file =(
+    	/*JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+    	System.out.println(currentDir);
+    	int results = javac.run(System.in, System.out, System.err, "\"C:\\Users\\Alex\\Desktop\\test.java\""); //TODO: fails here, can't find the file =(
     	if (results ==0)
     	{
             System.out.println("Success");
@@ -537,36 +565,94 @@ public class MainWindow implements Runnable
     	else
     	{
     		System.out.println("Fail");
-    	}    	
+    	}    	*/
     }
     
     void runFile()
     {
-    	
+    	try
+    	{
+    		String line;
+    		//int i = 0;
+    		Process p = Runtime.getRuntime().exec(this.getCommands());
+    		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+    		while ((line = input.readLine()) != null)
+    		{
+    			this.debugwindow.println(line);
+    		}
+    		input.close();
+    	}
+    	catch (Exception e)
+    	{
+    		e.printStackTrace();
+    	}
+    }
+    
+    public String[] getCommands()
+    {
+        if (isWindows())
+        {
+            return new String[] {"cmd.exe", "/C",  "start " + currentDir + /* "java" + "\\test"this.sourceFile.getParentFile().getPath() +*/ "\\runHello.bat"};
+        }
+        else if (isUnix())
+        {
+            return new String[] { currentDir/*"./runHello.sh"*/ };
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    public static boolean isWindows()
+    {
+        String os = System.getProperty("os.name").toLowerCase();
+        // windows
+        return (os.indexOf("win") >= 0);
+    }
+
+    public static boolean isMac()
+    {
+        String os = System.getProperty("os.name").toLowerCase();
+        // Mac
+        return (os.indexOf("mac") >= 0);
+    }
+
+    public static boolean isUnix()    {
+
+        String os = System.getProperty("os.name").toLowerCase();
+        // linux or unix
+        return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
     }
     
     private void ChangeLocking()
     {
-    	if (LockingEnabled == true) {
-        int response = JOptionPane.showConfirmDialog(null,
-                "Are you sure you wish to disable line locking");
-        if (response == 0)
-        {
-            LockingEnabled = false;
-        }  else
-            return;
-        
-	    } else {
-	    int response = JOptionPane.showConfirmDialog(null,
-	        	"Are you sure you wish to enable line locking?");
-	    if (response == 0)
-        {
-            LockingEnabled = true;
-        }  else
-            return;
-	    
-	    }
-        
+    	if (LockingEnabled == true) 
+    	{
+    		int response = JOptionPane.showConfirmDialog(null,
+    				"Are you sure you wish to disable line locking");
+    		if (response == 0)
+    		{
+    			LockingEnabled = false;
+    		}  
+    		else
+    		{
+    			return;
+    		}
+    	} 
+    	else 
+    	{
+    		int response = JOptionPane.showConfirmDialog(null,
+    		"Are you sure you wish to enable line locking?");
+    		if (response == 0)
+    		{
+    			LockingEnabled = true;
+    		}  
+    		else
+    		{
+    			return;
+    		}
+    	}        
     }
 
     private void restartProfile()
@@ -1225,8 +1311,11 @@ public class MainWindow implements Runnable
         /* End of Chat panel stuffs */
 
         JLabel test = new JLabel("i have no idea how to call the java compiler");
+        this.debugwindow = new DebugWindow();
+        this.debugwindow.setAutoscrolls(true);
+        
         JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                this.sourceEditorSection(), test);
+                this.sourceEditorSection(), this.debugwindow/*test*/);
         EditorDebugSplit.setBorder(emptyBorder);
         EditorDebugSplit.setOneTouchExpandable(true);
         EditorDebugSplit.setDividerLocation(800);
