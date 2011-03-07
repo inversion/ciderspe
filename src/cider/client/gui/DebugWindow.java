@@ -14,6 +14,7 @@ public class DebugWindow extends JPanel
     public DebugWindow()
     {
         this.setLayout(new BorderLayout());
+        this.textArea.setEditable(false);
         //this.scrolltxt.setBounds(3, 3, 300, 200);
         this.add(this.scrollTextArea);
     }
@@ -30,6 +31,6 @@ public class DebugWindow extends JPanel
 
     public void println(String text)
     {
-        this.textArea.setText(this.textArea.getText() + text/* + "\n"*/);
+        this.textArea.setText(this.textArea.getText() + text + "\n");
     }
 }

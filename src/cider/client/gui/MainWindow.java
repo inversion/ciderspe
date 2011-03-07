@@ -18,13 +18,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.net.URL;
 import java.sql.Time;
 import java.util.ArrayList;
@@ -100,6 +104,7 @@ public class MainWindow implements Runnable
     public static boolean LockingEnabled = true;
     
     private DebugWindow debugwindow;
+    private OutputStream baos;
 
     tabFlash tabbing = new tabFlash();
 
@@ -110,6 +115,9 @@ public class MainWindow implements Runnable
      */
     public long startTime;
     private Profile myProfile;
+    
+    
+    
 
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c, LoginUI loginUI) throws XMPPException
@@ -128,6 +136,12 @@ public class MainWindow implements Runnable
         dirView.setClient(client);
         client.addParent(this);
         profileSetup();
+        
+        
+        this.baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
+        //System.setOut(ps);
+        System.setErr(ps);
 
         // tabFlash.flash(0);
     }
@@ -535,10 +549,9 @@ public class MainWindow implements Runnable
         }
         catch (IOException e1)
         {
-        }
+        }         
          
-         
-         String sourceFile = currentDir;
+         /*String sourceFile = currentDir;
          JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
          StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
          List<File> sourceFileList = new ArrayList<File>();
@@ -554,23 +567,35 @@ public class MainWindow implements Runnable
          {
         	 System.out.println("Compilation failed");
          }
-         //fileManager.close();
-
-
+         //fileManager.close();*/
          
-    	/*JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-    	System.out.println(currentDir);
-    	int results = javac.run(System.in, System.out, System.err, "\"C:\\Users\\Alex\\Desktop\\test.java\""); //TODO: fails here, can't find the file =(
+    	JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+    	//System.out.println(currentDir);
+    	int results = javac.run(System.in, System.out, System.err, currentDir);
     	if (results ==0)
     	{
-            System.out.println("Success");
+    		this.debugwindow.println("Compilation Successful");
         }
         else
         {
-            System.out.println("Fail");
-    	}    	*/
+        	this.debugwindow.println("Compilation failed");	
+    	}    
+    	updateOutput();
     }
 
+    public void updateOutput()
+    {
+        this.debugwindow.println(this.baos.toString());
+        /*try {
+			this.baos.flush();
+		} 
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}*/
+    }
+
+    
     void runFile()
     {
     	try
