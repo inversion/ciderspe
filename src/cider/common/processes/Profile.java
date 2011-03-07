@@ -194,4 +194,19 @@ public class Profile
 			}
 		}
 	}
+
+	/*
+	 * Source: http://goo.gl/e4p3x
+	 */
+	public String getTimeString() 
+	{
+		long t = timeSpent;
+	    String format = String.format("%%0%dd", 2);  
+	    t = timeSpent / 1000;  
+	    String seconds = String.format(format, t % 60);  
+	    String minutes = String.format(format, (t % 3600) / 60);  
+	    String hours = String.format(format, t / 3600);  
+	    String time =  hours + ":" + minutes + ":" + seconds;  
+	    return time;  
+	}
 }
