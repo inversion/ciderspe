@@ -102,6 +102,18 @@ public class BotMessageListener implements MessageListener
                 System.err.println("Error: " + e.getMessage());
             }
         }
+        else if (body.equals("are you online mr bot"))
+        {
+        	System.out.println("Online query received");
+        	try
+        	{
+				chat.sendMessage(StringUtils.encodeBase64("yes i am online"));
+			}
+        	catch (XMPPException e)
+        	{
+				e.printStackTrace();
+			}
+        }
         else if (body.startsWith("requestprofile"))
         {
         	String[] splitbody = body.split(" ");
