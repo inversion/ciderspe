@@ -752,11 +752,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
      * @param offset
      * @return
      */
-    public boolean currentPositionLocked(int offset, String user)
+    public int currentPositionLocked(int offset, String user)
     {
         int pos = this.caretPosition + offset;
-        return pos >= 0 && pos < this.str.length()
-                && this.str.locked(pos, user);
+        return pos >= 0 && pos < this.str.length() ? this.str.locked(pos, user)
+                : 0;
     }
 
     public void moveCaret(int spaces)

@@ -269,10 +269,9 @@ public class SourceEditor extends JPanel
             @Override
             public void keyTyped(KeyEvent ke)
             {
-                if (eta.currentPositionLocked(0, eta.getName()))
-                {
+                int r = eta.currentPositionLocked(0, client.getUsername());
+                if (r == 2)
                     System.out.println("Current position locked!");
-                }
                 else
                 {
                     switch (ke.getKeyCode())
@@ -336,6 +335,9 @@ public class SourceEditor extends JPanel
 
                             for (TypingEvent particle : particles)
                             {
+                                if (r == 1)
+                                    particle.lockingGroup = client
+                                            .getUsername();
                                 outgoingEvents.add(particle);
                                 internal.add(particle);
                             }

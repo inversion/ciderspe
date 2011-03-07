@@ -136,10 +136,11 @@ public class TypingEventList
         return ll;
     }
 
-    public boolean locked(int position, String user)
+    public int locked(int position, String user)
     {
         TypingEvent te = this.tel.get(position);
-        return te.lockingGroup != null && !te.lockingGroup.equals(user);
+        return te.lockingGroup == null ? 0 : (te.lockingGroup.equals(user) ? 1
+                : 2);
     }
 
     public int length()

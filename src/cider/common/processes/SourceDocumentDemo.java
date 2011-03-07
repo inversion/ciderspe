@@ -303,8 +303,8 @@ public class SourceDocumentDemo
                         case '\u0008':
                         {
                             if (eta.getCaretPosition() > 0
-                                    && !eta.currentPositionLocked(-1,
-                                            "Demo User " + id))
+                                    && eta.currentPositionLocked(-1,
+                                            "Demo User " + id) < 2)
                             {
                                 mode = TypingEventMode.backspace;
                             }
@@ -317,7 +317,7 @@ public class SourceDocumentDemo
                         // break;
                         default:
                         {
-                            if (eta.currentPositionLocked(0, "Demo User " + id))
+                            if (eta.currentPositionLocked(0, "Demo User " + id) == 2)
                                 return;
                         }
                         }
