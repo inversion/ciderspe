@@ -33,20 +33,19 @@ import cider.common.processes.TypingEventMode;
  * particular with the way the caret is controlled and text formatting)
  * 
  * @author Lawrence
- * 
+ * @param fontSize the size of the font in the editortypingarea
  */
 public class EditorTypingArea extends JPanel implements MouseListener
-{
+{	
     private static final long serialVersionUID = 1L;
     private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
-    private Font font = new Font("Monospaced", Font.PLAIN, 14);
-    private Font fontbold = new Font("Monospaced", Font.BOLD, 14);
+    private Font font = new Font("Monospaced", Font.PLAIN, fontSize);
+    private Font fontbold = new Font("Monospaced", Font.BOLD, fontSize);
     // private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
-    private int leftMargin = 32;
     private ArrayList<ETALine> lines = new ArrayList<ETALine>();
     private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
     private ArrayList<Integer> KeyWord = new ArrayList<Integer>();
@@ -54,8 +53,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
-    private static final int lineSpacing = 15;
-    private static final int characterSpacing = 8;
+    private static int fontSize = 14;
+    private int leftMargin = fontSize*2;
+    private static final int lineSpacing = fontSize+1;
+    private static final int characterSpacing = fontSize/2+1;
     private boolean waiting = true;
     private boolean CommentFound = false;
     private boolean CommentedLine = false;
@@ -145,7 +146,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public void paintWaitingSign(Graphics g)
     {
-        g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        g.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
         g.drawString("Retrieving document from server... ", 32, 32);
     }
 
@@ -321,12 +322,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
         public void highlightMargin(Graphics g)
         {
             g.setColor(parent.colours.get(parent.getUsername()));
-            // currentLine.highlight(g, 5, Color.ORANGE);
-            g.fillRoundRect(3, this.y - lineSpacing, leftMargin - 8,
-                    lineSpacing, 3, 3);
+            g.fillRoundRect(3, this.y - lineSpacing+2, leftMargin - 8, lineSpacing+2, 3, 3); //TODO: here Alex
             g.setColor(Color.LIGHT_GRAY);
-            g.drawRoundRect(3, this.y - lineSpacing, leftMargin - 8,
-                    lineSpacing, 3, 3);
+            g.drawRoundRect(3, this.y - lineSpacing+2, leftMargin - 8, lineSpacing+2, 3, 3);
             paintMargin(g);
         }
 
@@ -402,8 +400,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
         {
             g.setColor(c);
             int x = (i * characterSpacing) + leftMargin;
-            int y = this.y;
-            g.fillRect(x, y - lineSpacing, characterSpacing, lineSpacing);
+            int y = this.y+5;
+            g.fillRect(x, y - lineSpacing, characterSpacing, lineSpacing); //TODO here Alex
         }
 
         /**
@@ -414,15 +412,17 @@ public class EditorTypingArea extends JPanel implements MouseListener
          */
         public void paintCaret(Graphics g, int i)
         {
-            g.setColor(Color.BLUE);
+            g.setColor(parent.colours.get(parent.getUsername())/*Color.BLUE*/);
             int x = ((i + 1) * characterSpacing) + leftMargin;
-            g.drawLine(x, this.y - lineSpacing, x, this.y);
+            int y = this.y+5;
+            g.drawLine(x, y - lineSpacing, x, y); //TODO here Alex
         }
 
         public void paintCaretOnNewline(Graphics g)
         {
-            g.setColor(Color.BLUE);
-            g.drawLine(leftMargin, this.y - lineSpacing, leftMargin, this.y);
+            g.setColor(parent.colours.get(parent.getUsername())/*Color.BLUE*/);
+            int y = this.y+5;
+            g.drawLine(leftMargin, y - lineSpacing, leftMargin, y);  //TODO here Alex
         }
 
         /**
