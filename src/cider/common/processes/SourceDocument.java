@@ -220,7 +220,7 @@ public class SourceDocument implements ICodeLocation
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
 
             for (int i = 0; i < tel.length(); i++)
-                if (this.insideRegion(typingEvent, i))
+                if (this.insideRegion(typingEvent, i, 0))
                     tel.get(i).lockingGroup = typingEvent.owner;
             // te.locked = te.locked || this.insideRegion(typingEvent, te);
             this.typingEvents.add(typingEvent);
@@ -231,7 +231,7 @@ public class SourceDocument implements ICodeLocation
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
             for (int i = 0; i < tel.length(); i++)
                 if (tel.get(i).owner.equals(typingEvent.owner)
-                        && this.insideRegion(typingEvent, i))
+                        && this.insideRegion(typingEvent, i, 1))
                     tel.get(i).lockingGroup = null;
             // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
             this.typingEvents.add(typingEvent);
@@ -267,10 +267,12 @@ public class SourceDocument implements ICodeLocation
             this.typingEvents.poll();
     }
 
-    private boolean insideRegion(TypingEvent region, int position)
+    private boolean insideRegion(TypingEvent region, int position,
+            int extendRight)
     {
         return position >= region.position
-                && position <= region.position + region.length - 1;
+                && position <= region.position + region.length - 1
+                        + extendRight;
     }
 
     public void putEvents(Collection<TypingEvent> values)
