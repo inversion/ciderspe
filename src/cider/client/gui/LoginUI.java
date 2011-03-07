@@ -452,11 +452,13 @@ public class LoginUI
                     txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
                     txtServiceName.getText(), this);
-            client.attemptConnection();
+            if (!client.attemptConnection())
+            {
+//            	errmsg = "Bot is not online";
+//            	return false;
+            }
             program = new MainWindow(txtUsername.getText(),
-            /*
-             * passwordEncrypt.encrypt(new String(txtPassword.getPassword()))
-             */new String(txtPassword.getPassword()), txtHost.getText(),
+            		new String(txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
                     txtServiceName.getText(), client, this);
 
