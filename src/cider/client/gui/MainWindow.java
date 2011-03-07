@@ -36,6 +36,7 @@ import java.util.Hashtable;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -365,7 +366,24 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Line Locking"))
                 {
-                    ChangeLocking();
+                	ChangeLocking();
+                }
+                else if (action.equals("Line Home"))
+                {
+                	//eta.moveHome();
+                }
+                else if (action.equals("Line End"))
+                {
+                	//eta.moveEnd();
+                }
+                else if (action.equals("Document Home"))
+                {
+                	//eta.moveDocHome();
+                }
+                else if (action.equals("Document End"))
+                {
+                	//client.openTabs.get(this.getPathToSourceDocument(client.getCurrentDocument().name), 1));
+                	//EditorTypingArea.moveDocEnd();
                 }
             }
         };
@@ -744,46 +762,62 @@ public class MainWindow implements Runnable
         // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
         // myProfile.adjustCharCount(count);
 
-        JFrame profileFrame = new JFrame("My Profile- " + myProfile.uname);
+        JFrame profileFrame = new JFrame("View Profile");
         Container content = profileFrame.getContentPane();
-        content.setLayout(new GridLayout(4, 2));
-        profileFrame.setUndecorated(true);
-
+        
+        // set frame icon to cider logo
         URL x = this.getClass().getResource("icon.png");
         ImageIcon image = new ImageIcon(x);
         Image test = image.getImage();
         profileFrame.setIconImage(test);
+        
+        // horizontal box with user image in left cell, info in right cell
+        Box hbox = Box.createHorizontalBox();
+        hbox.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        URL urlImage;
+        ImageIcon photo;
+        
+        try {
+        	//load custom user photo here
+        	urlImage = this.getClass().getResource(myProfile.uname + ".png");
+        	photo = new ImageIcon(urlImage);
+        }
+        catch (NullPointerException npe) {
+        	//load default user photo if custom user doesn't exist
+        	urlImage = this.getClass().getResource("defaultuser.png");
+        	photo = new ImageIcon(urlImage);
+        }
+        
+        JLabel userPhoto = new JLabel(photo);
+        userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+        hbox.add(userPhoto);
+        
+        JLabel userName = new JLabel("<html><u>Username: " + myProfile.uname + "</u></html>");
+        Font curFont = userName.getFont();
+        userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(), curFont.getSize()+2));
+        
+        JLabel userChars = new JLabel("Characters Typed: " + myProfile.typedChars);
+        String t = myProfile.getTimeString();
+        JLabel userTime = new JLabel("Total Time: " + t);
+        JLabel userLastOnline = new JLabel("Last Seen: " + myProfile.lastOnline);
+        
+        // vertical box with user statistics in
+        Box vbox = Box.createVerticalBox();
+        
+        vbox.add(userName);
+        vbox.add(userChars);
+        vbox.add(userTime);
+        vbox.add(userLastOnline);
+        
+        hbox.add(vbox);
+        content.add(hbox);
 
-        profileFrame.setBounds(100, 100, 300, 200);
+        profileFrame.pack();
         profileFrame.setResizable(false);
-        // profileFrame.pack();
         profileFrame.isDisplayable();
         profileFrame.setLocationRelativeTo(null);
-
-        JLabel uName = new JLabel("Username: " + myProfile.uname);
-        uName.setHorizontalAlignment(JLabel.LEFT);
-        uName.setVerticalAlignment(JLabel.TOP);
-        content.add(uName);
-
-        JLabel chars = new JLabel("Characters pressed: " + myProfile.typedChars);
-        // System.out.println(TypingEventList.countCharactersFor(username));
-        chars.setHorizontalAlignment(JLabel.LEFT);
-        chars.setVerticalAlignment(JLabel.TOP);
-        content.add(chars);
-
-        String t = myProfile.getTimeString();
-        System.out.println("TS = " + myProfile.getTimeString());
-        JLabel time = new JLabel("Total time spent: " + t);
-        time.setHorizontalAlignment(JLabel.LEFT);
-        time.setVerticalAlignment(JLabel.TOP);
-        content.add(time);
-
-        JLabel lastonline = new JLabel("You were last seen: "
-                + myProfile.lastOnline);
-        lastonline.setHorizontalAlignment(JLabel.LEFT);
-        lastonline.setVerticalAlignment(JLabel.TOP);
-        content.add(lastonline);
-
+        
         profileFrame.setVisible(true);
     }
 
