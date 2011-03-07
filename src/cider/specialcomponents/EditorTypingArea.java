@@ -721,6 +721,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
      public int GetCurxLen()
     {
     	return 0;
+    	// below doesn't work
     	// return (i * characterSpacing) + leftMargin;
     } 
     
