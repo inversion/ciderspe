@@ -1141,7 +1141,7 @@ public class MainWindow implements Runnable
                                         client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile "
                                                 + userList.getSelectedValue()
                                                 + " notme"));
-                                        Thread.sleep(500);
+                                        Thread.sleep(1000);
                                         System.out.println(client.profileFound);
                                         if (!client.profileFound)
                                             JOptionPane
