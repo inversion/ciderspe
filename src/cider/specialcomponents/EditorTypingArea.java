@@ -21,6 +21,7 @@ import java.util.TimerTask;
 import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
+import cider.client.gui.MainWindow;
 import cider.common.network.Client;
 import cider.common.processes.ICodeLocation;
 import cider.common.processes.SourceDocument;
@@ -188,21 +189,24 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
             if (me.getX() < this.leftMargin)
             {
-                TypingEventMode tem;
-
-                if (length > 0 && line.locked(0))
-                    tem = TypingEventMode.unlockRegion;
-                else
-                    tem = TypingEventMode.lockRegion;
-
-                TypingEvent te = new TypingEvent(System.currentTimeMillis()
-                        + parent.getClockOffset(), tem, start, length, "",
-                        this.doc.getOwner());
-
-                for (ActionListener al : this.als)
-                    al.actionPerformed(new ActionEvent(te,
-                            tem == TypingEventMode.lockRegion ? LINE_LOCKED
-                                    : LINE_UNLOCKED, "Locking event"));
+            	if (MainWindow.LockingEnabled == true )
+            	{
+	                TypingEventMode tem;
+	
+	                if (length > 0 && line.locked(0))
+	                    tem = TypingEventMode.unlockRegion;
+	                else
+	                    tem = TypingEventMode.lockRegion;
+	
+	                TypingEvent te = new TypingEvent(System.currentTimeMillis()
+	                        + parent.getClockOffset(), tem, start, length, "",
+	                        this.doc.getOwner());
+	
+	                for (ActionListener al : this.als)
+	                    al.actionPerformed(new ActionEvent(te,
+	                            tem == TypingEventMode.lockRegion ? LINE_LOCKED
+	                                    : LINE_UNLOCKED, "Locking event"));
+            	}
             }
             else
             {
