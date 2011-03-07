@@ -5,9 +5,11 @@ import java.awt.Component;
 import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
@@ -32,6 +34,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+import org.jivesoftware.smackx.muc.Occupant;
 
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.LoginUI;
@@ -66,7 +69,7 @@ public class Client
     private MainWindow parent;
 
     // XMPP Basics
-    private XMPPConnection connection;
+    protected XMPPConnection connection;
     private ChatManager chatmanager;
     private String username;
     private String host;
@@ -275,7 +278,7 @@ public class Client
         this.tabbedPane = tabbedPane;
         this.openTabs = openTabs;
         this.receiveTabs = receiveTabs;
-
+        
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
                 userListModel, userCount, this));

@@ -6,6 +6,7 @@ import javax.swing.JPanel;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
@@ -26,11 +27,11 @@ public class ClientChatroomInviteListener implements InvitationListener {
 	private String nickname;
 	private Client parent;
 	
-	public ClientChatroomInviteListener( MultiUserChat source, String nickname, Client parent0 )
+	public ClientChatroomInviteListener( MultiUserChat source, String nickname, Client parent )
 	{
 		this.nickname = nickname;
 		chatroom = source;
-		parent = parent0;
+		this.parent = parent;
 	}
 	
 	@Override
@@ -39,7 +40,11 @@ public class ClientChatroomInviteListener implements InvitationListener {
 		try {
 			if( DEBUG )
 				System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
-			chatroom.join( this.nickname, password );				
+			chatroom.join( this.nickname, password );
+			
+			// Send packet to let new users know about us
+			Presence presence = new Presence( Presence.Type.available );
+			parent.connection.sendPacket( presence );
 		} 
 		catch (XMPPException e)
 		{
