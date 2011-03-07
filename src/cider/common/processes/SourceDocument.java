@@ -237,9 +237,9 @@ public class SourceDocument implements ICodeLocation
             for (int i = 0; i < tel.length(); i++)
             {
                 te = tel.get(i);
-                if (te.lockingGroup.equals(typingEvent.owner)
-                        && this.insideRegion(typingEvent, i, 1))
-                    te.lockingGroup = null;
+                if (this.insideRegion(typingEvent, i, 1))
+                    if (te.lockingGroup.equals(typingEvent.owner))
+                        te.lockingGroup = null;
             }
             // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
             this.typingEvents.add(typingEvent);

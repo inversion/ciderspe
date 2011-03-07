@@ -183,7 +183,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int start = line.start + ln - 2;
             int length = line.str.length();
 
-            if (me.getX() < this.leftMargin)
+            if (me.getX() < this.leftMargin && length > 1)
             {
                 TypingEventMode tem;
                 String owner = line.locked(0);
