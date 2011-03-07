@@ -51,12 +51,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
 					System.out.println( "Adding " + nickname + " to list...");
 				list.addElement( nickname );
 				userCount.setText(" " + list.getSize() + " Users Online");
-			}
-			
-			// Send packet to let new users know about us
-			Presence presence = new Presence( Presence.Type.available );
-			parent.connection.sendPacket( presence );
-			
+			}			
 		}
 		else if( pres.getType() == Presence.Type.unavailable )
 		{

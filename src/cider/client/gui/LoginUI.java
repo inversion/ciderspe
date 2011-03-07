@@ -45,6 +45,7 @@ import javax.swing.UIManager;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.Client;
+import cider.shared.ClientSharedComponents;
 
 public class LoginUI
 {
@@ -472,14 +473,7 @@ public class LoginUI
         Client client;
         try
         {
-        	// Create objects that might be updated before the Main Window opens
-        	// TODO: Create these only once regardless of attempt no.s
-        	DefaultListModel userListModel = new DefaultListModel();
-        	JLabel userTotal = new JLabel();
-        	JTabbedPane tabbedPane = new JTabbedPane();
-        	DirectoryViewComponent dirView = new DirectoryViewComponent();
-        	JTabbedPane receiveTabs = new JTabbedPane();
-        	Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+        	ClientSharedComponents sharedComponents = new ClientSharedComponents();
         	
             // TODO: Recommended to zero bytes of password after use
             // TODO: Check that fields aren't null/validation stuff
@@ -489,12 +483,7 @@ public class LoginUI
                     Integer.parseInt(txtPort.getText()),
                     txtServiceName.getText(), 
                     this, 
-                    userListModel, 
-                    userTotal, 
-                    dirView, 
-                    tabbedPane, 
-                    openTabs, 
-                    receiveTabs
+                    sharedComponents
                     );
             if (!client.attemptConnection())
             {
@@ -505,12 +494,7 @@ public class LoginUI
             		new String(txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
                     txtServiceName.getText(), client, this,
-                    userListModel,
-                    userTotal,
-                    tabbedPane,
-                    dirView, 
-                    openTabs,
-                    receiveTabs);
+                    sharedComponents);
 
             SwingUtilities.invokeLater(program);
         }

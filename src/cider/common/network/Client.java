@@ -5,24 +5,19 @@ import java.awt.Component;
 import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.ProgressMonitor;
 
@@ -34,9 +29,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
-import org.jivesoftware.smackx.muc.Occupant;
 
-import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
@@ -44,6 +37,7 @@ import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
+import cider.shared.ClientSharedComponents;
 import cider.specialcomponents.EditorTypingArea;
 
 /**
@@ -69,7 +63,7 @@ public class Client
     private MainWindow parent;
 
     // XMPP Basics
-    protected XMPPConnection connection;
+    private XMPPConnection connection;
     private ChatManager chatmanager;
     private String username;
     private String host;
@@ -107,17 +101,12 @@ public class Client
      */
     protected HashMap<JScrollPane, Object> tabsToChats = new HashMap<JScrollPane, Object>();
 
-    // GUI components
-    public JTabbedPane receiveTabs;
-    private DirectoryViewComponent dirView;
-	public DefaultListModel userListModel;
-	public JLabel userCount;
+    // GUI components shared with MainWindow
+    public ClientSharedComponents shared;
 
     // Lawrence's source document stuff
     private boolean autoUpdate = false;
     private LiveFolder liveFolder = null;
-    private JTabbedPane tabbedPane;
-    private Hashtable<String, SourceEditor> openTabs;
     private long lastBroardcast = 0;
     private static final long minimumBroadcastDelay = 400;
     private String outgoingTypingEvents = "";
@@ -131,9 +120,7 @@ public class Client
     private boolean synchronised = false;
 
     public Client(String username, String password, String host, int port,
-            String serviceName, LoginUI log, DefaultListModel userListModel, JLabel userCount, 
-            DirectoryViewComponent dirView, JTabbedPane tabbedPane, 
-            Hashtable<String, SourceEditor> openTabs, JTabbedPane receiveTabs)
+            String serviceName, LoginUI log, ClientSharedComponents shared )
     {
         // Assign objects from parameters
         this.username = username;
@@ -145,17 +132,12 @@ public class Client
         this.login = log;
         
         // GUI Components shared with MainWindow
-        this.userListModel = userListModel;
-        this.userCount = userCount;
-        this.dirView = dirView;
-        this.tabbedPane = tabbedPane;
-        this.openTabs = openTabs;
-        this.receiveTabs = receiveTabs;
+        this.shared = shared;
         
         EditorTypingArea.addParent(this);
     }
 
-    /**
+	/**
      * Tries to connect to the XMPP server, throwing an exception if it fails in
      * any way.
      * 
@@ -199,7 +181,7 @@ public class Client
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
-                userListModel, userCount, this));
+                shared.userListModel, shared.userCount, this));
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
         // Add listener for new user chats
@@ -345,7 +327,7 @@ public class Client
          * we are sending to in selecting the right text area to update.
          */
         if (username.equals(this.username))
-            current = usersToAreas.get(receiveTabs.getSelectedComponent()
+            current = usersToAreas.get(shared.receiveTabs.getSelectedComponent()
                     .getName());
         else
             current = usersToAreas.get(username);
@@ -406,8 +388,8 @@ public class Client
 
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         messageReceiveBoxScroll.setName(user);
-        receiveTabs.add(messageReceiveBoxScroll);
-        receiveTabs.setTitleAt(receiveTabs.getTabCount() - 1, user);
+        shared.receiveTabs.add(messageReceiveBoxScroll);
+        shared.receiveTabs.setTitleAt(shared.receiveTabs.getTabCount() - 1, user);
 
         // If creating a tab for the chatroom, register the chatroom message
         // receive box
@@ -475,7 +457,7 @@ public class Client
             msg.setBody(StringUtils.encodeBase64(message));
             msg.setSubject(dateFormat.format(date));
 
-            if (receiveTabs.getSelectedComponent().getName()
+            if (shared.receiveTabs.getSelectedComponent().getName()
                     .equals(MainWindow.GROUPCHAT_TITLE))
             {
                 /*
@@ -498,11 +480,11 @@ public class Client
                 if (DEBUG)
                     System.out
                             .println("Client: Sending message on private chat to "
-                                    + receiveTabs.getSelectedComponent()
+                                    + shared.receiveTabs.getSelectedComponent()
                                             .getName()
                                     + " contents: "
                                     + message);
-                ((Chat) tabsToChats.get(receiveTabs.getSelectedComponent()))
+                ((Chat) tabsToChats.get(shared.receiveTabs.getSelectedComponent()))
                         .sendMessage(msg);
 
                 // Update the log with the message before it was encoded
@@ -553,12 +535,12 @@ public class Client
         System.out.println(strPath);
         SourceDocument doc = this.liveFolder.path(strPath);
         this.currentDoc = doc;
-        if (!this.openTabs.containsKey(strPath))
+        if (!shared.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(this.username, doc);
             SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
-            sourceEditor.setTabHandle(this.tabbedPane.add(strPath, eta));
-            this.openTabs.put(strPath, sourceEditor);
+            sourceEditor.setTabHandle(shared.tabbedPane.add(strPath, eta));
+            shared.openTabs.put(strPath, sourceEditor);
             this.pullSimplifiedEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset());
         }
@@ -694,7 +676,7 @@ public class Client
 
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
-        EditorTypingArea eta = this.openTabs.get(dest).getEditorTypingArea();
+        EditorTypingArea eta = shared.openTabs.get(dest).getEditorTypingArea();
         int position = eta.getCaretPosition();
         TypingEvent anchor;
         if (position >= 0 && position < eta.getTypingEventList().length())
@@ -714,8 +696,8 @@ public class Client
         if (body.startsWith("filelist="))
         {
             String xml = body.split("filelist=")[1];
-            this.dirView.constructTree(xml);
-            this.setLiveFolder(this.dirView.getLiveFolder());
+            shared.dirView.constructTree(xml);
+            this.setLiveFolder(shared.dirView.getLiveFolder());
             this.setUpdatesAutomatically(true);
         }
         else if (body.startsWith("pushto("))
@@ -754,7 +736,7 @@ public class Client
         else if (body.startsWith("isblank("))
         {
             String dest = body.split("\\(")[1].split("\\)")[0];
-            EditorTypingArea eta = this.openTabs.get(dest)
+            EditorTypingArea eta = shared.openTabs.get(dest)
                     .getEditorTypingArea();
             eta.setWaiting(false);
         }
@@ -767,7 +749,7 @@ public class Client
             if (colours.containsKey(changedUser))
                 colours.remove(changedUser);
             colours.put(changedUser, newColour);
-            parent.userList.repaint();
+            shared.userList.repaint();
             // EditorTypingArea.highlightMargin(); //FIXME update current line
             // colour when user changes profile colour
         }
