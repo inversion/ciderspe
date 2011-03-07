@@ -6,7 +6,6 @@ import javax.swing.JPanel;
 import org.jivesoftware.smack.Connection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smackx.muc.InvitationListener;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
@@ -41,10 +40,6 @@ public class ClientChatroomInviteListener implements InvitationListener {
 			if( DEBUG )
 				System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
 			chatroom.join( this.nickname, password );
-			
-			// Send packet to let new users know about us
-			Presence presence = new Presence( Presence.Type.available );
-			parent.connection.sendPacket( presence );
 		} 
 		catch (XMPPException e)
 		{

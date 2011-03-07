@@ -9,7 +9,8 @@ import java.util.Random;
 public class TypingEventList
 {
     private ArrayList<TypingEvent> tel = new ArrayList<TypingEvent>();
-
+    public static int DeleteType = 0;
+    
     public TypingEventList()
     {
 
@@ -33,13 +34,18 @@ public class TypingEventList
 
     public void backspace(int i)
     {
-        if (i >= this.tel.size())
-            i = this.tel.size() - 1;
-        if (i < 0)
-            return;
-        this.tel.remove(i);
+    	
+	        if (i >= this.tel.size())
+	            i = this.tel.size() - 1;
+	        if (i < 0)
+	            return;
+	        if ( DeleteType == 0 )
+	        	this.tel.remove(i);
+	        if ( DeleteType == 1 )
+	        	this.tel.remove(i+1);
+    	
+    	
     }
-
     public boolean exists(int i)
     {
         return i > 0 && i < this.tel.size();
