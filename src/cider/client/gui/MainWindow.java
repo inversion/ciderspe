@@ -30,14 +30,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
-import java.sql.Time;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
@@ -65,9 +61,6 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.tools.JavaCompiler;
-import javax.tools.JavaCompiler.CompilationTask;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
@@ -75,11 +68,11 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.shared.ClientSharedComponents;
 import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
-    JTabbedPane tabbedPane;
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
@@ -88,19 +81,16 @@ public class MainWindow implements Runnable
 
     public LoginUI login;
 
+    public ClientSharedComponents shared;
+    
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
-    private Hashtable<String, SourceEditor> openTabs;
-    private DirectoryViewComponent dirView;
     private String username;
     private ArrayList<String> savedFiles = new ArrayList<String>();
 
-    public JList userList;
-    public JLabel userCount = new JLabel();
-    public DefaultListModel userListModel;
     public static final String GROUPCHAT_TITLE = "Group Chat";
-    public JTabbedPane receiveTabs;
+
     public JPanel receivePanel;
     public JTextArea messageSendBox;
     public static boolean LockingEnabled = true;
@@ -120,17 +110,10 @@ public class MainWindow implements Runnable
     
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c, LoginUI loginUI, DefaultListModel userListModel, JLabel userTotal, JTabbedPane tabbedPane, 
-            DirectoryViewComponent dirView, Hashtable<String, SourceEditor> openTabs, JTabbedPane receiveTabs) throws XMPPException
+            String serviceName, Client c, LoginUI loginUI, ClientSharedComponents shared ) throws XMPPException
     {
         // Register GUI components shared with client
-        this.userListModel = userListModel;
-        this.userCount = userTotal;
-        this.tabbedPane = tabbedPane;
-        this.dirView = dirView;
-        this.openTabs = openTabs;
-        this.receiveTabs = receiveTabs;
-        this.dirView = dirView;
+        this.shared = shared;
     	
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
@@ -140,7 +123,7 @@ public class MainWindow implements Runnable
 
         client = c;
         receivePanel = pnlReceive();
-        dirView.setClient(client);
+        shared.dirView.setClient(client);
         client.addParent(this);
         profileSetup();
         
@@ -199,9 +182,9 @@ public class MainWindow implements Runnable
 
     private void retrieveAllUserColours()
     {
-        for (int i = 0; i < userListModel.getSize(); i++)
+        for (int i = 0; i < shared.userListModel.getSize(); i++)
         {
-            String focus = (String) userListModel.elementAt(i);
+            String focus = (String) shared.userListModel.elementAt(i);
             if (!focus.equals(username))
             {
                 getUserColour(focus);
@@ -471,7 +454,7 @@ public class MainWindow implements Runnable
 
             // tabbedPane.addTab(currentFileName, new SourceEditor(
             // currentFileContents, currentDir));
-            tabbedPane.setSelectedIndex(++currentTab);
+            shared.tabbedPane.setSelectedIndex(++currentTab);
         }
     }
 
@@ -512,7 +495,7 @@ public class MainWindow implements Runnable
                     "Error: There is no document open!");
             return;
         }
-        tabbedPane.setTitleAt(currentTab, currentFileName);
+        shared.tabbedPane.setTitleAt(currentTab, currentFileName);
     }
 
     @Deprecated
@@ -537,10 +520,10 @@ public class MainWindow implements Runnable
         // liveFolder.makeDocument(s);
         // TODO: create directory tree object with 's' then open it
         JLabel TEMP = new JLabel("blah blah blah");
-        tabbedPane.addTab(s, TEMP);// new SourceEditor(currentFileContents,
+        shared.tabbedPane.addTab(s, TEMP);// new SourceEditor(currentFileContents,
                                    // currentDir)); //new SourceEditor("",
                                    // "\\."));
-        tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
+        shared.tabbedPane.setSelectedIndex(shared.tabbedPane.getTabCount() - 1);
     }
 
     // http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
@@ -984,7 +967,7 @@ public class MainWindow implements Runnable
         // tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setPreferredSize(new Dimension(640, 480));
-        panel.add(this.tabbedPane);
+        panel.add(shared.tabbedPane);
         return panel;
     }
 
@@ -1058,8 +1041,8 @@ public class MainWindow implements Runnable
             public TabFlash(int requiredTabIndex)
             {
                 this.requiredTabIndex = requiredTabIndex;
-                this.oldForeground = receiveTabs.getForeground();
-                this.oldBackground = receiveTabs.getBackground();
+                this.oldForeground = shared.receiveTabs.getForeground();
+                this.oldBackground = shared.receiveTabs.getBackground();
                 this.foreground = Color.BLACK;
                 this.background = Color.ORANGE;
             }
@@ -1129,12 +1112,11 @@ public class MainWindow implements Runnable
          * userListModel.add(4, "Person 5");
          */
 
-        userList = new JList(userListModel);
-        userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        shared.userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        userList.setCellRenderer(new MyListCellRenderer());
-        userList.setFixedCellWidth(25);
-        userList.setFixedCellHeight(25);
+        shared.userList.setCellRenderer(new MyListCellRenderer());
+        shared.userList.setFixedCellWidth(25);
+        shared.userList.setFixedCellHeight(25);
 
         /*
          * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =
@@ -1148,19 +1130,19 @@ public class MainWindow implements Runnable
         {
             public void mouseClicked(MouseEvent e)
             {
-                int i = userList.locationToIndex(e.getPoint());
+                int i = shared.userList.locationToIndex(e.getPoint());
                 if (e.getClickCount() == 2)
                 {
                     System.out.println("Double clicked on Item " + i);
                     System.out.println("Double clicked on Item: "
-                            + userList.getModel().getElementAt(i));
-                    client.initiateChat((String) userList.getSelectedValue());
+                            + shared.userList.getModel().getElementAt(i));
+                    client.initiateChat((String) shared.userList.getSelectedValue());
                 }
                 else if ((e.getButton() == MouseEvent.BUTTON3)
-                        && (userList.locationToIndex(e.getPoint()) != -1))
+                        && (shared.userList.locationToIndex(e.getPoint()) != -1))
                 {
                     /* pop up for viewing users profile/stats etc"); */
-                    userList.setSelectedIndex(userList.locationToIndex(e
+                	shared.userList.setSelectedIndex(shared.userList.locationToIndex(e
                             .getPoint()));
 
                     JPopupMenu popupMenu = new JPopupMenu();
@@ -1175,7 +1157,7 @@ public class MainWindow implements Runnable
                             {
                                 public void run()
                                 {
-                                    client.initiateChat((String) userList
+                                    client.initiateChat((String) shared.userList
                                             .getSelectedValue());
                                 }
                             });
@@ -1202,7 +1184,7 @@ public class MainWindow implements Runnable
                                     {
                                         System.out.println(client.profileFound);
                                         client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile "
-                                                + userList.getSelectedValue()
+                                                + shared.userList.getSelectedValue()
                                                 + " notme"));
                                         Thread.sleep(1000);
                                         System.out.println(client.profileFound);
@@ -1240,13 +1222,13 @@ public class MainWindow implements Runnable
                 }
             }
         };
-        userList.addMouseListener(mouseListener);
+        shared.userList.addMouseListener(mouseListener);
 
-        JScrollPane userListScroll = new JScrollPane(userList);
+        JScrollPane userListScroll = new JScrollPane(shared.userList);
         // userListScroll.setBorder(emptyBorder);
 
-        userCount.setText(" " + userListModel.getSize() + " Users Online");
-        panel.add(userCount, BorderLayout.NORTH);
+        shared.userCount.setText(" " + shared.userListModel.getSize() + " Users Online");
+        panel.add( shared.userCount, BorderLayout.NORTH);
         panel.add(userListScroll);
         panel.setMinimumSize(new Dimension(0, 100));
         return panel;
@@ -1271,7 +1253,7 @@ public class MainWindow implements Runnable
         // receiveTabs = new JTabbedPane();
 
         panel.add(new JLabel(" User Chat"), BorderLayout.NORTH);
-        panel.add(receiveTabs/* messageReceiveBoxScroll */, BorderLayout.CENTER);
+        panel.add(shared.receiveTabs, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 800));
 
         /**
@@ -1389,7 +1371,7 @@ public class MainWindow implements Runnable
 
         JPanel panel = new JPanel(new BorderLayout());
         dirSourceEditorSeletionSplit = new JSplitPane(
-                JSplitPane.HORIZONTAL_SPLIT, dirView, EditorDebugSplit);
+                JSplitPane.HORIZONTAL_SPLIT, shared.dirView, EditorDebugSplit);
         // dirSourceEditorSeletionSplit = new
         // JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView,
         // this.sourceEditorSection());
