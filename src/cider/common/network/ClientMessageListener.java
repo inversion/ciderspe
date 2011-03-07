@@ -44,6 +44,10 @@ public class ClientMessageListener implements MessageListener, ActionListener
             client.disconnect();
             System.exit(1);
         }
+        else if (body.equals("yes i am online"))
+        {
+        	client.botIsOnline = true;
+        }
         else if (body.equals("notfound"))
         {
             client.profileFound = false;

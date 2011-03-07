@@ -64,6 +64,7 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.Client;
 import cider.common.processes.Profile;
+import cider.specialcomponents.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
@@ -90,6 +91,7 @@ public class MainWindow implements Runnable
     public JTabbedPane receiveTabs = new JTabbedPane();
     public JPanel receivePanel;
     public JTextArea messageSendBox;
+    public static boolean LockingEnabled = true;
 
     tabFlash tabbing = new tabFlash();
 
@@ -325,11 +327,23 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Compile"))
                 {
-                	compileFile();
+                    compileFile();
                 }
                 else if (action.equals("Run"))
                 {
-                	runFile();
+                    runFile();
+                }
+                else if (action.equals("Syntax Highlighting"))
+                {
+                    FlipHighlighting(0);
+                }
+                else if (action.equals("User Highlighting"))
+                {
+                    FlipHighlighting(1);
+                }
+                else if (action.equals("Line Locking"))
+                {
+                    ChangeLocking();
                 }
             }
         };
@@ -483,52 +497,90 @@ public class MainWindow implements Runnable
                                    // "\\."));
         tabbedPane.setSelectedIndex(tabbedPane.getTabCount() - 1);
     }
-    
-    //http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
-    /*skank way of testing for now, saves file then attempts to run the created .java file- Alex*/
+
+    // http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
+    /*
+     * skank way of testing for now, saves file then attempts to run the created
+     * .java file- Alex
+     */
     void compileFile()
     {
-    	 JFileChooser fc = new JFileChooser();
-    	 File f = new File(client.getCurrentDocument().name  + ".java" );
-    	 fc.setSelectedFile(f);
+        JFileChooser fc = new JFileChooser();
+        File f = new File(client.getCurrentDocument().name + ".java");
+        fc.setSelectedFile(f);
 
-    	 int watdo = fc.showSaveDialog(null);
-    	 if (watdo != JFileChooser.APPROVE_OPTION)
-    	 {
-    		 return;
-    	 }
+        int watdo = fc.showSaveDialog(null);
+        if (watdo != JFileChooser.APPROVE_OPTION)
+        {
+            return;
+        }
 
-    	 currentFileName = fc.getSelectedFile().getName();
-    	 currentDir = fc.getSelectedFile().getAbsolutePath();
+        currentFileName = fc.getSelectedFile().getName();
+        currentDir = fc.getSelectedFile().getAbsolutePath();
 
-    	 try
-    	 {
-             FileWriter fstream = new FileWriter(currentDir);
-             BufferedWriter out = new BufferedWriter(fstream);
-             out.write(client.getCurrentDocument().toString());
-             out.close();
-         }
-         catch (IOException e1)
-         {
-         }
-    	
+        try
+        {
+            FileWriter fstream = new FileWriter(currentDir);
+            BufferedWriter out = new BufferedWriter(fstream);
+            out.write(client.getCurrentDocument().toString());
+            out.close();
+        }
+        catch (IOException e1)
+        {
+        }
 
-         
-    	JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-    	int results = javac.run(System.in, System.out, System.err, currentDir/*"C:\\Users\\Alex\\Desktop\\test.java"*/); //TODO: fails here, can't find the file =(
-    	if (results ==0)
-    	{
+        JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+        int results = javac
+                .run(System.in, System.out, System.err, currentDir/* "C:\\Users\\Alex\\Desktop\\test.java" */); // TODO:
+                                                                                                                // fails
+                                                                                                                // here,
+                                                                                                                // can't
+                                                                                                                // find
+                                                                                                                // the
+                                                                                                                // file
+                                                                                                                // =(
+        if (results == 0)
+        {
             System.out.println("Success");
-    	}
-    	else
-    	{
-    		System.out.println("Fail");
-    	}    	
+        }
+        else
+        {
+            System.out.println("Fail");
+        }
     }
-    
+
     void runFile()
     {
-    	
+
+    }
+
+    private void ChangeLocking()
+    {
+        if (LockingEnabled == true)
+        {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you wish to disable line locking");
+            if (response == 0)
+            {
+                LockingEnabled = false;
+            }
+            else
+                return;
+
+        }
+        else
+        {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you wish to enable line locking?");
+            if (response == 0)
+            {
+                LockingEnabled = true;
+            }
+            else
+                return;
+
+        }
+
     }
 
     private void restartProfile()
@@ -745,6 +797,9 @@ public class MainWindow implements Runnable
         addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
         addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
         addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
+        addMenuItem(menu, "Syntax Highlighting", -1, aL);
+        addMenuItem(menu, "User Highlighting", -1, aL);
+        addMenuItem(menu, "Line Locking", -1, aL);
 
         // menu x
         menu = new JMenu("Run");
@@ -752,7 +807,7 @@ public class MainWindow implements Runnable
 
         addMenuItem(menu, "Compile", KeyEvent.VK_F9, aL);
         addMenuItem(menu, "Run", KeyEvent.VK_F10, aL);
-        
+
         // menu 3
         menu = new JMenu("Profile");
         menuBar.add(menu);
@@ -1101,6 +1156,11 @@ public class MainWindow implements Runnable
         return panel;
     }
 
+    private void FlipHighlighting(int i)
+    {
+        EditorTypingArea.Highlighting = i;
+    }
+
     public JPanel pnlSend()
     {
         JPanel panel = new JPanel(new BorderLayout());
@@ -1211,10 +1271,10 @@ public class MainWindow implements Runnable
     {
         w = new JFrame("CIDEr - Logged in as " + username);
 
-        // FIXME: Work out why events take a long time to appear sometimes
+        // FIXME:
         // client.startClockSynchronisation(w);
 
-        // FIXME: comment this out when using clock synchronisation
+        // Comment this out if clock synchronisation is being used
         client.getFileListFromBot();
 
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

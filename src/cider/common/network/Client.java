@@ -77,6 +77,7 @@ public class Client
     // Chat session with the Bot
     public Chat botChat;
     private ClientMessageListener botChatListener;
+    public boolean botIsOnline = false;
 
     // Multi user chatroom
     private String chatroomName;
@@ -91,7 +92,7 @@ public class Client
     public Profile profile = null;
     public Profile notMyProfile = null;
     public boolean profileFound;
-    public HashMap<String, Color> colours = new HashMap<String, Color>();
+    public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
 
     // FIXME: UNUSED VARIABLE
@@ -136,8 +137,6 @@ public class Client
         this.password = password;
         this.login = log;
 
-        // FIXME
-        // Alex... just... WTF!?!?
         EditorTypingArea.addParent(this);
     }
 
@@ -147,7 +146,7 @@ public class Client
      * 
      * @author Jon, Andrew
      */
-    public void attemptConnection() throws XMPPException
+    public boolean attemptConnection() throws XMPPException
     {
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
@@ -188,9 +187,21 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
+        
+        //Check the bot is online
+        botChat.sendMessage(StringUtils.encodeBase64("are you online mr bot"));
+        try
+        {
+			Thread.sleep(1000);
+			return botIsOnline;
+		}
+        catch (InterruptedException e)
+        {
+			e.printStackTrace();
+			return false;
+		}
     }
-
-    /**
+	/**
      * Allows the bot to be killed remotely by clients.
      * 
      * Used in development for example when someone leaves it running by
