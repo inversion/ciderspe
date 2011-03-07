@@ -20,7 +20,6 @@ import java.util.TimerTask;
 import javax.swing.JPanel;
 
 import cider.client.gui.SourceEditor;
-import cider.client.gui.MainWindow;
 import cider.common.network.Client;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
@@ -62,9 +61,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
     private boolean CommentedLine = false;
     private boolean isKey = false;
     private int CommentStartLoc = -1;
-    public static int Highlighting = 0;
 
     private static Client parent;
+    public static int Highlighting;
 
     @Override
     /**
@@ -135,8 +134,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     KeyWord.add(-1);
                 }
                 p++;
-                CommentFound = false;
-                CommentStartLoc = -1;
             }
             catch (ConcurrentModificationException e)
             {
@@ -187,30 +184,28 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
             if (me.getX() < this.leftMargin)
             {
-            	if (MainWindow.LockingEnabled == true )
-            	{
-	                TypingEventMode tem;
+                TypingEventMode tem;
                 String owner = line.locked(0);
-	
-	                if (length > 0 && line.locked(0))
+
+                if (length > 0 && owner != null
                         && owner.equals(parent.getUsername()))
-	                    tem = TypingEventMode.unlockRegion;
-	                else
-	                    tem = TypingEventMode.lockRegion;
+                    tem = TypingEventMode.unlockRegion;
+                else if (owner == null)
+                    tem = TypingEventMode.lockRegion;
                 else
                     tem = null;
-	
+
                 if (tem != null)
                 {
-	                TypingEvent te = new TypingEvent(System.currentTimeMillis()
-	                        + parent.getClockOffset(), tem, start, length, "",
-	                        this.doc.getOwner());
-	
-	                for (ActionListener al : this.als)
-	                    al.actionPerformed(new ActionEvent(te,
-	                            tem == TypingEventMode.lockRegion ? LINE_LOCKED
-	                                    : LINE_UNLOCKED, "Locking event"));
-            	}
+                    TypingEvent te = new TypingEvent(System.currentTimeMillis()
+                            + parent.getClockOffset(), tem, start, length, "",
+                            parent.getUsername());
+
+                    for (ActionListener al : this.als)
+                        al.actionPerformed(new ActionEvent(te,
+                                tem == TypingEventMode.lockRegion ? LINE_LOCKED
+                                        : LINE_UNLOCKED, "Locking event"));
+                }
             }
             else
             {
@@ -279,46 +274,39 @@ public class EditorTypingArea extends JPanel implements MouseListener
                 str = word.toString();
                 str = str.toLowerCase();
                 length = str.length();
-                if (Highlighting == 0)
+                if ((CommentFound == false)
+                        || ((this.lineNum < CommentStartLoc)
+                                && (CommentStartLoc != -1) && (CommentFound == true)))
                 {
-	                if ((CommentFound == false)
-	                        || ((this.lineNum < CommentStartLoc)
-	                                && (CommentStartLoc != -1) && (CommentFound == true)))
-	                {
-	                    if (str.startsWith("/*") == true)
-	                    {
-	                        CommentFound = true;
-	                        CommentStartLoc = this.lineNum;
-	                        wash(this.colors, Color.RED, i, i + length);
-	                    }
-	                    if (SourceEditor.keywords.contains(str))
-	                    {
-	                        wash(this.colors, Color.BLUE, i, i + length);
-	                        KeyWord.add(i);
-	                        KeyWord.add(i + length);
-	                    }
-	                    if (isParsableToNum(str) == true)
-	                        customColor = new Color(0, 100, 0);
-	                    wash(this.colors, customColor, i, i + length);
-	                    if (str.startsWith("//") == true)
-	                    {
-	                        wash(this.colors, Color.RED, i, i + length);
-	                        CommentedLine = true;
-	                    }
-	                    if (CommentedLine == true)
-	                        wash(this.colors, Color.RED, i, i + length);
-	                }
-	                else
-	                {
-	                    wash(this.colors, Color.RED, i, i + length);
-	                    if (str.endsWith("*/") == true)
-	                        CommentFound = false;
-	                }
+                    if (str.startsWith("/*") == true)
+                    {
+                        CommentFound = true;
+                        CommentStartLoc = this.lineNum;
+                        wash(this.colors, Color.RED, i, i + length);
+                    }
+                    if (SourceEditor.keywords.contains(str))
+                    {
+                        wash(this.colors, Color.BLUE, i, i + length);
+                        KeyWord.add(i);
+                        KeyWord.add(i + length);
+                    }
+                    if (isParsableToNum(str) == true)
+                        customColor = new Color(0, 100, 0);
+                    wash(this.colors, customColor, i, i + length);
+                    if (str.startsWith("//") == true)
+                    {
+                        wash(this.colors, Color.RED, i, i + length);
+                        CommentedLine = true;
+                    }
+                    if (CommentedLine == true)
+                        wash(this.colors, Color.RED, i, i + length);
                 }
-                if (Highlighting == 1)
+                else
                 {
-                	userwash(this.colors, this.lineNum, i, i + length);
-                }                
+                    wash(this.colors, Color.RED, i, i + length);
+                    if (str.endsWith("*/") == true)
+                        CommentFound = false;
+                }
                 i += length + 1;
 
             }
@@ -456,23 +444,22 @@ public class EditorTypingArea extends JPanel implements MouseListener
         for (int i = start; i < end; i++)
             target[i] = color;
     }
-    
 
     public void userwash(Color[] target, int LineNo, int start, int end)
     {
-    	String uname;
-    	Color usercolor;
+        String uname;
+        Color usercolor;
         start = start < 0 ? 0 : start;
         end = end < target.length ? end : target.length;
-        
+
         for (int i = start; i < end; i++)
-        {	
-        	/* TODO
-        	 * text owned by offline users who have not had their 
-        	 * profile downloaded from the bot will be black/blank
-        	 */
-        	uname = lines.get(LineNo-1).str.get(i).owner;
-        	System.out.println(uname);
+        {
+            /*
+             * TODO text owned by offline users who have not had their profile
+             * downloaded from the bot will be black/blank
+             */
+            uname = lines.get(LineNo - 1).str.get(i).owner;
+            System.out.println(uname);
             usercolor = Client.colours.get(uname);
             target[i] = usercolor;
         }
