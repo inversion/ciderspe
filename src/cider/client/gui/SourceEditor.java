@@ -286,17 +286,19 @@ public class SourceEditor extends JPanel
                             case '\u007F':
                             {
                                 /* int CurLine;
-                                int CurxLine;
-                                CurLine = eta.GetCurLine() - 1;
-                                CurxLine = eta.GetCurxLen(); */
+                                 * int CurxLine;
+                                 * CurLine = eta.GetCurLine() - 1;
+                                 * CurxLine = eta.GetCurxLen(); */
 								if (eta.getCaretPosition() >= -1)
                                 {
-                                	/* if ((eta.lines.size() == CurLine) && (eta.lines.get(CurLine).str.length() <= CurxLine))
-                                	 {
-                                		TypingEventList.DeleteType = 0;
-	                                    mode = TypingEventMode.backspace;
-	                                    chr = " ";
-                                	 } else { */
+                                	/* Needs CurxLine working properly
+                                	 * 
+                                	 * if ((eta.lines.size() == CurLine) && (eta.lines.get(CurLine).str.length() <= CurxLine))
+                                	 * {
+                                	 * TypingEventList.DeleteType = 0;
+                                	 * mode = TypingEventMode.backspace;
+                                	 *  chr = " ";
+                                	 *  } else { */
                                 		TypingEventList.DeleteType = 1;
 	                                    mode = TypingEventMode.backspace;
 	                                    chr = " ";
