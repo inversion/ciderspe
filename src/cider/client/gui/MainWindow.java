@@ -365,7 +365,24 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Line Locking"))
                 {
-                    ChangeLocking();
+                	ChangeLocking();
+                }
+                else if (action.equals("Line Home"))
+                {
+                	//eta.moveHome();
+                }
+                else if (action.equals("Line End"))
+                {
+                	//eta.moveEnd();
+                }
+                else if (action.equals("Document Home"))
+                {
+                	//eta.moveDocHome();
+                }
+                else if (action.equals("Document End"))
+                {
+                	//client.openTabs.get(this.getPathToSourceDocument(client.getCurrentDocument().name), 1));
+                	//EditorTypingArea.moveDocEnd();
                 }
             }
         };
