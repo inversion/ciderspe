@@ -216,9 +216,10 @@ public class SourceDocument implements ICodeLocation
         if (typingEvent.mode == TypingEventMode.lockRegion)
         {
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
-            for (TypingEvent te : tel.events())
-                if (this.insideRegion(typingEvent, te))
-                    te.lockingGroup = typingEvent.owner;
+
+            for (int i = 0; i < tel.length(); i++)
+                if (this.insideRegion(typingEvent, i))
+                    tel.get(i).lockingGroup = typingEvent.owner;
             // te.locked = te.locked || this.insideRegion(typingEvent, te);
             this.typingEvents.add(typingEvent);
             return true;
@@ -226,10 +227,10 @@ public class SourceDocument implements ICodeLocation
         else if (typingEvent.mode == TypingEventMode.unlockRegion)
         {
             TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
-            for (TypingEvent te : tel.events())
-                if (te.owner.equals(typingEvent.owner)
-                        && this.insideRegion(typingEvent, te))
-                    te.lockingGroup = null;
+            for (int i = 0; i < tel.length(); i++)
+                if (tel.get(i).owner.equals(typingEvent.owner)
+                        && this.insideRegion(typingEvent, i))
+                    tel.get(i).lockingGroup = null;
             // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
             this.typingEvents.add(typingEvent);
             return true;
@@ -264,10 +265,10 @@ public class SourceDocument implements ICodeLocation
             this.typingEvents.poll();
     }
 
-    private boolean insideRegion(TypingEvent region, TypingEvent te)
+    private boolean insideRegion(TypingEvent region, int position)
     {
-        return te.position >= region.position
-                && te.position <= region.position + region.length;
+        return position >= region.position
+                && position <= region.position + region.length - 1;
     }
 
     public void putEvents(Collection<TypingEvent> values)

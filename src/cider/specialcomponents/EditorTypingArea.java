@@ -98,7 +98,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
                     // Paints locking regions
                     for (int i = 0; i < line.str.length(); i++)
-                        if ((owner = line.locked(i)) != null)
+                        if ((owner = line.locked(i)) != null
+                                || (i > 1 && (owner = line.locked(i - 1)) != null))
                             line.highlight(g, i, parent.colours.get(owner));
 
                     // If the caret is placed just after a newline
