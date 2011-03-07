@@ -632,14 +632,15 @@ public class MainWindow implements Runnable
 
         JFrame profileFrame = new JFrame("My Profile- " + myProfile.uname);
         Container content = profileFrame.getContentPane();
-        content.setLayout(new GridLayout(10, 2));
+        content.setLayout(new GridLayout(4, 2));
+        profileFrame.setUndecorated(true);
 
         URL x = this.getClass().getResource("icon.png");
         ImageIcon image = new ImageIcon(x);
         Image test = image.getImage();
         profileFrame.setIconImage(test);
 
-        profileFrame.setBounds(100, 100, 400, 350);
+        profileFrame.setBounds(100, 100, 300, 200);
         profileFrame.setResizable(false);
         // profileFrame.pack();
         profileFrame.isDisplayable();
@@ -656,8 +657,8 @@ public class MainWindow implements Runnable
         chars.setVerticalAlignment(JLabel.TOP);
         content.add(chars);
 
-        Time t = new Time(myProfile.timeSpent);
-        System.out.println("TS = " + myProfile.timeSpent);
+        String t = myProfile.getTimeString();
+        System.out.println("TS = " + myProfile.getTimeString());
         JLabel time = new JLabel("Total time spent: " + t);
         time.setHorizontalAlignment(JLabel.LEFT);
         time.setVerticalAlignment(JLabel.TOP);
