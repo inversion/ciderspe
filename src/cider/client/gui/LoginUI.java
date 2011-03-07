@@ -3,9 +3,13 @@ package cider.client.gui;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -68,6 +72,7 @@ public class LoginUI
 
     public void displayLogin()
     {
+    	splashScreen();
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
@@ -248,7 +253,27 @@ public class LoginUI
         login.setVisible(true);
     }
 
-    private void fetchLogin()
+    private void splashScreen() 
+    {
+    	Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+		JFrame f = new JFrame();
+		f.setBounds((dim.width - 800)/2, (dim.height - 600)/2,800,600);
+		f.setUndecorated(true);
+		f.setVisible(true);
+		
+		Container layout = f.getContentPane();
+		layout.setLayout(new GridLayout(5, 1));
+		
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		f.dispose();
+	}
+
+	private void fetchLogin()
     {
         /* Checks for login.txt file and fills in the details if found- Alex */
         try
@@ -313,7 +338,8 @@ public class LoginUI
                 System.out.println("Deletion failed: " + fileName);
             }
         }
-        if (showConnectBox())
+        showConnectBox();
+        if (tryConnect())
             return true;
         else
         {
@@ -371,7 +397,7 @@ public class LoginUI
     }
 
 	@SuppressWarnings("static-access")
-    boolean showConnectBox()
+    void showConnectBox()
     {   	
         login.setVisible(false);
 
@@ -380,6 +406,7 @@ public class LoginUI
         connecting.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
         connecting.setTitle("CIDEr - Connecting");
         connecting.setResizable(false);
+        connecting.toFront();
 
         JPanel panel = new JPanel();
         /*
@@ -412,18 +439,13 @@ public class LoginUI
         connecting.setLocation(x - connecting.getWidth() / 2,
                 y - connecting.getHeight() / 3);
         connecting.setVisible(true);
-
-        // Thread thisThread = Thread.currentThread(); //TODO- Alex fail, tried
-        // to simulate waiting but it kills the animation :D
-        // try
-        // {
-        // thisThread.sleep(2000);
-        // }
-        // catch (InterruptedException e)
-        // {
-        // e.printStackTrace();
-        // }
-        if (connect())
+        connecting.repaint();
+        //connecting.setUndecorated(true);
+    }
+	
+	boolean tryConnect()
+	{
+		if (connect())
             return true;
         else
         {
@@ -432,7 +454,7 @@ public class LoginUI
                     errmsg);
             return false;
         }
-    }
+	}
 
     boolean connect()
     {
