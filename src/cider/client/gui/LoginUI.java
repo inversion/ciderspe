@@ -22,10 +22,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -35,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -69,6 +72,9 @@ public class LoginUI
     JCheckBox chkRemember;
     
     String errmsg;
+
+	public DefaultListModel userListModel;
+	public JLabel userTotal;
 
     public void displayLogin()
     {
@@ -466,12 +472,30 @@ public class LoginUI
         Client client;
         try
         {
+        	// Create objects that might be updated before the Main Window opens
+        	// TODO: Create these only once regardless of attempt no.s
+        	DefaultListModel userListModel = new DefaultListModel();
+        	JLabel userTotal = new JLabel();
+        	JTabbedPane tabbedPane = new JTabbedPane();
+        	DirectoryViewComponent dirView = new DirectoryViewComponent();
+        	JTabbedPane receiveTabs = new JTabbedPane();
+        	Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+        	
             // TODO: Recommended to zero bytes of password after use
             // TODO: Check that fields aren't null/validation stuff
-            client = new Client(txtUsername.getText(), new String(
-                    txtPassword.getPassword()), txtHost.getText(),
+            client = new Client(txtUsername.getText(), 
+            		new String(txtPassword.getPassword()), 
+            		txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), this);
+                    txtServiceName.getText(), 
+                    this, 
+                    userListModel, 
+                    userTotal, 
+                    dirView, 
+                    tabbedPane, 
+                    openTabs, 
+                    receiveTabs
+                    );
             if (!client.attemptConnection())
             {
             	errmsg = "Bot is not online";
@@ -480,7 +504,13 @@ public class LoginUI
             program = new MainWindow(txtUsername.getText(),
             		new String(txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), client, this);
+                    txtServiceName.getText(), client, this,
+                    userListModel,
+                    userTotal,
+                    tabbedPane,
+                    dirView, 
+                    openTabs,
+                    receiveTabs);
 
             SwingUtilities.invokeLater(program);
         }
