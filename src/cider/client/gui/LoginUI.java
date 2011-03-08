@@ -22,12 +22,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Hashtable;
+import java.util.AbstractSequentialList;
+import java.util.Collection;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -37,7 +38,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -67,15 +67,12 @@ public class LoginUI
     JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
-
+    
     MainWindow program;
 
     JCheckBox chkRemember;
     
     String errmsg;
-
-	public DefaultListModel userListModel;
-	public JLabel userTotal;
 
     public void displayLogin()
     {
@@ -136,7 +133,8 @@ public class LoginUI
         // TODO: Make this numeric?
         txtPort = new JTextField(13);
         txtPort.setText(DEFAULT_PORT);
-
+            
+        
         txtUsername.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -280,9 +278,13 @@ public class LoginUI
 		f.dispose();
 	}
 
+    /**
+     * Checks for login.txt file and fills in the details if found
+     * 
+     * @author Alex
+     */
 	private void fetchLogin()
     {
-        /* Checks for login.txt file and fills in the details if found- Alex */
         try
         {
             FileReader fstream = new FileReader(currentDir + "login.txt");
