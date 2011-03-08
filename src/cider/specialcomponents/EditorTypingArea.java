@@ -120,7 +120,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     for (int i = 0; i < line.str.length(); i++)
                         if ((owner = line.locked(i)) != null
                                 || (i > 1 && (owner = line.locked(i - 1)) != null))
-                            line.highlight(g, i, parent.colours.get(owner));
+                            line.highlight(g, i,
+                                    glass(parent.colours.get(owner)));
 
                     // If the caret is placed just after a newline
                     // that line might not actually have any text in it
@@ -165,6 +166,12 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int height = lineSpacing * lines.size();
         this.setPreferredSize(new Dimension(width, height));
         this.invalidate();
+    }
+
+    private static Color glass(Color color)
+    {
+        return color == null ? null : new Color(color.getRed(),
+                color.getGreen(), color.getBlue(), color.getAlpha() / 3);
     }
 
     public void paintWaitingSign(Graphics g)
