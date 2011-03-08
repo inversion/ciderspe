@@ -583,7 +583,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public void setCommentedLine(boolean commentedLine)
     {
-        commentedLine = commentedLine;
+        this.commentedLine = commentedLine;
     }
 
     public boolean isCommentedLine()
