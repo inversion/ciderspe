@@ -12,7 +12,7 @@ import cider.common.processes.TypingEventList;
  * Represents a line of text on the screen. Lists of these objects are stored
  * and their paint methods called whenever it is time to update the graphics
  * 
- * @author Lawrence
+ * @author Lawrence, Miles and Alex
  * 
  */
 public class ETALine
@@ -71,7 +71,8 @@ public class ETALine
             if (EditorTypingArea.Highlighting == 0)
                 if ((this.eta.isCommentFound() == false)
                         || ((this.lineNum < this.eta.getCommentStartLoc())
-                                && (this.eta.getCommentStartLoc() != -1) && (this.eta.isCommentFound() == true)))
+                                && (this.eta.getCommentStartLoc() != -1) && (this.eta
+                                .isCommentFound() == true)))
                 {
                     if (str.startsWith("/*") == true)
                     {
