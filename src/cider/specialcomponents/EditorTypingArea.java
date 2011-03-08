@@ -32,7 +32,7 @@ import cider.common.processes.TypingEventMode;
  * alternative to Swing text objects which do not offer enough flexibility (in
  * particular with the way the caret is controlled and text formatting)
  * 
- * @author Lawrence
+ * @author Lawrence, Miles and Alex
  * @param fontSize
  *            the size of the font in the editortypingarea
  */
