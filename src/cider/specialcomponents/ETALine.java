@@ -48,11 +48,8 @@ public class ETALine
         this.colors = new Color[this.str.length()];
     }
 
-    /**
-     * ------------------ >>> LOOK HERE <<< ------------------
-     * 
-     * Syntax Highlighting: I've provided an example here to help. You might
-     * want to store the colours in a hashtable or something.
+    /*
+     * Syntax Highlighting
      */
 
     public void characterColors()
@@ -210,33 +207,6 @@ public class ETALine
         g.fillRect(x, y - EditorTypingArea.lineSpacing,
                 EditorTypingArea.characterSpacing, EditorTypingArea.lineSpacing); // TODO
         // here
-        // Alex
-    }
-
-    /**
-     * paints a caret on this line at local character number i
-     * 
-     * @param g
-     * @param i
-     */
-    public void paintCaret(Graphics g, int i)
-    {
-        g.setColor(EditorTypingArea.parent.colours.get(EditorTypingArea.parent
-                .getUsername())/* Color.BLUE */);
-        int x = ((i + 1) * EditorTypingArea.characterSpacing)
-                + EditorTypingArea.leftMargin;
-        int y = this.y + 5;
-        g.drawLine(x, y - EditorTypingArea.lineSpacing, x, y); // TODO here Alex
-    }
-
-    public void paintCaretOnNewline(Graphics g)
-    {
-        g.setColor(EditorTypingArea.parent.colours.get(EditorTypingArea.parent
-                .getUsername())/* Color.BLUE */);
-        int y = this.y + 5;
-        g.drawLine(EditorTypingArea.leftMargin, y
-                - EditorTypingArea.lineSpacing, EditorTypingArea.leftMargin, y); // TODO
-                                                                                 // here
         // Alex
     }
 
