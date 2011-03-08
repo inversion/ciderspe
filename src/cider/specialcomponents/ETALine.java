@@ -171,7 +171,7 @@ public class ETALine
 
         this.eta.setIsKey(false);
 
-        g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
+        g.setColor(this.colors[i] != null ? this.colors[i] : Color.WHITE);
 
         for (int j = 0; j < this.eta.getKeyWord().size(); j = j + 2)
         {
