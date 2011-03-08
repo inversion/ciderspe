@@ -46,7 +46,7 @@ public class SourceDocument implements ICodeLocation
      * rigorous test.
      * 
      * @author Lawrence
-     * @return
+     * @return test results
      */
     public static String test()
     {
@@ -55,6 +55,13 @@ public class SourceDocument implements ICodeLocation
         return testLog;
     }
 
+    /**
+     * This does some randomised testing of document editing and document
+     * simplification
+     * 
+     * @author Lawrence
+     * @return test results
+     */
     protected static String shuffleAndSimplificationTest()
     {
         String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
@@ -79,7 +86,7 @@ public class SourceDocument implements ICodeLocation
         SourceDocument testDoc = new SourceDocument("test owner",
                 "testdoc.SourceDocument");
         for (TypingEvent event : tes)
-            testDoc.putEvent(event);
+            testDoc.addEvent(event);
 
         String result = testDoc.toString();
         String testResult = expected.equals(result) ? "pass\n"
@@ -98,7 +105,7 @@ public class SourceDocument implements ICodeLocation
                 TypingEventMode.insert, "na"));
 
         for (TypingEvent event : tes)
-            testDoc.putEvent(event);
+            testDoc.addEvent(event);
 
         result = testDoc.toString();
         testResult += expected.equals(result) ? "pass"
@@ -109,6 +116,12 @@ public class SourceDocument implements ICodeLocation
         return testResult;
     }
 
+    /**
+     * Test for any problems with very long documents
+     * 
+     * @author Lawrence
+     * @return test results
+     */
     protected static String lengthTest()
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
@@ -130,12 +143,20 @@ public class SourceDocument implements ICodeLocation
         SourceDocument testDoc = new SourceDocument("test owner",
                 "testDoc.SourceDocument");
         for (TypingEvent event : tes)
-            testDoc.putEvent(event);
+            testDoc.addEvent(event);
         String result = testDoc.toString();
         return (result.startsWith("<") && result.endsWith(">")) ? "pass"
                 : "fail: did not pass the length test.";
     }
 
+    /**
+     * Generates shuffled events for test routines
+     * 
+     * @author Lawrence
+     * @param typingEvents
+     * @param seed
+     * @return the shuffled typingEvents
+     */
     protected static ArrayList<TypingEvent> shuffledEvents(
             ArrayList<TypingEvent> typingEvents, long seed)
     {
@@ -155,16 +176,46 @@ public class SourceDocument implements ICodeLocation
         return tes;
     }
 
+    /**
+     * 
+     * startTime + stepSize * i
+     * 
+     * @author Lawrence
+     */
     public static long t(long startTime, long stepSize, int i)
     {
         return startTime + stepSize * i;
     }
 
+    /**
+     * works out by how much time the events could be seperated
+     * 
+     * @param startTime
+     * @param endTime
+     * @param n
+     *            number of events
+     * @author Lawrence
+     * @return
+     */
     public static long stepSize(long startTime, long endTime, int n)
     {
         return Math.max((endTime - startTime) / n, 1);
     }
 
+    /**
+     * generates events for testing routines
+     * 
+     * @param startTime
+     * @param endTime
+     * @param startingPosition
+     *            of caret
+     * @param text
+     * @param mode
+     *            typing mode that these events should be generated under
+     * @param owner
+     * @author Lawrence
+     * @return
+     */
     public static ArrayList<TypingEvent> generateEvents(long startTime,
             long endTime, int startingPosition, String text,
             TypingEventMode mode, String owner)
@@ -193,7 +244,16 @@ public class SourceDocument implements ICodeLocation
         return tes;
     }
 
-    public void putEvent(TypingEvent typingEvent)
+    /**
+     * adds an event to the priority queue if it does not already exist. When a
+     * locking/unlocking event is passed through here the end result of the
+     * document is scanned for events within the region described by the event
+     * position and length.
+     * 
+     * @author Lawrence
+     * @param typingEvent
+     */
+    public void addEvent(TypingEvent typingEvent)
     {
         // TODO: it may be that a more efficient way of doing this can be found
         TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
@@ -207,12 +267,27 @@ public class SourceDocument implements ICodeLocation
         }
     }
 
+    /**
+     * For locking events only
+     * 
+     * @author Lawrence
+     * @param lockingEvents
+     */
     public void addLockingEvents(ArrayList<TypingEvent> lockingEvents)
     {
         for (TypingEvent le : lockingEvents)
             this.lockingEvent(le);
     }
 
+    /**
+     * When a locking/unlocking event is passed through here the end result of
+     * the document is scanned for events within the region described by the
+     * event position and length.
+     * 
+     * @author Lawrence
+     * @param typingEvent
+     * @return true if it was a locking or unlocking event
+     */
     private boolean lockingEvent(TypingEvent typingEvent)
     {
         if (typingEvent.mode == TypingEventMode.lockRegion)
@@ -249,6 +324,15 @@ public class SourceDocument implements ICodeLocation
             return false;
     }
 
+    /**
+     * Culls all events that are not making a visual impact on the end result of
+     * the document and re-assigns the event times of the remaining events to
+     * keep them in order.
+     * 
+     * @author Lawrence
+     * @param endTime
+     *            - the point where simplification stops
+     */
     public void simplify(long endTime)
     {
         TypingEventList tel = this.playOutEvents(endTime);
@@ -257,6 +341,16 @@ public class SourceDocument implements ICodeLocation
         this.typingEvents.addAll(tel.events());
     }
 
+    /**
+     * Returns a document where all events that are not making a visual impact
+     * on the end result of the document have been culled and event times of the
+     * remaining events are re assigned to keep them in order.
+     * 
+     * @author Lawrence
+     * @param endTime
+     *            - the time where simplification stops
+     * @return
+     */
     public SourceDocument simplified(long endTime)
     {
         SourceDocument doc = new SourceDocument(this.owner, this.name,
@@ -268,6 +362,13 @@ public class SourceDocument implements ICodeLocation
         return doc;
     }
 
+    /**
+     * clears any event up to the time specified
+     * 
+     * @author Lawrence
+     * @param endTime
+     *            - the time where clearing stops
+     */
     public void clearUpTo(long endTime)
     {
         while (this.typingEvents.size() > 0
@@ -275,6 +376,19 @@ public class SourceDocument implements ICodeLocation
             this.typingEvents.poll();
     }
 
+    /**
+     * Uses a typing event to specify a region starting from position of length
+     * typingEvent.length.
+     * 
+     * @author Lawrence
+     * @param region
+     *            - typing event which represents a region of the document
+     *            (usually a locking or unlocking event)
+     * @param position
+     * @param extendRight
+     *            extends the region right by that many spaces
+     * @return true if the position was in the region
+     */
     private boolean insideRegion(TypingEvent region, int position,
             int extendRight)
     {
@@ -283,12 +397,30 @@ public class SourceDocument implements ICodeLocation
                         + extendRight;
     }
 
-    public void putEvents(Collection<TypingEvent> values)
+    /**
+     * adds a collection of events to the priority queue if they do not already
+     * exist. When a locking/unlocking event is passed through here the end
+     * result of the document is scanned for events within the region described
+     * by the event position and length.
+     * 
+     * @author Lawrence
+     * @param values
+     *            - typing events to be added
+     */
+    public void addEvents(Collection<TypingEvent> values)
     {
         for (TypingEvent typingEvent : values)
-            this.putEvent(typingEvent);
+            this.addEvent(typingEvent);
     }
 
+    /**
+     * Simulates the events from the priority queue until the time specified.
+     * 
+     * @author Lawrence
+     * @param endTime
+     * @return a TypingEventList which is all the events left over at that point
+     *         in time which have a visible impact on the document.
+     */
     public TypingEventList playOutEvents(Long endTime)
     {
         // PositionKey key;
@@ -355,27 +487,63 @@ public class SourceDocument implements ICodeLocation
         return string;
     }
 
+    /**
+     * Whoever owns this document. If a new document is created via simplified
+     * then it belongs to the same owner.
+     * 
+     * @author Lawrence
+     * @return
+     */
     public String getOwner()
     {
         return this.owner;
     }
 
+    /**
+     * Convenience method which returns toString() of a typing event list.
+     * 
+     * @author Lawrence
+     * @param tel
+     *            TypingEventList to be converted to a String.
+     * @return
+     */
     protected static String treeToString(TypingEventList tel)
     {
         return tel.toString();
     }
 
     @Override
+    /**
+     * Returns a string which represents the document at the latest available time,
+     * possibly to be displayed to the user or saved to a file.
+     * 
+     */
     public String toString()
     {
         return treeToString(this.playOutEvents(Long.MAX_VALUE));
     }
 
+    /**
+     * Convenience method which returns a String that represents the document at
+     * the time specified, possibly to be displayed to the user or saved to a
+     * file.
+     * 
+     * @author Lawrence
+     * @param endTime
+     * @return
+     */
     public String timeTravel(Long endTime)
     {
         return treeToString(this.playOutEvents(endTime));
     }
 
+    /**
+     * Compares event priority based on their time of creation, used by the
+     * priority queue
+     * 
+     * @author Lawrence
+     * 
+     */
     class EventComparer implements Comparator<TypingEvent>
     {
         public int compare(TypingEvent e1, TypingEvent e2)
@@ -395,7 +563,7 @@ public class SourceDocument implements ICodeLocation
         while (!typingEvents.isEmpty())
         {
             TypingEvent typingEvent = typingEvents.poll();
-            this.putEvents(typingEvent.explode());
+            this.addEvents(typingEvent.explode());
         }
     }
 
