@@ -253,7 +253,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
             }
             else
             {
-                this.caretPosition = start + this.xToColumnNumber(me.getX());
+                int colNumber = this.xToColumnNumber(me.getX());
+                if (colNumber > length)
+                    colNumber = length;
+                this.caretPosition = start + colNumber;
             }
         }
 
