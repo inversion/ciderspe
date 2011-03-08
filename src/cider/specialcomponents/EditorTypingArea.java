@@ -40,7 +40,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
 {
     private static final long serialVersionUID = 1L;
     private TypingEventList str = new TypingEventList();
-    private int caretPosition = -1;
+    private int caretPosition = 0;
     // private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private boolean caretFlashing = true;
