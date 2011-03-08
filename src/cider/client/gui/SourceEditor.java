@@ -359,7 +359,7 @@ public class SourceEditor extends JScrollPane
                             eta.getSourceDocument().push(internal);
                             eta.updateText();
                             eta.scrollRectToVisible(new Rectangle(0,
-                                    eta.currentLine.y, eta.getWidth(), eta
+                                    eta.getCurrentLine().y, eta.getWidth(), eta
                                             .getHeight()));
                             client.broadcastTypingEvents(outgoingEvents, path);
 
