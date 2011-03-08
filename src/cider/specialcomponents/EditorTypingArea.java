@@ -20,7 +20,6 @@ import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
-import cider.client.gui.SourceEditor;
 import cider.common.network.Client;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
@@ -34,37 +33,39 @@ import cider.common.processes.TypingEventMode;
  * particular with the way the caret is controlled and text formatting)
  * 
  * @author Lawrence
- * @param fontSize the size of the font in the editortypingarea
+ * @param fontSize
+ *            the size of the font in the editortypingarea
  */
 public class EditorTypingArea extends JPanel implements MouseListener
-{	
+{
     private static final long serialVersionUID = 1L;
     private TypingEventList str = new TypingEventList();
     private int caretPosition = -1;
-    private Font font = new Font("Monospaced", Font.PLAIN, fontSize);
-    private Font fontbold = new Font("Monospaced", Font.BOLD, fontSize);
     // private ICodeLocation codeLocation = null;
     private SourceDocument doc = null;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
-    public ArrayList<ETALine> lines = new ArrayList<ETALine>();
+    private ArrayList<ETALine> lines = new ArrayList<ETALine>();
     private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
     private ArrayList<Integer> KeyWord = new ArrayList<Integer>();
-    public ETALine currentLine = null;
+    private ETALine currentLine = null;
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
-    private static int fontSize = 14;
-    private int leftMargin = fontSize*2;
-    private static final int lineSpacing = fontSize+1;
-    private static final int characterSpacing = fontSize/2+1;
+    public static final int fontSize = 14;
+    public static final Font fontbold = new Font("Monospaced", Font.BOLD,
+            fontSize);
+    public static final Font font = new Font("Monospaced", Font.PLAIN, fontSize);
+    public static final int leftMargin = fontSize * 2;
+    public static final int lineSpacing = fontSize + 1;
+    public static final int characterSpacing = fontSize / 2 + 1;
     private boolean waiting = true;
-    private boolean CommentFound = false;
-    private boolean CommentedLine = false;
+    private boolean commentFound = false;
+    private boolean commentedLine = false;
     private boolean isKey = false;
-    private int CommentStartLoc = -1;
+    private int commentStartLoc = -1;
 
-    private static Client parent;
+    static Client parent;
     public static int Highlighting;
 
     /**
@@ -125,11 +126,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
                     // that line might not actually have any text in it
                     if (!caretFound && p == this.caretPosition - ln + 1)
                     {
-                        this.currentLine = line;
+                        this.setCurrentLine(line);
                         this.currentColNum = 0;
                         caretFound = true;
-                        this.currentLine.highlightMargin(g);
-                        this.currentLine.paintCaretOnNewline(g);
+                        this.getCurrentLine().highlightMargin(g);
+                        this.getCurrentLine().paintCaretOnNewline(g);
                     }
 
                     // Paints the lines of text and the caret if it has not
@@ -139,7 +140,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         if (!caretFound && p == this.caretPosition - ln)
                         {
                             line.paintCaret(g, i);
-                            currentLine = line;
+                            setCurrentLine(line);
                             currentColNum = i + 1;
                             caretFound = true;
                             line.highlightMargin(g);
@@ -148,10 +149,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         line.paintCharacter(g, i);
                     }
                     ln++;
-                    CommentedLine = false;
-                    KeyWord.clear();
-                    KeyWord.add(-1);
-                    KeyWord.add(-1);
+                    setCommentedLine(false);
+                    getKeyWord().clear();
+                    getKeyWord().add(-1);
+                    getKeyWord().add(-1);
                 }
                 p++;
             }
@@ -187,7 +188,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public int xToColumnNumber(int x)
     {
-        return (int) ((x - this.leftMargin) / (double) characterSpacing);
+        return (int) ((x - leftMargin) / (double) characterSpacing);
     }
 
     @Override
@@ -206,7 +207,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             int start = line.start + ln - 2;
             int length = line.str.length();
 
-            if (me.getX() < this.leftMargin && length > 1)
+            if (me.getX() < leftMargin && length > 1)
             {
                 TypingEventMode tem;
                 String owner = line.locked(0);
@@ -238,258 +239,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
         }
 
         this.updateUI();
-    }
-
-    /**
-     * Represents a line of text on the screen. Lists of these objects are
-     * stored and their paint methods called whenever it is time to update the
-     * graphics
-     * 
-     * @author Lawrence
-     * 
-     */
-    public class ETALine
-    {
-        public TypingEventList str;
-        public int y;
-        public int lineNum;
-        public int start;
-        Color[] colors;
-
-        /**
-         * 
-         * @param tel
-         *            the list of events in order that they should be printed on
-         *            the screen from lift to right
-         * @param y
-         *            the number of pixels down the screen
-         * @param lineNum
-         *            the line number
-         * @param start
-         *            the caret position of the first character of this line
-         */
-        public ETALine(TypingEventList tel, int y, int lineNum, int start)
-        {
-            this.start = start;
-            this.lineNum = lineNum;
-            this.y = y;
-            this.str = tel;
-            this.colors = new Color[this.str.length()];
-        }
-
-        /**
-         * ------------------ >>> LOOK HERE <<< ------------------
-         * 
-         * Syntax Highlighting: I've provided an example here to help. You might
-         * want to store the colours in a hashtable or something.
-         */
-
-        public void characterColors()
-        {
-            LinkedList<TypingEventList> words = this.str
-                    .splitWords(new String[] { " ", "(", ")", ";", "\t", ":",
-                            "#", "{", "}" });
-            int i = 0;
-            String str;
-            int length;
-            Color customColor = null;
-            for (TypingEventList word : words)
-            {
-                str = word.toString();
-                str = str.toLowerCase();
-                length = str.length();
-                if (Highlighting == 0)
-                    if ((CommentFound == false)
-                            || ((this.lineNum < CommentStartLoc)
-                                    && (CommentStartLoc != -1) && (CommentFound == true)))
-                    {
-                        if (str.startsWith("/*") == true)
-                        {
-                            CommentFound = true;
-                            CommentStartLoc = this.lineNum;
-                            wash(this.colors, Color.RED, i, i + length);
-                        }
-                        if (SourceEditor.keywords.contains(str))
-                        {
-                            wash(this.colors, Color.BLUE, i, i + length);
-                            KeyWord.add(i);
-                            KeyWord.add(i + length);
-                        }
-                        if (isParsableToNum(str) == true)
-                            customColor = new Color(0, 100, 0);
-                        wash(this.colors, customColor, i, i + length);
-                        if (str.startsWith("//") == true)
-                        {
-                            wash(this.colors, Color.RED, i, i + length);
-                            CommentedLine = true;
-                        }
-                        if (CommentedLine == true)
-                            wash(this.colors, Color.RED, i, i + length);
-                    }
-                    else
-                    {
-                        wash(this.colors, Color.RED, i, i + length);
-                        if (str.endsWith("*/") == true)
-                            CommentFound = false;
-                    }
-                if (Highlighting == 1)
-                {
-                    userwash(this.colors, this.lineNum, i, i + length);
-                }
-                i += length + 1;
-
-            }
-        }
-
-        /**
-         * Draws around the current line number that the user is currently on
-         * 
-         * @param g
-         */
-        public void highlightMargin(Graphics g)
-        {
-            g.setColor(parent.colours.get(parent.getUsername()));
-            g.fillRoundRect(3, this.y - lineSpacing+2, leftMargin - 8, lineSpacing+2, 3, 3); //TODO: here Alex
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawRoundRect(3, this.y - lineSpacing+2, leftMargin - 8, lineSpacing+2, 3, 3);
-            paintMargin(g);
-        }
-
-        public boolean isParsableToNum(String str)
-        {
-            try
-            {
-                Float.parseFloat(str);
-                return true;
-            }
-            catch (NumberFormatException nfe)
-            {
-                return false;
-            }
-        }
-
-        /**
-         * paints the line number to the left of this line
-         * 
-         * @param g
-         */
-        public void paintMargin(Graphics g)
-        {
-            g.setColor(Color.GRAY);
-            g.drawString("" + this.lineNum, 5, this.y);
-        }
-
-        /**
-         * paints a character of this line, loop through i to draw the whole
-         * string
-         * 
-         * @param g
-         * @param i
-         *            the character number of this line to be painted
-         */
-        public void paintCharacter(Graphics g, int i)
-        {
-            int x = (i * characterSpacing) + leftMargin;
-            int y = this.y;
-
-            isKey = false;
-
-            g.setColor(this.colors[i] != null ? this.colors[i] : Color.BLACK);
-
-            for (int j = 0; j < KeyWord.size(); j = j + 2)
-            {
-                if ((i >= KeyWord.get(j)) && (i <= KeyWord.get(j + 1)))
-                    isKey = true;
-            }
-            if (isKey == true)
-            {
-                g.setFont(fontbold);
-                g.drawString("" + str.get(i).text, x, y);
-                g.setFont(font);
-            }
-            else
-            {
-                g.setFont(font);
-                g.drawString("" + str.get(i).text, x, y);
-            }
-        }
-
-        /**
-         * draws a coloured box on this line (should be called before paint(g,
-         * i)) - one use of this method is to indicate that this character is
-         * locked. Different colours could represent different users
-         * 
-         * @param g
-         * @param i
-         * @param c
-         */
-        public void highlight(Graphics g, int i, Color c)
-        {
-            g.setColor(c);
-            int x = (i * characterSpacing) + leftMargin;
-            int y = this.y+5;
-            g.fillRect(x, y - lineSpacing, characterSpacing, lineSpacing); //TODO here Alex
-        }
-
-        /**
-         * paints a caret on this line at local character number i
-         * 
-         * @param g
-         * @param i
-         */
-        public void paintCaret(Graphics g, int i)
-        {
-            g.setColor(parent.colours.get(parent.getUsername())/*Color.BLUE*/);
-            int x = ((i + 1) * characterSpacing) + leftMargin;
-            int y = this.y+5;
-            g.drawLine(x, y - lineSpacing, x, y); //TODO here Alex
-        }
-
-        public void paintCaretOnNewline(Graphics g)
-        {
-            g.setColor(parent.colours.get(parent.getUsername())/*Color.BLUE*/);
-            int y = this.y+5;
-            g.drawLine(leftMargin, y - lineSpacing, leftMargin, y);  //TODO here Alex
-        }
-
-        /**
-         * tests whether this character is part of a locked region, which is one
-         * way of testing if it should be highlighted
-         * 
-         * @param i
-         * @return
-         */
-        public String locked(int i)
-        {
-            return this.str.get(i).lockingGroup;
-        }
-    }
-
-    public static void wash(Color[] target, Color color, int start, int end)
-    {
-        start = start < 0 ? 0 : start;
-        end = end < target.length ? end : target.length;
-        for (int i = start; i < end; i++)
-            target[i] = color;
-    }
-
-    public void userwash(Color[] target, int LineNo, int start, int end)
-    {
-        String uname;
-        Color usercolor;
-        start = start < 0 ? 0 : start;
-        end = end < target.length ? end : target.length;
-
-        for (int i = start; i < end; i++)
-        {
-            /*
-             * TODO text owned by offline users who have not had their profile
-             * downloaded from the bot will be black/blank
-             */
-            uname = lines.get(LineNo - 1).str.get(i).owner;
-            usercolor = Client.colours.get(uname);
-            target[i] = usercolor;
-        }
     }
 
     /**
@@ -567,7 +316,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int i = 0;
         for (TypingEventList tel : split)
         {
-            ETALine line = new ETALine(tel, j * lineSpacing, j++, i);
+            ETALine line = new ETALine(tel, j * lineSpacing, j++, i, this);
             this.lines.add(line);
             i += line.str.length();
             // System.out.println(line.str.length());
@@ -613,11 +362,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
     // clean up, reuse code between these two methods
     public void moveUp()
     {
-        if (this.currentLine.str.newline())
+        if (this.getCurrentLine().str.newline())
             this.moveLeft();
         else
         {
-            int lineNum = this.currentLine.lineNum - 1;
+            int lineNum = this.getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
             ETALine line = this.lines.get(lineNum - 1);
@@ -632,11 +381,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     public void moveDown()
     {
-        if (this.currentLine.str.newline())
+        if (this.getCurrentLine().str.newline())
             this.moveRight();
         else
         {
-            int lineNum = this.currentLine.lineNum + 1;
+            int lineNum = this.getCurrentLine().lineNum + 1;
             if (lineNum > this.lines.size())
                 lineNum = this.lines.size();
             ETALine line = this.lines.get(lineNum - 1);
@@ -656,7 +405,8 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     public void moveHome()
     {
-        int start = this.currentLine.start + this.currentLine.lineNum - 2;
+        int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
+                - 2;
         this.caretPosition = start;
         this.updateUI();
     }
@@ -668,8 +418,9 @@ public class EditorTypingArea extends JPanel implements MouseListener
      */
     public void moveEnd()
     {
-        int start = this.currentLine.start + this.currentLine.lineNum - 2;
-        int length = this.currentLine.str.length();
+        int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
+                - 2;
+        int length = this.getCurrentLine().str.length();
         this.caretPosition = start + length;
         this.updateUI();
     }
@@ -719,7 +470,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
     {
         try
         {
-            return this.currentLine.lineNum;
+            return this.getCurrentLine().lineNum;
         }
         catch (NumberFormatException nfe)
         {
@@ -828,5 +579,70 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public SourceDocument getSourceDocument()
     {
         return this.doc;
+    }
+
+    public void setCommentedLine(boolean commentedLine)
+    {
+        commentedLine = commentedLine;
+    }
+
+    public boolean isCommentedLine()
+    {
+        return commentedLine;
+    }
+
+    public void setKeyWord(ArrayList<Integer> keyWord)
+    {
+        KeyWord = keyWord;
+    }
+
+    public ArrayList<Integer> getKeyWord()
+    {
+        return KeyWord;
+    }
+
+    public void setIsKey(boolean isKey)
+    {
+        this.isKey = isKey;
+    }
+
+    public boolean isKey()
+    {
+        return isKey;
+    }
+
+    public ETALine getLine(int i)
+    {
+        return this.lines.get(i);
+    }
+
+    public void setCommentFound(boolean commentFound)
+    {
+        this.commentFound = commentFound;
+    }
+
+    public boolean isCommentFound()
+    {
+        return commentFound;
+    }
+
+    public void setCommentStartLoc(int commentStartLoc)
+    {
+        this.commentStartLoc = commentStartLoc;
+    }
+
+    public int getCommentStartLoc()
+    {
+        return commentStartLoc;
+    }
+
+    private void setCurrentLine(ETALine currentLine)
+    {
+        this.currentLine = currentLine;
+    }
+
+    public ETALine getCurrentLine()
+    {
+        return currentLine;
     }
 }
