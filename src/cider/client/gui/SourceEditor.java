@@ -11,6 +11,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -60,6 +62,27 @@ public class SourceEditor extends JScrollPane
         for (int i = 0; i < keywordArray.length; i++)
             keywords.add(keywordArray[i]);
 
+        this.setWheelScrollingEnabled(false);
+        this.addMouseWheelListener(this.newMouseWheelListener());
+    }
+
+    private MouseWheelListener newMouseWheelListener()
+    {
+        MouseWheelListener mwl = new MouseWheelListener()
+        {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent mwe)
+            {
+
+                Rectangle rect = eta.getVisibleRect();
+                rect.y += EditorTypingArea.lineSpacing
+                        * (mwe.getWheelRotation() > 0 ? 1 : -1);
+                eta.scrollRectToVisible(rect);
+            }
+
+        };
+        return mwl;
     }
 
     private ActionListener lockingActionListener()

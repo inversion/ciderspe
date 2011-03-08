@@ -108,16 +108,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             try
             {
                 if (this.lines.size() == 0)
-                {
-                    if (this.hasFocus())
-                    {
-                        g.setColor(EditorTypingArea.parent.colours
-                                .get(EditorTypingArea.parent.getUsername()));
-                        int x = EditorTypingArea.leftMargin;
-                        int y = EditorTypingArea.lineSpacing - 5;
-                        g.drawLine(x, y, x, y + 10);
-                    }
-                }
+                    this.paintCaret(g, -1, lineSpacing);
                 else
                     for (ETALine line : this.lines)
                     {
@@ -143,7 +134,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                             this.currentColNum = 0;
                             caretFound = true;
                             this.getCurrentLine().highlightMargin(g);
-                            this.getCurrentLine().paintCaretOnNewline(g);
+                            this.paintCaret(g, -1, line.y);
                         }
 
                         // Paints the lines of text and the caret if it has not
@@ -152,7 +143,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         {
                             if (!caretFound && p == this.caretPosition - ln)
                             {
-                                line.paintCaret(g, i);
+                                this.paintCaret(g, i, line.y);
                                 setCurrentLine(line);
                                 currentColNum = i + 1;
                                 caretFound = true;
@@ -178,6 +169,20 @@ public class EditorTypingArea extends JPanel implements MouseListener
         int height = lineSpacing * lines.size();
         this.setPreferredSize(new Dimension(width, height));
         this.invalidate();
+    }
+
+    private void paintCaret(Graphics g, int i, int lineY)
+    {
+        if (this.caretVisible)
+        {
+            g.setColor(EditorTypingArea.parent.colours
+                    .get(EditorTypingArea.parent.getUsername())/* Color.BLUE */);
+            int x = ((i + 1) * EditorTypingArea.characterSpacing)
+                    + EditorTypingArea.leftMargin;
+            int y = lineY + 5;
+            g.fillRect(x, y - EditorTypingArea.lineSpacing, 3,
+                    EditorTypingArea.lineSpacing);
+        }
     }
 
     private static Color glass(Color color)
@@ -278,7 +283,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             @Override
             public void run()
             {
-                caretVisible = caretFlashing && !caretVisible;
+                caretVisible = hasFocus() && caretFlashing && !caretVisible;
                 if (caretFlashing)
                     updateUI();
             }
@@ -366,6 +371,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         if (this.caretPosition >= 0)
             this.caretPosition--;
 
+        this.caretVisible = true;
         this.updateUI();
     }
 
@@ -377,6 +383,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         if (this.caretPosition < this.str.length() - 1)
             this.caretPosition++;
 
+        this.caretVisible = true;
         this.updateUI();
     }
 
@@ -388,6 +395,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.moveLeft();
         else
         {
+            this.caretVisible = true;
             int lineNum = this.getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
@@ -407,6 +415,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
             this.moveRight();
         else
         {
+            this.caretVisible = true;
             int lineNum = this.getCurrentLine().lineNum + 1;
             if (lineNum > this.lines.size())
                 lineNum = this.lines.size();
