@@ -9,11 +9,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -120,7 +120,7 @@ public class Client
     private boolean synchronised = false;
 
     public Client(String username, String password, String host, int port,
-            String serviceName, LoginUI log, ClientSharedComponents shared )
+            String serviceName, LoginUI log, ClientSharedComponents shared)
     {
         // Assign objects from parameters
         this.username = username;
@@ -130,14 +130,14 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
         this.login = log;
-        
+
         // GUI Components shared with MainWindow
         this.shared = shared;
-        
+
         EditorTypingArea.addParent(this);
     }
 
-	/**
+    /**
      * Tries to connect to the XMPP server, throwing an exception if it fails in
      * any way.
      * 
@@ -164,10 +164,10 @@ public class Client
             System.out.println("Logged into XMPP server, username=" + username
                     + "/" + rand);
 
-//        Prints out every packet received by the client, used when you want
-//         very verbose debugging
-//         connection.addPacketListener(new DebugPacketListener(), new
-//         DebugPacketFilter());
+        // Prints out every packet received by the client, used when you want
+        // very verbose debugging
+        // connection.addPacketListener(new DebugPacketListener(), new
+        // DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
 
@@ -187,21 +187,22 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this);
         chatmanager.addChatListener(userChatListener);
-        
-        //Check the bot is online
+
+        // Check the bot is online
         botChat.sendMessage(StringUtils.encodeBase64("are you online mr bot"));
         try
         {
-			Thread.sleep(1000);
-			return botIsOnline;
-		}
+            Thread.sleep(1000);
+            return botIsOnline;
+        }
         catch (InterruptedException e)
         {
-			e.printStackTrace();
-			return false;
-		}
+            e.printStackTrace();
+            return false;
+        }
     }
-	/**
+
+    /**
      * Allows the bot to be killed remotely by clients.
      * 
      * Used in development for example when someone leaves it running by
@@ -327,8 +328,8 @@ public class Client
          * we are sending to in selecting the right text area to update.
          */
         if (username.equals(this.username))
-            current = usersToAreas.get(shared.receiveTabs.getSelectedComponent()
-                    .getName());
+            current = usersToAreas.get(shared.receiveTabs
+                    .getSelectedComponent().getName());
         else
             current = usersToAreas.get(username);
 
@@ -389,7 +390,8 @@ public class Client
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         messageReceiveBoxScroll.setName(user);
         shared.receiveTabs.add(messageReceiveBoxScroll);
-        shared.receiveTabs.setTitleAt(shared.receiveTabs.getTabCount() - 1, user);
+        shared.receiveTabs.setTitleAt(shared.receiveTabs.getTabCount() - 1,
+                user);
 
         // If creating a tab for the chatroom, register the chatroom message
         // receive box
@@ -484,8 +486,8 @@ public class Client
                                             .getName()
                                     + " contents: "
                                     + message);
-                ((Chat) tabsToChats.get(shared.receiveTabs.getSelectedComponent()))
-                        .sendMessage(msg);
+                ((Chat) tabsToChats.get(shared.receiveTabs
+                        .getSelectedComponent())).sendMessage(msg);
 
                 // Update the log with the message before it was encoded
                 updatePrivateChatLog(this.username, msg.getSubject(), message);
@@ -539,7 +541,8 @@ public class Client
         {
             EditorTypingArea eta = new EditorTypingArea(this.username, doc);
             SourceEditor sourceEditor = new SourceEditor(eta, this, strPath);
-            sourceEditor.setTabHandle(shared.tabbedPane.add(strPath, eta));
+            sourceEditor.setTabHandle(shared.tabbedPane.add(strPath,
+                    sourceEditor));
             shared.openTabs.put(strPath, sourceEditor);
             this.pullSimplifiedEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset());
