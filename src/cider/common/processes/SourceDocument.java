@@ -188,7 +188,7 @@ public class SourceDocument implements ICodeLocation
     }
 
     /**
-     * works out by how much time the events could be seperated
+     * works out by how much time the events could be separated
      * 
      * @param startTime
      * @param endTime

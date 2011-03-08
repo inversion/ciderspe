@@ -1,4 +1,4 @@
-package cider.specialcomponents;
+package cider.specialcomponents.editorTypingArea;
 
 import java.awt.Color;
 import java.awt.Dimension;
