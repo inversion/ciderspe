@@ -2,6 +2,7 @@ package cider.client.gui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -15,7 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import cider.common.network.Client;
@@ -32,7 +33,7 @@ import cider.specialcomponents.EditorTypingArea;
  * 
  */
 @SuppressWarnings("serial")
-public class SourceEditor extends JPanel
+public class SourceEditor extends JScrollPane
 {
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
@@ -44,6 +45,7 @@ public class SourceEditor extends JPanel
 
     public SourceEditor(final EditorTypingArea eta, Client client, String path)
     {
+        super(eta);
         this.eta = eta;
         this.eta.addComponentListener(new TabSelectionFocusGainListener());
         this.eta.addKeyListener(this.newKeyListener());
@@ -285,24 +287,26 @@ public class SourceEditor extends JPanel
                             {
                             case '\u007F':
                             {
-                                /* int CurLine;
-                                 * int CurxLine;
-                                 * CurLine = eta.GetCurLine() - 1;
-                                 * CurxLine = eta.GetCurxLen(); */
-								if (eta.getCaretPosition() >= -1)
+                                /*
+                                 * int CurLine; int CurxLine; CurLine =
+                                 * eta.GetCurLine() - 1; CurxLine =
+                                 * eta.GetCurxLen();
+                                 */
+                                if (eta.getCaretPosition() >= -1)
                                 {
-                                	/* Needs CurxLine working properly
-                                	 * 
-                                	 * if ((eta.lines.size() == CurLine) && (eta.lines.get(CurLine).str.length() <= CurxLine))
-                                	 * {
-                                	 * TypingEventList.DeleteType = 0;
-                                	 * mode = TypingEventMode.backspace;
-                                	 *  chr = " ";
-                                	 *  } else { */
-                                		TypingEventList.DeleteType = 1;
-	                                    mode = TypingEventMode.backspace;
-	                                    chr = " ";
-                                	// }
+                                    /*
+                                     * Needs CurxLine working properly
+                                     * 
+                                     * if ((eta.lines.size() == CurLine) &&
+                                     * (eta.lines.get(CurLine).str.length() <=
+                                     * CurxLine)) { TypingEventList.DeleteType =
+                                     * 0; mode = TypingEventMode.backspace; chr
+                                     * = " "; } else {
+                                     */
+                                    TypingEventList.DeleteType = 1;
+                                    mode = TypingEventMode.backspace;
+                                    chr = " ";
+                                    // }
                                 }
                                 else
                                     return;
@@ -312,7 +316,7 @@ public class SourceEditor extends JPanel
                             {
                                 if (eta.getCaretPosition() >= 0)
                                 {
-                                	TypingEventList.DeleteType = 0;
+                                    TypingEventList.DeleteType = 0;
                                     mode = TypingEventMode.backspace;
                                     chr = " ";
                                 }
@@ -335,8 +339,8 @@ public class SourceEditor extends JPanel
                                     System.currentTimeMillis()
                                             + client.getClockOffset(), mode,
                                     eta.getCaretPosition(), chr.length(), chr,
-                                    client.getUsername(), r == 1 ? client
-                                            .getUsername() : null);
+                                    client.getUsername(),
+                                    r == 1 ? client.getUsername() : null);
                             ArrayList<TypingEvent> particles = te.explode();
 
                             for (TypingEvent particle : particles)
@@ -354,6 +358,9 @@ public class SourceEditor extends JPanel
 
                             eta.getSourceDocument().push(internal);
                             eta.updateText();
+                            eta.scrollRectToVisible(new Rectangle(0,
+                                    eta.currentLine.y, eta.getWidth(), eta
+                                            .getHeight()));
                             client.broadcastTypingEvents(outgoingEvents, path);
 
                             switch (mode)
@@ -365,8 +372,8 @@ public class SourceEditor extends JPanel
                                 eta.moveCaret(particles.size());
                                 break;
                             case backspace:
-                            	if (TypingEventList.DeleteType == 0)
-                            		eta.moveLeft();
+                                if (TypingEventList.DeleteType == 0)
+                                    eta.moveLeft();
                                 break;
                             }
                         }
