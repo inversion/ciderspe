@@ -25,7 +25,7 @@ import cider.common.network.Client;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
 import cider.common.processes.TypingEventMode;
-import cider.specialcomponents.EditorTypingArea;
+import cider.specialcomponents.editorTypingArea.EditorTypingArea;
 
 /**
  * This class basically means that the TextAreas can constantly update and hold

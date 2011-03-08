@@ -69,7 +69,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import cider.common.network.Client;
 import cider.common.processes.Profile;
 import cider.shared.ClientSharedComponents;
-import cider.specialcomponents.EditorTypingArea;
+import cider.specialcomponents.editorTypingArea.EditorTypingArea;
 
 public class MainWindow implements Runnable
 {
