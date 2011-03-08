@@ -107,54 +107,66 @@ public class EditorTypingArea extends JPanel implements MouseListener
             boolean caretFound = false;
             try
             {
-                for (ETALine line : this.lines)
+                if (this.lines.size() == 0)
                 {
-                    if (longestLine < line.str.length())
-                        longestLine = line.str.length();
-
-                    line.paintMargin(g);
-                    line.characterColors();
-                    String owner;
-
-                    // Paints locking regions
-                    for (int i = 0; i < line.str.length(); i++)
-                        if ((owner = line.locked(i)) != null
-                                || (i > 1 && (owner = line.locked(i - 1)) != null))
-                            line.highlight(g, i,
-                                    glass(parent.colours.get(owner)));
-
-                    // If the caret is placed just after a newline
-                    // that line might not actually have any text in it
-                    if (!caretFound && p == this.caretPosition - ln + 1)
+                    if (this.hasFocus())
                     {
-                        this.setCurrentLine(line);
-                        this.currentColNum = 0;
-                        caretFound = true;
-                        this.getCurrentLine().highlightMargin(g);
-                        this.getCurrentLine().paintCaretOnNewline(g);
+                        g.setColor(EditorTypingArea.parent.colours
+                                .get(EditorTypingArea.parent.getUsername()));
+                        int x = EditorTypingArea.leftMargin;
+                        int y = EditorTypingArea.lineSpacing - 5;
+                        g.drawLine(x, y, x, y + 10);
                     }
-
-                    // Paints the lines of text and the caret if it has not
-                    // already been drawn at the start
-                    for (int i = 0; i < line.str.length(); i++)
-                    {
-                        if (!caretFound && p == this.caretPosition - ln)
-                        {
-                            line.paintCaret(g, i);
-                            setCurrentLine(line);
-                            currentColNum = i + 1;
-                            caretFound = true;
-                            line.highlightMargin(g);
-                        }
-                        p++;
-                        line.paintCharacter(g, i);
-                    }
-                    ln++;
-                    setCommentedLine(false);
-                    getKeyWord().clear();
-                    getKeyWord().add(-1);
-                    getKeyWord().add(-1);
                 }
+                else
+                    for (ETALine line : this.lines)
+                    {
+                        if (longestLine < line.str.length())
+                            longestLine = line.str.length();
+
+                        line.paintMargin(g);
+                        line.characterColors();
+                        String owner;
+
+                        // Paints locking regions
+                        for (int i = 0; i < line.str.length(); i++)
+                            if ((owner = line.locked(i)) != null
+                                    || (i > 1 && (owner = line.locked(i - 1)) != null))
+                                line.highlight(g, i,
+                                        glass(parent.colours.get(owner)));
+
+                        // If the caret is placed just after a newline
+                        // that line might not actually have any text in it
+                        if (!caretFound && p == this.caretPosition - ln + 1)
+                        {
+                            this.setCurrentLine(line);
+                            this.currentColNum = 0;
+                            caretFound = true;
+                            this.getCurrentLine().highlightMargin(g);
+                            this.getCurrentLine().paintCaretOnNewline(g);
+                        }
+
+                        // Paints the lines of text and the caret if it has not
+                        // already been drawn at the start
+                        for (int i = 0; i < line.str.length(); i++)
+                        {
+                            if (!caretFound && p == this.caretPosition - ln)
+                            {
+                                line.paintCaret(g, i);
+                                setCurrentLine(line);
+                                currentColNum = i + 1;
+                                caretFound = true;
+                                line.highlightMargin(g);
+                            }
+                            p++;
+                            line.paintCharacter(g, i);
+                        }
+                        ln++;
+                        setCommentedLine(false);
+                        getKeyWord().clear();
+                        getKeyWord().add(-1);
+                        getKeyWord().add(-1);
+                    }
                 p++;
             }
             catch (ConcurrentModificationException e)
@@ -567,10 +579,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
 
     private void constrain()
     {
-        if (this.caretPosition > this.str.length())
-            this.caretPosition = this.str.length() - 1;
-        if (this.caretPosition < -1)
-            this.caretPosition = -1;
+        if (this.caretPosition > this.str.length() + 1)
+            this.caretPosition = this.str.length();
+        if (this.caretPosition < 0)
+            this.caretPosition = 0;
     }
 
     public TypingEventList getTypingEventList()
