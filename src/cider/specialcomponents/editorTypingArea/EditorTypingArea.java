@@ -12,6 +12,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
@@ -36,7 +37,8 @@ import cider.common.processes.TypingEventMode;
  * @param fontSize
  *            the size of the font in the editortypingarea
  */
-public class EditorTypingArea extends JPanel implements MouseListener
+public class EditorTypingArea extends JPanel implements MouseListener,
+        MouseMotionListener
 {
     private static final long serialVersionUID = 1L;
     private TypingEventList str = new TypingEventList();
@@ -59,11 +61,14 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public static final int leftMargin = fontSize * 2;
     public static final int lineSpacing = fontSize + 1;
     public static final int characterSpacing = fontSize / 2 + 1;
+    public static final Color selectedRegionColor = new Color(255, 255, 255,
+            122);
     private boolean waiting = true;
     private boolean commentFound = false;
     private boolean commentedLine = false;
     private boolean isKey = false;
     private int commentStartLoc = -1;
+    private TypingRegion selectedRegion = null;
 
     static Client parent;
     public static int Highlighting;
@@ -79,6 +84,7 @@ public class EditorTypingArea extends JPanel implements MouseListener
         this.str = this.doc.playOutEvents(Long.MAX_VALUE);
         this.setupCaretFlashing();
         this.addMouseListener(this);
+        this.addMouseMotionListener(this);
     }
 
     @Override
@@ -119,12 +125,17 @@ public class EditorTypingArea extends JPanel implements MouseListener
                         line.characterColors();
                         String owner;
 
-                        // Paints locking regions
+                        // Paints locked and selected regions
                         for (int i = 0; i < line.str.length(); i++)
+                        {
                             if ((owner = line.locked(i)) != null
                                     || (i > 1 && (owner = line.locked(i - 1)) != null))
                                 line.highlight(g, i,
                                         glass(parent.colours.get(owner)));
+
+                            if (line.selected(i))
+                                line.highlight(g, i, selectedRegionColor);
+                        }
 
                         // If the caret is placed just after a newline
                         // that line might not actually have any text in it
@@ -213,59 +224,6 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public int xToColumnNumber(int x)
     {
         return (int) ((x - leftMargin) / (double) characterSpacing);
-    }
-
-    @Override
-    /**
-     * mouse presses are currently used to lock out lines of text
-     */
-    public void mousePressed(MouseEvent me)
-    {
-        int ln = yToLineNumber(me.getY());
-        if (ln > this.lines.size())
-            ln = this.lines.size();
-
-        if (this.lines.size() > 0)
-        {
-            ETALine line = this.lines.get(ln - 1);
-            int start = line.start + ln - 2;
-            int length = line.str.length();
-
-            if (me.getX() < leftMargin && length > 1)
-            {
-                TypingEventMode tem;
-                String owner = line.locked(0);
-
-                if (length > 0 && owner != null
-                        && owner.equals(parent.getUsername()))
-                    tem = TypingEventMode.unlockRegion;
-                else if (owner == null)
-                    tem = TypingEventMode.lockRegion;
-                else
-                    tem = null;
-
-                if (tem != null)
-                {
-                    TypingEvent te = new TypingEvent(System.currentTimeMillis()
-                            + parent.getClockOffset(), tem, start, length, "",
-                            parent.getUsername(), null);
-
-                    for (ActionListener al : this.als)
-                        al.actionPerformed(new ActionEvent(te,
-                                tem == TypingEventMode.lockRegion ? LINE_LOCKED
-                                        : LINE_UNLOCKED, "Locking event"));
-                }
-            }
-            else
-            {
-                int colNumber = this.xToColumnNumber(me.getX());
-                if (colNumber > length)
-                    colNumber = length;
-                this.caretPosition = start + colNumber;
-            }
-        }
-
-        this.updateUI();
     }
 
     /**
@@ -524,8 +482,11 @@ public class EditorTypingArea extends JPanel implements MouseListener
     @Override
     public void mouseClicked(MouseEvent arg0)
     {
-        // TODO Auto-generated method stub
-
+        if (this.selectedRegion != null)
+        {
+            this.selectedRegion = null;
+            this.updateUI();
+        }
     }
 
     @Override
@@ -543,9 +504,103 @@ public class EditorTypingArea extends JPanel implements MouseListener
     }
 
     @Override
+    /**
+     * mouse presses are currently used to lock out lines of text
+     */
+    public void mousePressed(MouseEvent me)
+    {
+        int ln = yToLineNumber(me.getY());
+        if (ln > this.lines.size())
+            ln = this.lines.size();
+
+        if (this.lines.size() > 0)
+        {
+            ETALine line = this.lines.get(ln - 1);
+            int start = line.start + ln - 2;
+            int length = line.str.length();
+
+            if (me.getX() < leftMargin && length > 1)
+            {
+                TypingEventMode tem;
+                String owner = line.locked(0);
+
+                if (length > 0 && owner != null
+                        && owner.equals(parent.getUsername()))
+                    tem = TypingEventMode.unlockRegion;
+                else if (owner == null)
+                    tem = TypingEventMode.lockRegion;
+                else
+                    tem = null;
+
+                if (tem != null)
+                {
+                    TypingEvent te = new TypingEvent(System.currentTimeMillis()
+                            + parent.getClockOffset(), tem, start, length, "",
+                            parent.getUsername(), null);
+
+                    for (ActionListener al : this.als)
+                        al.actionPerformed(new ActionEvent(te,
+                                tem == TypingEventMode.lockRegion ? LINE_LOCKED
+                                        : LINE_UNLOCKED, "Locking event"));
+                }
+            }
+            else
+            {
+                int colNumber = this.xToColumnNumber(me.getX());
+                if (colNumber > length)
+                    colNumber = length;
+                this.caretPosition = start + colNumber;
+            }
+        }
+
+        this.updateUI();
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent me)
+    {
+        try
+        {
+            int col = xToColumnNumber(me.getX());
+            int ln = yToLineNumber(me.getY());
+
+            if (this.lines.size() > 0)
+            {
+                if (ln < 1)
+                    ln = 0;
+                if (ln > this.lines.size())
+                    ln = this.lines.size();
+
+                ETALine line = this.getLine(ln - 1);
+                if (col > line.str.length() - 1)
+                    col = line.str.length() - 1;
+                int end = line.start + ln - 1 + col;
+                end = this.constrain(end);
+
+                int start = this.caretPosition;
+
+                if (start > end)
+                    this.selectedRegion = this.str.region(end, start + 1);
+                else
+                    this.selectedRegion = this.str.region(start + 1, end + 1);
+                this.updateUI();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public void mouseReleased(MouseEvent arg0)
     {
-        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent me)
+    {
 
     }
 
@@ -577,24 +632,26 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public void moveCaret(int spaces)
     {
         this.caretPosition += spaces;
-        constrain();
+        this.caretPosition = constrain(this.caretPosition);
+        this.selectedRegion = null;
         this.updateUI();
     }
 
     public void setCaretPosition(int position)
     {
-        this.caretPosition = position;
-        constrain();
-
+        this.caretPosition = constrain(position);
+        this.selectedRegion = null;
         this.updateUI();
     }
 
-    private void constrain()
+    private int constrain(int position)
     {
-        if (this.caretPosition > this.str.length() + 1)
-            this.caretPosition = this.str.length();
-        if (this.caretPosition < 0)
-            this.caretPosition = 0;
+        if (position > this.str.length() + 1)
+            return this.str.length();
+        if (position < 0)
+            return 0;
+        else
+            return position;
     }
 
     public TypingEventList getTypingEventList()
@@ -675,5 +732,10 @@ public class EditorTypingArea extends JPanel implements MouseListener
     public ETALine getCurrentLine()
     {
         return currentLine;
+    }
+
+    public TypingRegion getSelectedRegion()
+    {
+        return this.selectedRegion;
     }
 }

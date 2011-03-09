@@ -6,11 +6,13 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Random;
 
+import cider.specialcomponents.editorTypingArea.TypingRegion;
+
 public class TypingEventList
 {
     private ArrayList<TypingEvent> tel = new ArrayList<TypingEvent>();
     public static int DeleteType = 0;
-    
+
     public TypingEventList()
     {
 
@@ -34,18 +36,18 @@ public class TypingEventList
 
     public void backspace(int i)
     {
-    	
-	        if (i >= this.tel.size())
-	            i = this.tel.size() - 1;
-	        if (i < 0)
-	            return;
-	        if ( DeleteType == 0 )
-	        	this.tel.remove(i);
-	        if ( DeleteType == 1 )
-	        	this.tel.remove(i+1);
-    	
-    	
+
+        if (i >= this.tel.size())
+            i = this.tel.size() - 1;
+        if (i < 0)
+            return;
+        if (DeleteType == 0)
+            this.tel.remove(i);
+        if (DeleteType == 1)
+            this.tel.remove(i + 1);
+
     }
+
     public boolean exists(int i)
     {
         return i > 0 && i < this.tel.size();
@@ -213,5 +215,12 @@ public class TypingEventList
             }
         }
         return results;
+    }
+
+    public TypingRegion region(int caretPosition, int end)
+    {
+        TypingRegion region = new TypingRegion(caretPosition, end,
+                this.tel.subList(caretPosition, end));
+        return region;
     }
 }
