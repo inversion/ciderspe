@@ -44,7 +44,7 @@ import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.shared.ClientSharedComponents;
 
 public class LoginUI

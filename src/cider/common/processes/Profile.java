@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
 import java.text.DateFormat;
 import java.util.Date;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 
 public class Profile 
 {

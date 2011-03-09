@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.bot;
 
 /**
  * Listen for new messages to the chatroom

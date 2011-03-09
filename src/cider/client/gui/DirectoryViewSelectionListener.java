@@ -5,7 +5,7 @@ import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 
 /**
  * Listens for when a tree node is selected and if one is it gets a file from

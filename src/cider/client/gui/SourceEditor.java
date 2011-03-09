@@ -21,7 +21,7 @@ import java.util.Queue;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;
 import cider.common.processes.TypingEventMode;

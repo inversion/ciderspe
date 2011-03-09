@@ -66,7 +66,7 @@ import javax.tools.ToolProvider;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.util.StringUtils;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.common.processes.Profile;
 import cider.shared.ClientSharedComponents;
 import cider.specialcomponents.editorTypingArea.EditorTypingArea;

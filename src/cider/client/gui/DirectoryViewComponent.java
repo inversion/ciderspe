@@ -20,7 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel

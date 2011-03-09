@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.client;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;

@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.bot;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,6 +9,8 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
+
+import cider.common.network.client.Client;
 
 
 
