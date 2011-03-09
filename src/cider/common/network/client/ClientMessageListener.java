@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.client;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

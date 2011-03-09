@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.client;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -9,6 +9,8 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
+
+import cider.common.network.bot.Bot;
 
 /**
  * 

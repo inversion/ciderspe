@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.bot;
 
 import java.awt.Color;
 import java.io.IOException;

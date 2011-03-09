@@ -5,7 +5,7 @@ import java.awt.Graphics;
 import java.util.LinkedList;
 
 import cider.client.gui.SourceEditor;
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.common.processes.TypingEventList;
 
 /**

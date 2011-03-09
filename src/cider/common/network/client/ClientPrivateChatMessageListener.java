@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.client;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;

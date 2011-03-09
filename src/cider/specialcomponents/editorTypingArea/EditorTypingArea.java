@@ -20,7 +20,7 @@ import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
-import cider.common.network.Client;
+import cider.common.network.client.Client;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventList;

@@ -1,4 +1,4 @@
-package cider.common.network;
+package cider.common.network.client;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -33,6 +33,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.client.gui.SourceEditor;
+import cider.common.network.bot.Bot;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
