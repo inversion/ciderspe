@@ -248,4 +248,10 @@ public class ETALine
             target[i] = usercolor;
         }
     }
+
+    public boolean selected(int i)
+    {
+        TypingRegion tr = this.eta.getSelectedRegion();
+        return tr != null && tr.list.contains(this.str.get(i));
+    }
 }
