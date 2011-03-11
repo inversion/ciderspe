@@ -22,9 +22,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.AbstractSequentialList;
-import java.util.Collection;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.swing.BorderFactory;
@@ -39,7 +36,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
@@ -67,16 +63,16 @@ public class LoginUI
     JTextField txtServiceName;
     JTextField txtHost;
     JTextField txtPort;
-    
+
     MainWindow program;
 
     JCheckBox chkRemember;
-    
+
     String errmsg;
 
     public void displayLogin()
     {
-    	splashScreen();
+        // splashScreen();
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
@@ -133,8 +129,7 @@ public class LoginUI
         // TODO: Make this numeric?
         txtPort = new JTextField(13);
         txtPort.setText(DEFAULT_PORT);
-            
-        
+
         txtUsername.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
@@ -258,32 +253,35 @@ public class LoginUI
         login.setVisible(true);
     }
 
-    private void splashScreen() 
+    private void splashScreen()
     {
-    	Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-		JFrame f = new JFrame();
-		f.setBounds((dim.width - 800)/2, (dim.height - 600)/2,800,600);
-		f.setUndecorated(true);
-		f.setVisible(true);
-		
-		Container layout = f.getContentPane();
-		layout.setLayout(new GridLayout(5, 1));
-		
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		f.dispose();
-	}
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        JFrame f = new JFrame();
+        f.setBounds((dim.width - 800) / 2, (dim.height - 600) / 2, 800, 600);
+        f.setUndecorated(true);
+        f.setVisible(true);
+
+        Container layout = f.getContentPane();
+        layout.setLayout(new GridLayout(5, 1));
+
+        try
+        {
+            Thread.sleep(2000);
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        f.dispose();
+    }
 
     /**
      * Checks for login.txt file and fills in the details if found
      * 
      * @author Alex
      */
-	private void fetchLogin()
+    private void fetchLogin()
     {
         try
         {
@@ -322,7 +320,7 @@ public class LoginUI
         }
     }
 
-    boolean checkLogin()
+    void checkLogin()
     {
         // TODO: Can we have some commenting on what methods actually do please
         // GUI people
@@ -347,15 +345,20 @@ public class LoginUI
                 System.out.println("Deletion failed: " + fileName);
             }
         }
-        showConnectBox();
-        if (tryConnect())
-            return true;
+        Thread mainWindowThread = connectMainWindow();
+        if (mainWindowThread != null)
+        {
+            Thread connectBoxThread = connectBox();
+
+            // Run connect box and main window thread in parallel
+            connectBoxThread.start();
+            mainWindowThread.start();
+        }
         else
         {
             displayLogin();
             // program.killWindow();
         }
-        return false;
     }
 
     public ActionListener newAction()
@@ -395,124 +398,142 @@ public class LoginUI
             System.exit(0);
         }
     }
-    
-    void splashFrame (Graphics2D g)
+
+    void splashFrame(Graphics2D g)
     {
-    	g.setComposite(AlphaComposite.Clear);
-    	g.fillRect(100,100,100,100);
-    	g.setPaintMode();
-    	g.setColor(Color.BLACK);
-    	g.drawString("Connecting...", 5, 50);
+        g.setComposite(AlphaComposite.Clear);
+        g.fillRect(100, 100, 100, 100);
+        g.setPaintMode();
+        g.setColor(Color.BLACK);
+        g.drawString("Connecting...", 5, 50);
     }
 
-	@SuppressWarnings("static-access")
-    void showConnectBox()
-    {   	
-        login.setVisible(false);
+    Thread connectBox()
+    {
 
-        // Create New JFrame
-        connecting = new JFrame();
-        connecting.setDefaultCloseOperation(login.EXIT_ON_CLOSE);
-        connecting.setTitle("CIDEr - Connecting");
-        connecting.setResizable(false);
-        connecting.toFront();
-
-        JPanel panel = new JPanel();
-        /*
-         * try {
-         * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-         * } catch (Exception e) { }
-         */
-
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        Box box = Box.createHorizontalBox();
-
-        // Connecting Image
-        URL u = this.getClass().getResource("connectingimage.gif");
-        ImageIcon image = new ImageIcon(u);
-        JLabel lblImage = new JLabel(image);
-        lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
-        box.add(lblImage);
-
-        // Status Text
-        JLabel lblStatus = new JLabel("Connecting to the server...");
-        box.add(lblStatus);
-
-        // Finalise JFrame
-        panel.add(box);
-        connecting.add(panel);
-        connecting.pack();
-        int x = (int) (login.getX() + login.getWidth() / 2);
-        int y = (int) (login.getY() + login.getHeight() / 2);
-        connecting.setLocation(x - connecting.getWidth() / 2,
-                y - connecting.getHeight() / 3);
-        connecting.setVisible(true);
-        connecting.repaint();
-        //connecting.setUndecorated(true);
-    }
-	
-	boolean tryConnect()
-	{
-		if (connect())
-            return true;
-        else
+        Runnable runnable = new Runnable()
         {
-            connecting.dispose();
-            JOptionPane.showMessageDialog(new JPanel(),
-                    errmsg);
-            return false;
-        }
-	}
 
-    boolean connect()
+            @Override
+            public void run()
+            {
+                // Create New JFrame
+                connecting = new JFrame();
+                connecting.setLocationRelativeTo(LoginUI.login);
+                connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                connecting.setTitle("CIDEr - Connecting");
+                connecting.setResizable(false);
+                connecting.toFront();
+
+                login.setVisible(false);
+
+                JPanel panel = new JPanel();
+                /*
+                 * try {
+                 * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName
+                 * ()); } catch (Exception e) { }
+                 */
+
+                panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+                Box box = Box.createHorizontalBox();
+
+                // Connecting Image
+                URL u = this.getClass().getResource("connectingimage.gif");
+                ImageIcon image = new ImageIcon(u);
+                JLabel lblImage = new JLabel(image);
+                lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+                lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
+                box.add(lblImage);
+
+                // Status Text
+                JLabel lblStatus = new JLabel("Connecting to the server...");
+                box.add(lblStatus);
+
+                // Finalise JFrame
+                panel.add(box);
+                connecting.add(panel);
+                connecting.pack();
+                int x = (int) (login.getX() + login.getWidth() / 2);
+                int y = (int) (login.getY() + login.getHeight() / 2);
+                connecting.setLocation(x - connecting.getWidth() / 2, y
+                        - connecting.getHeight() / 3);
+                connecting.setVisible(true);
+                connecting.repaint();
+                // connecting.setUndecorated(true);
+            }
+
+        };
+
+        return new Thread(runnable);
+
+    }
+
+    Thread connectMainWindow()
     {
         // TODO Connection Code
         // On connect, close login and connect JFrames, run MainWindow
 
         // System.out.println(passwordEncrypt.encrypt(new
         // String(txtPassword.getPassword())));
-        Client client;
+        final Client client;
         try
         {
-        	ClientSharedComponents sharedComponents = new ClientSharedComponents();
-        	
+
+            final ClientSharedComponents sharedComponents = new ClientSharedComponents();
+
             // TODO: Recommended to zero bytes of password after use
             // TODO: Check that fields aren't null/validation stuff
-            client = new Client(txtUsername.getText(), 
-            		new String(txtPassword.getPassword()), 
-            		txtHost.getText(),
+            client = new Client(txtUsername.getText(), new String(
+                    txtPassword.getPassword()), txtHost.getText(),
                     Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), 
-                    this, 
-                    sharedComponents
-                    );
-            if (!client.attemptConnection())
-            {
-            	errmsg = "Bot is not online";
-            	return false;
-            }
-            program = new MainWindow(txtUsername.getText(),
-            		new String(txtPassword.getPassword()), txtHost.getText(),
-                    Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), client, this,
-                    sharedComponents);
+                    txtServiceName.getText(), this, sharedComponents);
 
-            SwingUtilities.invokeLater(program);
-        }
-        catch (XMPPException e)
-        {
-            errmsg = "Incorrect login details";
-            System.err.println(errmsg);
-            return false;
+            Runnable runner = new Runnable()
+            {
+
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if (!client.attemptConnection())
+                        {
+                            errmsg = "Bot is not online";
+                            JOptionPane.showMessageDialog(connecting, errmsg);
+                            connecting.setVisible(false);
+                            connecting.dispose();
+                            System.exit(1);
+                        }
+                        else
+                        {
+                            program = new MainWindow(txtUsername.getText(),
+                                    new String(txtPassword.getPassword()),
+                                    txtHost.getText(), Integer.parseInt(txtPort
+                                            .getText()),
+                                    txtServiceName.getText(), client,
+                                    LoginUI.this, sharedComponents);
+
+                            connecting.setVisible(false);
+                            connecting.dispose();
+                            program.startApplication(login);
+                        }
+                    }
+                    catch (XMPPException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+
+            };
+
+            return new Thread(runner);
         }
         catch (NumberFormatException e)
         {
-        	errmsg = "Invalid port number";
-        	return false;
+            errmsg = "Invalid port number";
         }
-        connecting.setVisible(false);
-        return true;
+        return null;
     }
 
     public void logout()

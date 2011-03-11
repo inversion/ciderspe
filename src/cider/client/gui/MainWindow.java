@@ -71,7 +71,7 @@ import cider.common.processes.Profile;
 import cider.shared.ClientSharedComponents;
 import cider.specialcomponents.editorTypingArea.EditorTypingArea;
 
-public class MainWindow implements Runnable
+public class MainWindow
 {
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
@@ -82,7 +82,7 @@ public class MainWindow implements Runnable
     public LoginUI login;
 
     public ClientSharedComponents shared;
-    
+
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
     private JSplitPane editorChatSplit;
@@ -94,7 +94,7 @@ public class MainWindow implements Runnable
     public JPanel receivePanel;
     public JTextArea messageSendBox;
     public static boolean LockingEnabled = true;
-    
+
     private DebugWindow debugwindow;
     private OutputStream baos;
 
@@ -107,14 +107,14 @@ public class MainWindow implements Runnable
      */
     public long startTime;
     private Profile myProfile;
-    
 
     MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c, LoginUI loginUI, ClientSharedComponents shared ) throws XMPPException
+            String serviceName, Client c, LoginUI loginUI,
+            ClientSharedComponents shared) throws XMPPException
     {
         // Register GUI components shared with client
         this.shared = shared;
-    	
+
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         startTime = System.currentTimeMillis();
@@ -126,11 +126,10 @@ public class MainWindow implements Runnable
         shared.dirView.setClient(client);
         client.addParent(this);
         profileSetup();
-        
-        
+
         this.baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
-        //System.setOut(ps);
+        // System.setOut(ps);
         System.setErr(ps);
 
         // tabFlash.flash(0);
@@ -354,24 +353,25 @@ public class MainWindow implements Runnable
                 }
                 else if (action.equals("Line Locking"))
                 {
-                	ChangeLocking();
+                    ChangeLocking();
                 }
                 else if (action.equals("Line Home"))
                 {
-                	//eta.moveHome();
+                    // eta.moveHome();
                 }
                 else if (action.equals("Line End"))
                 {
-                	//eta.moveEnd();
+                    // eta.moveEnd();
                 }
                 else if (action.equals("Document Home"))
                 {
-                	//eta.moveDocHome();
+                    // eta.moveDocHome();
                 }
                 else if (action.equals("Document End"))
                 {
-                	//client.openTabs.get(this.getPathToSourceDocument(client.getCurrentDocument().name), 1));
-                	//EditorTypingArea.moveDocEnd();
+                    // client.openTabs.get(this.getPathToSourceDocument(client.getCurrentDocument().name),
+                    // 1));
+                    // EditorTypingArea.moveDocEnd();
                 }
             }
         };
@@ -520,9 +520,10 @@ public class MainWindow implements Runnable
         // liveFolder.makeDocument(s);
         // TODO: create directory tree object with 's' then open it
         JLabel TEMP = new JLabel("blah blah blah");
-        shared.tabbedPane.addTab(s, TEMP);// new SourceEditor(currentFileContents,
-                                   // currentDir)); //new SourceEditor("",
-                                   // "\\."));
+        shared.tabbedPane.addTab(s, TEMP);// new
+                                          // SourceEditor(currentFileContents,
+        // currentDir)); //new SourceEditor("",
+        // "\\."));
         shared.tabbedPane.setSelectedIndex(shared.tabbedPane.getTabCount() - 1);
     }
 
@@ -555,82 +556,80 @@ public class MainWindow implements Runnable
         }
         catch (IOException e1)
         {
-        }         
-         
-         /*String sourceFile = currentDir;
-         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-         List<File> sourceFileList = new ArrayList<File>();
-         sourceFileList.add(new File(sourceFile));
-         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFileList);
-         CompilationTask task = compiler.getTask(null, fileManager, null, null, null, compilationUnits);
-         boolean result = task.call();
-         if (result) 
-         {
-        	 System.out.println("Compilation was successful");
-         } 
-         else 
-         {
-        	 System.out.println("Compilation failed");
-         }
-         //fileManager.close();*/
-         
-    	JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-    	//System.out.println(currentDir);
-    	int results = javac.run(System.in, System.out, System.err, currentDir);
-    	if (results ==0)
-    	{
-    		this.debugwindow.println("Compilation Successful");
+        }
+
+        /*
+         * String sourceFile = currentDir; JavaCompiler compiler =
+         * ToolProvider.getSystemJavaCompiler(); StandardJavaFileManager
+         * fileManager = compiler.getStandardFileManager(null, null, null);
+         * List<File> sourceFileList = new ArrayList<File>();
+         * sourceFileList.add(new File(sourceFile)); Iterable<? extends
+         * JavaFileObject> compilationUnits =
+         * fileManager.getJavaFileObjectsFromFiles(sourceFileList);
+         * CompilationTask task = compiler.getTask(null, fileManager, null,
+         * null, null, compilationUnits); boolean result = task.call(); if
+         * (result) { System.out.println("Compilation was successful"); } else {
+         * System.out.println("Compilation failed"); } //fileManager.close();
+         */
+
+        JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+        // System.out.println(currentDir);
+        int results = javac.run(System.in, System.out, System.err, currentDir);
+        if (results == 0)
+        {
+            this.debugwindow.println("Compilation Successful");
         }
         else
         {
-        	this.debugwindow.println("Compilation failed");	
-    	}    
-    	updateOutput();
+            this.debugwindow.println("Compilation failed");
+        }
+        updateOutput();
     }
 
     public void updateOutput()
     {
         this.debugwindow.println(this.baos.toString());
-        /*try {
-			this.baos.flush();
-		} 
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}*/
+        /*
+         * try { this.baos.flush(); } catch (IOException e) {
+         * e.printStackTrace(); }
+         */
     }
 
-    
     void runFile()
     {
-    	try
-    	{
-    		String line;
-    		//int i = 0;
-    		Process p = Runtime.getRuntime().exec(this.getCommands());
-    		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-    		while ((line = input.readLine()) != null)
-    		{
-    			this.debugwindow.println(line);
-    		}
-    		input.close();
-    	}
-    	catch (Exception e)
-    	{
-    		e.printStackTrace();
-    	}
+        try
+        {
+            String line;
+            // int i = 0;
+            Process p = Runtime.getRuntime().exec(this.getCommands());
+            BufferedReader input = new BufferedReader(new InputStreamReader(
+                    p.getInputStream()));
+            while ((line = input.readLine()) != null)
+            {
+                this.debugwindow.println(line);
+            }
+            input.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
-    
+
     public String[] getCommands()
     {
         if (isWindows())
         {
-            return new String[] {"cmd.exe", "/C",  "start " + currentDir + /* "java" + "\\test"this.sourceFile.getParentFile().getPath() +*/ "\\runHello.bat"};
+            return new String[] { "cmd.exe", "/C",
+                    "start " + currentDir + /*
+                                             * "java" +
+                                             * "\\test"this.sourceFile.getParentFile
+                                             * ().getPath() +
+                                             */"\\runHello.bat" };
         }
         else if (isUnix())
         {
-            return new String[] { currentDir/*"./runHello.sh"*/ };
+            return new String[] { currentDir /* "./runHello.sh" */};
         }
         else
         {
@@ -652,7 +651,8 @@ public class MainWindow implements Runnable
         return (os.indexOf("mac") >= 0);
     }
 
-    public static boolean isUnix()    {
+    public static boolean isUnix()
+    {
 
         String os = System.getProperty("os.name").toLowerCase();
         // linux or unix
@@ -661,32 +661,32 @@ public class MainWindow implements Runnable
 
     private void ChangeLocking()
     {
-    	if (LockingEnabled == true) 
-    	{
-    		int response = JOptionPane.showConfirmDialog(null,
-    				"Are you sure you wish to disable line locking");
-    		if (response == 0)
-    		{
-    			LockingEnabled = false;
-    		}  
-    		else
-    		{
-    			return;
-    		}
-    	} 
-    	else 
-    	{
-    		int response = JOptionPane.showConfirmDialog(null,
-    		"Are you sure you wish to enable line locking?");
-    		if (response == 0)
-    		{
-    			LockingEnabled = true;
-    		}  
-    		else
-    		{
-    			return;
-    		}
-    	}        
+        if (LockingEnabled == true)
+        {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you wish to disable line locking");
+            if (response == 0)
+            {
+                LockingEnabled = false;
+            }
+            else
+            {
+                return;
+            }
+        }
+        else
+        {
+            int response = JOptionPane.showConfirmDialog(null,
+                    "Are you sure you wish to enable line locking?");
+            if (response == 0)
+            {
+                LockingEnabled = true;
+            }
+            else
+            {
+                return;
+            }
+        }
     }
 
     private void restartProfile()
@@ -752,52 +752,57 @@ public class MainWindow implements Runnable
 
         JFrame profileFrame = new JFrame("View Profile");
         Container content = profileFrame.getContentPane();
-        
+
         // set frame icon to cider logo
         URL x = this.getClass().getResource("icon.png");
         ImageIcon image = new ImageIcon(x);
         Image test = image.getImage();
         profileFrame.setIconImage(test);
-        
+
         // horizontal box with user image in left cell, info in right cell
         Box hbox = Box.createHorizontalBox();
         hbox.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
+
         URL urlImage;
         ImageIcon photo;
-        
-        try {
-        	//load custom user photo here
-        	urlImage = this.getClass().getResource(myProfile.uname + ".png");
-        	photo = new ImageIcon(urlImage);
+
+        try
+        {
+            // load custom user photo here
+            urlImage = this.getClass().getResource(myProfile.uname + ".png");
+            photo = new ImageIcon(urlImage);
         }
-        catch (NullPointerException npe) {
-        	//load default user photo if custom user doesn't exist
-        	urlImage = this.getClass().getResource("defaultuser.png");
-        	photo = new ImageIcon(urlImage);
+        catch (NullPointerException npe)
+        {
+            // load default user photo if custom user doesn't exist
+            urlImage = this.getClass().getResource("defaultuser.png");
+            photo = new ImageIcon(urlImage);
         }
-        
+
         JLabel userPhoto = new JLabel(photo);
         userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
         hbox.add(userPhoto);
-        
-        JLabel userName = new JLabel("<html><u>Username: " + myProfile.uname + "</u></html>");
+
+        JLabel userName = new JLabel("<html><u>Username: " + myProfile.uname
+                + "</u></html>");
         Font curFont = userName.getFont();
-        userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(), curFont.getSize()+2));
-        
-        JLabel userChars = new JLabel("Characters Typed: " + myProfile.typedChars);
+        userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(),
+                curFont.getSize() + 2));
+
+        JLabel userChars = new JLabel("Characters Typed: "
+                + myProfile.typedChars);
         String t = myProfile.getTimeString();
         JLabel userTime = new JLabel("Total Time: " + t);
         JLabel userLastOnline = new JLabel("Last Seen: " + myProfile.lastOnline);
-        
+
         // vertical box with user statistics in
         Box vbox = Box.createVerticalBox();
-        
+
         vbox.add(userName);
         vbox.add(userChars);
         vbox.add(userTime);
         vbox.add(userLastOnline);
-        
+
         hbox.add(vbox);
         content.add(hbox);
 
@@ -805,7 +810,7 @@ public class MainWindow implements Runnable
         profileFrame.setResizable(false);
         profileFrame.isDisplayable();
         profileFrame.setLocationRelativeTo(null);
-        
+
         profileFrame.setVisible(true);
     }
 
@@ -1136,14 +1141,15 @@ public class MainWindow implements Runnable
                     System.out.println("Double clicked on Item " + i);
                     System.out.println("Double clicked on Item: "
                             + shared.userList.getModel().getElementAt(i));
-                    client.initiateChat((String) shared.userList.getSelectedValue());
+                    client.initiateChat((String) shared.userList
+                            .getSelectedValue());
                 }
                 else if ((e.getButton() == MouseEvent.BUTTON3)
                         && (shared.userList.locationToIndex(e.getPoint()) != -1))
                 {
                     /* pop up for viewing users profile/stats etc"); */
-                	shared.userList.setSelectedIndex(shared.userList.locationToIndex(e
-                            .getPoint()));
+                    shared.userList.setSelectedIndex(shared.userList
+                            .locationToIndex(e.getPoint()));
 
                     JPopupMenu popupMenu = new JPopupMenu();
                     JMenuItem chat = new JMenuItem("Chat with User");
@@ -1184,7 +1190,8 @@ public class MainWindow implements Runnable
                                     {
                                         System.out.println(client.profileFound);
                                         client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile "
-                                                + shared.userList.getSelectedValue()
+                                                + shared.userList
+                                                        .getSelectedValue()
                                                 + " notme"));
                                         Thread.sleep(1000);
                                         System.out.println(client.profileFound);
@@ -1227,8 +1234,9 @@ public class MainWindow implements Runnable
         JScrollPane userListScroll = new JScrollPane(shared.userList);
         // userListScroll.setBorder(emptyBorder);
 
-        shared.userCount.setText(" " + shared.userListModel.getSize() + " Users Online");
-        panel.add( shared.userCount, BorderLayout.NORTH);
+        shared.userCount.setText(" " + shared.userListModel.getSize()
+                + " Users Online");
+        panel.add(shared.userCount, BorderLayout.NORTH);
         panel.add(userListScroll);
         panel.setMinimumSize(new Dimension(0, 100));
         return panel;
@@ -1362,9 +1370,9 @@ public class MainWindow implements Runnable
         JLabel test = new JLabel("i have no idea how to call the java compiler");
         this.debugwindow = new DebugWindow();
         this.debugwindow.setAutoscrolls(true);
-        
+
         JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                this.sourceEditorSection(), this.debugwindow/*test*/);
+                this.sourceEditorSection(), this.debugwindow/* test */);
         EditorDebugSplit.setBorder(emptyBorder);
         EditorDebugSplit.setOneTouchExpandable(true);
         EditorDebugSplit.setDividerLocation(800);
@@ -1390,8 +1398,7 @@ public class MainWindow implements Runnable
     }
 
     // TODO: Update chatlog moved to Client for now
-
-    public void run()
+    public void startApplication(JFrame loginWindow)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
 
@@ -1423,9 +1430,11 @@ public class MainWindow implements Runnable
         w.pack();
         this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
         this.editorChatSplit.setDividerLocation(0.75);
-        w.setLocationByPlatform(true);
-        w.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        int left = loginWindow.getX();
+        int top = loginWindow.getY();
+        w.setLocation(left > 0 ? left : 0, top > 0 ? top : 0);
         w.setVisible(true);
+        w.setExtendedState(JFrame.MAXIMIZED_BOTH);
         w.addWindowListener(new WindowListener()
         {
             @Override
