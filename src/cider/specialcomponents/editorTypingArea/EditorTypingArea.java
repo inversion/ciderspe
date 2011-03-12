@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.JPanel;
 
@@ -69,6 +68,9 @@ public class EditorTypingArea extends JPanel implements MouseListener,
     private boolean isKey = false;
     private int commentStartLoc = -1;
     private TypingRegion selectedRegion = null;
+    private CaretVisibilityToggler toggleCaretVisibility;
+    private Timer caretTimer;
+    private long flashDelay = 500;
 
     static Client parent;
     public static int Highlighting;
@@ -173,6 +175,7 @@ public class EditorTypingArea extends JPanel implements MouseListener,
             }
             catch (ConcurrentModificationException e)
             {
+                e.printStackTrace();
                 // ignore for now
             }
         }
@@ -234,19 +237,11 @@ public class EditorTypingArea extends JPanel implements MouseListener,
      */
     private void setupCaretFlashing()
     {
-        Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask()
-        {
+        this.caretTimer = new Timer();
+        this.toggleCaretVisibility = new CaretVisibilityToggler(this);
 
-            @Override
-            public void run()
-            {
-                caretVisible = hasFocus() && caretFlashing && !caretVisible;
-                if (caretFlashing)
-                    updateUI();
-            }
-
-        }, 0, 500);
+        this.caretTimer.scheduleAtFixedRate(toggleCaretVisibility, 0,
+                this.flashDelay);
 
         this.addFocusListener(new FocusListener()
         {
@@ -329,7 +324,8 @@ public class EditorTypingArea extends JPanel implements MouseListener,
         if (this.caretPosition >= 0)
             this.caretPosition--;
 
-        this.caretVisible = true;
+        this.holdCaretVisibility(true);
+        // this.caretFlashing = fa
         this.updateUI();
     }
 
@@ -341,7 +337,7 @@ public class EditorTypingArea extends JPanel implements MouseListener,
         if (this.caretPosition < this.str.length() - 1)
             this.caretPosition++;
 
-        this.caretVisible = true;
+        this.holdCaretVisibility(true);
         this.updateUI();
     }
 
@@ -353,7 +349,7 @@ public class EditorTypingArea extends JPanel implements MouseListener,
             this.moveLeft();
         else
         {
-            this.caretVisible = true;
+            this.holdCaretVisibility(true);
             int lineNum = this.getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
@@ -367,13 +363,18 @@ public class EditorTypingArea extends JPanel implements MouseListener,
         }
     }
 
+    public void holdCaretVisibility(boolean visible)
+    {
+        this.caretVisible = visible;
+        this.toggleCaretVisibility.skipNextToggle();
+    }
+
     public void moveDown()
     {
         if (this.getCurrentLine().str.newline())
             this.moveRight();
         else
         {
-            this.caretVisible = true;
             int lineNum = this.getCurrentLine().lineNum + 1;
             if (lineNum > this.lines.size())
                 lineNum = this.lines.size();
@@ -634,6 +635,7 @@ public class EditorTypingArea extends JPanel implements MouseListener,
         this.caretPosition += spaces;
         this.caretPosition = constrain(this.caretPosition);
         this.selectedRegion = null;
+        this.holdCaretVisibility(true);
         this.updateUI();
     }
 
@@ -646,8 +648,8 @@ public class EditorTypingArea extends JPanel implements MouseListener,
 
     private int constrain(int position)
     {
-        if (position > this.str.length() + 1)
-            return this.str.length();
+        if (position > this.str.length())
+            return this.str.length() - 1;
         if (position < 0)
             return 0;
         else
@@ -737,5 +739,13 @@ public class EditorTypingArea extends JPanel implements MouseListener,
     public TypingRegion getSelectedRegion()
     {
         return this.selectedRegion;
+    }
+
+    public void toggleCaretVisibility()
+    {
+        this.caretVisible = this.hasFocus() && this.caretFlashing
+                && !this.caretVisible;
+        if (this.caretFlashing)
+            updateUI();
     }
 }
