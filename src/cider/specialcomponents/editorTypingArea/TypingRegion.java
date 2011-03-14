@@ -21,4 +21,9 @@ public class TypingRegion
     {
         return position >= this.start && position <= this.end;
     }
+
+    public int getLength()
+    {
+        return this.end - start;
+    }
 }

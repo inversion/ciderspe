@@ -85,6 +85,7 @@ public class LoginUI
         {
             System.err
                     .println("Note: Can't use noire look and feel, add JTattoo.jar to your build path.");
+            e.printStackTrace();
         }
 
         JPanel main = new JPanel();
@@ -313,10 +314,12 @@ public class LoginUI
         catch (FileNotFoundException e)
         {
             // System.out.println("File not found");
+            e.printStackTrace();
         }
         catch (IOException e)
         {
             // System.out.println("File not found");
+            e.printStackTrace();
         }
     }
 
@@ -343,6 +346,7 @@ public class LoginUI
             catch (IllegalArgumentException err)
             {
                 System.out.println("Deletion failed: " + fileName);
+                err.printStackTrace();
             }
         }
         Thread mainWindowThread = connectMainWindow();
@@ -354,6 +358,7 @@ public class LoginUI
             connectBoxThread.start();
             mainWindowThread.start();
         }
+
         else
         {
             displayLogin();
@@ -395,6 +400,7 @@ public class LoginUI
         catch (IOException e)
         {
             System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
             System.exit(0);
         }
     }
@@ -532,6 +538,7 @@ public class LoginUI
         catch (NumberFormatException e)
         {
             errmsg = "Invalid port number";
+            e.printStackTrace();
         }
         return null;
     }
