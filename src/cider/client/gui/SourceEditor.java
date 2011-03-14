@@ -246,7 +246,14 @@ public class SourceEditor extends JScrollPane
                     eta.moveDown();
                     break;
                 case KeyEvent.VK_HOME:
-                    eta.moveHome();
+                {
+                    if (ke.isShiftDown())
+                        eta.moveDocEnd();
+                    else if (ke.isControlDown())
+                        eta.moveDocHome();
+                    else
+                        eta.moveHome();
+                }
                     break;
                 case KeyEvent.VK_END:
                     eta.moveEnd();
@@ -257,28 +264,33 @@ public class SourceEditor extends JScrollPane
                 case KeyEvent.VK_PAGE_DOWN:
                     eta.movePageDown();
                     break;
-                case KeyEvent.VK_CONTROL: // && KeyEvent.VK_HOME:
-                    // switch (ke.getKeyCode())
-                {
-                    // case KeyEvent.VK_HOME:
+                case KeyEvent.VK_4:
+                    if (ke.isControlDown())
+                        this.applyToSelection(TypingEventMode.lockRegion);
+                    break;
+                case KeyEvent.VK_R:
+                    if (ke.isControlDown())
+                        this.applyToSelection(TypingEventMode.unlockRegion);
+                    break;
+                }
+            }
 
-                    eta.moveDocHome();
-                    break;
-                    // case KeyEvent.VK_SHIFT:
-                    // eta.moveDocEnd();
-                    // break;
-                }
-                case KeyEvent.VK_SHIFT:
-                {
-                    // <lawrence> : You've probably already done this
-                    // Alex, it's just that I kept pressing
-                    // shift by accident. Don't forget to
-                    // test for empty document btw.
-                    if (ke.getKeyCode() == KeyEvent.VK_HOME)
-                        eta.moveDocEnd();
-                }
-                    break;
-                }
+            private void applyToSelection(TypingEventMode mode)
+            {
+                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                TypingEvent te = new TypingEvent(System.currentTimeMillis()
+                        + client.getClockOffset(), mode,
+                        eta.getSelectedRegion().start, eta.getSelectedRegion()
+                                .getLength(), "", client.getUsername(),
+                        client.getUsername());
+
+                outgoingEvents.add(te);
+                internal.add(te);
+                System.out.println("push to server: " + te);
+                eta.getSourceDocument().push(internal);
+                client.broadcastTypingEvents(outgoingEvents, path);
+                eta.updateUI();
             }
 
             @Override
