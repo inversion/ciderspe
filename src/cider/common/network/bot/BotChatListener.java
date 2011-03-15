@@ -1,23 +1,23 @@
 /**
  *  CIDER - Collaborative Integrated Development EnviRonment
     Copyright (C) 2011  Andrew Moss
-					    Lawrence Watkiss
-					    Jonathan Bannister
-					    Alex Sheppard
-					    Miles Taylor
-					    Ashley Woodman
+                        Lawrence Watkiss
+                        Jonathan Bannister
+                        Alex Sheppard
+                        Miles Taylor
+                        Ashley Woodman
 
-This program is free software: you can redistribute it and/or modify
+  This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+  This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+  You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
@@ -77,7 +77,7 @@ public class BotChatListener implements ChatManagerListener
                                 + " initiated chat, but is already connected from another CIDER client, alerting new instance to quit...");
             try
             {
-            	// No need to escape because it's alphanumeric
+                // No need to escape because it's alphanumeric
                 chat.sendMessage( "quit" );
             }
             catch (XMPPException e)
