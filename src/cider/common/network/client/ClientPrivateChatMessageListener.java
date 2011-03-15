@@ -1,3 +1,26 @@
+/**
+ *  CIDER - Collaborative Integrated Development EnviRonment
+    Copyright (C) 2011  Andrew Moss
+                        Lawrence Watkiss
+                        Jonathan Bannister
+                        Alex Sheppard
+                        Miles Taylor
+                        Ashley Woodman
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package cider.common.network.client;
 
 import org.jivesoftware.smack.Chat;
@@ -17,24 +40,24 @@ import org.jivesoftware.smack.util.StringUtils;
 
 public class ClientPrivateChatMessageListener implements MessageListener {
 
-	private static final boolean DEBUG = true;
-	
-	private Client client;
-	
-	public ClientPrivateChatMessageListener( Client caller ) 
-	{
-		this.client = caller;
-	}
+    private static final boolean DEBUG = true;
+    
+    private Client client;
+    
+    public ClientPrivateChatMessageListener( Client caller ) 
+    {
+        this.client = caller;
+    }
 
-	@Override
-	public void processMessage(Chat chat, Message message) 
-	{
-		// TODO: Bit dodgy about null etc.
+    @Override
+    public void processMessage(Chat chat, Message message) 
+    {
+        // TODO: Bit dodgy about null etc.
         String body = new String( StringUtils.decodeBase64( message.getBody() ) );
         
         if( DEBUG )
-        	System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
+            System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
         
-		client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
-	}
+        client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
+    }
 }
