@@ -464,6 +464,7 @@ public class EditorTypingArea extends JPanel implements MouseListener,
         }
         catch (NumberFormatException nfe)
         {
+            nfe.printStackTrace();
             return 0;
         }
     }

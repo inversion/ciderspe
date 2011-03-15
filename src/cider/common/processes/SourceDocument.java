@@ -447,8 +447,9 @@ public class SourceDocument implements ICodeLocation
             {
                 attempts--;
 
-                if (attempts == 0)
-                    e.printStackTrace();
+                // if (attempts == 0)
+                // e.printStackTrace();
+                e.printStackTrace();
             }
         }
 
@@ -593,7 +594,7 @@ public class SourceDocument implements ICodeLocation
         }
         catch (Exception e)
         {
-
+            e.printStackTrace();
         }
         return latestEvents;
     }

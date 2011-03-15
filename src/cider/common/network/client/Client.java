@@ -656,6 +656,7 @@ public class Client
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error retrieving file list: " + e.getMessage());
             e.printStackTrace();
