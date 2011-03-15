@@ -303,120 +303,130 @@ public class SourceEditor extends JScrollPane
             @Override
             public void keyTyped(KeyEvent ke)
             {
-                int r = eta.currentPositionLocked(0, client.getUsername());
-                if (r == 2)
-                    System.out.println("Current position locked!");
+                if (ke.isControlDown())
+                    return;
                 else
                 {
-                    switch (ke.getKeyCode())
-                    {
-                    default:
-                    {
-                        try
-                        {
-                            // System.out.println(server.lastUpdateTime());
-                            TypingEventMode mode = TypingEventMode.insert;
-                            String chr;
+                    int r = eta.currentPositionLocked(0, client.getUsername());
 
-                            switch (ke.getKeyChar())
+                    if (r == 2)
+                        System.out.println("Current position locked!");
+                    else
+                    {
+                        switch (ke.getKeyCode())
+                        {
+                        default:
+                        {
+                            try
                             {
-                            case '\u007F':
-                            {
-                                /*
-                                 * int CurLine; int CurxLine; CurLine =
-                                 * eta.GetCurLine() - 1; CurxLine =
-                                 * eta.GetCurxLen();
-                                 */
-                                if (eta.getCaretPosition() >= -1)
+                                // System.out.println(server.lastUpdateTime());
+                                TypingEventMode mode = TypingEventMode.insert;
+                                String chr;
+
+                                switch (ke.getKeyChar())
+                                {
+                                case '\u007F':
                                 {
                                     /*
-                                     * Needs CurxLine working properly
-                                     * 
-                                     * if ((eta.lines.size() == CurLine) &&
-                                     * (eta.lines.get(CurLine).str.length() <=
-                                     * CurxLine)) { TypingEventList.DeleteType =
-                                     * 0; mode = TypingEventMode.backspace; chr
-                                     * = " "; } else {
+                                     * int CurLine; int CurxLine; CurLine =
+                                     * eta.GetCurLine() - 1; CurxLine =
+                                     * eta.GetCurxLen();
                                      */
-                                    TypingEventList.DeleteType = 1;
-                                    mode = TypingEventMode.backspace;
-                                    chr = " ";
-                                    // }
+                                    if (eta.getCaretPosition() >= -1)
+                                    {
+                                        /*
+                                         * Needs CurxLine working properly
+                                         * 
+                                         * if ((eta.lines.size() == CurLine) &&
+                                         * (eta.lines.get(CurLine).str.length()
+                                         * <= CurxLine)) {
+                                         * TypingEventList.DeleteType = 0; mode
+                                         * = TypingEventMode.backspace; chr =
+                                         * " "; } else {
+                                         */
+                                        TypingEventList.DeleteType = 1;
+                                        mode = TypingEventMode.backspace;
+                                        chr = " ";
+                                        // }
+                                    }
+                                    else
+                                        return;
                                 }
-                                else
-                                    return;
-                            }
-                                break;
-                            case '\u0008':
-                            {
-                                if (eta.getCaretPosition() >= 0)
+                                    break;
+                                case '\u0008':
                                 {
-                                    TypingEventList.DeleteType = 0;
-                                    mode = TypingEventMode.backspace;
-                                    chr = " ";
+                                    if (eta.getCaretPosition() >= 0)
+                                    {
+                                        TypingEventList.DeleteType = 0;
+                                        mode = TypingEventMode.backspace;
+                                        chr = " ";
+                                    }
+                                    else
+                                        return;
                                 }
-                                else
-                                    return;
+                                    break;
+                                case '\t':
+                                {
+                                    chr = "    ";
+                                    SourceEditor.this.eta
+                                            .requestFocusInWindow();
+                                }
+                                    break;
+                                default:
+                                    chr = String.valueOf(ke.getKeyChar());
+                                    break;
+                                }
+
+                                TypingEvent te = new TypingEvent(
+                                        System.currentTimeMillis()
+                                                + client.getClockOffset(),
+                                        mode, eta.getCaretPosition(),
+                                        chr.length(), chr,
+                                        client.getUsername(),
+                                        r == 1 ? client.getUsername() : null);
+                                ArrayList<TypingEvent> particles = te.explode();
+
+                                for (TypingEvent particle : particles)
+                                    System.out.println("push to server: "
+                                            + particle);
+
+                                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+
+                                for (TypingEvent particle : particles)
+                                {
+                                    outgoingEvents.add(particle);
+                                    internal.add(particle);
+                                }
+
+                                eta.getSourceDocument().push(internal);
+                                eta.updateText();
+                                eta.scrollRectToVisible(new Rectangle(0, eta
+                                        .getCurrentLine().y, eta.getWidth(),
+                                        EditorTypingArea.lineSpacing));
+                                client.broadcastTypingEvents(outgoingEvents,
+                                        path);
+
+                                switch (mode)
+                                {
+                                case insert:
+                                    eta.moveCaret(particles.size());
+                                    break;
+                                case overwrite:
+                                    eta.moveCaret(particles.size());
+                                    break;
+                                case backspace:
+                                    if (TypingEventList.DeleteType == 0)
+                                        eta.moveLeft();
+                                    break;
+                                }
                             }
-                                break;
-                            case '\t':
+                            catch (Exception e)
                             {
-                                chr = "    ";
-                                SourceEditor.this.eta.requestFocusInWindow();
-                            }
-                                break;
-                            default:
-                                chr = String.valueOf(ke.getKeyChar());
-                                break;
-                            }
-
-                            TypingEvent te = new TypingEvent(
-                                    System.currentTimeMillis()
-                                            + client.getClockOffset(), mode,
-                                    eta.getCaretPosition(), chr.length(), chr,
-                                    client.getUsername(),
-                                    r == 1 ? client.getUsername() : null);
-                            ArrayList<TypingEvent> particles = te.explode();
-
-                            for (TypingEvent particle : particles)
-                                System.out.println("push to server: "
-                                        + particle);
-
-                            Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                            Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
-
-                            for (TypingEvent particle : particles)
-                            {
-                                outgoingEvents.add(particle);
-                                internal.add(particle);
-                            }
-
-                            eta.getSourceDocument().push(internal);
-                            eta.updateText();
-                            eta.scrollRectToVisible(new Rectangle(0, eta
-                                    .getCurrentLine().y, eta.getWidth(),
-                                    EditorTypingArea.lineSpacing));
-                            client.broadcastTypingEvents(outgoingEvents, path);
-
-                            switch (mode)
-                            {
-                            case insert:
-                                eta.moveCaret(particles.size());
-                                break;
-                            case overwrite:
-                                eta.moveCaret(particles.size());
-                                break;
-                            case backspace:
-                                if (TypingEventList.DeleteType == 0)
-                                    eta.moveLeft();
-                                break;
+                                e.printStackTrace();
                             }
                         }
-                        catch (Exception e)
-                        {
-                            e.printStackTrace();
                         }
-                    }
                     }
                 }
             }
