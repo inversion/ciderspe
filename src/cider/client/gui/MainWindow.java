@@ -193,6 +193,7 @@ public class MainWindow
                 }
                 catch (InterruptedException e)
                 {
+                    e.printStackTrace();
                 }
                 if (client.colours.containsKey(focus))
                     client.colours.remove(focus);
@@ -447,6 +448,7 @@ public class MainWindow
             }
             catch (IOException e)
             {
+                e.printStackTrace();
                 JOptionPane.showMessageDialog(new JPanel(),
                         "Error: " + e.getMessage());
                 return;
@@ -485,12 +487,14 @@ public class MainWindow
         }
         catch (IOException e1)
         {
+            e1.printStackTrace();
             JOptionPane.showMessageDialog(new JPanel(),
                     ("Error: " + e1.getMessage()));
             return;
         }
         catch (NullPointerException e)
         {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: There is no document open!");
             return;
@@ -556,6 +560,7 @@ public class MainWindow
         }
         catch (IOException e1)
         {
+            e1.printStackTrace();
         }
 
         /*
@@ -714,6 +719,7 @@ public class MainWindow
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: " + e.getMessage());
             return;
@@ -730,6 +736,7 @@ public class MainWindow
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: " + e.getMessage());
             return;
@@ -774,6 +781,7 @@ public class MainWindow
         }
         catch (NullPointerException npe)
         {
+            npe.printStackTrace();
             // load default user photo if custom user doesn't exist
             urlImage = this.getClass().getResource("defaultuser.png");
             photo = new ImageIcon(urlImage);
@@ -1209,10 +1217,10 @@ public class MainWindow
                                     }
                                     catch (XMPPException e)
                                     {
+                                        e.printStackTrace();
                                         JOptionPane.showMessageDialog(
                                                 new JPanel(),
                                                 "Error: " + e.getMessage());
-                                        e.printStackTrace();
                                     }
                                     catch (InterruptedException e)
                                     {

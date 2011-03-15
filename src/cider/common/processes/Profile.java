@@ -15,198 +15,209 @@ import java.util.Date;
 
 import cider.common.network.client.Client;
 
-public class Profile 
+public class Profile
 {
-	public String uname;
-	public int typedChars;
-	public long timeSpent;
-	public String lastOnline;
-	public Color userColour;
-	public Client client;
-	
-//	public static void main (String uname)
-//	{
-//		new Profile(uname);
-//	}
+    public String uname;
+    public int typedChars;
+    public long timeSpent;
+    public String lastOnline;
+    public Color userColour;
+    public Client client;
 
-	public Profile(String un, Client c) 
-	{
-		uname = un;
-		typedChars = 0;
-		timeSpent = 0;
-		lastOnline = "Never!";
-		userColour = new Color(150,150,150);
-		client = c;
-		//readProfileFileFromServer();
-	}
-	
+    // public static void main (String uname)
+    // {
+    // new Profile(uname);
+    // }
 
-	
-	public void incrementCharCount()
-	{
-		typedChars++;
-		return;
-	}
-	
-	public void adjustCharCount(int adjustment)
-	{
-		typedChars+=adjustment;
-		return;
-	}
+    public Profile(String un, Client c)
+    {
+        uname = un;
+        typedChars = 0;
+        timeSpent = 0;
+        lastOnline = "Never!";
+        userColour = new Color(150, 150, 150);
+        client = c;
+        // readProfileFileFromServer();
+    }
 
-	public void updateTimeSpent(Long start)
-	{
-		long end, spent;
-		end = System.currentTimeMillis();
-		spent = end-start;
+    public void incrementCharCount()
+    {
+        typedChars++;
+        return;
+    }
 
-		System.out.println("UPDATING TIME " + spent + timeSpent);
-		timeSpent += spent;
-	}
-	
-	public void updateProfileInfo() 
-	{
-		Date d = new Date();
-		DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
-		lastOnline = df.format(d);		
-	}
-	
-	public String toString()
-	{
-		return uname + "  " + "chars: " + typedChars + 
-		"  timespent: " + timeSpent + 
-		"  lastonline: " + lastOnline + 
-		"  colour: " + 
-		userColour.getRed() + " " + 
-		userColour.getGreen() + " " + 
-		userColour.getBlue();
-	}
+    public void adjustCharCount(int adjustment)
+    {
+        typedChars += adjustment;
+        return;
+    }
 
-	public void addClient(Client c) 
-	{
-		client = c;
-	}
+    public void updateTimeSpent(Long start)
+    {
+        long end, spent;
+        end = System.currentTimeMillis();
+        spent = end - start;
 
-	public void setChars(int parseInt) 
-	{
-		typedChars = parseInt;
-	}
+        System.out.println("UPDATING TIME " + spent + timeSpent);
+        timeSpent += spent;
+    }
 
-	public void setTime(long parseLong) {
-		timeSpent = parseLong;
-	}
+    public void updateProfileInfo()
+    {
+        Date d = new Date();
+        DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
+        lastOnline = df.format(d);
+    }
 
-	public void setLastOnline(String string) {
-		lastOnline = string;
-	}
+    public String toString()
+    {
+        return uname + "  " + "chars: " + typedChars + "  timespent: "
+                + timeSpent + "  lastonline: " + lastOnline + "  colour: "
+                + userColour.getRed() + " " + userColour.getGreen() + " "
+                + userColour.getBlue();
+    }
 
-	public void setColour(int R, int G, int B) {
-		userColour = new Color(R, G, B);
-		System.out.println("Colour updated to: " + R + " " + G + " " + B);
-	}
-	
-	@Deprecated
-	public void readProfileFileFromServer()
-	{
-		File f = new File (uname + ".txt");
-		if (f.exists())
-		{
-			System.out.println("Profile file exists, reading " + uname + ".txt");
-			try
-			{
-				FileInputStream fis = new FileInputStream(f);
-				DataInputStream dis = new DataInputStream(fis);
-				BufferedReader br = new BufferedReader(new InputStreamReader(dis));
-				String line;
-				while ((line = br.readLine()) != null)
-				{
-					if (line.contains("chars:"))
-					{
-						String[] splitline = line.split(" ");
-						try
-						{
-							typedChars = Integer.parseInt(splitline[1]);
-						}
-						catch (Exception e)
-						{
-							System.err.println("Error: Integer parse failed in Profile.java");
-						}
-					}
-					if (line.contains("timespent:"))
-					{
-						String[] splitline = line.split(" ");
-						try
-						{
-							timeSpent = Integer.parseInt(splitline[1]);
-						}
-						catch (Exception e)
-						{
-							System.err.println("Error: Integer parse failed in timespent Profile.java");
-						}
-					}
-					if (line.contains("lastonline:"))
-					{
-						int index = line.indexOf(" ");
-						line = line.substring(index);
-						try
-						{
-							lastOnline = line;
-						}
-						catch (Exception e)
-						{
-							System.err.println("Error: Integer parse failed in lastonline Profile.java");
-						}
-					}
+    public void addClient(Client c)
+    {
+        client = c;
+    }
 
-					if (line.contains("colour:"))
-					{
-						String[] splitline = line.split(" ");
-						int r = Integer.parseInt(splitline[1]);
-						int g = Integer.parseInt(splitline[2]);
-						int b = Integer.parseInt(splitline[3]);
-						userColour = new Color(r,g,b);
-					}
-				}
-			}
-			catch (FileNotFoundException ex)
-			{
-				System.err.println("Error: file not found while creating profile");
-			}
-			catch (IOException ex)
-			{
-				System.err.println("Error: " + ex.getMessage());
-			}
-		}
-		else
-		{
-			System.out.println("Profile file not found, constructing");
-			try 
-			{
-				f.createNewFile();
-				FileWriter fw = new FileWriter(f);
-				BufferedWriter out = new BufferedWriter(fw);
-				out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0" + "\n" + " lastonline: Never!\n" + "colour: 150 150 150");
-				out.close();
-			} 
-			catch (IOException e) 
-			{
-				e.printStackTrace();
-			}
-		}
-	}
+    public void setChars(int parseInt)
+    {
+        typedChars = parseInt;
+    }
 
-	/*
-	 * Source: http://goo.gl/e4p3x
-	 */
-	public String getTimeString() 
-	{
-		long t = timeSpent;
-	    String format = String.format("%%0%dd", 2);  
-	    t = timeSpent / 1000;  
-	    String seconds = String.format(format, t % 60);  
-	    String minutes = String.format(format, (t % 3600) / 60);  
-	    String hours = String.format(format, t / 3600);  
-	    String time =  hours + ":" + minutes + ":" + seconds;  
-	    return time;  
-	}
+    public void setTime(long parseLong)
+    {
+        timeSpent = parseLong;
+    }
+
+    public void setLastOnline(String string)
+    {
+        lastOnline = string;
+    }
+
+    public void setColour(int R, int G, int B)
+    {
+        userColour = new Color(R, G, B);
+        System.out.println("Colour updated to: " + R + " " + G + " " + B);
+    }
+
+    @Deprecated
+    public void readProfileFileFromServer()
+    {
+        File f = new File(uname + ".txt");
+        if (f.exists())
+        {
+            System.out
+                    .println("Profile file exists, reading " + uname + ".txt");
+            try
+            {
+                FileInputStream fis = new FileInputStream(f);
+                DataInputStream dis = new DataInputStream(fis);
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        dis));
+                String line;
+                while ((line = br.readLine()) != null)
+                {
+                    if (line.contains("chars:"))
+                    {
+                        String[] splitline = line.split(" ");
+                        try
+                        {
+                            typedChars = Integer.parseInt(splitline[1]);
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                            System.err
+                                    .println("Error: Integer parse failed in Profile.java");
+                        }
+                    }
+                    if (line.contains("timespent:"))
+                    {
+                        String[] splitline = line.split(" ");
+                        try
+                        {
+                            timeSpent = Integer.parseInt(splitline[1]);
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                            System.err
+                                    .println("Error: Integer parse failed in timespent Profile.java");
+                        }
+                    }
+                    if (line.contains("lastonline:"))
+                    {
+                        int index = line.indexOf(" ");
+                        line = line.substring(index);
+                        try
+                        {
+                            lastOnline = line;
+                        }
+                        catch (Exception e)
+                        {
+                            e.printStackTrace();
+                            System.err
+                                    .println("Error: Integer parse failed in lastonline Profile.java");
+                        }
+                    }
+
+                    if (line.contains("colour:"))
+                    {
+                        String[] splitline = line.split(" ");
+                        int r = Integer.parseInt(splitline[1]);
+                        int g = Integer.parseInt(splitline[2]);
+                        int b = Integer.parseInt(splitline[3]);
+                        userColour = new Color(r, g, b);
+                    }
+                }
+            }
+            catch (FileNotFoundException ex)
+            {
+                ex.printStackTrace();
+                System.err
+                        .println("Error: file not found while creating profile");
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+                System.err.println("Error: " + ex.getMessage());
+            }
+        }
+        else
+        {
+            System.out.println("Profile file not found, constructing");
+            try
+            {
+                f.createNewFile();
+                FileWriter fw = new FileWriter(f);
+                BufferedWriter out = new BufferedWriter(fw);
+                out.write(uname + "\n" + "chars: 0" + "\n" + "timespent: 0"
+                        + "\n" + " lastonline: Never!\n"
+                        + "colour: 150 150 150");
+                out.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /*
+     * Source: http://goo.gl/e4p3x
+     */
+    public String getTimeString()
+    {
+        long t = timeSpent;
+        String format = String.format("%%0%dd", 2);
+        t = timeSpent / 1000;
+        String seconds = String.format(format, t % 60);
+        String minutes = String.format(format, (t % 3600) / 60);
+        String hours = String.format(format, t / 3600);
+        String time = hours + ":" + minutes + ":" + seconds;
+        return time;
+    }
 }

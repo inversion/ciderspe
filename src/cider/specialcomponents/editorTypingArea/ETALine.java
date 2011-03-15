@@ -138,6 +138,7 @@ public class ETALine
         }
         catch (NumberFormatException nfe)
         {
+            nfe.printStackTrace();
             return false;
         }
     }
