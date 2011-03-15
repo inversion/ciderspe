@@ -95,14 +95,15 @@ public class Bot
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
             System.err.println("Error:" + e.getMessage());
         }
     }
 
     /**
-     * Connect to the server as a reserved user (ciderchecker) to check if the bot is already
-     * logged on from another location. Alert the user on stderr if this is the
-     * case
+     * Connect to the server as a reserved user (ciderchecker) to check if the
+     * bot is already logged on from another location. Alert the user on stderr
+     * if this is the case
      * 
      * @author Andrew
      * @throws XMPPException
@@ -121,6 +122,7 @@ public class Bot
         }
         catch (XMPPException e)
         {
+            e.printStackTrace();
             System.err
                     .println("Error: Chatroom already exists, this means the bot is already online, or someone else has created the room.");
             System.err.println("Disconnecting, exiting...");

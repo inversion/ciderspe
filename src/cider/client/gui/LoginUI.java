@@ -554,6 +554,15 @@ public class LoginUI
     public static void main(String[] args)
     {
         LoginUI ui = new LoginUI();
-        ui.displayLogin();
+
+        try
+        {
+
+            ui.displayLogin();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 }

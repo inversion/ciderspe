@@ -245,33 +245,6 @@ public class SourceEditor extends JScrollPane
                 case KeyEvent.VK_DOWN:
                     eta.moveDown();
                     break;
-                case KeyEvent.VK_HOME:
-                {
-                    if (ke.isShiftDown())
-                        eta.moveDocEnd();
-                    else if (ke.isControlDown())
-                        eta.moveDocHome();
-                    else
-                        eta.moveHome();
-                }
-                    break;
-                case KeyEvent.VK_END:
-                    eta.moveEnd();
-                    break;
-                case KeyEvent.VK_PAGE_UP:
-                    eta.movePageUp();
-                    break;
-                case KeyEvent.VK_PAGE_DOWN:
-                    eta.movePageDown();
-                    break;
-                case KeyEvent.VK_4:
-                    if (ke.isControlDown())
-                        this.applyToSelection(TypingEventMode.lockRegion);
-                    break;
-                case KeyEvent.VK_R:
-                    if (ke.isControlDown())
-                        this.applyToSelection(TypingEventMode.unlockRegion);
-                    break;
                 }
             }
 
@@ -294,10 +267,45 @@ public class SourceEditor extends JScrollPane
             }
 
             @Override
-            public void keyReleased(KeyEvent e)
+            public void keyReleased(KeyEvent ke)
             {
-                // TODO Auto-generated method stub
-
+                try
+                {
+                    switch (ke.getKeyCode())
+                    {
+                    case KeyEvent.VK_HOME:
+                    {
+                        if (ke.isShiftDown())
+                            eta.moveDocEnd();
+                        else if (ke.isControlDown())
+                            eta.moveDocHome();
+                        else
+                            eta.moveHome();
+                    }
+                        break;
+                    case KeyEvent.VK_END:
+                        eta.moveEnd();
+                        break;
+                    case KeyEvent.VK_PAGE_UP:
+                        eta.movePageUp();
+                        break;
+                    case KeyEvent.VK_PAGE_DOWN:
+                        eta.movePageDown();
+                        break;
+                    case KeyEvent.VK_4:
+                        if (ke.isControlDown())
+                            this.applyToSelection(TypingEventMode.lockRegion);
+                        break;
+                    case KeyEvent.VK_R:
+                        if (ke.isControlDown())
+                            this.applyToSelection(TypingEventMode.unlockRegion);
+                        break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -308,8 +316,9 @@ public class SourceEditor extends JScrollPane
                 else
                 {
                     int r = eta.currentPositionLocked(0, client.getUsername());
-
-                    if (r == 2)
+                if (ke.isControlDown())
+                    System.out.println("Control is down!");
+                else if (r == 2)
                         System.out.println("Current position locked!");
                     else
                     {

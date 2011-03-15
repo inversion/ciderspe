@@ -74,6 +74,7 @@ public class TypingEvent
         }
         catch (Exception e)
         {
+            e.printStackTrace();
             throw new Error("Failed to parse " + str + ". " + e.getMessage());
         }
     }

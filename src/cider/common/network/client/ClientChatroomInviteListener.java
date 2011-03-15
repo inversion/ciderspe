@@ -15,36 +15,43 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
  * (Currently there is only one room, created by the bot, for all clients).
  * 
  * @author Andrew
- *
+ * 
  */
 
-public class ClientChatroomInviteListener implements InvitationListener {
+public class ClientChatroomInviteListener implements InvitationListener
+{
 
-	private static final boolean DEBUG = true;
-	
-	private MultiUserChat chatroom;
-	private String nickname;
-	private Client parent;
-	
-	public ClientChatroomInviteListener( MultiUserChat source, String nickname, Client parent )
-	{
-		this.nickname = nickname;
-		chatroom = source;
-		this.parent = parent;
-	}
-	
-	@Override
-	public void invitationReceived(Connection conn, String room,
-			String inviter, String reason, String password, Message message) {
-		try {
-			if( DEBUG )
-				System.out.println("Invited to chatroom " + room + " by " + inviter + "...");
-			chatroom.join( this.nickname, password );
-		} 
-		catch (XMPPException e)
-		{
-			JOptionPane.showMessageDialog(new JPanel(), "Error: " + e.getMessage());
-			parent.getLogin().logout();
-		}
-	}
+    private static final boolean DEBUG = true;
+
+    private MultiUserChat chatroom;
+    private String nickname;
+    private Client parent;
+
+    public ClientChatroomInviteListener(MultiUserChat source, String nickname,
+            Client parent)
+    {
+        this.nickname = nickname;
+        chatroom = source;
+        this.parent = parent;
+    }
+
+    @Override
+    public void invitationReceived(Connection conn, String room,
+            String inviter, String reason, String password, Message message)
+    {
+        try
+        {
+            if (DEBUG)
+                System.out.println("Invited to chatroom " + room + " by "
+                        + inviter + "...");
+            chatroom.join(this.nickname, password);
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: " + e.getMessage());
+            parent.getLogin().logout();
+        }
+    }
 }
