@@ -19,17 +19,19 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
 
-public class DebugPacketListener implements PacketListener {
+public class DebugPacketListener implements PacketListener
+{
 
     @Override
-    public void processPacket(Packet packet) {
+    public void processPacket(Packet packet)
+    {
         // TODO Auto-generated method stub
         System.out.println("RECEIVED: " + packet.toXML());
     }
