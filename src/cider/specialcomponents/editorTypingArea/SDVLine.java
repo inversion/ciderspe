@@ -180,7 +180,8 @@ public class SDVLine
 
         this.sdv.setIsKey(false);
 
-        g.setColor(this.colors[i] != null ? this.colors[i] : Color.WHITE);
+        g.setColor(this.colors[i] != null ? this.colors[i] : this.sdv
+                .getDefaultColor());
 
         for (int j = 0; j < this.sdv.getKeyWord().size(); j = j + 2)
         {
