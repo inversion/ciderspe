@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -89,22 +89,7 @@ public class SourceDocument implements ICodeLocation
     {
         String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
 
-        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.addAll(generateEvents(0, 100, 0,
-                "the quick brown fox jumped over the lazy dog",
-                TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(200, 500, 10, "muddled",
-                TypingEventMode.overwrite, "na"));
-        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
-                "na"));
-        tes.addAll(generateEvents(800, 1000, 27, "jumped",
-                TypingEventMode.backspace, "na"));
-        tes.addAll(generateEvents(2000, 2500, 21, "bounced",
-                TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(2600, 3000, 9,
-                "123123123123123123123123123 ", TypingEventMode.insert, "na"));
-
-        tes = shuffledEvents(tes, new Date().getTime());
+        ArrayList<TypingEvent> tes = sampleEvents();
 
         SourceDocument testDoc = new SourceDocument("test owner",
                 "testdoc.SourceDocument");
@@ -137,6 +122,35 @@ public class SourceDocument implements ICodeLocation
                         + "'.";
 
         return testResult;
+    }
+
+    /**
+     * Generates a set of typing events in random order including backspaces,
+     * overwrites and inserts. These typing events can be used for automated
+     * testing or place-holder text.
+     * 
+     * @return TypingEvents which should produce the string the quick
+     *         123123123123123123123123123 muddled fox bounced over the lazy dog
+     */
+    public static ArrayList<TypingEvent> sampleEvents()
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.addAll(generateEvents(0, 100, 0,
+                "the quick brown fox jumped over the lazy dog",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(200, 500, 10, "muddled",
+                TypingEventMode.overwrite, "na"));
+        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
+                "na"));
+        tes.addAll(generateEvents(800, 1000, 27, "jumped",
+                TypingEventMode.backspace, "na"));
+        tes.addAll(generateEvents(2000, 2500, 21, "bounced",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(2600, 3000, 9,
+                "123123123123123123123123123 ", TypingEventMode.insert, "na"));
+
+        tes = shuffledEvents(tes, new Date().getTime());
+        return tes;
     }
 
     /**

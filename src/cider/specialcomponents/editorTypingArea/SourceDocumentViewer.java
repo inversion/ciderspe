@@ -174,7 +174,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         // already been drawn at the start
                         for (int i = 0; i < line.str.length(); i++)
                         {
-                            if (!caretFound && p == this.caretPosition - ln)
+                            if (this.caretVisible && !caretFound
+                                    && p == this.caretPosition - ln)
                             {
                                 this.paintCaret(g, i, line.y);
                                 setCurrentLine(line);
@@ -207,16 +208,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
     private void paintCaret(Graphics g, int i, int lineY)
     {
-        if (this.caretVisible)
-        {
-            g.setColor(EditorTypingArea.parent.colours
-                    .get(EditorTypingArea.parent.getUsername())/* Color.BLUE */);
-            int x = ((i + 1) * EditorTypingArea.characterSpacing)
-                    + EditorTypingArea.leftMargin;
-            int y = lineY + 5;
-            g.fillRect(x, y - EditorTypingArea.lineSpacing, 3,
-                    EditorTypingArea.lineSpacing);
-        }
+        g.setColor(EditorTypingArea.parent.colours.get(EditorTypingArea.parent
+                .getUsername())/* Color.BLUE */);
+        int x = ((i + 1) * EditorTypingArea.characterSpacing)
+                + EditorTypingArea.leftMargin;
+        int y = lineY + 5;
+        g.fillRect(x, y - EditorTypingArea.lineSpacing, 3,
+                EditorTypingArea.lineSpacing);
     }
 
     private static Color glass(Color color)
@@ -317,8 +315,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         int i = 0;
         for (TypingEventList tel : split)
         {
-            SDVLine line = new SDVLine(tel, j * lineSpacing, j++, i,
-                    (EditorTypingArea) this);
+            SDVLine line = new SDVLine(tel, j * lineSpacing, j++, i, this);
             this.lines.add(line);
             i += line.str.length();
             // System.out.println(line.str.length());
