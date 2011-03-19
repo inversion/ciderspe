@@ -69,10 +69,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     private SourceDocument doc = null;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
-    private ArrayList<ETALine> lines = new ArrayList<ETALine>();
+    private ArrayList<SDVLine> lines = new ArrayList<SDVLine>();
     private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
     private ArrayList<Integer> KeyWord = new ArrayList<Integer>();
-    private ETALine currentLine = null;
+    private SDVLine currentLine = null;
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
@@ -107,9 +107,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     {
         this.doc = doc;
         this.str = this.doc.playOutEvents(Long.MAX_VALUE);
-        this.setupCaretFlashing();
-        this.addMouseListener(this);
-        this.addMouseMotionListener(this);
     }
 
     @Override
@@ -141,7 +138,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 if (this.lines.size() == 0)
                     this.paintCaret(g, -1, lineSpacing);
                 else
-                    for (ETALine line : this.lines)
+                    for (SDVLine line : this.lines)
                     {
                         if (longestLine < line.str.length())
                             longestLine = line.str.length();
@@ -242,12 +239,12 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      *            pixels
      * @return
      */
-    public int yToLineNumber(int y)
+    protected int yToLineNumber(int y)
     {
         return (int) (y / (double) lineSpacing) + 1;
     }
 
-    public int xToColumnNumber(int x)
+    protected int xToColumnNumber(int x)
     {
         return (int) ((x - leftMargin) / (double) characterSpacing);
     }
@@ -258,7 +255,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * toggle between the caret being visible or invisible. Should only need to
      * be called once.
      */
-    private void setupCaretFlashing()
+    protected void setupCaretFlashing()
     {
         this.caretTimer = new Timer();
         this.toggleCaretVisibility = new CaretVisibilityToggler(
@@ -320,7 +317,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         int i = 0;
         for (TypingEventList tel : split)
         {
-            ETALine line = new ETALine(tel, j * lineSpacing, j++, i,
+            SDVLine line = new SDVLine(tel, j * lineSpacing, j++, i,
                     (EditorTypingArea) this);
             this.lines.add(line);
             i += line.str.length();
@@ -336,7 +333,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * 
      * @return
      */
-    public int getCaretPosition()
+    protected int getCaretPosition()
     {
         return this.caretPosition;
     }
@@ -344,7 +341,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * moves the caret left one position and updates the UI
      */
-    public void moveLeft()
+    protected void moveLeft()
     {
         if (this.caretPosition >= 0)
             this.caretPosition--;
@@ -357,7 +354,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * moves the caret right one position and updates the UI
      */
-    public void moveRight()
+    protected void moveRight()
     {
         if (this.caretPosition < this.str.length() - 1)
             this.caretPosition++;
@@ -368,7 +365,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
     // TODO:
     // clean up, reuse code between these two methods
-    public void moveUp()
+    protected void moveUp()
     {
         if (this.getCurrentLine().str.newline())
             this.moveLeft();
@@ -378,7 +375,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             int lineNum = this.getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
-            ETALine line = this.lines.get(lineNum - 1);
+            SDVLine line = this.lines.get(lineNum - 1);
             int start = line.start + line.lineNum - 2;
             int length = line.str.length();
             if (this.currentColNum >= length)
@@ -388,13 +385,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         }
     }
 
-    public void holdCaretVisibility(boolean visible)
+    protected void holdCaretVisibility(boolean visible)
     {
         this.caretVisible = visible;
         this.toggleCaretVisibility.skipNextToggle();
     }
 
-    public void moveDown()
+    protected void moveDown()
     {
         if (this.getCurrentLine().str.newline())
             this.moveRight();
@@ -403,7 +400,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             int lineNum = this.getCurrentLine().lineNum + 1;
             if (lineNum > this.lines.size())
                 lineNum = this.lines.size();
-            ETALine line = this.lines.get(lineNum - 1);
+            SDVLine line = this.lines.get(lineNum - 1);
             int start = line.start + line.lineNum - 2;
             int length = line.str.length();
             if (this.currentColNum >= length)
@@ -418,7 +415,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * 
      * @author Andrew, Lawrence
      */
-    public void moveHome()
+    protected void moveHome()
     {
         int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
                 - 2;
@@ -431,7 +428,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * 
      * @author Andrew, Lawrence
      */
-    public void moveEnd()
+    protected void moveEnd()
     {
         int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
                 - 2;
@@ -444,7 +441,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * Move the caret to the start of the file and update the UI.
      * 
      */
-    public void moveDocHome()
+    protected void moveDocHome()
     {
         int start = -1;
         this.caretPosition = start;
@@ -455,10 +452,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * Move the caret to the end of the file and update the UI.
      * 
      */
-    public void moveDocEnd()
+    protected void moveDocEnd()
     {
         int numLines = this.lines.size();
-        ETALine line = this.lines.get(numLines - 1);
+        SDVLine line = this.lines.get(numLines - 1);
         int startLastLine = line.start + numLines - 2;
         int length = line.str.length();
         this.caretPosition = startLastLine + length;
@@ -470,7 +467,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * 
      * @author Andrew
      */
-    public void movePageUp()
+    protected void movePageUp()
     {
         // TODO: Not implemented yet
     }
@@ -481,7 +478,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * @author Andrew
      */
 
-    public int GetCurLine()
+    protected int GetCurLine()
     {
         try
         {
@@ -494,14 +491,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         }
     }
 
-    public int GetCurxLen()
+    protected int GetCurxLen()
     {
         return 0;
         // below doesn't work
         // return (i * characterSpacing) + leftMargin;
     }
 
-    public void movePageDown()
+    protected void movePageDown()
     {
         // TODO: Not implemented yet
     }
@@ -542,7 +539,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
         if (this.lines.size() > 0)
         {
-            ETALine line = this.lines.get(ln - 1);
+            SDVLine line = this.lines.get(ln - 1);
             int start = line.start + ln - 2;
             int length = line.str.length();
 
@@ -598,7 +595,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 if (ln > this.lines.size())
                     ln = this.lines.size();
 
-                ETALine line = this.getLine(ln - 1);
+                SDVLine line = this.getLine(ln - 1);
                 if (col > line.str.length() - 1)
                     col = line.str.length() - 1;
                 int end = line.start + ln - 1 + col;
@@ -649,14 +646,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * @param offset
      * @return
      */
-    public int currentPositionLocked(int offset, String user)
+    protected int currentPositionLocked(int offset, String user)
     {
         int pos = this.caretPosition + offset;
         return pos >= 0 && pos < this.str.length() ? this.str.locked(pos, user)
                 : 0;
     }
 
-    public void moveCaret(int spaces)
+    protected void moveCaret(int spaces)
     {
         this.caretPosition += spaces;
         this.caretPosition = constrain(this.caretPosition);
@@ -665,7 +662,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.updateUI();
     }
 
-    public void setCaretPosition(int position)
+    protected void setCaretPosition(int position)
     {
         this.caretPosition = constrain(position);
         this.selectedRegion = null;
@@ -727,7 +724,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return isKey;
     }
 
-    public ETALine getLine(int i)
+    public SDVLine getLine(int i)
     {
         return this.lines.get(i);
     }
@@ -752,22 +749,22 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return commentStartLoc;
     }
 
-    private void setCurrentLine(ETALine currentLine)
+    private void setCurrentLine(SDVLine currentLine)
     {
         this.currentLine = currentLine;
     }
 
-    public ETALine getCurrentLine()
+    protected SDVLine getCurrentLine()
     {
         return currentLine;
     }
 
-    public TypingRegion getSelectedRegion()
+    protected TypingRegion getSelectedRegion()
     {
         return this.selectedRegion;
     }
 
-    public void toggleCaretVisibility()
+    protected void toggleCaretVisibility()
     {
         this.caretVisible = this.hasFocus() && this.caretFlashing
                 && !this.caretVisible;
