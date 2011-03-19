@@ -26,6 +26,7 @@ package cider.specialcomponents.editorTypingArea;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.LinkedList;
+import java.util.regex.Pattern;
 
 import cider.client.gui.ETASourceEditorPanel;
 import cider.common.network.client.Client;
@@ -46,6 +47,7 @@ public class SDVLine
     public int start;
     Color[] colors;
     SourceDocumentViewer sdv;
+    private static Pattern doublePattern = Pattern.compile("-?\\d+(\\.\\d*)?");
 
     /**
      * 
@@ -106,7 +108,7 @@ public class SDVLine
                         this.sdv.getKeyWord().add(i);
                         this.sdv.getKeyWord().add(i + length);
                     }
-                    if (isParsableToNum(str) == true)
+                    if (isDouble(str))
                         customColor = new Color(0, 100, 0);
                     wash(this.colors, customColor, i, i + length);
                     if (str.startsWith("//") == true)
@@ -150,20 +152,6 @@ public class SDVLine
                 EditorTypingArea.leftMargin - 8,
                 EditorTypingArea.lineSpacing + 2, 3, 3);
         paintMargin(g);
-    }
-
-    public boolean isParsableToNum(String str)
-    {
-        try
-        {
-            Float.parseFloat(str);
-            return true;
-        }
-        catch (NumberFormatException nfe)
-        {
-            nfe.printStackTrace();
-            return false;
-        }
     }
 
     /**
@@ -277,5 +265,10 @@ public class SDVLine
     {
         TypingRegion tr = this.sdv.getSelectedRegion();
         return tr != null && tr.list.contains(this.str.get(i));
+    }
+
+    public static boolean isDouble(String string)
+    {
+        return doublePattern.matcher(string).matches();
     }
 }

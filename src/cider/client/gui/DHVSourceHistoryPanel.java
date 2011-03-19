@@ -45,9 +45,12 @@ public class DHVSourceHistoryPanel extends JPanel
     public static void main(String[] args)
     {
         SourceDocument doc = new SourceDocument("Test Bot", "Test Document");
+        doc.addEvents(SourceDocument.sampleEvents());
         DocumentHistoryViewer dhv = new DocumentHistoryViewer("Test User", doc);
         DHVSourceHistoryPanel panel = new DHVSourceHistoryPanel(dhv, null, 0,
                 Long.MAX_VALUE);
+        dhv.updateText();
+        dhv.setWaiting(false);
         JFrame w = new JFrame();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         w.setPreferredSize(new Dimension(400, 400));
