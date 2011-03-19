@@ -31,7 +31,7 @@ import javax.swing.JList;
 import javax.swing.JTabbedPane;
 
 import cider.client.gui.DirectoryViewComponent;
-import cider.client.gui.SourceEditor;
+import cider.client.gui.ETASourceEditorPanel;
 
 /**
  * (Mostly) GUI Components that the Client needs to share with MainWindow.
@@ -49,7 +49,7 @@ public class ClientSharedComponents
 
     // Tabs for source editors and table to keep track of them
     public JTabbedPane tabbedPane = new JTabbedPane();
-    public Hashtable<String, SourceEditor> openTabs = new Hashtable<String, SourceEditor>();
+    public Hashtable<String, ETASourceEditorPanel> openTabs = new Hashtable<String, ETASourceEditorPanel>();
 
     // The directory tree
     public DirectoryViewComponent dirView = new DirectoryViewComponent();
