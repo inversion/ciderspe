@@ -85,6 +85,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     public static final int characterSpacing = fontSize / 2 + 1;
     public static final Color selectedRegionColor = new Color(255, 255, 255,
             122);
+    private Color defaultColor = Color.WHITE;
     private boolean waiting = true;
     private boolean commentFound = false;
     private boolean commentedLine = false;
@@ -293,9 +294,19 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     public void updateText()
     {
+        this.updateText(Long.MAX_VALUE);
+    }
+
+    /**
+     * Frequently called whenever it is time for the text to be updated. Takes
+     * from the code location recent events that need to be pushed to doc and
+     * then refreshes the lines and updates the UI.
+     */
+    public void updateText(long endTime)
+    {
         if (this.doc != null)
         {
-            this.str = this.doc.playOutEvents(Long.MAX_VALUE);
+            this.str = this.doc.playOutEvents(endTime);
             this.refreshLines();
             this.updateUI();
         }
@@ -767,5 +778,15 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 && !this.caretVisible;
         if (this.caretFlashing)
             updateUI();
+    }
+
+    public void setDefaultColor(Color defaultColor)
+    {
+        this.defaultColor = defaultColor;
+    }
+
+    public Color getDefaultColor()
+    {
+        return defaultColor;
     }
 }

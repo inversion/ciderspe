@@ -1,6 +1,7 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 
 import javax.swing.DefaultBoundedRangeModel;
@@ -8,6 +9,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import cider.common.network.client.Client;
 import cider.common.processes.SourceDocument;
@@ -40,6 +43,19 @@ public class DHVSourceHistoryPanel extends JPanel
         this.timeSlider = new JSlider(this.rangeModel);
         this.add(this.timeSlider, BorderLayout.NORTH);
         this.add(this.scrollPane, BorderLayout.CENTER);
+
+        this.timeSlider.addChangeListener(new ChangeListener()
+        {
+
+            @Override
+            public void stateChanged(ChangeEvent ce)
+            {
+                long time = rangeModel.getExtent() + rangeModel.getValue();
+                System.out.println(time);
+                dhv.updateText(time * time);
+            }
+
+        });
     }
 
     public static void main(String[] args)
@@ -47,8 +63,9 @@ public class DHVSourceHistoryPanel extends JPanel
         SourceDocument doc = new SourceDocument("Test Bot", "Test Document");
         doc.addEvents(SourceDocument.sampleEvents());
         DocumentHistoryViewer dhv = new DocumentHistoryViewer("Test User", doc);
+        dhv.setDefaultColor(Color.BLACK);
         DHVSourceHistoryPanel panel = new DHVSourceHistoryPanel(dhv, null, 0,
-                Long.MAX_VALUE);
+                3000);
         dhv.updateText();
         dhv.setWaiting(false);
         JFrame w = new JFrame();
