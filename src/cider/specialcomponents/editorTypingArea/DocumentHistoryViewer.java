@@ -7,7 +7,7 @@ public class DocumentHistoryViewer extends SourceDocumentViewer
 
     public DocumentHistoryViewer(String owner, SourceDocument doc)
     {
-        super(owner, doc);
+        super(doc);
     }
 
 }

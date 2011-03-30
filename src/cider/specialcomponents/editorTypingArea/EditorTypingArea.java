@@ -5,9 +5,9 @@ import cider.common.processes.SourceDocument;
 public class EditorTypingArea extends SourceDocumentViewer
 {
 
-    public EditorTypingArea(String owner, SourceDocument doc)
+    public EditorTypingArea(SourceDocument doc)
     {
-        super(owner, doc);
+        super(doc);
         this.setupCaretFlashing();
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
