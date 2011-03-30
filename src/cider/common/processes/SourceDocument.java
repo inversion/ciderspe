@@ -40,20 +40,16 @@ public class SourceDocument implements ICodeLocation
     private PriorityQueue<TypingEvent> typingEvents;
     public String name = "untitled";
     private long latestTime;
-    private String owner;
 
-    public SourceDocument(String owner, String name)
+    public SourceDocument(String name)
     {
-        this.owner = owner;
         this.name = name;
         this.typingEvents = new PriorityQueue<TypingEvent>(1000,
                 new EventComparer());
     }
 
-    public SourceDocument(String owner, String name,
-            PriorityQueue<TypingEvent> typingEvents)
+    public SourceDocument(String name, PriorityQueue<TypingEvent> typingEvents)
     {
-        this.owner = owner;
         this.name = name;
         this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
     }
@@ -91,8 +87,7 @@ public class SourceDocument implements ICodeLocation
 
         ArrayList<TypingEvent> tes = sampleEvents();
 
-        SourceDocument testDoc = new SourceDocument("test owner",
-                "testdoc.SourceDocument");
+        SourceDocument testDoc = new SourceDocument("testdoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.addEvent(event);
 
@@ -177,8 +172,7 @@ public class SourceDocument implements ICodeLocation
         tes.addAll(generateEvents(2, 10000, 0, bigString,
                 TypingEventMode.insert, "na"));
 
-        SourceDocument testDoc = new SourceDocument("test owner",
-                "testDoc.SourceDocument");
+        SourceDocument testDoc = new SourceDocument("testDoc.SourceDocument");
         for (TypingEvent event : tes)
             testDoc.addEvent(event);
         String result = testDoc.toString();
@@ -390,8 +384,7 @@ public class SourceDocument implements ICodeLocation
      */
     public SourceDocument simplified(long endTime)
     {
-        SourceDocument doc = new SourceDocument(this.owner, this.name,
-                this.typingEvents);
+        SourceDocument doc = new SourceDocument(this.name, this.typingEvents);
         TypingEventList tel = this.playOutEvents(endTime);
         tel.homogenize(endTime);
         doc.clearUpTo(endTime);
@@ -523,18 +516,6 @@ public class SourceDocument implements ICodeLocation
         }
 
         return string;
-    }
-
-    /**
-     * Whoever owns this document. If a new document is created via simplified
-     * then it belongs to the same owner.
-     * 
-     * @author Lawrence
-     * @return
-     */
-    public String getOwner()
-    {
-        return this.owner;
     }
 
     /**

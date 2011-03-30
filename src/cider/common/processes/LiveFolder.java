@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -42,7 +42,7 @@ public class LiveFolder
 
     public SourceDocument makeDocument(String name)
     {
-        SourceDocument sourceDocument = new SourceDocument(this.owner, name);
+        SourceDocument sourceDocument = new SourceDocument(name);
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }

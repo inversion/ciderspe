@@ -6,7 +6,9 @@ public class TimeBorder
 {
     public final long time;
     public String message;
+    public String documentName;
     public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>();
+    public boolean fullSet = false;
 
     public TimeBorder(long time, String message)
     {
@@ -30,5 +32,4 @@ public class TimeBorder
         else
             return super.equals(obj);
     }
-
 }

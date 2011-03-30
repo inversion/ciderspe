@@ -57,7 +57,7 @@ public class DHVSourceHistoryPane extends JPanel
 
     public static void main(String[] args)
     {
-        SourceDocument doc = new SourceDocument("Test Bot", "Test Document");
+        SourceDocument doc = new SourceDocument("Test Document");
         doc.addEvents(SourceDocument.sampleEvents());
         DocumentHistoryViewer dhv = new DocumentHistoryViewer("Test User", doc);
         dhv.setDefaultColor(Color.BLACK);

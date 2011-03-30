@@ -104,7 +104,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * @param owner
      * @param codeLocation
      */
-    public SourceDocumentViewer(String owner, SourceDocument doc)
+    public SourceDocumentViewer(SourceDocument doc)
     {
         this.doc = doc;
         this.str = this.doc.playOutEvents(Long.MAX_VALUE);

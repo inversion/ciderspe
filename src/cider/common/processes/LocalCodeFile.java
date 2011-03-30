@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -90,8 +90,7 @@ public class LocalCodeFile implements ICodeLocation
         try
         {
             this.out = new BufferedWriter(new FileWriter(this.file));
-            SourceDocument sd = new SourceDocument(this.file.getName(),
-                    this.file.getName());
+            SourceDocument sd = new SourceDocument(this.file.getName());
             sd.addEvent(this.oldFileContent);
             sd.push(typingEvents);
             this.out.write(sd.toString());

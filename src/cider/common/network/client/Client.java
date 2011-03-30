@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.client;
 
@@ -53,13 +53,14 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
+import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
-import cider.client.gui.ETASourceEditorPane;
 import cider.common.network.bot.Bot;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
 import cider.shared.ClientSharedComponents;
 import cider.specialcomponents.editorTypingArea.EditorTypingArea;
@@ -142,6 +143,7 @@ public class Client
     // FIXME: synchronised is never read!
     @SuppressWarnings("unused")
     private boolean synchronised = false;
+    private TimeRegion diversion;
 
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log, ClientSharedComponents shared)
@@ -563,8 +565,9 @@ public class Client
         this.currentDoc = doc;
         if (!shared.openTabs.containsKey(strPath))
         {
-            EditorTypingArea eta = new EditorTypingArea(this.username, doc);
-            ETASourceEditorPane sourceEditor = new ETASourceEditorPane(eta, this, strPath);
+            EditorTypingArea eta = new EditorTypingArea(doc);
+            ETASourceEditorPane sourceEditor = new ETASourceEditorPane(eta,
+                    this, strPath);
             sourceEditor.setTabHandle(shared.tabbedPane.add(strPath,
                     sourceEditor));
             shared.openTabs.put(strPath, sourceEditor);
@@ -711,6 +714,12 @@ public class Client
             anchor = eta.getTypingEventList().get(position);
         else
             anchor = null;
+
+        if (this.diversion != null)
+        {
+
+        }
+
         eta.getSourceDocument().push(typingEvents);
         eta.setWaiting(false);
         eta.updateText();

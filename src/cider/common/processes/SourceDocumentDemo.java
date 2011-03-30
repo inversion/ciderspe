@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -62,10 +62,9 @@ public class SourceDocumentDemo
         w.setLocationByPlatform(true);
         int offset = (id - 1) * 100;
         w.setLocation(w.getX() + offset, w.getY() + offset);
-        SourceDocument sourceDocument = new SourceDocument("Demo User " + id,
+        SourceDocument sourceDocument = new SourceDocument(
                 "test.SourceDocument");
-        EditorTypingArea eta = new EditorTypingArea(sourceDocument.getOwner(),
-                sourceDocument);
+        EditorTypingArea eta = new EditorTypingArea(sourceDocument);
         eta.setWaiting(false);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
                 this.server.timer, id, eta);
@@ -80,7 +79,7 @@ public class SourceDocumentDemo
 
     public class PseudoServer implements ICodeLocation
     {
-        private SourceDocument sourceDocument = new SourceDocument("TestBot",
+        private SourceDocument sourceDocument = new SourceDocument(
                 "Bot Document");
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
