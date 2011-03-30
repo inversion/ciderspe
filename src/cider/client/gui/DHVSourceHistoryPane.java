@@ -12,25 +12,22 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import cider.common.network.client.Client;
 import cider.common.processes.SourceDocument;
 import cider.specialcomponents.editorTypingArea.DocumentHistoryViewer;
 
-public class DHVSourceHistoryPanel extends JPanel
+public class DHVSourceHistoryPane extends JPanel
 {
     DocumentHistoryViewer dhv;
-    Client client;
     JSlider timeSlider;
     DefaultBoundedRangeModel rangeModel;
     JScrollPane scrollPane;
 
-    public DHVSourceHistoryPanel(final DocumentHistoryViewer dhv,
-            Client client, long start, long end)
+    public DHVSourceHistoryPane(final DocumentHistoryViewer dhv, long start,
+            long end)
     {
         super(new BorderLayout());
         this.scrollPane = new JScrollPane(dhv);
         this.dhv = dhv;
-        this.client = client;
 
         // Squash long numbers into an integer
         // TODO: Check this...
@@ -64,8 +61,7 @@ public class DHVSourceHistoryPanel extends JPanel
         doc.addEvents(SourceDocument.sampleEvents());
         DocumentHistoryViewer dhv = new DocumentHistoryViewer("Test User", doc);
         dhv.setDefaultColor(Color.BLACK);
-        DHVSourceHistoryPanel panel = new DHVSourceHistoryPanel(dhv, null, 0,
-                3000);
+        DHVSourceHistoryPane panel = new DHVSourceHistoryPane(dhv, 0, 3000);
         dhv.updateText();
         dhv.setWaiting(false);
         JFrame w = new JFrame();

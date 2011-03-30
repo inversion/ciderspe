@@ -164,25 +164,32 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         // that line might not actually have any text in it
                         if (!caretFound && p == this.caretPosition - ln + 1)
                         {
-                            this.setCurrentLine(line);
-                            this.currentColNum = 0;
-                            caretFound = true;
-                            this.getCurrentLine().highlightMargin(g);
-                            this.paintCaret(g, -1, line.y);
+                            if (this.caretVisible)
+                            {
+                                this.setCurrentLine(line);
+                                this.currentColNum = 0;
+                                caretFound = true;
+                                this.paintCaret(g, -1, line.y);
+                            }
+                            if (this.hasFocus())
+                                line.highlightMargin(g);
                         }
 
                         // Paints the lines of text and the caret if it has not
                         // already been drawn at the start
                         for (int i = 0; i < line.str.length(); i++)
                         {
-                            if (this.caretVisible && !caretFound
-                                    && p == this.caretPosition - ln)
+                            if (!caretFound && p == this.caretPosition - ln)
                             {
-                                this.paintCaret(g, i, line.y);
-                                setCurrentLine(line);
-                                currentColNum = i + 1;
-                                caretFound = true;
-                                line.highlightMargin(g);
+                                if (this.caretVisible)
+                                {
+                                    this.paintCaret(g, i, line.y);
+                                    setCurrentLine(line);
+                                    currentColNum = i + 1;
+                                    caretFound = true;
+                                }
+                                if (this.hasFocus())
+                                    line.highlightMargin(g);
                             }
                             p++;
                             line.paintCharacter(g, i);
@@ -277,6 +284,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             public void focusLost(FocusEvent e)
             {
                 caretFlashing = false;
+                caretVisible = false;
+                repaint();
             }
 
         });

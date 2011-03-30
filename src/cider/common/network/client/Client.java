@@ -55,7 +55,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
-import cider.client.gui.ETASourceEditorPanel;
+import cider.client.gui.ETASourceEditorPane;
 import cider.common.network.bot.Bot;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
@@ -564,7 +564,7 @@ public class Client
         if (!shared.openTabs.containsKey(strPath))
         {
             EditorTypingArea eta = new EditorTypingArea(this.username, doc);
-            ETASourceEditorPanel sourceEditor = new ETASourceEditorPanel(eta, this, strPath);
+            ETASourceEditorPane sourceEditor = new ETASourceEditorPane(eta, this, strPath);
             sourceEditor.setTabHandle(shared.tabbedPane.add(strPath,
                     sourceEditor));
             shared.openTabs.put(strPath, sourceEditor);

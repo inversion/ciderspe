@@ -58,7 +58,7 @@ import cider.specialcomponents.editorTypingArea.EditorTypingArea;
  * 
  */
 @SuppressWarnings("serial")
-public class ETASourceEditorPanel extends JScrollPane
+public class ETASourceEditorPane extends JScrollPane
 {
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
@@ -68,7 +68,7 @@ public class ETASourceEditorPanel extends JScrollPane
     private Client client;
     private String path;
 
-    public ETASourceEditorPanel(final EditorTypingArea eta, Client client, String path)
+    public ETASourceEditorPane(final EditorTypingArea eta, Client client, String path)
     {
         super(eta);
         this.eta = eta;
@@ -232,7 +232,7 @@ public class ETASourceEditorPanel extends JScrollPane
             @Override
             public void mousePressed(MouseEvent arg0)
             {
-                ETASourceEditorPanel.this.eta.requestFocusInWindow();
+                ETASourceEditorPane.this.eta.requestFocusInWindow();
             }
 
             @Override
@@ -400,7 +400,7 @@ public class ETASourceEditorPanel extends JScrollPane
                                 case '\t':
                                 {
                                     chr = "    ";
-                                    ETASourceEditorPanel.this.eta
+                                    ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
                                 }
                                     break;
