@@ -28,7 +28,7 @@ import java.awt.Graphics;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
-import cider.client.gui.ETASourceEditorPanel;
+import cider.client.gui.ETASourceEditorPane;
 import cider.common.network.client.Client;
 import cider.common.processes.TypingEventList;
 
@@ -102,7 +102,7 @@ public class SDVLine
                         this.sdv.setCommentStartLoc(this.lineNum);
                         wash(this.colors, Color.RED, i, i + length);
                     }
-                    if (ETASourceEditorPanel.keywords.contains(str))
+                    if (ETASourceEditorPane.keywords.contains(str))
                     {
                         wash(this.colors, Color.BLUE, i, i + length);
                         this.sdv.getKeyWord().add(i);
@@ -138,6 +138,7 @@ public class SDVLine
      * Draws around the current line number that the user is currently on
      * 
      * @param g
+     * @param caretVisible
      */
     public void highlightMargin(Graphics g)
     {
