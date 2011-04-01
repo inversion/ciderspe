@@ -16,7 +16,7 @@ import cider.common.processes.DocumentID;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
-import cider.specialcomponents.editorTypingArea.DocumentHistoryViewer;
+import cider.documentViewerComponents.DocumentHistoryViewer;
 
 public class DHVSourceHistoryPane extends JPanel
 {

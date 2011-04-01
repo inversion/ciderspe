@@ -29,7 +29,7 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Random;
 
-import cider.specialcomponents.editorTypingArea.TypingRegion;
+import cider.documentViewerComponents.TypingRegion;
 
 public class TypingEventList
 {

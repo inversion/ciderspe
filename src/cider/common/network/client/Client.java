@@ -62,8 +62,8 @@ import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
+import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
-import cider.specialcomponents.editorTypingArea.EditorTypingArea;
 
 /**
  * 
