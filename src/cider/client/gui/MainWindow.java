@@ -91,8 +91,8 @@ import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.client.Client;
 import cider.common.processes.Profile;
+import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
-import cider.specialcomponents.editorTypingArea.EditorTypingArea;
 
 public class MainWindow
 {
