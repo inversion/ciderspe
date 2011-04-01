@@ -12,63 +12,101 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cider.common.processes.DocumentID;
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TimeBorder;
+import cider.common.processes.TimeBorderList;
 import cider.specialcomponents.editorTypingArea.DocumentHistoryViewer;
 
 public class DHVSourceHistoryPane extends JPanel
 {
-    DocumentHistoryViewer dhv;
-    JSlider timeSlider;
-    DefaultBoundedRangeModel rangeModel;
-    JScrollPane scrollPane;
+    private DocumentHistoryViewer dhv;
+    private JSlider timeSlider;
+    private DefaultBoundedRangeModel rangeModel = new DefaultBoundedRangeModel();
+    private JScrollPane documentScrollPane;
+    private TimeRegionBrowser trb;
+    private JScrollPane regionBrowserScrollPane;
 
-    public DHVSourceHistoryPane(final DocumentHistoryViewer dhv, long start,
-            long end)
+    public DHVSourceHistoryPane()
     {
         super(new BorderLayout());
-        this.scrollPane = new JScrollPane(dhv);
-        this.dhv = dhv;
-
-        // Squash long numbers into an integer
-        // TODO: Check this...
-        int iStart = (int) Math.sqrt(start);
-        int iEnd = (int) Math.sqrt(end);
-        int extent = (iEnd - iStart) / 50;
-
-        this.rangeModel = new DefaultBoundedRangeModel(iEnd - extent, extent,
-                iStart, iEnd);
         this.timeSlider = new JSlider(this.rangeModel);
         this.add(this.timeSlider, BorderLayout.NORTH);
-        this.add(this.scrollPane, BorderLayout.CENTER);
-
         this.timeSlider.addChangeListener(new ChangeListener()
         {
-
             @Override
-            public void stateChanged(ChangeEvent ce)
+            public void stateChanged(ChangeEvent arg0)
             {
                 long time = rangeModel.getExtent() + rangeModel.getValue();
                 System.out.println(time);
                 dhv.updateText(time * time);
             }
-
         });
+    }
+
+    public void setDocumentHistoryViewer(final DocumentHistoryViewer dhv)
+    {
+        this.dhv = dhv;
+
+        if (this.documentScrollPane != null)
+            this.remove(this.documentScrollPane);
+
+        this.documentScrollPane = new JScrollPane(dhv);
+        this.add(this.documentScrollPane, BorderLayout.CENTER);
+    }
+
+    public void setTimeRegionBrowser(final TimeRegionBrowser trb)
+    {
+        this.trb = trb;
+
+        if (this.regionBrowserScrollPane != null)
+            this.remove(this.regionBrowserScrollPane);
+
+        this.regionBrowserScrollPane = new JScrollPane(trb);
+        this.add(this.regionBrowserScrollPane, BorderLayout.WEST);
+    }
+
+    public void setTimeRange(long start, long end)
+    {
+        // Squash long numbers into an integer
+        // TODO: Check this...
+        int iStart = (int) Math.sqrt(start);
+        int iEnd = (int) Math.sqrt(end);
+        int extent = (iEnd - iStart) / 50;
+        this.rangeModel.setValue(iEnd - extent);
+        this.rangeModel.setExtent(extent);
+        this.rangeModel.setMinimum(iStart);
+        this.rangeModel.setMaximum(iEnd);
     }
 
     public static void main(String[] args)
     {
-        SourceDocument doc = new SourceDocument("Test Document");
+        DocumentID documentID = new DocumentID("Test Document", "testpath");
+
+        SourceDocument doc = new SourceDocument(documentID.name);
         doc.addEvents(SourceDocument.sampleEvents());
-        DocumentHistoryViewer dhv = new DocumentHistoryViewer("Test User", doc);
+
+        DocumentHistoryViewer dhv = new DocumentHistoryViewer(doc);
         dhv.setDefaultColor(Color.BLACK);
-        DHVSourceHistoryPane panel = new DHVSourceHistoryPane(dhv, 0, 3000);
         dhv.updateText();
         dhv.setWaiting(false);
+
+        TimeBorderList tbl = new TimeBorderList();
+        tbl.addTimeBorder(new TimeBorder(documentID, 1000));
+        tbl.addTimeBorder(new TimeBorder(documentID, 1500));
+
+        TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
+
+        DHVSourceHistoryPane app = new DHVSourceHistoryPane();
+        app.setDocumentHistoryViewer(dhv);
+        app.setTimeRegionBrowser(trb);
+        app.setTimeRange(0, 3000);
+
         JFrame w = new JFrame();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        w.setPreferredSize(new Dimension(400, 400));
+        w.setPreferredSize(new Dimension(600, 600));
         w.setLayout(new BorderLayout());
-        w.add(panel);
+        w.add(app);
         w.pack();
         w.setVisible(true);
     }

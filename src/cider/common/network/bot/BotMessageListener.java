@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.bot;
 
@@ -214,10 +214,17 @@ public class BotMessageListener implements MessageListener
             str = str.split("\\)")[0];
             String[] args = str.split(",");
             String dest = args[0];
-            long t = Long.parseLong(args[1]);
-            this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .eventsSince(t));
-            // JOptionPane.showMessageDialog(null, "Pushed Back " + t);
+            long startTime = Long.parseLong(args[1]);
+
+            if (args.length == 2)
+                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                        .eventsSince(startTime), false);
+            else
+            {
+                long endTime = Long.parseLong(args[2]);
+                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                        .eventsBetween(startTime, endTime), args[3].equals("t"));
+            }
 
         }
         else if (body.startsWith("pullSimplifiedEvents("))
@@ -228,7 +235,7 @@ public class BotMessageListener implements MessageListener
             String dest = args[0];
             long t = Long.parseLong(args[1]);
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .simplified(t).events());
+                    .simplified(t).events(), false);
         }
         else if (body.startsWith("You play 2 hours to die like this?"))
         {
@@ -271,7 +278,8 @@ public class BotMessageListener implements MessageListener
         }
     }
 
-    private void pushBack(Chat chat, String path, Queue<TypingEvent> queue)
+    private void pushBack(Chat chat, String path, Queue<TypingEvent> queue,
+            boolean stopDiversion)
     {
         String instructions = "";
         if (queue.size() == 0)
@@ -282,6 +290,10 @@ public class BotMessageListener implements MessageListener
             for (TypingEvent te : queue)
                 instructions += te.pack() + "%%";
         }
+
+        if (stopDiversion)
+            instructions += "stopdiversion";
+
         try
         {
             chat.sendMessage(StringUtils.encodeBase64(instructions));

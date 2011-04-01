@@ -606,6 +606,22 @@ public class Client
         }
     }
 
+    public void pullEventsFromBot(String strPath, long startTime, long endTime,
+            boolean stopDiversion)
+    {
+        try
+        {
+            sendBotMessage("pullEvents(" + strPath + ","
+                    + String.valueOf(startTime) + "," + String.valueOf(endTime)
+                    + "," + (stopDiversion ? "t" : "f") + ")");
+        }
+        catch (XMPPException e)
+        {
+            // TODO:
+            e.printStackTrace();
+        }
+    }
+
     public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
             String path)
     {
@@ -707,6 +723,19 @@ public class Client
 
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
+        Queue<TypingEvent> remainingEvents;
+        if (this.diversion != null)
+        {
+            remainingEvents = new LinkedList<TypingEvent>();
+            for (TypingEvent typingEvent : typingEvents)
+                if (this.diversion.end.time > typingEvent.time)
+                    this.diversion.end.typingEvents.add(typingEvent);
+                else
+                    remainingEvents.add(typingEvent);
+        }
+        else
+            remainingEvents = typingEvents;
+
         EditorTypingArea eta = shared.openTabs.get(dest).getEditorTypingArea();
         int position = eta.getCaretPosition();
         TypingEvent anchor;
@@ -715,12 +744,7 @@ public class Client
         else
             anchor = null;
 
-        if (this.diversion != null)
-        {
-
-        }
-
-        eta.getSourceDocument().push(typingEvents);
+        eta.getSourceDocument().push(remainingEvents);
         eta.setWaiting(false);
         eta.updateText();
         if (anchor != null)
@@ -743,6 +767,7 @@ public class Client
             Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
             String dest = "";
             String packedEvent = "";
+            boolean stopDiversion = false;
             for (String instruction : instructions)
             {
                 if (instruction.startsWith("pushto"))
@@ -752,6 +777,10 @@ public class Client
                     dest = pre[1];
                     dest = dest.replace("root\\", "");
                     packedEvent = preAndAfter[1];
+                }
+                else if (instruction.startsWith("end"))
+                {
+                    stopDiversion = true;
                 }
                 else
                     packedEvent = instruction;
@@ -769,6 +798,11 @@ public class Client
             for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
                 this.push(entry.getValue(), entry.getKey());
 
+            if (stopDiversion)
+            {
+                this.diversion.finishedUpdate();
+                this.diversion = null;
+            }
         }
         else if (body.startsWith("isblank("))
         {
@@ -907,5 +941,10 @@ public class Client
     public void addParent(MainWindow p)
     {
         parent = p;
+    }
+
+    public void setDiversion(TimeRegion timeRegion)
+    {
+        this.diversion = timeRegion;
     }
 }

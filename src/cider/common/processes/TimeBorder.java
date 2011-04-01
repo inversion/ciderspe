@@ -5,15 +5,15 @@ import java.util.PriorityQueue;
 public class TimeBorder
 {
     public final long time;
-    public String message;
-    public String documentName;
+    public String path;
     public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>();
     public boolean fullSet = false;
+    public DocumentID documentID;
 
-    public TimeBorder(long time, String message)
+    public TimeBorder(DocumentID documentID, long time)
     {
         this.time = time;
-        this.message = message;
+        this.documentID = documentID;
     }
 
     @Override
