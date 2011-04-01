@@ -5,7 +5,7 @@ import cider.common.processes.SourceDocument;
 public class DocumentHistoryViewer extends SourceDocumentViewer
 {
 
-    public DocumentHistoryViewer(String owner, SourceDocument doc)
+    public DocumentHistoryViewer(SourceDocument doc)
     {
         super(doc);
     }

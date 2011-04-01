@@ -41,6 +41,7 @@ public class SourceDocument implements ICodeLocation
     public String name = "untitled";
     private long latestTime;
 
+    // name will be remobed in time
     public SourceDocument(String name)
     {
         this.name = name;
@@ -615,6 +616,36 @@ public class SourceDocument implements ICodeLocation
             e.printStackTrace();
         }
         return latestEvents;
+    }
+
+    public Queue<TypingEvent> eventsBetween(long start, long end)
+    {
+        int initialCapacity = this.typingEvents.size();
+        if (initialCapacity < 2)
+            initialCapacity++;
+
+        PriorityQueue<TypingEvent> eventsOut = new PriorityQueue<TypingEvent>(
+                initialCapacity, new EventComparer());
+
+        int stage = 0;
+        try
+        {
+            for (TypingEvent te : this.typingEvents)
+            {
+                if (te.time >= start && te.time < end)
+                {
+                    eventsOut.add(te);
+                    stage = 1;
+                }
+                else if (stage == 1)
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return eventsOut;
     }
 
     @Override

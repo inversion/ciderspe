@@ -1,43 +1,67 @@
 package cider.common.processes;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+
 import cider.common.network.client.Client;
 
 public class TimeRegion
 {
     public TimeBorder start;
     public TimeBorder end;
+    public DocumentID documentID;
+    private ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
 
-    public TimeRegion(TimeBorder start, TimeBorder end)
+    public TimeRegion(TimeBorder start, TimeBorder end) throws Exception
     {
+        if (this.start.documentID != this.end.documentID)
+            throw new Exception("time borders must belong to the same document");
+
         this.start = start;
         this.end = end;
-    }
-
-    public boolean couldInclude(long time)
-    {
-        return time >= this.start.time && time < this.end.time;
+        this.documentID = start.documentID;
     }
 
     public void updateWhereRequired(Client client)
     {
         if (!this.end.fullSet)
         {
+            client.setDiversion(this);
+
             if (this.start != null)
             {
                 if (this.start.fullSet)
                 {
                     SourceDocument startDoc = new SourceDocument(
-                            this.start.documentName, this.start.typingEvents);
+                            this.documentID.name, this.start.typingEvents);
                     startDoc.simplify(this.end.time);
                     this.end.typingEvents.addAll(startDoc.events());
                 }
                 else
                 {
-                    // get the simplified typing events from the bot
+                    client.pullSimplifiedEventsFromBot(this.documentID.path,
+                            this.start.time);
                 }
             }
-
-            // get all the events that happened in this period of time
+            client.pullEventsFromBot(this.documentID.path, this.start.time,
+                    this.end.time, true);
         }
+    }
+
+    public long getTimespan()
+    {
+        return this.end.time - this.start.time;
+    }
+
+    public void finishedUpdate()
+    {
+        for (ActionListener al : this.actionListeners)
+            al.actionPerformed(new ActionEvent(this, 0, "finished update"));
+    }
+
+    public void addActionListener(ActionListener actionListener)
+    {
+        this.actionListeners.add(actionListener);
     }
 }

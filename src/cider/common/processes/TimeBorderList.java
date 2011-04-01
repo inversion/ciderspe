@@ -5,22 +5,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 
-import cider.common.network.client.Client;
-
 public class TimeBorderList
 {
-    public static TimeBorderComparer comparer = new TimeBorderComparer();
+    public static final TimeBorderComparer comparer = new TimeBorderComparer();
     private ArrayList<TimeBorder> timeBorders = new ArrayList<TimeBorder>();
     private Hashtable<Long, TimeBorder> timeBorderLookup = new Hashtable<Long, TimeBorder>();
     private Hashtable<Long, TimeRegion> timeRegionLookup = new Hashtable<Long, TimeRegion>();
-    private String path;
-    private Client client;
-
-    public TimeBorderList(String path, Client client)
-    {
-        this.path = path;
-        this.client = client;
-    }
 
     public void addTimeBorder(TimeBorder timeBorder)
     {
@@ -49,13 +39,29 @@ public class TimeBorderList
             TimeBorder previousBorder = null;
             if (i != -1)
                 previousBorder = this.timeBorders.get(i - 1);
-            region = new TimeRegion(previousBorder, endBorder);
+            try
+            {
+                region = new TimeRegion(previousBorder, endBorder);
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
 
         return region;
     }
 
-    static class TimeBorderComparer implements Comparator<TimeBorder>
+    public long[] borderTimes()
+    {
+        int size = this.timeBorders.size();
+        long[] result = new long[size];
+        for (int i = 0; i < size; i++)
+            result[i] = this.timeBorders.get(i).time;
+        return result;
+    }
+
+    public static class TimeBorderComparer implements Comparator<TimeBorder>
     {
         public int compare(TimeBorder border1, TimeBorder border2)
         {
