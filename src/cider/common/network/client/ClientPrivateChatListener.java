@@ -33,8 +33,6 @@ import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.util.StringUtils;
 
-import cider.common.network.bot.Bot;
-
 /**
  * 
  * Listen for newly created private client <-> client chats 
@@ -50,10 +48,12 @@ public class ClientPrivateChatListener implements ChatManagerListener {
     
     protected HashMap<String,Chat> privateChats = new HashMap<String,Chat>();
     private Client client;
-
-    ClientPrivateChatListener( Client caller )
+    private String chatroomName;
+    
+    ClientPrivateChatListener( Client caller, String chatroomName )
     {
         client = caller;
+        this.chatroomName = chatroomName;
     }
     
     @Override
@@ -62,7 +62,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
         // The "friendly" name of the participant without the domain etc.
         String name = StringUtils.parseName( chat.getParticipant() );
         
-        if( name.equals( Bot.CHATROOM_NAME ) )
+        if( name.equals( chatroomName ) )
             return;
         
         // TODO: Pretty sure below commented out is redundant because initiateChat doesn't let you make duplicate chats.

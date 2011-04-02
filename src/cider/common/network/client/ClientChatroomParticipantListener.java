@@ -33,8 +33,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 
-import cider.common.network.bot.Bot;
-
 /**
  * 
  * Listen for Presence packets of users in the chatroom.
@@ -52,12 +50,16 @@ public class ClientChatroomParticipantListener implements PacketListener {
     public DefaultListModel list;
     private JLabel userCount;
     private Client parent;
+    private String botUsername;
+    private String checkerUsername;
     
-    public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal , Client parent) 
+    public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal , Client parent, String botUsername, String checkerUsername ) 
     {
         this.list = userListModel;
         this.userCount = userTotal;
         this.parent = parent;
+        this.botUsername = botUsername;
+        this.checkerUsername = checkerUsername;
     }
 
     @Override
@@ -70,7 +72,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
         {
             if( DEBUG )
                 System.out.println( "Presence from: " + nickname + " AVAILABLE" );
-            if( !list.contains( nickname ) && !nickname.equals(Bot.BOT_USERNAME) && !nickname.equals( "ciderchecker" ) )
+            if( !list.contains( nickname ) && !nickname.equals( botUsername ) && !nickname.equals( checkerUsername ) )
             {
                 if( DEBUG )
                     System.out.println( "Adding " + nickname + " to list...");
@@ -83,7 +85,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
             if( DEBUG )
                 System.out.println( "Presence from: " + nickname + " NOT AVAILABLE" );
             
-            if( nickname.equals( Bot.BOT_USERNAME ) )
+            if( nickname.equals( botUsername ) )
             {
                 JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
                 parent.getParent().login.logout();

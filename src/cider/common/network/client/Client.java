@@ -32,11 +32,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -56,7 +56,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
-import cider.common.network.bot.Bot;
+import cider.common.network.ConfigurationReader;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -87,6 +87,9 @@ public class Client
     private LoginUI login;
     private MainWindow parent;
 
+    // External configuration for the Client
+    ConfigurationReader clientConfig;
+    
     // XMPP Basics
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -148,9 +151,11 @@ public class Client
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log, ClientSharedComponents shared)
     {
+        clientConfig = new ConfigurationReader( "Client.conf" );
+        
         // Assign objects from parameters
         this.username = username;
-        this.chatroomName = Bot.CHATROOM_NAME + "@conference." + serviceName;
+        this.chatroomName = clientConfig.getChatroomName() + "@conference." + serviceName;
         this.host = host;
         this.port = port;
         this.serviceName = serviceName;
@@ -161,6 +166,8 @@ public class Client
         this.shared = shared;
 
         EditorTypingArea.addParent(this);
+        
+        
     }
 
     /**
@@ -199,7 +206,7 @@ public class Client
 
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(this);
-        botChat = chatmanager.createChat(Bot.BOT_USERNAME + "@" + serviceName,
+        botChat = chatmanager.createChat( clientConfig.getBotUsername() + "@" + serviceName,
                 botChatListener);
 
         // Listen for invitation to chatroom and set up message listener for it
@@ -207,11 +214,11 @@ public class Client
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
         chatroom.addParticipantListener(new ClientChatroomParticipantListener(
-                shared.userListModel, shared.userCount, this));
+                shared.userListModel, shared.userCount, this, clientConfig.getBotUsername(), clientConfig.getCheckerUsername()));
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
         // Add listener for new user chats
-        userChatListener = new ClientPrivateChatListener(this);
+        userChatListener = new ClientPrivateChatListener( this, clientConfig.getChatroomName() );
         chatmanager.addChatListener(userChatListener);
 
         // Check the bot is online

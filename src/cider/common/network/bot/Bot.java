@@ -33,6 +33,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
+import cider.common.network.ConfigurationReader;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 
@@ -46,17 +47,17 @@ public class Bot
 {
     @SuppressWarnings("unused")
     private static final boolean DEBUG = true;
-    public static final String SRCPATH = "src";
 
     // XMPP Server Configuration
-    public static final String HOST = "xmpp.org.uk";
-    public static final String SERVICE_NAME = "xmpp.org.uk";
-    public static final int PORT = 5222;
-    public static final String BOT_USERNAME = "ciderbot";
-    public static final String BOT_PASSWORD = "botpassword";
-    public static final String CHATROOM_NAME = "ciderchat";
-    private ConnectionConfiguration config = new ConnectionConfiguration(HOST,
-            PORT, SERVICE_NAME);
+    private final String HOST;
+    private final String SERVICE_NAME;
+    private final int PORT;
+    private final String BOT_USERNAME;
+    private final String BOT_PASSWORD;
+    private final String CHATROOM_NAME;
+    private final String CHECKER_USERNAME;
+    private final String CHECKER_PASSWORD;
+    private ConnectionConfiguration conConfig;
 
     protected MultiUserChat chatroom;
 
@@ -87,12 +88,26 @@ public class Bot
     public Bot()
     {
         colours = new HashMap<String, Color>();
+        
+        // Set up the bot configuration
+        ConfigurationReader config = new ConfigurationReader( "Bot.conf" );
+        HOST = config.getHost();
+        SERVICE_NAME = config.getServiceName();
+        PORT = config.getPort();
+        BOT_USERNAME = config.getBotUsername();
+        BOT_PASSWORD = config.getBotPassword();
+        CHATROOM_NAME = config.getChatroomName();
+        CHECKER_USERNAME = config.getCheckerUsername();
+        CHECKER_PASSWORD = config.getCheckerPassword();
+        conConfig = new ConnectionConfiguration(HOST,
+                PORT, SERVICE_NAME);
+        
         try
         {
             checkForBot();
 
             // Connect and login to the XMPP server
-            connection = new XMPPConnection(config);
+            connection = new XMPPConnection(conConfig);
             connection.connect();
             connection.login(BOT_USERNAME, BOT_PASSWORD);
 
@@ -134,14 +149,14 @@ public class Bot
      */
     private void checkForBot() throws XMPPException
     {
-        XMPPConnection conn = new XMPPConnection(config);
+        XMPPConnection conn = new XMPPConnection(conConfig);
         conn.connect();
-        conn.login("ciderchecker", "checkerpw");
+        conn.login( CHECKER_USERNAME, CHECKER_PASSWORD );
         chatroom = new MultiUserChat(conn, CHATROOM_NAME + "@conference."
                 + SERVICE_NAME);
         try
         {
-            chatroom.create("ciderchecker");
+            chatroom.create( CHECKER_USERNAME );
         }
         catch (XMPPException e)
         {
