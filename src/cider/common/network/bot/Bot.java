@@ -139,7 +139,7 @@ public class Bot
     }
 
     /**
-     * Connect to the server as a reserved user (ciderchecker) to check if the
+     * Connect to the server as a reserved user (CHECKER_USERNAME) to check if the
      * bot is already logged on from another location. Alert the user on stderr
      * if this is the case
      * 

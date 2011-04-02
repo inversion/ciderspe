@@ -128,9 +128,7 @@ public class ConfigurationReader
             System.err.println( "Error reading bot configuration: " + e.getMessage() );
             System.exit(1);
         }
-       
-        
-        
+           
     }
     
     
