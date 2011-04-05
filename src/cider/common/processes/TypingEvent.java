@@ -19,13 +19,18 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
 import java.util.ArrayList;
 
 /**
+ * TypingEvents are what make up the history of SourceDocuments. TypingEvents
+ * can represent insertions, overwrites backspaces and locking or unlocking.
+ * Each typing event happens at a certain time, and has an owner. They may also
+ * belong to certain locking groups, which means that only users are a member of
+ * that group are allowed to interfere with what happens at this position.
  * 
  * @author Lawrence
  * 
@@ -40,6 +45,18 @@ public class TypingEvent
     public final String text;
     public final String owner;
 
+    /**
+     * 
+     * @param time
+     * @param mode
+     * @param position
+     * @param length
+     * @param text
+     * @param owner
+     * @param lockingGroup
+     * 
+     * @author Lawrence
+     */
     public TypingEvent(long time, final TypingEventMode mode, int position,
             int length, String text, String owner, String lockingGroup)
     {
@@ -52,6 +69,17 @@ public class TypingEvent
         this.lockingGroup = lockingGroup;
     }
 
+    /**
+     * This typing event will be the same except for the time, position and
+     * mode.
+     * 
+     * @param typingEvent
+     * @param time
+     * @param position
+     * @param mode
+     * 
+     * @author Lawrence
+     */
     public TypingEvent(TypingEvent typingEvent, long time, int position,
             TypingEventMode mode)
     {
@@ -65,6 +93,15 @@ public class TypingEvent
 
     }
 
+    /**
+     * This typing event will be the same except for the time and text.
+     * 
+     * @param typingEvent
+     * @param time
+     * @param text
+     * 
+     * @author Lawrence
+     */
     public TypingEvent(TypingEvent typingEvent, long time, String text)
     {
         this.time = time;
@@ -76,6 +113,13 @@ public class TypingEvent
         this.owner = typingEvent.owner;
     }
 
+    /**
+     * This typing event is specified by a string that was created by the pack
+     * method
+     * 
+     * @param str
+     * @author Lawrence
+     */
     public TypingEvent(String str)
     {
         String[] split = str.split("~");
@@ -102,6 +146,12 @@ public class TypingEvent
         }
     }
 
+    /**
+     * creates a string which represents this typing event and can be unpacked
+     * by the contructor which takes a string as its argument.
+     * 
+     * @return
+     */
     public String pack()
     {
         return this.mode.ordinal() + "~" + this.text + "~"
@@ -110,6 +160,16 @@ public class TypingEvent
                 + (this.lockingGroup == null ? "" : "~" + this.lockingGroup);
     }
 
+    /**
+     * if this typing event represents text of more than one character, the
+     * explode method can be used to split it up into a list of typing events,
+     * one for each character. Each typing event will have a different time, the
+     * first event has the same time as this event. The time increments by one
+     * long integer for every event in the list.
+     * 
+     * @return the array list of typing events
+     * @author Lawrence
+     */
     public ArrayList<TypingEvent> explode()
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
@@ -127,12 +187,20 @@ public class TypingEvent
         return particles;
     }
 
+    /**
+     * @param lockingGroup
+     * @author Lawrence
+     */
     public void setLockingGroup(String lockingGroup)
     {
         this.lockingGroup = lockingGroup;
     }
 
     @Override
+    /**
+     * Useful for debugging, but use pack() to compress the event into something that needs to be sent over the network.
+     * @author Lawrence
+     */
     public String toString()
     {
         return "time " + this.time + "\t" + this.position + "\t" + this.length
@@ -140,6 +208,11 @@ public class TypingEvent
                 + this.lockingGroup;
     }
 
+    /**
+     * @param tes
+     * @return true if this typing event exists in the array tes TODO: look into
+     *         finding a more efficient alternative.
+     */
     public boolean existsIn(TypingEvent[] tes)
     {
         for (TypingEvent te : tes)
