@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -29,6 +29,15 @@ import java.util.ArrayList;
 
 import cider.common.network.client.Client;
 
+/**
+ * TimeRegions have two TimeBorders, the start and end. TimeBorders are used to
+ * mark the beginning and end of TimeRegions. Each TimeRegion is associated with
+ * a specific SourceDocument, the name and path of which is stored in a
+ * DocumentID. TimeRegions can be used to retrieve typing events between a
+ * certain area of time and use them for browsing a document's history.
+ * 
+ * @author Lawrence
+ */
 public class TimeRegion
 {
     public TimeBorder start;
@@ -46,6 +55,13 @@ public class TimeRegion
         this.documentID = start.documentID;
     }
 
+    /**
+     * Loads the required typing events from the client. The Client may use the
+     * TimeRegion to work out which typing events it receives need to be
+     * diverted.
+     * 
+     * @param client
+     */
     public void updateWhereRequired(Client client)
     {
         if (!this.end.fullSet)
@@ -72,11 +88,22 @@ public class TimeRegion
         }
     }
 
+    /**
+     * The difference between the start and end time
+     * 
+     * @return
+     */
     public long getTimespan()
     {
         return this.end.time - this.start.time;
     }
 
+    /**
+     * This method is called by the Client to indicate that no more typing
+     * events will be received. It triggers the action listeners.
+     * 
+     * @author Lawrence
+     */
     public void finishedUpdate()
     {
         for (ActionListener al : this.actionListeners)
