@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.documentViewerComponents;
 
@@ -27,12 +27,26 @@ import java.util.List;
 
 import cider.common.processes.TypingEvent;
 
+/**
+ * Stores a list of typing events and two integers start and end. Can be used to
+ * represent a region of selected text in document viewer
+ * 
+ * @author Lawrence
+ * 
+ */
 public class TypingRegion
 {
     public final int start;
     public final int end;
     public final List<TypingEvent> list;
 
+    /**
+     * 
+     * @param start
+     * @param end
+     * @param list
+     * @author Lawrence
+     */
     public TypingRegion(int start, int end, final List<TypingEvent> list)
     {
         this.start = start;
@@ -40,11 +54,21 @@ public class TypingRegion
         this.list = list;
     }
 
+    /**
+     * 
+     * @param position
+     * @return true if the position is between the start and end inclusive
+     */
     public boolean inside(int position)
     {
         return position >= this.start && position <= this.end;
     }
 
+    /**
+     * gets the difference between the start and end values
+     * 
+     * @return
+     */
     public int getLength()
     {
         return this.end - start;
