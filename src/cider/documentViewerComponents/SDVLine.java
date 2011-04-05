@@ -73,10 +73,10 @@ public class SDVLine
         this.colors = new Color[this.str.length()];
     }
 
-    /*
-     * Syntax Highlighting
+    /**
+     * Syntax highlighting - fills in the colors array. Null entries will be
+     * coloured default.
      */
-
     public void characterColors()
     {
         LinkedList<TypingEventList> words = this.str.splitWords(new String[] {
@@ -159,6 +159,7 @@ public class SDVLine
      * paints the line number to the left of this line
      * 
      * @param g
+     * @author Lawrence
      */
     public void paintMargin(Graphics g)
     {
@@ -172,6 +173,7 @@ public class SDVLine
      * @param g
      * @param i
      *            the character number of this line to be painted
+     * @author Lawrence
      */
     public void paintCharacter(Graphics g, int i)
     {
@@ -211,6 +213,7 @@ public class SDVLine
      * @param g
      * @param i
      * @param c
+     * @author Lawrence
      */
     public void highlight(Graphics g, int i, Color c)
     {
@@ -229,6 +232,7 @@ public class SDVLine
      * of testing if it should be highlighted
      * 
      * @param i
+     * @author Lawrence
      * @return
      */
     public String locked(int i)
@@ -236,6 +240,19 @@ public class SDVLine
         return this.str.get(i).lockingGroup;
     }
 
+    /**
+     * Replaces in an area of a color array
+     * 
+     * @param target
+     *            color array
+     * @param color
+     *            to paint
+     * @param start
+     *            index
+     * @param end
+     *            index
+     * @author Lawrence
+     */
     public static void wash(Color[] target, Color color, int start, int end)
     {
         start = start < 0 ? 0 : start;
@@ -244,6 +261,14 @@ public class SDVLine
             target[i] = color;
     }
 
+    /**
+     * 
+     * @param target
+     * @param LineNo
+     * @param start
+     * @param end
+     * @author Miles
+     */
     public void userwash(Color[] target, int LineNo, int start, int end)
     {
         String uname;
@@ -263,12 +288,26 @@ public class SDVLine
         }
     }
 
+    /**
+     * 
+     * @param i
+     * @return true is the text at i has been selected
+     * @author Lawrence
+     */
     public boolean selected(int i)
     {
-        TypingRegion tr = this.sdv.getSelectedRegion();
-        return tr != null && tr.list.contains(this.str.get(i));
+        TypingRegion selectedText = this.sdv.getSelectedRegion();
+        return selectedText != null
+                && selectedText.list.contains(this.str.get(i));
     }
 
+    /**
+     * convenience method to find out whether a string is representing a double
+     * 
+     * @param string
+     * @return
+     * @author Lawrence
+     */
     public static boolean isDouble(String string)
     {
         return doublePattern.matcher(string).matches();

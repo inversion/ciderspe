@@ -37,7 +37,7 @@ import java.util.Queue;
  * TBI
  * 
  * @author Lawrence
- * 
+ * @deprecated
  */
 public class LocalCodeFile implements ICodeLocation
 {

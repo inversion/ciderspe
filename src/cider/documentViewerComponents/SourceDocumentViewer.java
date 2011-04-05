@@ -166,7 +166,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         {
                             if (this.caretVisible)
                             {
-                                this.setCurrentLine(line);
+                                this.currentLine = line;
                                 this.currentColNum = 0;
                                 caretFound = true;
                                 this.paintCaret(g, -1, line.y);
@@ -184,7 +184,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                                 if (this.caretVisible)
                                 {
                                     this.paintCaret(g, i, line.y);
-                                    setCurrentLine(line);
+                                    this.currentLine = line;
                                     currentColNum = i + 1;
                                     caretFound = true;
                                 }
@@ -214,23 +214,42 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.invalidate();
     }
 
-    private void paintCaret(Graphics g, int i, int lineY)
+    /**
+     * paints a caret given the column number and yPixelCoordinate
+     * 
+     * @param g
+     * @param columnNumber
+     * @param yPixelCoordinate
+     */
+    private void paintCaret(Graphics g, int columnNumber, int yPixelCoordinate)
     {
         g.setColor(EditorTypingArea.parent.colours.get(EditorTypingArea.parent
                 .getUsername())/* Color.BLUE */);
-        int x = ((i + 1) * EditorTypingArea.characterSpacing)
+        int x = ((columnNumber + 1) * EditorTypingArea.characterSpacing)
                 + EditorTypingArea.leftMargin;
-        int y = lineY + 5;
+        int y = yPixelCoordinate + 5;
         g.fillRect(x, y - EditorTypingArea.lineSpacing, 3,
                 EditorTypingArea.lineSpacing);
     }
 
+    /**
+     * 
+     * @param color
+     * @return the same color but with reduced alpha, or null if a null if the
+     *         input color was null
+     */
     private static Color glass(Color color)
     {
         return color == null ? null : new Color(color.getRed(),
                 color.getGreen(), color.getBlue(), color.getAlpha() / 3);
     }
 
+    /**
+     * Useful for telling the user that the document is being fetched from the
+     * server
+     * 
+     * @param g
+     */
     public void paintWaitingSign(Graphics g)
     {
         g.setFont(new Font("SansSerif", Font.PLAIN, fontSize));
@@ -250,6 +269,12 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return (int) (y / (double) lineSpacing) + 1;
     }
 
+    /**
+     * 
+     * @param x
+     *            coordinate
+     * @return column number
+     */
     protected int xToColumnNumber(int x)
     {
         return (int) ((x - leftMargin) / (double) characterSpacing);
@@ -291,6 +316,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         });
     }
 
+    /**
+     * Waiting sign will disapear if you set waiting to false
+     * 
+     * @param waiting
+     */
     public void setWaiting(boolean waiting)
     {
         this.waiting = waiting;
@@ -402,12 +432,20 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         }
     }
 
+    /**
+     * hold off toggling the caret visibility for the next timer event
+     * 
+     * @param visible
+     */
     protected void holdCaretVisibility(boolean visible)
     {
         this.caretVisible = visible;
         this.toggleCaretVisibility.skipNextToggle();
     }
 
+    /**
+     * Moves the caret down a line
+     */
     protected void moveDown()
     {
         if (this.getCurrentLine().str.newline())
@@ -670,6 +708,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 : 0;
     }
 
+    /**
+     * moves the caret from its current position by a number of spaces
+     * 
+     * @param spaces
+     */
     protected void moveCaret(int spaces)
     {
         this.caretPosition += spaces;
@@ -679,6 +722,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.updateUI();
     }
 
+    /**
+     * sets the caret position amongst the text
+     * 
+     * @param position
+     *            is the number of characters into the document that you want
+     *            the caret to be located
+     */
     protected void setCaretPosition(int position)
     {
         this.caretPosition = constrain(position);
@@ -686,6 +736,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.updateUI();
     }
 
+    /**
+     * 
+     * @param position
+     * @return the nearest valid position
+     */
     private int constrain(int position)
     {
         if (position > this.str.length())
@@ -701,6 +756,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return this.str;
     }
 
+    /**
+     * 
+     * @param p
+     * @author Alex
+     */
     public static void addParent(Client p)
     {
         parent = p;
@@ -711,76 +771,138 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return this.doc;
     }
 
+    /**
+     * 
+     * @param commentedLine
+     * @author Miles or Alex
+     */
     public void setCommentedLine(boolean commentedLine)
     {
         this.commentedLine = commentedLine;
     }
 
+    /**
+     * 
+     * @return
+     * @author Miles or Alex
+     */
     public boolean isCommentedLine()
     {
         return commentedLine;
     }
 
+    /**
+     * 
+     * @param keyWord
+     * @author Miles or Alex
+     */
     public void setKeyWord(ArrayList<Integer> keyWord)
     {
         KeyWord = keyWord;
     }
 
+    /**
+     * 
+     * @return
+     * @author Miles or Alex
+     */
     public ArrayList<Integer> getKeyWord()
     {
         return KeyWord;
     }
 
+    /**
+     * 
+     * @param isKey
+     * @author Miles or Alex
+     */
     public void setIsKey(boolean isKey)
     {
         this.isKey = isKey;
     }
 
+    /**
+     * 
+     * @return
+     * @author Miles or Alex
+     */
     public boolean isKey()
     {
         return isKey;
     }
 
-    public SDVLine getLine(int i)
+    /**
+     * 
+     * @param lineNumber
+     * @return a line of text
+     */
+    public SDVLine getLine(int lineNumber)
     {
-        return this.lines.get(i);
+        return this.lines.get(lineNumber);
     }
 
+    /**
+     * 
+     * @param commentFound
+     * @author Miles or Alex
+     */
     public void setCommentFound(boolean commentFound)
     {
         this.commentFound = commentFound;
     }
 
+    /**
+     * 
+     * @return Miles or Alex
+     */
     public boolean isCommentFound()
     {
         return commentFound;
     }
 
+    /**
+     * 
+     * @param commentStartLoc
+     * @author Miles or Alex
+     */
     public void setCommentStartLoc(int commentStartLoc)
     {
         this.commentStartLoc = commentStartLoc;
     }
 
+    /**
+     * 
+     * @return
+     * @author Miles or Alex
+     */
     public int getCommentStartLoc()
     {
         return commentStartLoc;
     }
 
-    private void setCurrentLine(SDVLine currentLine)
-    {
-        this.currentLine = currentLine;
-    }
-
+    /**
+     * 
+     * @return the line on which the caret currently rests
+     * @author Lawrence
+     */
     protected SDVLine getCurrentLine()
     {
         return currentLine;
     }
 
+    /**
+     * 
+     * @return a TypingReagion that represents the currently selected region of
+     *         text
+     */
     protected TypingRegion getSelectedRegion()
     {
         return this.selectedRegion;
     }
 
+    /**
+     * toggles the caret visibility
+     */
     protected void toggleCaretVisibility()
     {
         this.caretVisible = this.hasFocus() && this.caretFlashing
@@ -789,11 +911,21 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             updateUI();
     }
 
+    /**
+     * Sets the default text color (text that hasn't been re-colored by syntax
+     * highlighting)
+     * 
+     * @param defaultColor
+     */
     public void setDefaultColor(Color defaultColor)
     {
         this.defaultColor = defaultColor;
     }
 
+    /**
+     * 
+     * @return color of text that hasn't been re-colored by syntax highlighting
+     */
     public Color getDefaultColor()
     {
         return defaultColor;
