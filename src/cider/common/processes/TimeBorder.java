@@ -2,6 +2,19 @@ package cider.common.processes;
 
 import java.util.PriorityQueue;
 
+/**
+ * A time border contains a priority queue of some of the typing events in the
+ * region leading up to the border's time. If the queue of typing events has all
+ * the events needed to represent the history of the document just before the
+ * start of and during the region leading up to the berder's time then this
+ * TimeBorder has a fullSet. TimeBorders are used to mark the beginning and end
+ * of TimeRegions and are one of the objects used for browsing through document
+ * history. Each TimeBorder is associated with a specific SourceDocument, the
+ * name and path of which is stored in a DocumentID
+ * 
+ * @author Lawrence
+ * 
+ */
 public class TimeBorder
 {
     public final long time;

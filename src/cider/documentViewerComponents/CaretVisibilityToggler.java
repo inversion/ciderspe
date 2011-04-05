@@ -25,6 +25,12 @@ package cider.documentViewerComponents;
 
 import java.util.TimerTask;
 
+/**
+ * Toggles the caret visibility whenever it is run
+ * 
+ * @author Lawrence
+ * 
+ */
 public class CaretVisibilityToggler extends TimerTask
 {
     private EditorTypingArea eta;
@@ -35,6 +41,10 @@ public class CaretVisibilityToggler extends TimerTask
         this.eta = eta;
     }
 
+    /**
+     * The next run will have no effect. This can be useful is you want to keep
+     * the caret visible while you type
+     */
     public void skipNextToggle()
     {
         this.skipNextToggle = true;

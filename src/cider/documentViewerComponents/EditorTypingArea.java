@@ -2,6 +2,13 @@ package cider.documentViewerComponents;
 
 import cider.common.processes.SourceDocument;
 
+/**
+ * The EditorTypingArea is a type of SourceDocumentViewer which has the caret
+ * enabled and makes caret related methods publicly available
+ * 
+ * @author Lawrence
+ * 
+ */
 public class EditorTypingArea extends SourceDocumentViewer
 {
 

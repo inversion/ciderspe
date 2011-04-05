@@ -19,13 +19,20 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * A simple way of storing a queue of typing events belonging to the same
+ * location
+ * 
+ * @author Lawrence
+ * 
+ */
 public class LocalisedTypingEvents
 {
     public String path;

@@ -27,6 +27,16 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * A live folder is basically something that contains SourceDocuments and other
+ * live folders. I gave it the name LiveFolder to remind people that this isn't
+ * a folder in the operating system's directory structure, and the documents in
+ * the folder are being updated in real-time. The LiveFolder is a SourceDocument
+ * and LiveFolder factory.
+ * 
+ * @author Lawrence
+ * 
+ */
 public class LiveFolder
 {
     public String name;
@@ -40,6 +50,14 @@ public class LiveFolder
         this.name = name;
     }
 
+    /**
+     * Manufactures a SourceDocument and remembers it, then returns it
+     * 
+     * @param name
+     *            of the document
+     * @return the document
+     * @author Lawrence
+     */
     public SourceDocument makeDocument(String name)
     {
         SourceDocument sourceDocument = new SourceDocument(name);
@@ -47,6 +65,13 @@ public class LiveFolder
         return sourceDocument;
     }
 
+    /**
+     * Manufactures a LiveFolder and remembers it, then returns it
+     * 
+     * @param name
+     * @return the live folder
+     * @author Lawrence
+     */
     public LiveFolder makeFolder(String name)
     {
         LiveFolder folder = new LiveFolder(this.owner, name);
@@ -54,16 +79,38 @@ public class LiveFolder
         return folder;
     }
 
+    /**
+     * Gets a sub-document (doesn't look in sub-folders)
+     * 
+     * @param name
+     * @return
+     * @author Lawrence
+     */
     public SourceDocument getDocument(String name)
     {
         return this.documents.get(name);
     }
 
+    /**
+     * Gets a folder (doesn't look in sub-folders)
+     * 
+     * @param name
+     * @return
+     * @author Lawrence
+     */
     public LiveFolder getFolder(String name)
     {
         return this.folders.get(name);
     }
 
+    /**
+     * 
+     * @param indent
+     *            - a string that contains tabs which shifts the returned text
+     * @return uses recursion to build up an XML representation of the
+     *         LiveFolder and its sub-folders.
+     * @author Lawrence
+     */
     public String xml(String indent)
     {
         String str = "";
@@ -95,6 +142,13 @@ public class LiveFolder
         // System.out.println(folder.xml(""));
     }
 
+    /**
+     * 
+     * @param dest
+     *            the path to the source document separated by backslashes
+     * @return the source document at that path
+     * @author Lawrence
+     */
     public SourceDocument path(String dest)
     {
         String[] split = dest.split("\\\\");
@@ -108,6 +162,11 @@ public class LiveFolder
         }
     }
 
+    /**
+     * Removes all the folders and documents from this live folder
+     * 
+     * @author Lawrence
+     */
     public void removeAllChildren()
     {
         this.folders.clear();
@@ -120,6 +179,7 @@ public class LiveFolder
      * @param time
      * @param path
      * @return
+     * @author Lawrence
      */
     public Queue<LocalisedTypingEvents> eventsSince(long time, String path)
     {
