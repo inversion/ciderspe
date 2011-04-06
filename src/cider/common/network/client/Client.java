@@ -28,10 +28,12 @@ import java.awt.Component;
 import java.awt.Font;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
@@ -51,6 +53,14 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
+import org.jivesoftware.smackx.jingle.JingleManager;
+import org.jivesoftware.smackx.jingle.JingleSession;
+import org.jivesoftware.smackx.jingle.JingleSessionRequest;
+import org.jivesoftware.smackx.jingle.listeners.JingleSessionRequestListener;
+import org.jivesoftware.smackx.jingle.media.JingleMediaManager;
+import org.jivesoftware.smackx.jingle.mediaimpl.jspeex.SpeexMediaManager;
+import org.jivesoftware.smackx.jingle.mediaimpl.sshare.ScreenShareMediaManager;
+import org.jivesoftware.smackx.jingle.nat.ICETransportManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.ETASourceEditorPane;
@@ -112,7 +122,12 @@ public class Client
     // Private chat sessions with other users
     private ClientPrivateChatListener userChatListener;
     protected HashMap<String, JTextArea> usersToAreas = new HashMap<String, JTextArea>();
-
+    
+    // Jingle (voice chat) stuff    
+    private JingleManager jm;
+    private JingleSession incoming = null;
+    private JingleSession outgoing = null;
+    
     // The current user's profile
     public Profile profile = null;
     public Profile notMyProfile = null;
@@ -166,10 +181,44 @@ public class Client
         this.shared = shared;
 
         EditorTypingArea.addParent(this);
-        
-        
     }
+    
+    /**
+     * Initiate handlers for VoIP chat.
+     * 
+     * @author Andrew
+     */
+    private void initJingle()
+    {
+        ICETransportManager icetm0 = new ICETransportManager(connection, clientConfig.getStunServer(), clientConfig.getStunPort());
+        List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>();
+        //mediaManagers.add(new JmfMediaManager(icetm0));
+        mediaManagers.add(new SpeexMediaManager(icetm0));
+        mediaManagers.add(new ScreenShareMediaManager(icetm0));
+        jm = new JingleManager(connection, mediaManagers);
+        jm.addCreationListener(icetm0);
 
+        jm.addJingleSessionRequestListener(new JingleSessionRequestListener() {
+            public void sessionRequested(JingleSessionRequest request) {
+
+//                if (incoming != null)
+//                    return;
+
+                try {
+                    // Accept the call
+                    incoming = request.accept();
+
+                    // Start the call
+                    incoming.startIncoming();
+                }
+                catch (XMPPException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+    }
+    
     /**
      * Tries to connect to the XMPP server, throwing an exception if it fails in
      * any way.
@@ -220,6 +269,9 @@ public class Client
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener( this, clientConfig.getChatroomName() );
         chatmanager.addChatListener(userChatListener);
+        
+        // Initiate voice chat stuff
+        //initJingle();
 
         // Check the bot is online
         botChat.sendMessage(StringUtils.encodeBase64("are you online mr bot"));

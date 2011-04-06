@@ -524,7 +524,16 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void movePageUp()
     {
-        // TODO: Not implemented yet
+        // TODO: These two methods update the GUI 26 times which is quite inefficient
+        // FIXME: These don't work but I don't understand what's going on with Lawrence's stuff, comments please ;)
+        for( int i = 0; i < 27; i++ )
+            moveUp();
+    }
+    
+    protected void movePageDown()
+    {
+        for( int i = 0; i < 27; i++ )
+            moveDown();
     }
 
     /**
@@ -551,11 +560,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         return 0;
         // below doesn't work
         // return (i * characterSpacing) + leftMargin;
-    }
-
-    protected void movePageDown()
-    {
-        // TODO: Not implemented yet
     }
 
     @Override

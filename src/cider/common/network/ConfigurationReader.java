@@ -29,7 +29,7 @@ import java.io.FileReader;
 import java.util.HashMap;
 
 /**
- * Reads the Bot.conf file and sets the config in the Bot
+ * Reads a configuration file and stores its values
  * 
  * @author Andrew
  *
@@ -79,6 +79,16 @@ public class ConfigurationReader
         return config.get( "CHECKER_PASSWORD" );
     }
     
+    public String getStunServer()
+    {
+        return config.get( "STUN_SERVER" );
+    }
+    
+    public int getStunPort()
+    {
+        return Integer.parseInt( config.get( "STUN_PORT" ) );
+    }
+    
     public ConfigurationReader( String fileName )
     {
         BufferedReader br = null;
@@ -90,8 +100,7 @@ public class ConfigurationReader
         }
         catch (FileNotFoundException e)
         {
-            // TODO Auto-generated catch block
-            System.err.println( "Error: Failed to read " + fileName );
+            System.err.println( "Error: Failed to read config file: " + fileName );
             e.printStackTrace();
             System.exit(1);
         }
@@ -125,7 +134,7 @@ public class ConfigurationReader
         catch (Exception e)
         {
             e.printStackTrace();
-            System.err.println( "Error reading bot configuration: " + e.getMessage() );
+            System.err.println( "Error reading configuration: " + e.getMessage() );
             System.exit(1);
         }
            

@@ -41,6 +41,7 @@ import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 
+@SuppressWarnings("serial")
 public class DHVSourceHistoryPane extends JPanel
 {
     private DocumentHistoryViewer dhv;

@@ -7,6 +7,7 @@ import javax.swing.JPanel;
 
 import cider.common.processes.TimeBorderList;
 
+@SuppressWarnings("serial")
 public class TimeRegionBrowser extends JPanel
 {
     TimeBorderList tbl;
