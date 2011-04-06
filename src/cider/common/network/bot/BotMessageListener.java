@@ -141,7 +141,7 @@ public class BotMessageListener implements MessageListener
                 
                 // TODO: Duplicate code from below
                 String xml = this.bot.getRootFolder().xml("");
-                chat.sendMessage(StringUtils.encodeBase64("filelist=" + xml));   
+                bot.chatroom.sendMessage(StringUtils.encodeBase64("filelist=" + xml));   
             }
             catch (IOException e)
             {
