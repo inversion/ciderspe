@@ -68,6 +68,18 @@ public class LiveFolder
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }
+    
+    /**
+     * Add a SourceDocument to a folder
+     * 
+     * @param doc Document to add
+     * @author Andrew
+     */
+    public void addDocument( SourceDocument doc )
+    {
+        this.documents.put( doc.name, doc );
+    }
+    
 
     /**
      * Manufactures a LiveFolder and remembers it, then returns it
@@ -110,7 +122,7 @@ public class LiveFolder
     /**
      * Writes folders and source documents (serialized) to disk.
      * 
-     * @param The fully qualified path to create the directory tree under.
+     * @param path The fully qualified path to create the directory tree under.
      */
     public void writeToDisk( File path )
     {
@@ -132,6 +144,7 @@ public class LiveFolder
                 ObjectOutputStream out = new ObjectOutputStream( fos );
                 out.writeObject( doc );
                 out.close();
+                fos.close();
             }
             catch (IOException e)
             {
