@@ -50,11 +50,14 @@ public class SourceDocument implements ICodeLocation, Serializable
     
     private PriorityQueue<TypingEvent> typingEvents;
     public String name;
+    // TODO ownership
+    private String owner;
     private long latestTime;
 
-    public SourceDocument(String name)
+    public SourceDocument(String name )
     {
         this.name = name;
+        this.owner = owner;
         this.typingEvents = new PriorityQueue<TypingEvent>(1000,
                 new EventComparer());
     }
@@ -62,6 +65,7 @@ public class SourceDocument implements ICodeLocation, Serializable
     public SourceDocument(String name, PriorityQueue<TypingEvent> typingEvents)
     {
         this.name = name;
+        this.owner = owner;
         this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
     }
 

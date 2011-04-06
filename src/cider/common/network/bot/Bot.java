@@ -25,7 +25,11 @@ package cider.common.network.bot;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.ChatManager;
@@ -134,7 +138,9 @@ public class Bot
             if( DEBUG )
                 System.out.println( "Using source path: " + config.getSourceDir().getPath() );
             
-            this.testTree();
+            //this.testTree();
+            sourceFolder = new LiveFolder("Bot", "root");
+            readFromDisk( SOURCE_PATH, sourceFolder );
         }
         catch (XMPPException e)
         {
@@ -187,9 +193,49 @@ public class Bot
         connection.disconnect();
     }
 
-    // TODO: Lawrence needs to comment below
-
-    public void testTree()
+    /**
+     * Read source document tree into live folder.
+     * 
+     * @author Andrew
+     */
+    private void readFromDisk( File path, LiveFolder folder )
+    {        
+        File[] list = path.listFiles();
+        for (File file : list)
+        {
+            if( file.isFile())
+            {
+                try
+                {
+                    FileInputStream fis = new FileInputStream( file );
+                    ObjectInputStream input = new ObjectInputStream( fis );
+                    folder.addDocument( (SourceDocument) input.readObject() );
+                    input.close();
+                    fis.close();
+                }
+                catch (IOException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                catch (ClassNotFoundException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            else if( file.isDirectory() )
+                readFromDisk( file.getAbsoluteFile(), folder.makeFolder( file.getName() ) );
+        }
+    }
+    
+    
+    /**
+     * Create a test live folder tree 
+     * 
+     * @author Lawrence
+     */
+    private void testTree()
     {
         this.sourceFolder = new LiveFolder("Bot", "root");
         // FIXME: t1 is unused
