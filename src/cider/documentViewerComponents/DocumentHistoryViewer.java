@@ -37,6 +37,11 @@ public class DocumentHistoryViewer extends SourceDocumentViewer
 {
     TimeRegion timeRegion;
 
+    public DocumentHistoryViewer(SourceDocument sourceDocument)
+    {
+        super(sourceDocument);
+    }
+
     public DocumentHistoryViewer(TimeRegion timeRegion)
     {
         super(new SourceDocument(timeRegion.documentID.name));
