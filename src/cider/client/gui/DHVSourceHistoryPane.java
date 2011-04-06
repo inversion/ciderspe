@@ -19,34 +19,31 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.client.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.swing.DefaultBoundedRangeModel;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import cider.common.processes.DocumentID;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
+import cider.common.processes.TimeRegion;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 
 @SuppressWarnings("serial")
 public class DHVSourceHistoryPane extends JPanel
 {
     private DocumentHistoryViewer dhv;
-    private JSlider timeSlider;
-    private DefaultBoundedRangeModel rangeModel = new DefaultBoundedRangeModel();
     private JScrollPane documentScrollPane;
     private TimeRegionBrowser trb;
     private JScrollPane regionBrowserScrollPane;
@@ -54,18 +51,6 @@ public class DHVSourceHistoryPane extends JPanel
     public DHVSourceHistoryPane()
     {
         super(new BorderLayout());
-        this.timeSlider = new JSlider(this.rangeModel);
-        this.add(this.timeSlider, BorderLayout.NORTH);
-        this.timeSlider.addChangeListener(new ChangeListener()
-        {
-            @Override
-            public void stateChanged(ChangeEvent arg0)
-            {
-                long time = rangeModel.getExtent() + rangeModel.getValue();
-                System.out.println(time);
-                dhv.updateText(time * time);
-            }
-        });
     }
 
     public void setDocumentHistoryViewer(final DocumentHistoryViewer dhv)
@@ -87,20 +72,21 @@ public class DHVSourceHistoryPane extends JPanel
             this.remove(this.regionBrowserScrollPane);
 
         this.regionBrowserScrollPane = new JScrollPane(trb);
+        this.regionBrowserScrollPane
+                .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         this.add(this.regionBrowserScrollPane, BorderLayout.WEST);
-    }
 
-    public void setTimeRange(long start, long end)
-    {
-        // Squash long numbers into an integer
-        // TODO: Check this...
-        int iStart = (int) Math.sqrt(start);
-        int iEnd = (int) Math.sqrt(end);
-        int extent = (iEnd - iStart) / 50;
-        this.rangeModel.setValue(iEnd - extent);
-        this.rangeModel.setExtent(extent);
-        this.rangeModel.setMinimum(iStart);
-        this.rangeModel.setMaximum(iEnd);
+        trb.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                TimeRegion currentRegion = trb.getCurrentRegion();
+                dhv.setRegion(currentRegion);
+            }
+
+        });
     }
 
     public static void main(String[] args)
@@ -116,15 +102,14 @@ public class DHVSourceHistoryPane extends JPanel
         dhv.setWaiting(false);
 
         TimeBorderList tbl = new TimeBorderList();
-        tbl.addTimeBorder(new TimeBorder(documentID, 1000));
-        tbl.addTimeBorder(new TimeBorder(documentID, 1500));
+        tbl.addTimeBorder(new TimeBorder(documentID, 3000));
+        // tbl.addTimeBorder(new TimeBorder(documentID, 1500));
 
         TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
 
         DHVSourceHistoryPane app = new DHVSourceHistoryPane();
         app.setDocumentHistoryViewer(dhv);
         app.setTimeRegionBrowser(trb);
-        app.setTimeRange(0, 3000);
 
         JFrame w = new JFrame();
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
