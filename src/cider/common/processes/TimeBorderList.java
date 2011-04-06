@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -60,8 +60,7 @@ public class TimeBorderList
     }
 
     /**
-     * creates/retrieves a region leading up to the time specified. Note that
-     * the order that you create time regions is important.
+     * creates/retrieves a region leading up to the time specified.
      * 
      * @param time
      * @return
