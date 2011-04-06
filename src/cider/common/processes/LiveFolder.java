@@ -142,7 +142,7 @@ public class LiveFolder
                 // Write the source document to the file
                 FileOutputStream fos = new FileOutputStream( file );
                 ObjectOutputStream out = new ObjectOutputStream( fos );
-                out.writeObject( doc );
+                out.writeObject( doc.simplified( Long.MAX_VALUE ) );
                 out.close();
                 fos.close();
             }
@@ -212,7 +212,9 @@ public class LiveFolder
     public SourceDocument path(String dest)
     {
         String[] split = dest.split("\\\\");
-        if (split[0].endsWith(".SourceDocument"))
+        // TODO: Changed so don't need this file extension by Andrew
+        //if (split[0].endsWith(".SourceDocument"))
+        if( split.length == 1 )
             return this.getDocument(split[0]);// .split("\\.")[0]);
         else
         {

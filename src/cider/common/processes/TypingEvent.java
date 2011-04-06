@@ -37,11 +37,11 @@ import java.util.ArrayList;
  * 
  */
 public class TypingEvent implements Serializable
-{
+{    
     /**
      * 
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     
     public String lockingGroup = null;
     public final TypingEventMode mode;
