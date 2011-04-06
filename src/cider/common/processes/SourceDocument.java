@@ -23,6 +23,7 @@
 
 package cider.common.processes;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -33,15 +34,24 @@ import java.util.Random;
 
 /**
  * 
- * @author Lawrence
+ * SourceDocument is a live document which is a collection of typing events.
+ * 
+ * Between executions they can be serialized by the Bot and written to disk
+ * to make files persistent. This also allows typing events to be kept.
+ * 
+ * @author Lawrence, Andrew
  */
-public class SourceDocument implements ICodeLocation
-{
+public class SourceDocument implements ICodeLocation, Serializable
+{    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    
     private PriorityQueue<TypingEvent> typingEvents;
-    public String name = "untitled";
+    public String name;
     private long latestTime;
 
-    // name will be remobed in time
     public SourceDocument(String name)
     {
         this.name = name;
@@ -564,8 +574,13 @@ public class SourceDocument implements ICodeLocation
      * @author Lawrence
      * 
      */
-    class EventComparer implements Comparator<TypingEvent>
+    private class EventComparer implements Comparator<TypingEvent>, Serializable
     {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 1L;
+
         public int compare(TypingEvent e1, TypingEvent e2)
         {
             if (e1.time > e2.time)

@@ -23,6 +23,10 @@
 
 package cider.common.processes;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -102,6 +106,48 @@ public class LiveFolder
     {
         return this.folders.get(name);
     }
+    
+    /**
+     * Writes folders and source documents (serialized) to disk.
+     * 
+     * @param The fully qualified path to create the directory tree under.
+     */
+    public void writeToDisk( File path )
+    {
+        if( !path.exists() )
+            path.mkdir();
+        
+        for (SourceDocument doc : this.documents.values())
+        {
+            // Append this file to the pathname
+            File file = new File( path, doc.name );
+            
+            try
+            {
+                // Create the file if it doesn't exist
+                file.createNewFile();
+                
+                // Write the source document to the file
+                FileOutputStream fos = new FileOutputStream( file );
+                ObjectOutputStream out = new ObjectOutputStream( fos );
+                out.writeObject( doc );
+                out.close();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        
+        for (LiveFolder folder : this.folders.values())
+        {
+            File dir = new File( path, folder.name );
+            
+            // Recursively call the writing method under each directory
+            folder.writeToDisk( dir );
+        }
+    }
 
     /**
      * 
@@ -134,6 +180,7 @@ public class LiveFolder
         return str;
     }
 
+    @Deprecated
     public static void main(String[] args)
     {
         LiveFolder folder = new LiveFolder("test owner", "root");

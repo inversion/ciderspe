@@ -24,6 +24,7 @@
 package cider.common.network.bot;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -45,7 +46,6 @@ import cider.common.processes.SourceDocument;
 
 public class Bot
 {
-    @SuppressWarnings("unused")
     private static final boolean DEBUG = true;
 
     // XMPP Server Configuration
@@ -57,6 +57,7 @@ public class Bot
     private final String CHATROOM_NAME;
     private final String CHECKER_USERNAME;
     private final String CHECKER_PASSWORD;
+    private final File   SOURCE_PATH;
     private ConnectionConfiguration conConfig;
 
     protected MultiUserChat chatroom;
@@ -64,7 +65,7 @@ public class Bot
     private XMPPConnection connection;
     private ChatManager chatmanager;
     private BotChatListener chatListener;
-    private LiveFolder liveFolder;
+    private LiveFolder sourceFolder;
 
     // Holds the colours for each user
     public HashMap<String, Color> colours;
@@ -72,11 +73,11 @@ public class Bot
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
-        @SuppressWarnings("unused")
         Bot bot = new Bot();
         try
         {
             System.in.read();
+            bot.sourceFolder.writeToDisk( bot.SOURCE_PATH );
         }
         catch (IOException e)
         {
@@ -99,6 +100,7 @@ public class Bot
         CHATROOM_NAME = config.getChatroomName();
         CHECKER_USERNAME = config.getCheckerUsername();
         CHECKER_PASSWORD = config.getCheckerPassword();
+        SOURCE_PATH = config.getSourceDir();
         conConfig = new ConnectionConfiguration(HOST,
                 PORT, SERVICE_NAME);
         
@@ -129,6 +131,9 @@ public class Bot
             chatListener = new BotChatListener(this);
             chatmanager.addChatListener(chatListener);
 
+            if( DEBUG )
+                System.out.println( "Using source path: " + config.getSourceDir().getPath() );
+            
             this.testTree();
         }
         catch (XMPPException e)
@@ -186,20 +191,20 @@ public class Bot
 
     public void testTree()
     {
-        this.liveFolder = new LiveFolder("Bot", "root");
+        this.sourceFolder = new LiveFolder("Bot", "root");
         // FIXME: t1 is unused
         @SuppressWarnings("unused")
-        SourceDocument t1 = this.liveFolder.makeDocument("t1.SourceDocument");
+        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument");
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         // t1.push(tes);
-        this.liveFolder.makeFolder("testFolder").makeFolder("test2")
+        this.sourceFolder.makeFolder("testFolder").makeFolder("test2")
                 .makeDocument("test2Doc.SourceDocument");
     }
 
     public LiveFolder getRootFolder()
     {
-        return this.liveFolder;
+        return this.sourceFolder;
     }
 }

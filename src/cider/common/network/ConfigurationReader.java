@@ -24,6 +24,7 @@
 package cider.common.network;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashMap;
@@ -87,6 +88,14 @@ public class ConfigurationReader
     public int getStunPort()
     {
         return Integer.parseInt( config.get( "STUN_PORT" ) );
+    }
+    
+    public File getSourceDir()
+    {
+        File dir = new File( config.get( "SOURCE_DIR" ) );
+        
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();    
     }
     
     public ConfigurationReader( String fileName )
