@@ -19,11 +19,12 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.documentViewerComponents;
 
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TimeRegion;
 
 /**
  * The DocumentHistoryViewer is a type of SourceDocumentViewer that is read only
@@ -34,10 +35,18 @@ import cider.common.processes.SourceDocument;
  */
 public class DocumentHistoryViewer extends SourceDocumentViewer
 {
+    TimeRegion timeRegion;
 
-    public DocumentHistoryViewer(SourceDocument doc)
+    public DocumentHistoryViewer(TimeRegion timeRegion)
     {
-        super(doc);
+        super(new SourceDocument(timeRegion.documentID.name));
+        this.doc.addEvents(timeRegion.end.typingEvents);
+
     }
 
+    public void setRegion(TimeRegion currentRegion)
+    {
+        this.doc.clearAll();
+        this.doc.addEvents(currentRegion.end.typingEvents);
+    }
 }

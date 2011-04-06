@@ -66,7 +66,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     private TypingEventList str = new TypingEventList();
     private int caretPosition = 0;
     // private ICodeLocation codeLocation = null;
-    private SourceDocument doc = null;
+    protected SourceDocument doc = null;
     private boolean caretFlashing = true;
     private boolean caretVisible = false;
     private ArrayList<SDVLine> lines = new ArrayList<SDVLine>();
