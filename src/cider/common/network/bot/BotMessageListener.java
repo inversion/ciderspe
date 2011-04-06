@@ -27,12 +27,16 @@ import java.awt.Color;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -43,14 +47,14 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.Base64;
 import org.jivesoftware.smack.util.StringUtils;
 
+import cider.common.processes.LiveFolder;
+import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 
 /**
  * This class waits for a message to be received on a chat session and then
  * responds to messages accordingly.
  * 
- * TODO: Probably not the best place to instantiate the CiderFileList? TODO:
- * Throw exceptions rather than catching them
  * 
  * @author Andrew
  * 
@@ -58,14 +62,12 @@ import cider.common.processes.TypingEvent;
 
 public class BotMessageListener implements MessageListener
 {
-
-    // private CiderFileList filelist = new CiderFileList(Bot.SRCPATH);
-    // private Pattern putFileMatch = Pattern
-    // .compile("<putfile><path>(.+)</path><contents>(.+)</contents></putfile>");
-    // private Matcher matcher = null;
+    public static boolean DEBUG = true;
+    
     private BotChatListener source;
     private String name;
     private Bot bot;
+
 
     public BotMessageListener(BotChatListener source, String name, Bot bot)
     {
@@ -73,6 +75,40 @@ public class BotMessageListener implements MessageListener
         this.name = name;
         this.bot = bot;
         // System.out.println(this.liveFolder.xml(""));
+    }
+    
+    /**
+     * Goes through a path and finds the corresponding live folder object.
+     * 
+     * @param path The remainder of the path we are finding.
+     * @param current The current LiveFolder we are in.
+     * @return The LiveFolder, or null if it wasn't found.
+     * 
+     * @author Andrew
+     */
+    private LiveFolder findFolder( String path, LiveFolder current )
+    {
+        String part;
+        // Trim trailing slash
+        if( path.endsWith( "\\" ) )
+            path = path.substring( 0, path.length()-1 );
+        
+        while( path.length() > 0 )
+        {
+            if( path.indexOf("\\") == -1 )
+            {
+                System.out.println("Returning " + path);
+                return current.getFolder( path );
+            }
+            else
+            {
+                part = path.substring( 0, path.indexOf( "\\" ) );
+                current = current.getFolder( part );
+                path = path.substring( part.length()+1 );
+            }
+        }
+        
+        return current;
     }
 
     @Override
@@ -82,8 +118,46 @@ public class BotMessageListener implements MessageListener
         body = new String(Base64.decode(message.getBody()));
         // TODO: XML-ize this and get filelist??
         if (body.startsWith("quit"))
-        {
             source.endSession(name);
+        else if ( body.startsWith( "createDocument=" ) )
+        {
+            String serial = body.substring( "createDocument=".length() );
+            ByteArrayInputStream bis = new ByteArrayInputStream( serial.getBytes() );
+            ObjectInputStream os = null;
+            SourceDocument doc = null;
+            
+            // A bit hackish, but using subject as path to create document in
+            String path = new String( Base64.decode( message.getSubject() ) );
+            
+            try
+            {
+                os = new ObjectInputStream( bis );
+                doc = (SourceDocument) os.readObject();
+                
+                if( DEBUG )
+                    System.out.println( "Creating document " + doc.name + " in " + findFolder( path, bot.getRootFolder() ).name );
+                
+                findFolder( path, bot.getRootFolder() ).addDocument( doc );             
+                
+                // TODO: Duplicate code from below
+                String xml = this.bot.getRootFolder().xml("");
+                chat.sendMessage(StringUtils.encodeBase64("filelist=" + xml));   
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (ClassNotFoundException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (XMPPException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }        
         }
         else if (body.startsWith("requestusercolour"))
         {
