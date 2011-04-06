@@ -202,7 +202,9 @@ public class Bot
      * @author Andrew
      */
     private void readFromDisk( File path, LiveFolder folder )
-    {        
+    {   
+        if( !path.exists() )
+            return;
         File[] list = path.listFiles();
         for (File file : list)
         {
