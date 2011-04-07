@@ -58,10 +58,11 @@ public class BotChatroomMessageListener implements PacketListener
     public void processPacket(Packet packet)
     {
         Message msg = (Message) packet;
-        String body = new String(StringUtils.decodeBase64(msg.getBody()));
+        String body = msg.getBody();
         if (body.startsWith("pushto("))
         {
             String[] instructions = body.split("%%");
+            int i = 0;
             Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
             for (String instruction : instructions)
             {
@@ -78,6 +79,7 @@ public class BotChatroomMessageListener implements PacketListener
                 SourceDocument doc = this.bot.getRootFolder().path(dest);
                 doc.push(typingEvents);
                 changedDocs.put(dest, doc);
+                i++;
             }
 
             for (Entry<String, SourceDocument> entry : changedDocs.entrySet())

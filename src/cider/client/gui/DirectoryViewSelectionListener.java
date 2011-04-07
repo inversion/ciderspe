@@ -60,12 +60,11 @@ public class DirectoryViewSelectionListener implements TreeSelectionListener
                 .getLastSelectedPathComponent();
 
         // Get the file and let the client message listener make the new tab
-        // If the path is null it's a dir (quite sure)
+        // If the path is null it's a dir
         if (node != null && node.isLeaf())
         {
             client.openTabFor(node.getUserObjectPath());
             // client.directKeyboardInputTo(node.getUserObjectPath());
         }
-        // client.getFile(path);
     }
 }

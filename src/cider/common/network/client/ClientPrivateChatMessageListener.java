@@ -53,7 +53,7 @@ public class ClientPrivateChatMessageListener implements MessageListener {
     public void processMessage(Chat chat, Message message) 
     {
         // TODO: Bit dodgy about null etc.
-        String body = new String( StringUtils.decodeBase64( message.getBody() ) );
+        String body = message.getBody();
         
         if( DEBUG )
             System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
