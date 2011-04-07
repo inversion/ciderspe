@@ -81,9 +81,9 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public int GetCurLine()
+    public int getCurLine()
     {
-        return super.GetCurLine();
+        return super.getCurLine();
     }
 
     @Override
