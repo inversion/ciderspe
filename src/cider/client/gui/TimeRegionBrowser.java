@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
+import java.util.PriorityQueue;
 
 import javax.swing.JPanel;
 
@@ -21,13 +22,12 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         MouseMotionListener
 {
     TimeBorderList tbl;
-    long[] borderTimes;
+    PriorityQueue<Long> borderTimes;
     double scale = 0.1;
     long eyePosition = 500;
     boolean movingEye = false;
     long latestTime = 0;
     ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
-    ActionEvent eyeMoveAction = new ActionEvent(null, 0, "Eye Moved");
 
     public TimeRegionBrowser(TimeBorderList tbl)
     {
@@ -67,6 +67,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 
         for (long t : this.borderTimes)
         {
+            this.latestTime = t;
             timeBorder = this.tbl.getBorder(t);
             y = (int) (((double) t) * this.scale);
             g.setColor(Color.BLACK);
@@ -81,7 +82,6 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             prevY = y;
         }
 
-        this.latestTime = this.borderTimes[this.borderTimes.length - 1];
         g.setColor(Color.WHITE);
         g.fillRect(x, y + 1, width, this.getHeight() - y);
         this.paintEye(g, x + width);
@@ -91,6 +91,9 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     {
         g.setColor(Color.BLACK);
         g.drawOval(x + 1, (int) (this.eyePosition * this.scale) - 4, 14, 8);
+        g.setColor(Color.cyan);
+        g.fillOval(x + 5, (int) (this.eyePosition * this.scale) - 4, 6, 6);
+        g.setColor(Color.BLACK);
         g.drawOval(x + 5, (int) (this.eyePosition * this.scale) - 4, 6, 6);
     }
 
@@ -108,7 +111,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             for (ActionListener al : this.actionListeners)
-                al.actionPerformed(this.eyeMoveAction);
+                al.actionPerformed(new ActionEvent(this.eyePosition, 0,
+                        "Eye Moved"));
         }
     }
 
@@ -164,6 +168,6 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 
     public TimeRegion getCurrentRegion()
     {
-        return this.tbl.regionLeadingUpTo(this.eyePosition);
+        return this.tbl.regionThatCovers(this.eyePosition);
     }
 }

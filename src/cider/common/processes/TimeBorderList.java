@@ -23,10 +23,10 @@
 
 package cider.common.processes;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Hashtable;
+import java.util.Map.Entry;
+import java.util.PriorityQueue;
+import java.util.TreeMap;
 
 /**
  * The TimeBorderList stores an array of time borders which can be sorted with
@@ -39,54 +39,36 @@ import java.util.Hashtable;
 public class TimeBorderList
 {
     public static final TimeBorderComparer comparer = new TimeBorderComparer();
-    private ArrayList<TimeBorder> timeBorders = new ArrayList<TimeBorder>();
-    private Hashtable<Long, TimeBorder> timeBorderLookup = new Hashtable<Long, TimeBorder>();
-    private Hashtable<Long, TimeRegion> timeRegionLookup = new Hashtable<Long, TimeRegion>();
+    private TreeMap<Long, TimeBorder> timeBorders = new TreeMap<Long, TimeBorder>();
+    private TreeMap<Long, TimeRegion> timeRegions = new TreeMap<Long, TimeRegion>();
 
     public void addTimeBorder(TimeBorder timeBorder)
     {
-        this.timeBorders.add(timeBorder);
-        this.timeBorderLookup.put(timeBorder.time, timeBorder);
-    }
-
-    public void sort()
-    {
-        Collections.sort(this.timeBorders, comparer);
+        this.timeBorders.put(timeBorder.time, timeBorder);
     }
 
     public TimeBorder getBorder(long time)
     {
-        return this.timeBorderLookup.get(time);
+        return this.timeBorders.get(time);
     }
 
-    /**
-     * creates/retrieves a region leading up to the time specified.
-     * 
-     * @param time
-     * @return
-     */
-    public TimeRegion regionLeadingUpTo(long time)
+    public void createRegions()
     {
-        TimeRegion region = this.timeRegionLookup.get(time);
+        TimeBorder lastBorder = null;
 
-        if (region == null)
+        try
         {
-            TimeBorder endBorder = this.getBorder(time);
-            int i = this.timeBorders.indexOf(endBorder);
-            TimeBorder previousBorder = null;
-            if (i != -1)
-                previousBorder = this.timeBorders.get(i - 1);
-            try
+            for (Entry<Long, TimeBorder> entry : this.timeBorders.entrySet())
             {
-                region = new TimeRegion(previousBorder, endBorder);
-            }
-            catch (Exception e)
-            {
-                e.printStackTrace();
+                this.timeRegions.put(entry.getValue().time, new TimeRegion(
+                        lastBorder, entry.getValue()));
+                lastBorder = entry.getValue();
             }
         }
-
-        return region;
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -94,13 +76,12 @@ public class TimeBorderList
      * 
      * @return
      */
-    public long[] borderTimes()
+    public PriorityQueue<Long> borderTimes()
     {
-        int size = this.timeBorders.size();
-        long[] result = new long[size];
-        for (int i = 0; i < size; i++)
-            result[i] = this.timeBorders.get(i).time;
-        return result;
+        PriorityQueue<Long> borderTimes = new PriorityQueue<Long>();
+        for (Long t : this.timeBorders.keySet())
+            borderTimes.add(t);
+        return borderTimes;
     }
 
     public static class TimeBorderComparer implements Comparator<TimeBorder>
@@ -114,5 +95,14 @@ public class TimeBorderList
             else
                 return 0;
         }
+    }
+
+    public TimeRegion regionThatCovers(long t)
+    {
+        Entry<Long, TimeRegion> entry = this.timeRegions.ceilingEntry(t);
+        if (entry == null)
+            return null;
+        else
+            return entry.getValue();
     }
 }

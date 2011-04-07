@@ -83,7 +83,9 @@ public class DHVSourceHistoryPane extends JPanel
             public void actionPerformed(ActionEvent e)
             {
                 TimeRegion currentRegion = trb.getCurrentRegion();
-                dhv.setRegion(currentRegion);
+                dhv.useEventsFrom(currentRegion);
+                long t = (Long) e.getSource();
+                dhv.updateText(t);
             }
 
         });
@@ -93,18 +95,22 @@ public class DHVSourceHistoryPane extends JPanel
     {
         DocumentID documentID = new DocumentID("Test Document", "testpath");
 
-        SourceDocument doc = new SourceDocument(documentID.name);
-        doc.addEvents(SourceDocument.sampleEvents());
-
-        DocumentHistoryViewer dhv = new DocumentHistoryViewer(doc);
+        DocumentHistoryViewer dhv = new DocumentHistoryViewer(
+                new SourceDocument(documentID.name));
         dhv.setDefaultColor(Color.BLACK);
         dhv.updateText();
         dhv.setWaiting(false);
 
         TimeBorderList tbl = new TimeBorderList();
-        tbl.addTimeBorder(new TimeBorder(documentID, 3000));
-        // tbl.addTimeBorder(new TimeBorder(documentID, 1500));
-
+        SourceDocument doc = new SourceDocument(documentID.name);
+        TimeBorder border = new TimeBorder(documentID, 1000,
+                doc.orderedEvents());
+        tbl.addTimeBorder(border);
+        doc.addEvents(SourceDocument.sampleEvents(1000));
+        border = new TimeBorder(documentID, 4000, doc.orderedEvents());
+        border.fullSet = true;
+        tbl.addTimeBorder(border);
+        tbl.createRegions();
         TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
 
         DHVSourceHistoryPane app = new DHVSourceHistoryPane();
