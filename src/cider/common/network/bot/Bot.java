@@ -86,7 +86,7 @@ public class Bot
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
@@ -225,12 +225,12 @@ public class Bot
                 }
                 catch (IOException e)
                 {
-                    // TODO Auto-generated catch block
+                    
                     e.printStackTrace();
                 }
                 catch (ClassNotFoundException e)
                 {
-                    // TODO Auto-generated catch block
+                    
                     e.printStackTrace();
                 }
             }

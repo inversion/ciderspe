@@ -148,7 +148,7 @@ public class LiveFolder
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
@@ -256,5 +256,47 @@ public class LiveFolder
         for (LiveFolder folder : this.folders.values())
             events.addAll(folder.eventsSince(time, local + "\\"));
         return events;
+    }
+    
+    /**
+     * Goes through a path and finds the corresponding live folder object.
+     * 
+     * It will be created if it doesn't exist.
+     * 
+     * @param path The remainder of the path we are finding.
+     * @param current The current LiveFolder we are in.
+     * @return The LiveFolder.
+     * 
+     * @author Andrew
+     */
+    public static LiveFolder findFolder( String path, LiveFolder current )
+    {
+        String part;
+        // Trim trailing slash
+        if( path.endsWith( "\\" ) )
+            path = path.substring( 0, path.length()-1 );
+        
+        while( path.length() > 0 )
+        {
+            if( path.indexOf("\\") == -1 )
+            {
+                System.out.println("Returning " + path);
+                if( current.getFolder( path ) == null )
+                    current.makeFolder( path );
+                return current.getFolder( path );
+            }
+            else
+            {
+                part = path.substring( 0, path.indexOf( "\\" ) );
+                if( current.getFolder( part ) == null )
+                    current = current.makeFolder( part );
+                else
+                    current = current.getFolder( part );
+                    
+                path = path.substring( part.length()+1 );
+            }
+        }
+
+        return current;
     }
 }

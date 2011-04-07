@@ -60,38 +60,7 @@ public class BotChatroomMessageListener implements PacketListener
         Message msg = (Message) packet;
         String body = msg.getBody();
         if (body.startsWith("pushto("))
-        {
-            String[] instructions = body.split("%%");
-            int i = 0;
-            Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
-            for (String instruction : instructions)
-            {
-                String[] preAndAfter = instruction.split("\\) ");
-                String[] pre = preAndAfter[0].split("\\(");
-                String dest = pre[1];
-                dest = dest.replace("root\\", "");
-                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-                typingEvents.add(new TypingEvent(preAndAfter[1]));
-                // System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                if (instructions.length > 1)
-                    System.out.println("Bot received " + instructions.length
-                            + " events at the same time");
-                SourceDocument doc = this.bot.getRootFolder().path(dest);
-                doc.push(typingEvents);
-                changedDocs.put(dest, doc);
-                i++;
-            }
-
-            for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
-            {
-                //FIXME: UNUSED VARIABLE!
-                @SuppressWarnings("unused")
-                Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry
-                        .getValue().playOutEvents(Long.MAX_VALUE)
-                        .countCharactersAll();
-
-            }
-        }
+            pushto( body );
         else if (body.startsWith("colourchange:"))
         {
             String[] split = body.split(" ");
@@ -105,6 +74,39 @@ public class BotChatroomMessageListener implements PacketListener
                 bot.colours.remove(split[1]);
             }
             bot.colours.put(split[1], new Color(R, G, B));
+        }
+    }
+    
+    private void pushto( String body )
+    {
+        String[] instructions = body.split("%%");
+        Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
+        for (String instruction : instructions)
+        {
+            instruction = "pushto(" + new String( StringUtils.decodeBase64( instruction.substring( 7 )  ) );
+            String[] preAndAfter = instruction.split("\\) ");
+            String[] pre = preAndAfter[0].split("\\(");
+            String dest = pre[1];
+            dest = dest.replace("root\\", "");
+            Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+            typingEvents.add(new TypingEvent(preAndAfter[1]));
+            // System.out.println("Push " + preAndAfter[1] + " to " + dest);
+            if (instructions.length > 1)
+                System.out.println("Bot received " + instructions.length
+                        + " events at the same time");
+            SourceDocument doc = this.bot.getRootFolder().path(dest);
+            doc.push(typingEvents);
+            changedDocs.put(dest, doc);
+        }
+
+        for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
+        {
+            //FIXME: UNUSED VARIABLE!
+            @SuppressWarnings("unused")
+            Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry
+                    .getValue().playOutEvents(Long.MAX_VALUE)
+                    .countCharactersAll();
+
         }
     }
 }
