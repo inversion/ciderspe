@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -50,6 +50,19 @@ public class TimeBorder
     {
         this.time = time;
         this.documentID = documentID;
+    }
+
+    public TimeBorder(DocumentID documentID, long time,
+            PriorityQueue<TypingEvent> typingEvents)
+    {
+        this.time = time;
+        this.documentID = documentID;
+        this.typingEvents = typingEvents;
+    }
+
+    public TimeBorder(long time)
+    {
+        this.time = time;
     }
 
     @Override

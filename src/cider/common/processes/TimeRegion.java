@@ -47,12 +47,17 @@ public class TimeRegion
 
     public TimeRegion(TimeBorder start, TimeBorder end) throws Exception
     {
-        if (this.start.documentID != this.end.documentID)
+        if (this.start != null && this.start.documentID != this.end.documentID)
             throw new Exception("time borders must belong to the same document");
 
         this.start = start;
         this.end = end;
-        this.documentID = start.documentID;
+        this.documentID = end.documentID;
+    }
+
+    public TimeRegion(long time)
+    {
+        this.end = new TimeBorder(time);
     }
 
     /**
