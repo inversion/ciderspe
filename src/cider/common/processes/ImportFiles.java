@@ -9,31 +9,51 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
+/**
+ * 
+ * Import file(s) recursively into path <-> contents tuples.
+ * 
+ * @author Andrew
+ *
+ */
+
 public class ImportFiles
 {
-    private String owner;
+    
+    //TODO: NEEDs to avoid binary files
     HashMap<String, String> files = new HashMap<String,String>();
 
-    public ImportFiles( String owner )
+    public ImportFiles( String path ) throws FileNotFoundException, IOException
     {
-        this.owner = owner;
+        importFrom( path );
     }
     
+    /**
+     * 
+     * @return A mapping of paths -> contents which can be uploaded in turn with createDocument()
+     */
+    public HashMap<String,String> getFiles()
+    {
+        return files;
+    }
+    
+    /**
+     * Used for testing only
+     * @param args
+     */
     public static void main( String[] args )
     {
-        ImportFiles program = new ImportFiles( "andrew" );
+        ImportFiles program = null;
         try
         {
-            program.importFrom( "src" );
+            program = new ImportFiles( "src" );
         }
         catch (FileNotFoundException e)
         {
-            
             e.printStackTrace();
         }
         catch (IOException e)
         {
-            
             e.printStackTrace();
         }
         Iterator<Entry<String,String>> itr = program.getFiles().entrySet().iterator();
@@ -73,7 +93,7 @@ public class ImportFiles
      * @author Andrew
      * @throws FileNotFoundException 
      */
-    public void importFrom( String path ) throws FileNotFoundException, IOException
+    private void importFrom( String path ) throws FileNotFoundException, IOException
     {
         File root = new File( path );
         
@@ -96,14 +116,5 @@ public class ImportFiles
         }
         
         return;
-    }
-    
-    /**
-     * 
-     * @return A mapping of paths -> contents which can be uploaded in turn with createDocument()
-     */
-    public HashMap<String,String> getFiles()
-    {
-        return files;
     }
 }

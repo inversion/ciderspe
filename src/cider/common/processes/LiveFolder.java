@@ -280,7 +280,6 @@ public class LiveFolder
         {
             if( path.indexOf("\\") == -1 )
             {
-                System.out.println("Returning " + path);
                 if( current.getFolder( path ) == null )
                     current.makeFolder( path );
                 return current.getFolder( path );

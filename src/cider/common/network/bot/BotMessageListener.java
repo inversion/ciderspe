@@ -145,7 +145,7 @@ public class BotMessageListener implements MessageListener
         else if (body.startsWith("requestprofile"))
             sendProfile( chat, body );
         else if (body.equals("getfilelist"))
-            sendFileList( chat );
+            sendFileList( );
         // This part is still important for when a file is opened
         else if (body.startsWith("pullEvents("))
         {
@@ -252,18 +252,16 @@ public class BotMessageListener implements MessageListener
     }
     
     /**
-     * Send file list to client.
-     * 
-     * @param chat The chat to send the list on.
+     * Send file list to clients.
      * 
      * @author Andrew
      */
-    private void sendFileList( Chat chat )
+    private void sendFileList( )
     {
         try
         {
             String xml = this.bot.getRootFolder().xml("");
-            chat.sendMessage( "filelist=" + StringUtils.encodeBase64(xml));
+            bot.chatroom.sendMessage( "filelist=" + StringUtils.encodeBase64(xml));
         }
         catch (XMPPException e)
         {
@@ -370,8 +368,8 @@ public class BotMessageListener implements MessageListener
         // Add the new document to the folder
         LiveFolder.findFolder( path, bot.getRootFolder() ).addDocument( doc );             
         
-        // Send the updated file list to the client
-        sendFileList( chat );
+        // Send the updated file list to the clients
+        sendFileList( );
     }
     
 }
