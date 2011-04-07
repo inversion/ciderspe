@@ -57,7 +57,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = new String(StringUtils.decodeBase64(message.getBody()));
+        String body = message.getBody();
         if (body.startsWith("quit"))
         {
             JOptionPane

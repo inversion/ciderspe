@@ -34,6 +34,7 @@ package cider.common.processes;
 public class DocumentID
 {
     public String name;
+    public String owner;
     public String path;
 
     /**
@@ -43,9 +44,10 @@ public class DocumentID
      * @param path
      *            of the SourceDocument
      */
-    public DocumentID(String name, String path)
+    public DocumentID(String name, String path, String owner)
     {
         this.name = name;
+        this.owner = owner;
         this.path = path;
     }
 }

@@ -44,7 +44,7 @@ public class DocumentHistoryViewer extends SourceDocumentViewer
 
     public DocumentHistoryViewer(TimeRegion timeRegion)
     {
-        super(new SourceDocument(timeRegion.documentID.name));
+        super(new SourceDocument(timeRegion.documentID.name, timeRegion.documentID.owner));
         this.doc.addEvents(timeRegion.end.typingEvents);
 
     }
