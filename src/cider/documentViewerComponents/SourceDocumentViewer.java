@@ -524,25 +524,58 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void movePageUp()
     {
-        // TODO: These two methods update the GUI 26 times which is quite inefficient
-        // FIXME: These don't work but I don't understand what's going on with Lawrence's stuff, comments please ;)
-        for( int i = 0; i < 27; i++ )
-            moveUp();
+        this.holdCaretVisibility(true);
+        
+        // Move up 26 lines
+        int lineNum = getCurLine() - 26;
+        
+        // If trying to move above top of document
+        if (lineNum < 1)
+            lineNum = 1;
+        
+        // TODO: Unexplained minuses
+        SDVLine line = lines.get( lineNum - 1 );
+        int start = line.start + line.lineNum - 2;
+        int length = line.str.length();
+        
+        // If trying to move beyond end of line
+        if (this.currentColNum >= length)
+            this.currentColNum = length;
+        
+        this.caretPosition = start + this.currentColNum;
+        this.updateUI();
     }
     
-    protected void movePageDown()
-    {
-        for( int i = 0; i < 27; i++ )
-            moveDown();
-    }
-
     /**
      * Move the caret down a page and update the UI.
      * 
      * @author Andrew
      */
+    protected void movePageDown()
+    {
+        this.holdCaretVisibility(true);
+        
+        // Move down 26 lines
+        int lineNum = getCurLine() + 26;
+        
+        // If trying to move below the bottom of document
+        if (lineNum > lines.size())
+            lineNum = lines.size();
+        
+        // TODO: Unexplained minuses
+        SDVLine line = lines.get( lineNum - 1 );
+        int start = line.start + line.lineNum - 2;
+        int lineLength = line.str.length();
+        
+        // If trying to move beyond end of line
+        if (this.currentColNum >= lineLength)
+            this.currentColNum = lineLength;
+        
+        this.caretPosition = start + this.currentColNum;
+        this.updateUI();
+    }
 
-    protected int GetCurLine()
+    protected int getCurLine()
     {
         try
         {
@@ -555,6 +588,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         }
     }
 
+    //FIXME: This is pointless?
     protected int GetCurxLen()
     {
         return 0;

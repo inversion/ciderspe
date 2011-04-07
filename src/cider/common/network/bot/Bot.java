@@ -141,6 +141,10 @@ public class Bot
             sourceFolder = new LiveFolder("Bot", "root");
             readFromDisk( SOURCE_PATH, sourceFolder );
             
+            // If source dir doesn't exist create it
+            if( !SOURCE_PATH.exists() )
+                SOURCE_PATH.mkdir();
+            
             // If source dir is empty make some test files
             if( SOURCE_PATH.list().length == 0 )
                 this.testTree();
