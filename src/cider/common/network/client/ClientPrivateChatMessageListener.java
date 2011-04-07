@@ -56,6 +56,8 @@ public class ClientPrivateChatMessageListener implements MessageListener {
     {
         // TODO: Bit dodgy about null etc.
         String body = message.getBody();
+        if( body == null )
+            return;
         
         if( DEBUG )
             System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
