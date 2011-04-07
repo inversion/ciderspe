@@ -294,7 +294,7 @@ public class LoginUI
         }
         catch (InterruptedException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
         f.dispose();
@@ -499,7 +499,6 @@ public class LoginUI
 
     Thread connectMainWindow()
     {
-        // TODO Connection Code
         // On connect, close login and connect JFrames, run MainWindow
 
         // System.out.println(passwordEncrypt.encrypt(new
@@ -549,7 +548,7 @@ public class LoginUI
                     }
                     catch (XMPPException e)
                     {
-                        // TODO Auto-generated catch block
+                        
                         e.printStackTrace();
                     }
                 }

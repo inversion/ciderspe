@@ -70,7 +70,7 @@ public class LocalCodeFile implements ICodeLocation
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
         LocalCodeFile lcf = new LocalCodeFile(file);
@@ -162,7 +162,7 @@ public class LocalCodeFile implements ICodeLocation
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }

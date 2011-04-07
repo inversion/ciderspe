@@ -81,7 +81,7 @@ public class BotChatListener implements ChatManagerListener
             }
             catch (XMPPException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }

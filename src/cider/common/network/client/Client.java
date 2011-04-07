@@ -73,6 +73,8 @@ import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
+import cider.common.network.DebugPacketFilter;
+import cider.common.network.DebugPacketListener;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -251,8 +253,8 @@ public class Client
 
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-        // connection.addPacketListener(new DebugPacketListener(), new
-        // DebugPacketFilter());
+         connection.addPacketListener(new DebugPacketListener(), new
+         DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
 
@@ -307,7 +309,7 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
@@ -516,6 +518,7 @@ public class Client
      */
     public void sendChatMessageFromGUI(String message)
     {
+        createDocument( "test.java", "testFolder", "banter" );
         try
         {
             Date date = new Date();
@@ -563,7 +566,7 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
@@ -670,7 +673,7 @@ public class Client
         for (TypingEvent te : typingEvents)
         {
             this.outgoingTypingEvents += "pushto(" + StringUtils.encodeBase64( path  + ") " + te.pack() 
-                    + "%%" );
+                     ) + "%%";
         }
         try
         {
@@ -805,7 +808,6 @@ public class Client
         }
         else if (body.startsWith("pushto("))
         {
-            body = "pushto(" + new String( StringUtils.decodeBase64( body.substring( 7 )  ) );
             String[] instructions = body.split("%%");
             Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
             String dest = "";
@@ -815,13 +817,14 @@ public class Client
             {
                 if (instruction.startsWith("pushto"))
                 {
+                    instruction = "pushto(" + new String( StringUtils.decodeBase64( instruction.substring( 7 )  ) );
                     String[] preAndAfter = instruction.split("\\) ");
                     String[] pre = preAndAfter[0].split("\\(");
                     dest = pre[1];
                     dest = dest.replace("root\\", "");
                     packedEvent = preAndAfter[1];
                 }
-                else if (instruction.startsWith("end"))
+                else if (instruction.startsWith("end")) // TODO: Is this a typo? Should it be 'stopdiversion'
                 {
                     stopDiversion = true;
                 }
@@ -1016,7 +1019,7 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
