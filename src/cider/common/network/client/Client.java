@@ -98,7 +98,7 @@ public class Client
 
     private static final boolean DEBUG = true;
     public static final String RESOURCE = "CIDER";
-    public final DateFormat dateFormat = new SimpleDateFormat(
+    public static final DateFormat dateFormat = new SimpleDateFormat(
             "dd/MM/yyyy HH:mm:ss");
 
     private LoginUI login;

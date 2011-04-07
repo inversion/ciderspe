@@ -23,6 +23,8 @@
 
 package cider.common.network.client;
 
+import java.util.Date;
+
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
@@ -58,6 +60,13 @@ public class ClientPrivateChatMessageListener implements MessageListener {
         if( DEBUG )
             System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
         
-        client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
+        if( message.getSubject() != null )
+            client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
+        else
+        {
+            Date date = new Date();
+            client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), Client.dateFormat.format(date), body );
+        }
+            
     }
 }
