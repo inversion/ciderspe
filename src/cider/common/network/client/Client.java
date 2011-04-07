@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -75,6 +76,7 @@ import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
 import cider.common.network.DebugPacketFilter;
 import cider.common.network.DebugPacketListener;
+import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -518,7 +520,6 @@ public class Client
      */
     public void sendChatMessageFromGUI(String message)
     {
-        createDocument( "test.java", "testFolder", "banter" );
         try
         {
             Date date = new Date();
@@ -631,7 +632,6 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO:
             e.printStackTrace();
         }
     }
@@ -646,7 +646,6 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO:
             e.printStackTrace();
         }
     }
@@ -662,7 +661,6 @@ public class Client
         }
         catch (XMPPException e)
         {
-            // TODO:
             e.printStackTrace();
         }
     }
@@ -1022,5 +1020,38 @@ public class Client
             
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Test importing files and creating them on the Bot, use the CIDER directory as source.
+     * Demonstrates how to parse path etc.
+     * 
+     * @author Andrew
+     */
+    public void testCreation()
+    {
+        ImportFiles imp = null;
+        try
+        {
+            imp = new ImportFiles( "src\\cider\\common\\network" );
+        }
+        catch (FileNotFoundException e1)
+        {
+            e1.printStackTrace();
+        }
+        catch (IOException e1)
+        {
+            e1.printStackTrace();
+        }
+        HashMap<String,String> files = imp.getFiles();
+        Iterator<Entry<String,String>> itr = files.entrySet().iterator();
+        
+        while( itr.hasNext() )
+        {
+            Entry<String,String> i = itr.next();
+            File fullPath = new File( i.getKey() );
+            createDocument( fullPath.getName(), fullPath.getParent(), i.getValue() );
+        }
+        
     }
 }
