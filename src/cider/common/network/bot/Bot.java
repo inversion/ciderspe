@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.bot;
 
@@ -62,7 +62,7 @@ public class Bot
     private final String CHATROOM_NAME;
     private final String CHECKER_USERNAME;
     private final String CHECKER_PASSWORD;
-    private final File   SOURCE_PATH;
+    private final File SOURCE_PATH;
     private ConnectionConfiguration conConfig;
 
     protected MultiUserChat chatroom;
@@ -82,11 +82,11 @@ public class Bot
         try
         {
             System.in.read();
-            bot.sourceFolder.writeToDisk( bot.SOURCE_PATH );
+            bot.sourceFolder.writeToDisk(bot.SOURCE_PATH);
         }
         catch (IOException e)
         {
-            
+
             e.printStackTrace();
         }
     }
@@ -94,9 +94,9 @@ public class Bot
     public Bot()
     {
         colours = new HashMap<String, Color>();
-        
+
         // Set up the bot configuration
-        ConfigurationReader config = new ConfigurationReader( "Bot.conf" );
+        ConfigurationReader config = new ConfigurationReader("Bot.conf");
         HOST = config.getHost();
         SERVICE_NAME = config.getServiceName();
         PORT = config.getPort();
@@ -106,9 +106,8 @@ public class Bot
         CHECKER_USERNAME = config.getCheckerUsername();
         CHECKER_PASSWORD = config.getCheckerPassword();
         SOURCE_PATH = config.getSourceDir();
-        conConfig = new ConnectionConfiguration(HOST,
-                PORT, SERVICE_NAME);
-        
+        conConfig = new ConnectionConfiguration(HOST, PORT, SERVICE_NAME);
+
         try
         {
             checkForBot();
@@ -124,30 +123,31 @@ public class Bot
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
 
-//             Verbose debugging to print out every packet leaving or entering
-//             the bot
-             connection.addPacketListener(new DebugPacketListener(), new
-             DebugPacketFilter());
-             connection.addPacketInterceptor(new DebugPacketInterceptor(), new
-             DebugPacketFilter());
+            // Verbose debugging to print out every packet leaving or entering
+            // the bot
+            connection.addPacketListener(new DebugPacketListener(),
+                    new DebugPacketFilter());
+            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
             chatListener = new BotChatListener(this);
             chatmanager.addChatListener(chatListener);
 
-            if( DEBUG )
-                System.out.println( "Using source path: " + config.getSourceDir().getPath() );
-                    
+            if (DEBUG)
+                System.out.println("Using source path: "
+                        + config.getSourceDir().getPath());
+
             sourceFolder = new LiveFolder("root", "Bot");
-            readFromDisk( SOURCE_PATH, sourceFolder );
-            
+            readFromDisk(SOURCE_PATH, sourceFolder);
+
             // If source dir doesn't exist create it
-            if( !SOURCE_PATH.exists() )
+            if (!SOURCE_PATH.exists())
                 SOURCE_PATH.mkdir();
-            
+
             // If source dir is empty make some test files
-            if( SOURCE_PATH.list().length == 0 )
+            if (SOURCE_PATH.list().length == 0)
                 this.testTree();
         }
         catch (XMPPException e)
@@ -158,9 +158,9 @@ public class Bot
     }
 
     /**
-     * Connect to the server as a reserved user (CHECKER_USERNAME) to check if the
-     * bot is already logged on from another location. Alert the user on stderr
-     * if this is the case
+     * Connect to the server as a reserved user (CHECKER_USERNAME) to check if
+     * the bot is already logged on from another location. Alert the user on
+     * stderr if this is the case
      * 
      * @author Andrew
      * @throws XMPPException
@@ -170,12 +170,12 @@ public class Bot
     {
         XMPPConnection conn = new XMPPConnection(conConfig);
         conn.connect();
-        conn.login( CHECKER_USERNAME, CHECKER_PASSWORD );
+        conn.login(CHECKER_USERNAME, CHECKER_PASSWORD);
         chatroom = new MultiUserChat(conn, CHATROOM_NAME + "@conference."
                 + SERVICE_NAME);
         try
         {
-            chatroom.create( CHECKER_USERNAME );
+            chatroom.create(CHECKER_USERNAME);
         }
         catch (XMPPException e)
         {
@@ -206,42 +206,42 @@ public class Bot
      * 
      * @author Andrew
      */
-    private void readFromDisk( File path, LiveFolder folder )
-    {   
-        if( !path.exists() )
+    private void readFromDisk(File path, LiveFolder folder)
+    {
+        if (!path.exists())
             return;
         File[] list = path.listFiles();
         for (File file : list)
         {
-            if( file.isFile())
+            if (file.isFile())
             {
                 try
                 {
-                    FileInputStream fis = new FileInputStream( file );
-                    ObjectInputStream input = new ObjectInputStream( fis );
-                    folder.addDocument( (SourceDocument) input.readObject() );
+                    FileInputStream fis = new FileInputStream(file);
+                    ObjectInputStream input = new ObjectInputStream(fis);
+                    folder.addDocument((SourceDocument) input.readObject());
                     input.close();
                     fis.close();
                 }
                 catch (IOException e)
                 {
-                    
+
                     e.printStackTrace();
                 }
                 catch (ClassNotFoundException e)
                 {
-                    
+
                     e.printStackTrace();
                 }
             }
-            else if( file.isDirectory() )
-                readFromDisk( file.getAbsoluteFile(), folder.makeFolder( file.getName() ) );
+            else if (file.isDirectory())
+                readFromDisk(file.getAbsoluteFile(),
+                        folder.makeFolder(file.getName()));
         }
     }
-    
-    
+
     /**
-     * Create a test live folder tree 
+     * Create a test live folder tree
      * 
      * @author Lawrence
      */
@@ -251,13 +251,13 @@ public class Bot
         this.sourceFolder = new LiveFolder("root", "Bot");
         // FIXME: t1 is unused
         @SuppressWarnings("unused")
-        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument", "test owner 1");
+        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument");
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         // t1.push(tes);
         this.sourceFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument", "test owner 2");
+                .makeDocument("test2Doc.SourceDocument");
     }
 
     public LiveFolder getRootFolder()
