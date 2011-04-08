@@ -36,27 +36,27 @@ import java.util.Random;
  * 
  * SourceDocument is a live document which is a collection of typing events.
  * 
- * Between executions they can be serialized by the Bot and written to disk
- * to make files persistent. This also allows typing events to be kept.
+ * Between executions they can be serialized by the Bot and written to disk to
+ * make files persistent. This also allows typing events to be kept.
  * 
  * @author Lawrence, Andrew
  */
 public class SourceDocument implements ICodeLocation, Serializable
-{    
+{
 
     
     /**
      * 
      */
     private static final long serialVersionUID = 3L;
-    
+
     private PriorityQueue<TypingEvent> typingEvents;
     public String name;
     // TODO ownership
     private String owner;
     private long latestTime;
 
-    public SourceDocument(String name )
+    public SourceDocument(String name)
     {
         this.name = name;
         this.owner = owner;
@@ -102,7 +102,7 @@ public class SourceDocument implements ICodeLocation, Serializable
     {
         String expected = "the quick 123123123123123123123123123 muddled fox bounced over the lazy dog";
 
-        ArrayList<TypingEvent> tes = sampleEvents();
+        ArrayList<TypingEvent> tes = sampleEvents(0);
 
         SourceDocument testDoc = new SourceDocument("testdoc.SourceDocument");
         for (TypingEvent event : tes)
@@ -141,24 +141,26 @@ public class SourceDocument implements ICodeLocation, Serializable
      * overwrites and inserts. These typing events can be used for automated
      * testing or place-holder text.
      * 
+     * @param timeShift
+     * 
      * @return TypingEvents which should produce the string the quick
      *         123123123123123123123123123 muddled fox bounced over the lazy dog
      */
-    public static ArrayList<TypingEvent> sampleEvents()
+    public static ArrayList<TypingEvent> sampleEvents(long offset)
     {
         ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.addAll(generateEvents(0, 100, 0,
+        tes.addAll(generateEvents(offset, offset + 100, 0,
                 "the quick brown fox jumped over the lazy dog",
                 TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(200, 500, 10, "muddled",
+        tes.addAll(generateEvents(offset + 200, offset + 500, 10, "muddled",
                 TypingEventMode.overwrite, "na"));
-        tes.addAll(generateEvents(600, 700, 16, " f", TypingEventMode.insert,
-                "na"));
-        tes.addAll(generateEvents(800, 1000, 27, "jumped",
-                TypingEventMode.backspace, "na"));
-        tes.addAll(generateEvents(2000, 2500, 21, "bounced",
+        tes.addAll(generateEvents(offset + 600, offset + 700, 16, " f",
                 TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(2600, 3000, 9,
+        tes.addAll(generateEvents(offset + 800, offset + 1000, 27, "jumped",
+                TypingEventMode.backspace, "na"));
+        tes.addAll(generateEvents(offset + 2000, offset + 2500, 21, "bounced",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(offset + 2600, offset + 3000, 9,
                 "123123123123123123123123123 ", TypingEventMode.insert, "na"));
 
         tes = shuffledEvents(tes, new Date().getTime());
@@ -580,7 +582,8 @@ public class SourceDocument implements ICodeLocation, Serializable
      * @author Lawrence
      * 
      */
-    private class EventComparer implements Comparator<TypingEvent>, Serializable
+    private class EventComparer implements Comparator<TypingEvent>,
+            Serializable
     {
         /**
          * 
@@ -679,5 +682,10 @@ public class SourceDocument implements ICodeLocation, Serializable
     public void clearAll()
     {
         this.typingEvents.clear();
+    }
+
+    public PriorityQueue<TypingEvent> orderedEvents()
+    {
+        return this.typingEvents;
     }
 }

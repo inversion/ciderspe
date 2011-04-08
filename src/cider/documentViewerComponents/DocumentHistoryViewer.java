@@ -35,21 +35,12 @@ import cider.common.processes.TimeRegion;
  */
 public class DocumentHistoryViewer extends SourceDocumentViewer
 {
-    TimeRegion timeRegion;
-
     public DocumentHistoryViewer(SourceDocument sourceDocument)
     {
         super(sourceDocument);
     }
 
-    public DocumentHistoryViewer(TimeRegion timeRegion)
-    {
-        super(new SourceDocument(timeRegion.documentID.name));
-        this.doc.addEvents(timeRegion.end.typingEvents);
-
-    }
-
-    public void setRegion(TimeRegion currentRegion)
+    public void useEventsFrom(TimeRegion currentRegion)
     {
         this.doc.clearAll();
         this.doc.addEvents(currentRegion.end.typingEvents);
