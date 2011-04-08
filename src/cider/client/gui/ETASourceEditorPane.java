@@ -323,6 +323,10 @@ public class ETASourceEditorPane extends JScrollPane
                         if (ke.isControlDown())
                             this.applyToSelection(TypingEventMode.unlockRegion);
                         break;
+                    case KeyEvent.VK_A:
+                        if( ke.isControlDown() )
+                            eta.selectAll();
+                        break;
                     }
                 }
                 catch (Exception e)

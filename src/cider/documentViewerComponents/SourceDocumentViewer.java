@@ -574,6 +574,17 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.caretPosition = start + this.currentColNum;
         this.updateUI();
     }
+    
+    /**
+     * Select all of the text in the document
+     * 
+     * @author Andrew
+     */
+    public void selectAll()
+    {
+        selectedRegion = this.str.region( 0 , this.str.length() );
+        moveDocEnd();
+    }
 
     protected int getCurLine()
     {
