@@ -77,12 +77,11 @@ public class BotChatListener implements ChatManagerListener
                                 + " initiated chat, but is already connected from another CIDER client, alerting new instance to quit...");
             try
             {
-                // No need to escape because it's alphanumeric
                 chat.sendMessage( "quit" );
             }
             catch (XMPPException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }

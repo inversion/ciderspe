@@ -64,7 +64,7 @@ public class SourceDocument implements ICodeLocation, Serializable
                 new EventComparer());
     }
 
-    public SourceDocument(String name, PriorityQueue<TypingEvent> typingEvents)
+    public SourceDocument(String name, String owner, PriorityQueue<TypingEvent> typingEvents)
     {
         this.name = name;
         this.owner = owner;
@@ -104,7 +104,7 @@ public class SourceDocument implements ICodeLocation, Serializable
 
         ArrayList<TypingEvent> tes = sampleEvents(0);
 
-        SourceDocument testDoc = new SourceDocument("testdoc.SourceDocument");
+        SourceDocument testDoc = new SourceDocument("testdoc.SourceDocument", null);
         for (TypingEvent event : tes)
             testDoc.addEvent(event);
 
@@ -191,7 +191,7 @@ public class SourceDocument implements ICodeLocation, Serializable
         tes.addAll(generateEvents(2, 10000, 0, bigString,
                 TypingEventMode.insert, "na"));
 
-        SourceDocument testDoc = new SourceDocument("testDoc.SourceDocument");
+        SourceDocument testDoc = new SourceDocument("testDoc.SourceDocument", null);
         for (TypingEvent event : tes)
             testDoc.addEvent(event);
         String result = testDoc.toString();
@@ -403,7 +403,7 @@ public class SourceDocument implements ICodeLocation, Serializable
      */
     public SourceDocument simplified(long endTime)
     {
-        SourceDocument doc = new SourceDocument(this.name, this.typingEvents);
+        SourceDocument doc = new SourceDocument(this.name, null, this.typingEvents );
         TypingEventList tel = this.playOutEvents(endTime);
         tel.homogenize(endTime);
         doc.clearUpTo(endTime);

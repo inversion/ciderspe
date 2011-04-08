@@ -48,7 +48,7 @@ public class LiveFolder
     private Hashtable<String, LiveFolder> folders = new Hashtable<String, LiveFolder>();
     private String owner;
 
-    public LiveFolder(String owner, String name)
+    public LiveFolder(String name, String owner)
     {
         this.owner = owner;
         this.name = name;
@@ -62,9 +62,9 @@ public class LiveFolder
      * @return the document
      * @author Lawrence
      */
-    public SourceDocument makeDocument(String name)
+    public SourceDocument makeDocument(String name, String owner)
     {
-        SourceDocument sourceDocument = new SourceDocument(name);
+        SourceDocument sourceDocument = new SourceDocument(name, owner);
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }
@@ -90,7 +90,7 @@ public class LiveFolder
      */
     public LiveFolder makeFolder(String name)
     {
-        LiveFolder folder = new LiveFolder(this.owner, name);
+        LiveFolder folder = new LiveFolder(name, this.owner);
         this.folders.put(name, folder);
         return folder;
     }
@@ -148,7 +148,7 @@ public class LiveFolder
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
@@ -193,12 +193,11 @@ public class LiveFolder
         return str;
     }
 
-    @Deprecated
     public static void main(String[] args)
     {
-        LiveFolder folder = new LiveFolder("test owner", "root");
-        folder.makeDocument("t1");
-        folder.makeFolder("testFolder").makeDocument("t2");
+        LiveFolder folder = new LiveFolder( "root", "test owner");
+        folder.makeDocument("t1", "test owner");
+        folder.makeFolder("testFolder").makeDocument("t2", "test owner");
         // System.out.println(folder.xml(""));
     }
 
@@ -257,5 +256,46 @@ public class LiveFolder
         for (LiveFolder folder : this.folders.values())
             events.addAll(folder.eventsSince(time, local + "\\"));
         return events;
+    }
+    
+    /**
+     * Goes through a path and finds the corresponding live folder object.
+     * 
+     * It will be created if it doesn't exist.
+     * 
+     * @param path The remainder of the path we are finding.
+     * @param current The current LiveFolder we are in.
+     * @return The LiveFolder.
+     * 
+     * @author Andrew
+     */
+    public static LiveFolder findFolder( String path, LiveFolder current )
+    {
+        String part;
+        // Trim trailing slash
+        if( path.endsWith( "\\" ) )
+            path = path.substring( 0, path.length()-1 );
+        
+        while( path.length() > 0 )
+        {
+            if( path.indexOf("\\") == -1 )
+            {
+                if( current.getFolder( path ) == null )
+                    current.makeFolder( path );
+                return current.getFolder( path );
+            }
+            else
+            {
+                part = path.substring( 0, path.indexOf( "\\" ) );
+                if( current.getFolder( part ) == null )
+                    current = current.makeFolder( part );
+                else
+                    current = current.getFolder( part );
+                    
+                path = path.substring( part.length()+1 );
+            }
+        }
+
+        return current;
     }
 }

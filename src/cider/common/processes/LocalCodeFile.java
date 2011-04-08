@@ -70,7 +70,7 @@ public class LocalCodeFile implements ICodeLocation
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
         LocalCodeFile lcf = new LocalCodeFile(file);
@@ -90,7 +90,7 @@ public class LocalCodeFile implements ICodeLocation
         try
         {
             this.out = new BufferedWriter(new FileWriter(this.file));
-            SourceDocument sd = new SourceDocument(this.file.getName());
+            SourceDocument sd = new SourceDocument(this.file.getName(), "test owner");
             sd.addEvent(this.oldFileContent);
             sd.push(typingEvents);
             this.out.write(sd.toString());
@@ -162,7 +162,7 @@ public class LocalCodeFile implements ICodeLocation
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
