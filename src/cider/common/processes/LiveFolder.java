@@ -62,24 +62,24 @@ public class LiveFolder
      * @return the document
      * @author Lawrence
      */
-    public SourceDocument makeDocument(String name, String owner)
+    public SourceDocument makeDocument(String name)
     {
-        SourceDocument sourceDocument = new SourceDocument(name, owner);
+        SourceDocument sourceDocument = new SourceDocument(name);
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }
-    
+
     /**
      * Add a SourceDocument to a folder
      * 
-     * @param doc Document to add
+     * @param doc
+     *            Document to add
      * @author Andrew
      */
-    public void addDocument( SourceDocument doc )
+    public void addDocument(SourceDocument doc)
     {
-        this.documents.put( doc.name, doc );
+        this.documents.put(doc.name, doc);
     }
-    
 
     /**
      * Manufactures a LiveFolder and remembers it, then returns it
@@ -118,47 +118,48 @@ public class LiveFolder
     {
         return this.folders.get(name);
     }
-    
+
     /**
      * Writes folders and source documents (serialized) to disk.
      * 
-     * @param path The fully qualified path to create the directory tree under.
+     * @param path
+     *            The fully qualified path to create the directory tree under.
      */
-    public void writeToDisk( File path )
+    public void writeToDisk(File path)
     {
-        if( !path.exists() )
+        if (!path.exists())
             path.mkdir();
-        
+
         for (SourceDocument doc : this.documents.values())
         {
             // Append this file to the pathname
-            File file = new File( path, doc.name );
-            
+            File file = new File(path, doc.name);
+
             try
             {
                 // Create the file if it doesn't exist
                 file.createNewFile();
-                
+
                 // Write the source document to the file
-                FileOutputStream fos = new FileOutputStream( file );
-                ObjectOutputStream out = new ObjectOutputStream( fos );
-                out.writeObject( doc.simplified( Long.MAX_VALUE ) );
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fos);
+                out.writeObject(doc.simplified(Long.MAX_VALUE));
                 out.close();
                 fos.close();
             }
             catch (IOException e)
             {
-                
+
                 e.printStackTrace();
             }
         }
-        
+
         for (LiveFolder folder : this.folders.values())
         {
-            File dir = new File( path, folder.name );
-            
+            File dir = new File(path, folder.name);
+
             // Recursively call the writing method under each directory
-            folder.writeToDisk( dir );
+            folder.writeToDisk(dir);
         }
     }
 
@@ -195,9 +196,9 @@ public class LiveFolder
 
     public static void main(String[] args)
     {
-        LiveFolder folder = new LiveFolder( "root", "test owner");
-        folder.makeDocument("t1", "test owner");
-        folder.makeFolder("testFolder").makeDocument("t2", "test owner");
+        LiveFolder folder = new LiveFolder("root", "test owner");
+        folder.makeDocument("t1");
+        folder.makeFolder("testFolder").makeDocument("t2");
         // System.out.println(folder.xml(""));
     }
 
@@ -212,8 +213,8 @@ public class LiveFolder
     {
         String[] split = dest.split("\\\\");
         // TODO: Changed so don't need this file extension by Andrew
-        //if (split[0].endsWith(".SourceDocument"))
-        if( split.length == 1 )
+        // if (split[0].endsWith(".SourceDocument"))
+        if (split.length == 1)
             return this.getDocument(split[0]);// .split("\\.")[0]);
         else
         {
@@ -257,42 +258,44 @@ public class LiveFolder
             events.addAll(folder.eventsSince(time, local + "\\"));
         return events;
     }
-    
+
     /**
      * Goes through a path and finds the corresponding live folder object.
      * 
      * It will be created if it doesn't exist.
      * 
-     * @param path The remainder of the path we are finding.
-     * @param current The current LiveFolder we are in.
+     * @param path
+     *            The remainder of the path we are finding.
+     * @param current
+     *            The current LiveFolder we are in.
      * @return The LiveFolder.
      * 
      * @author Andrew
      */
-    public static LiveFolder findFolder( String path, LiveFolder current )
+    public static LiveFolder findFolder(String path, LiveFolder current)
     {
         String part;
         // Trim trailing slash
-        if( path.endsWith( "\\" ) )
-            path = path.substring( 0, path.length()-1 );
-        
-        while( path.length() > 0 )
+        if (path.endsWith("\\"))
+            path = path.substring(0, path.length() - 1);
+
+        while (path.length() > 0)
         {
-            if( path.indexOf("\\") == -1 )
+            if (path.indexOf("\\") == -1)
             {
-                if( current.getFolder( path ) == null )
-                    current.makeFolder( path );
-                return current.getFolder( path );
+                if (current.getFolder(path) == null)
+                    current.makeFolder(path);
+                return current.getFolder(path);
             }
             else
             {
-                part = path.substring( 0, path.indexOf( "\\" ) );
-                if( current.getFolder( part ) == null )
-                    current = current.makeFolder( part );
+                part = path.substring(0, path.indexOf("\\"));
+                if (current.getFolder(part) == null)
+                    current = current.makeFolder(part);
                 else
-                    current = current.getFolder( part );
-                    
-                path = path.substring( part.length()+1 );
+                    current = current.getFolder(part);
+
+                path = path.substring(part.length() + 1);
             }
         }
 

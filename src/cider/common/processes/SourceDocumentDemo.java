@@ -63,7 +63,7 @@ public class SourceDocumentDemo
         int offset = (id - 1) * 100;
         w.setLocation(w.getX() + offset, w.getY() + offset);
         SourceDocument sourceDocument = new SourceDocument(
-                "test.SourceDocument", "testowner");
+                "test.SourceDocument");
         EditorTypingArea eta = new EditorTypingArea(sourceDocument);
         eta.setWaiting(false);
         SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
@@ -80,7 +80,7 @@ public class SourceDocumentDemo
     public class PseudoServer implements ICodeLocation
     {
         private SourceDocument sourceDocument = new SourceDocument(
-                "Bot Document", "test owner");
+                "Bot Document");
         private ArrayList<ICodeLocation> clients = new ArrayList<ICodeLocation>();
         private Timer timer = new Timer();
         private long delay = 1;

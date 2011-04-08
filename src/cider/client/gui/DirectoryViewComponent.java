@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.client.gui;
 
@@ -48,8 +48,8 @@ import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
 {
-    public static boolean DEBUG = true; 
-    
+    public static boolean DEBUG = true;
+
     /**
      * 
      */
@@ -70,11 +70,11 @@ public class DirectoryViewComponent extends JPanel
 
         JScrollPane scrollpane = new JScrollPane(tree);
 
-//        new JLabel("directory tree");
-//
-//        new JLabel("code");
-//
-//        new JLabel("chat, oh hai");
+        // new JLabel("directory tree");
+        //
+        // new JLabel("code");
+        //
+        // new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
         this.add(new JLabel(" File Explorer"), BorderLayout.NORTH);
@@ -89,7 +89,8 @@ public class DirectoryViewComponent extends JPanel
     /**
      * Wipes the current directory tree and makes a new one.
      * 
-     * @param xml The XML representation of the tree to build
+     * @param xml
+     *            The XML representation of the tree to build
      */
     public void constructTree(String xml)
     {
@@ -117,8 +118,8 @@ public class DirectoryViewComponent extends JPanel
 
                 this.subFolders(docEle, this.top, this.rootFolder);
                 this.parseDocs(docEle, this.top, this.rootFolder);
-                
-                if( DEBUG )
+
+                if (DEBUG)
                 {
                     System.out.println("Reconstructed Tree: ");
                     System.out.println(this.rootFolder.xml(""));
@@ -202,13 +203,13 @@ public class DirectoryViewComponent extends JPanel
                         .trim();
                 folder.add(new DefaultMutableTreeNode(docName));
                 // TODO: owner
-                parentFolder.makeDocument(docName, null);
+                parentFolder.makeDocument(docName);
             }
         }
     }
 
     // TODO: Moved deprecated stuff to end
-    
+
     /*
      * // Flip the keys and values of a hash and return a new one private
      * Hashtable flipHash( Hashtable h ) { Object[] keys = h.keySet().toArray();
@@ -219,23 +220,23 @@ public class DirectoryViewComponent extends JPanel
      * 
      * return newHash; }
      */
-    
+
     /*
      * public static void main(String[] args) { JFrame w = new JFrame();
      * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
      * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
      * Dimension(400, 800)); w.setVisible(true); }
      */
-    
+
     /**
-     *  Creates some objects to simulate files and folders etc
-     *  
-     *  @deprecated
+     * Creates some objects to simulate files and folders etc
+     * 
+     * @deprecated
      * @param top
      */
     public void createNodes(DefaultMutableTreeNode top)
     {
-        
+
         DefaultMutableTreeNode category = null;
         DefaultMutableTreeNode book = null;
 
