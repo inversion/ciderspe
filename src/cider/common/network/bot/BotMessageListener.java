@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -50,6 +51,7 @@ import org.jivesoftware.smack.util.StringUtils;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventMode;
 
 /**
  * This class waits for a message to be received on a chat session and then
@@ -76,89 +78,17 @@ public class BotMessageListener implements MessageListener
         this.bot = bot;
         // System.out.println(this.liveFolder.xml(""));
     }
-    
-    /**
-     * Goes through a path and finds the corresponding live folder object.
-     * 
-     * @param path The remainder of the path we are finding.
-     * @param current The current LiveFolder we are in.
-     * @return The LiveFolder, or null if it wasn't found.
-     * 
-     * @author Andrew
-     */
-    private LiveFolder findFolder( String path, LiveFolder current )
-    {
-        String part;
-        // Trim trailing slash
-        if( path.endsWith( "\\" ) )
-            path = path.substring( 0, path.length()-1 );
-        
-        while( path.length() > 0 )
-        {
-            if( path.indexOf("\\") == -1 )
-            {
-                System.out.println("Returning " + path);
-                return current.getFolder( path );
-            }
-            else
-            {
-                part = path.substring( 0, path.indexOf( "\\" ) );
-                current = current.getFolder( part );
-                path = path.substring( part.length()+1 );
-            }
-        }
-        
-        return current;
-    }
 
     @Override
     public void processMessage(Chat chat, Message message)
     {
         String body = null;
-        body = new String(Base64.decode(message.getBody()));
-        // TODO: XML-ize this and get filelist??
+        body = message.getBody();
+
         if (body.startsWith("quit"))
             source.endSession(name);
         else if ( body.startsWith( "createDocument=" ) )
-        {
-            String serial = body.substring( "createDocument=".length() );
-            ByteArrayInputStream bis = new ByteArrayInputStream( serial.getBytes() );
-            ObjectInputStream os = null;
-            SourceDocument doc = null;
-            
-            // A bit hackish, but using subject as path to create document in
-            String path = new String( Base64.decode( message.getSubject() ) );
-            
-            try
-            {
-                os = new ObjectInputStream( bis );
-                doc = (SourceDocument) os.readObject();
-                
-                if( DEBUG )
-                    System.out.println( "Creating document " + doc.name + " in " + findFolder( path, bot.getRootFolder() ).name );
-                
-                findFolder( path, bot.getRootFolder() ).addDocument( doc );             
-                
-                // TODO: Duplicate code from below
-                String xml = this.bot.getRootFolder().xml("");
-                bot.chatroom.sendMessage(StringUtils.encodeBase64("filelist=" + xml));   
-            }
-            catch (IOException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            catch (ClassNotFoundException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            catch (XMPPException e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }        
-        }
+            createDocument( chat, body );
         else if (body.startsWith("requestusercolour"))
         {
             String[] split = body.split(" ");
@@ -166,10 +96,10 @@ public class BotMessageListener implements MessageListener
             try
             {
                 source.chats.get(split[1]).sendMessage(
-                        StringUtils.encodeBase64("usercolour: "
+                        "usercolour: "
                                 + yaycolour.getRed() + " "
                                 + yaycolour.getGreen() + " "
-                                + yaycolour.getBlue()));
+                                + yaycolour.getBlue());
             }
             catch (XMPPException e)
             {
@@ -205,7 +135,7 @@ public class BotMessageListener implements MessageListener
             System.out.println("Online query received");
             try
             {
-                chat.sendMessage(StringUtils.encodeBase64("yes i am online"));
+                chat.sendMessage("yes i am online");
             }
             catch (XMPPException e)
             {
@@ -213,77 +143,14 @@ public class BotMessageListener implements MessageListener
             }
         }
         else if (body.startsWith("requestprofile"))
-        {
-            String[] splitbody = body.split(" ");
-            System.out.println(body);
-            boolean notme = false;
-            for (int i = 0; i < splitbody.length; i++)
-            {
-                if (splitbody[i].equals("notme"))
-                    notme = true;
-            }
-            try
-            {
-                File f = new File("profile_" + splitbody[1] + ".txt");
-                if (f.exists())
-                {
-                    FileInputStream fis = new FileInputStream(f);
-                    DataInputStream dis = new DataInputStream(fis);
-                    BufferedReader br = new BufferedReader(
-                            new InputStreamReader(dis));
-                    String line;
-                    System.out.println("Reading profile, sending:\n");
-                    while ((line = br.readLine()) != null)
-                    {
-                        System.out.println(line);
-                        // Send profile file to client
-                        if (notme)
-                            chat.sendMessage(StringUtils
-                                    .encodeBase64("PROFILE$ " + line));
-                        else
-                            source.chats.get(splitbody[1]).sendMessage(
-                                    StringUtils
-                                            .encodeBase64("PROFILE* " + line));
-                    }
-                }
-                else
-                {
-                    // Send message indicating no profile was found
-                    source.chats.get(splitbody[1]).sendMessage(
-                            StringUtils.encodeBase64("notfound"));
-                    System.out.println("Profile not found!");
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                System.err
-                        .println("Error: IO error when retrieving profile for "
-                                + splitbody[1]);
-            }
-            catch (XMPPException e)
-            {
-                e.printStackTrace();
-                System.err
-                        .println("XMPP Exception whilst retrieving profile. Error message: "
-                                + e.getMessage());
-            }
-        }
+            sendProfile( chat, body );
         else if (body.equals("getfilelist"))
-        {
-            try
-            {
-                String xml = this.bot.getRootFolder().xml("");
-                chat.sendMessage(StringUtils.encodeBase64("filelist=" + xml));
-            }
-            catch (XMPPException e)
-            {
-                e.printStackTrace();
-            }
-        }
+            sendFileList( );
         // This part is still important for when a file is opened
         else if (body.startsWith("pullEvents("))
         {
+            body = "(" + new String( StringUtils.decodeBase64( body.substring( 11 )  ) );
+
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];
             String[] args = str.split(",");
@@ -303,6 +170,8 @@ public class BotMessageListener implements MessageListener
         }
         else if (body.startsWith("pullSimplifiedEvents("))
         {
+            body = "(" + new String( StringUtils.decodeBase64( body.substring( 21 ) ) );
+
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];
             String[] args = str.split(",");
@@ -325,18 +194,20 @@ public class BotMessageListener implements MessageListener
             {
                 String sentTime = body.split("\\(")[1];
                 sentTime = sentTime.split("\\)")[0];
-                chat.sendMessage(StringUtils.encodeBase64("timeReply("
-                        + sentTime + "," + System.currentTimeMillis() + ")"));
+                chat.sendMessage("timeReply("
+                        + sentTime + "," + System.currentTimeMillis() + ")");
             }
             catch (XMPPException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
-        // probably not useful anymore \/
+        // probably not useful anymore \/ // TODO: Remove
         else if (body.startsWith("pushto("))
         {
+            System.err.println("SHOULDNT GET HERE");
+            body = new String( "(" + StringUtils.decodeBase64( body.substring( 7 ) ) );
             String[] instructions = body.split("\\) \\n");
             for (String instruction : instructions)
             {
@@ -357,12 +228,13 @@ public class BotMessageListener implements MessageListener
     {
         String instructions = "";
         if (queue.size() == 0)
-            instructions += "isblank(" + path + ")";
+            instructions += "isblank(" + StringUtils.encodeBase64( path + ")" );
         else
         {
-            instructions += "pushto(" + path + ") ";
+            instructions += "pushto(" + StringUtils.encodeBase64( path +  ") " + queue.poll().pack() );
             for (TypingEvent te : queue)
-                instructions += te.pack() + "%%";
+                instructions +=  StringUtils.encodeBase64( te.pack() ) + "%%";
+                
         }
 
         if (stopDiversion)
@@ -370,26 +242,134 @@ public class BotMessageListener implements MessageListener
 
         try
         {
-            chat.sendMessage(StringUtils.encodeBase64(instructions));
+            chat.sendMessage(instructions);
         }
         catch (XMPPException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
-
+    
     /**
-     * FIXME: Unused method!
+     * Send file list to clients.
      * 
+     * @author Andrew
      */
-    /*
-     * private void pushBack(Chat chat, Queue<LocalisedTypingEvents> events) {
-     * String instructions = ""; for (LocalisedTypingEvents ltes : events) for
-     * (TypingEvent te : ltes.typingEvents) instructions += "pushto(" +
-     * ltes.path + ") " + te.pack() + ">"; try {
-     * chat.sendMessage(StringUtils.encodeBase64(instructions)); } catch
-     * (XMPPException e) { // TODO Auto-generated catch block
-     * e.printStackTrace(); } }
+    private void sendFileList( )
+    {
+        try
+        {
+            String xml = this.bot.getRootFolder().xml("");
+            bot.chatroom.sendMessage( "filelist=" + StringUtils.encodeBase64(xml));
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    
+    /**
+     * Send a profile to a user.
+     * 
+     * @param chat Chat to send it on.
+     * @param body Request message to be parsed.
+     * 
+     * @author Jon, Andrew
      */
+    private void sendProfile( Chat chat, String body )
+    {
+        String[] splitbody = body.split(" ");
+        
+        System.out.println(body);
+        
+        boolean notme = false;
+        for (int i = 0; i < splitbody.length; i++)
+        {
+            if (splitbody[i].equals("notme"))
+                notme = true;
+        }
+        try
+        {
+            File f = new File("profile_" + splitbody[1] + ".txt");
+            if (f.exists())
+            {
+                FileInputStream fis = new FileInputStream(f);
+                DataInputStream dis = new DataInputStream(fis);
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(dis));
+                String line;
+                System.out.println("Reading profile, sending:\n");
+                while ((line = br.readLine()) != null)
+                {
+                    System.out.println(line);
+                    // Send profile file to client
+                    if (notme)
+                        chat.sendMessage("PROFILE$ " + line);
+                    else
+                        source.chats.get(splitbody[1]).sendMessage(
+                                ("PROFILE* " + line) );
+                }
+            }
+            else
+            {
+                // Send message indicating no profile was found
+                source.chats.get(splitbody[1]).sendMessage(
+                        "notfound");
+                System.out.println("Profile not found!");
+            }
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            System.err
+                    .println("Error: IO error when retrieving profile for "
+                            + splitbody[1]);
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+            System.err
+                    .println("XMPP Exception whilst retrieving profile. Error message: "
+                            + e.getMessage());
+        }
+    }
+    
+    /**
+     * Create a SourceDocument in the relevant LiveFolder given information sent from a client.
+     * 
+     * @param chat The chat the user is on (to get the owner name).
+     * @param body The body of the message to parse.
+     * 
+     * @author Andrew
+     */
+    private void createDocument( Chat chat, String body )
+    {
+        String[] components = body.split( ":" );
+        String name = new String( StringUtils.decodeBase64( components[1] ) );
+        String path = new String( StringUtils.decodeBase64( components[3] ) );
+        String contents = new String( StringUtils.decodeBase64( components[5] ) );
+        String owner = StringUtils.parseName( chat.getParticipant() );
+        SourceDocument doc = new SourceDocument( name, owner );
+        
+        if( DEBUG )
+            System.out.println( "Creating document " + doc.name + " in " + path );
+        
+        if( contents != null )
+        {
+            // Generate typing events for current file contents
+            TypingEvent te = new TypingEvent(System.currentTimeMillis(), TypingEventMode.insert, 
+                    0, contents.length(), contents, owner, null);
+            ArrayList<TypingEvent> events = te.explode();
+            doc.addEvents( events );
+        }
+        
+        // Add the new document to the folder
+        LiveFolder.findFolder( path, bot.getRootFolder() ).addDocument( doc );             
+        
+        // Send the updated file list to the clients
+        sendFileList( );
+    }
+    
 }

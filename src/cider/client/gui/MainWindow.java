@@ -247,8 +247,7 @@ public class MainWindow
         try
         {
             client.botChat
-                    .sendMessage(StringUtils.encodeBase64("requestusercolour "
-                            + username + " " + user));
+                    .sendMessage("requestusercolour " + username + " " + user);
 
         }
         catch (XMPPException e)
@@ -736,9 +735,9 @@ public class MainWindow
     {
         try
         {
-            client.chatroom.sendMessage(StringUtils
-                    .encodeBase64("colourchange: " + username + " " + r + " "
-                            + g + " " + b));
+            client.chatroom.sendMessage(
+                    "colourchange: " + username + " " + r + " "
+                            + g + " " + b);
         }
         catch (XMPPException e)
         {
@@ -753,9 +752,9 @@ public class MainWindow
     {
         try
         {
-            client.botChat.sendMessage(StringUtils
-                    .encodeBase64("colourchange: " + username + " " + r + " "
-                            + g + " " + b));
+            client.botChat.sendMessage(
+                    "colourchange: " + username + " " + r + " "
+                            + g + " " + b);
         }
         catch (XMPPException e)
         {
@@ -885,7 +884,7 @@ public class MainWindow
             String s = myProfile.toString();
             s = "userprofile:  " + s;
             System.out.println(s);
-            client.botChat.sendMessage(StringUtils.encodeBase64(s));
+            client.botChat.sendMessage(s);
         }
         catch (XMPPException e1)
         {
@@ -897,8 +896,7 @@ public class MainWindow
     {
         try
         {
-            client.botChat.sendMessage(StringUtils
-                    .encodeBase64("requestprofile " + username));
+            client.botChat.sendMessage("requestprofile " + username);
             System.out.println("Requesting profile from server");
         }
         catch (XMPPException e)
@@ -1220,10 +1218,10 @@ public class MainWindow
                                     try
                                     {
                                         System.out.println(client.profileFound);
-                                        client.botChat.sendMessage(StringUtils.encodeBase64("requestprofile "
+                                        client.botChat.sendMessage("requestprofile "
                                                 + shared.userList
                                                         .getSelectedValue()
-                                                + " notme"));
+                                                + " notme");
                                         Thread.sleep(1000);
                                         System.out.println(client.profileFound);
                                         if (!client.profileFound)

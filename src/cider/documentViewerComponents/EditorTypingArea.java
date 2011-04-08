@@ -97,6 +97,12 @@ public class EditorTypingArea extends SourceDocumentViewer
     {
         super.movePageDown();
     }
+    
+    @Override
+    public void selectAll()
+    {
+        super.selectAll();
+    }
 
     @Override
     public void setCaretPosition(int position)

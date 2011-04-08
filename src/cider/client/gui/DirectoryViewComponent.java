@@ -48,6 +48,8 @@ import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
 {
+    public static boolean DEBUG = true; 
+    
     /**
      * 
      */
@@ -56,14 +58,7 @@ public class DirectoryViewComponent extends JPanel
     private DefaultMutableTreeNode top;
     private Client client;
     private JTree tree;
-    private LiveFolder rootFolder = new LiveFolder("Bot", "root");
-
-    /*
-     * public static void main(String[] args) { JFrame w = new JFrame();
-     * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
-     * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
-     * Dimension(400, 800)); w.setVisible(true); }
-     */
+    private LiveFolder rootFolder = new LiveFolder("root", "Bot");
 
     public DirectoryViewComponent()
     {
@@ -75,11 +70,11 @@ public class DirectoryViewComponent extends JPanel
 
         JScrollPane scrollpane = new JScrollPane(tree);
 
-        new JLabel("directory tree");
-
-        new JLabel("code");
-
-        new JLabel("chat, oh hai");
+//        new JLabel("directory tree");
+//
+//        new JLabel("code");
+//
+//        new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
         this.add(new JLabel(" File Explorer"), BorderLayout.NORTH);
@@ -91,35 +86,11 @@ public class DirectoryViewComponent extends JPanel
         this.client = client;
     }
 
-    public void createNodes(DefaultMutableTreeNode top)
-    {
-        /* Creates some objects to simulate files and folders etc */
-        DefaultMutableTreeNode category = null;
-        DefaultMutableTreeNode book = null;
-
-        category = new DefaultMutableTreeNode("Folder 1");
-        top.add(category);
-
-        // book = new DefaultMutableTreeNode(new BookInfo
-        // ("The Java Tutorial: A Short Course on the Basics",
-        // "tutorial.html"));
-        for (int i = 0; i < 50; i++)
-        {
-            book = new DefaultMutableTreeNode("File 1");
-            category.add(book);
-        }
-        /*
-         * DefaultMutableTreeNode sub = null; sub = new
-         * DefaultMutableTreeNode("SubFile 1"); book.add(sub);
-         */
-
-        category = new DefaultMutableTreeNode("Folder 2");
-        top.add(category);
-
-        book = new DefaultMutableTreeNode("File 2");
-        category.add(book);
-    }
-
+    /**
+     * Wipes the current directory tree and makes a new one.
+     * 
+     * @param xml The XML representation of the tree to build
+     */
     public void constructTree(String xml)
     {
         this.top.removeAllChildren();
@@ -146,8 +117,13 @@ public class DirectoryViewComponent extends JPanel
 
                 this.subFolders(docEle, this.top, this.rootFolder);
                 this.parseDocs(docEle, this.top, this.rootFolder);
-                System.out.println("Reconstructed Tree: ");
-                System.out.println(this.rootFolder.xml(""));
+                
+                if( DEBUG )
+                {
+                    System.out.println("Reconstructed Tree: ");
+                    System.out.println(this.rootFolder.xml(""));
+                }
+
             }
             catch (UnsupportedEncodingException e)
             {
@@ -225,11 +201,14 @@ public class DirectoryViewComponent extends JPanel
                 String docName = el.getChildNodes().item(0).getNodeValue()
                         .trim();
                 folder.add(new DefaultMutableTreeNode(docName));
-                parentFolder.makeDocument(docName);
+                // TODO: owner
+                parentFolder.makeDocument(docName, null);
             }
         }
     }
 
+    // TODO: Moved deprecated stuff to end
+    
     /*
      * // Flip the keys and values of a hash and return a new one private
      * Hashtable flipHash( Hashtable h ) { Object[] keys = h.keySet().toArray();
@@ -240,4 +219,46 @@ public class DirectoryViewComponent extends JPanel
      * 
      * return newHash; }
      */
+    
+    /*
+     * public static void main(String[] args) { JFrame w = new JFrame();
+     * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
+     * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
+     * Dimension(400, 800)); w.setVisible(true); }
+     */
+    
+    /**
+     *  Creates some objects to simulate files and folders etc
+     *  
+     *  @deprecated
+     * @param top
+     */
+    public void createNodes(DefaultMutableTreeNode top)
+    {
+        
+        DefaultMutableTreeNode category = null;
+        DefaultMutableTreeNode book = null;
+
+        category = new DefaultMutableTreeNode("Folder 1");
+        top.add(category);
+
+        // book = new DefaultMutableTreeNode(new BookInfo
+        // ("The Java Tutorial: A Short Course on the Basics",
+        // "tutorial.html"));
+        for (int i = 0; i < 50; i++)
+        {
+            book = new DefaultMutableTreeNode("File 1");
+            category.add(book);
+        }
+        /*
+         * DefaultMutableTreeNode sub = null; sub = new
+         * DefaultMutableTreeNode("SubFile 1"); book.add(sub);
+         */
+
+        category = new DefaultMutableTreeNode("Folder 2");
+        top.add(category);
+
+        book = new DefaultMutableTreeNode("File 2");
+        category.add(book);
+    }
 }

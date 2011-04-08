@@ -56,7 +56,7 @@ public class ClientChatroomMessageListener implements PacketListener
         Message msg = (Message) packet;
         if (msg.getType() == Message.Type.groupchat)
         {
-            String body = new String( StringUtils.decodeBase64( msg.getBody() ) );
+            String body = msg.getBody();
             if (body.startsWith("filelist=") 
                     || body.startsWith("pushto(")
                     || body.startsWith("empty")

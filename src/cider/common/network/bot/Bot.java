@@ -38,6 +38,7 @@ import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.network.ConfigurationReader;
 import cider.common.network.DebugPacketFilter;
+import cider.common.network.DebugPacketInterceptor;
 import cider.common.network.DebugPacketListener;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
@@ -85,7 +86,7 @@ public class Bot
         }
         catch (IOException e)
         {
-            // TODO Auto-generated catch block
+            
             e.printStackTrace();
         }
     }
@@ -123,12 +124,12 @@ public class Bot
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
 
-            // Verbose debugging to print out every packet leaving or entering
-            // the bot
-            // connection.addPacketListener(new DebugPacketListener(), new
-            // DebugPacketFilter());
-            // connection.addPacketInterceptor(new DebugPacketInterceptor(), new
-            // DebugPacketFilter());
+//             Verbose debugging to print out every packet leaving or entering
+//             the bot
+             connection.addPacketListener(new DebugPacketListener(), new
+             DebugPacketFilter());
+             connection.addPacketInterceptor(new DebugPacketInterceptor(), new
+             DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
@@ -138,7 +139,7 @@ public class Bot
             if( DEBUG )
                 System.out.println( "Using source path: " + config.getSourceDir().getPath() );
                     
-            sourceFolder = new LiveFolder("Bot", "root");
+            sourceFolder = new LiveFolder("root", "Bot");
             readFromDisk( SOURCE_PATH, sourceFolder );
             
             // If source dir doesn't exist create it
@@ -224,12 +225,12 @@ public class Bot
                 }
                 catch (IOException e)
                 {
-                    // TODO Auto-generated catch block
+                    
                     e.printStackTrace();
                 }
                 catch (ClassNotFoundException e)
                 {
-                    // TODO Auto-generated catch block
+                    
                     e.printStackTrace();
                 }
             }
@@ -247,16 +248,16 @@ public class Bot
     @SuppressWarnings("unused")
     private void testTree()
     {
-        this.sourceFolder = new LiveFolder("Bot", "root");
+        this.sourceFolder = new LiveFolder("root", "Bot");
         // FIXME: t1 is unused
         @SuppressWarnings("unused")
-        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument");
+        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument", "test owner 1");
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         // t1.push(tes);
         this.sourceFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument");
+                .makeDocument("test2Doc.SourceDocument", "test owner 2");
     }
 
     public LiveFolder getRootFolder()
