@@ -275,30 +275,30 @@ public class ETASourceEditorPane extends JScrollPane
 //                      else if (ke.isControlDown())
 //                          eta.moveDocHome();
 //                      else
-                  eta.moveHome( ke.isShiftDown() );
-                  break;
-              case KeyEvent.VK_END:
-                  eta.moveEnd( ke.isShiftDown() );
-                  break;
-              case KeyEvent.VK_PAGE_UP:
-                  eta.movePageUp();
-                  break;
-              case KeyEvent.VK_PAGE_DOWN:
-                  eta.movePageDown();
-                  break;
-              case KeyEvent.VK_4:
-                  if (ke.isControlDown())
-                      this.applyToSelection(TypingEventMode.lockRegion);
-                  break;
-              case KeyEvent.VK_R:
-                  if (ke.isControlDown())
-                      this.applyToSelection(TypingEventMode.unlockRegion);
-                  break;
-              case KeyEvent.VK_A:
-                  if( ke.isControlDown() )
-                      eta.selectAll();
-                  break;
-              }
+                      eta.moveHome( ke.isShiftDown() );
+                      break;
+                  case KeyEvent.VK_END:
+                      eta.moveEnd( ke.isShiftDown() );
+                      break;
+                  case KeyEvent.VK_PAGE_UP:
+                      eta.movePageUp();
+                      break;
+                  case KeyEvent.VK_PAGE_DOWN:
+                      eta.movePageDown();
+                      break;
+                  case KeyEvent.VK_4:
+                      if (ke.isControlDown())
+                          this.applyToSelection(TypingEventMode.lockRegion);
+                      break;
+                  case KeyEvent.VK_R:
+                      if (ke.isControlDown())
+                          this.applyToSelection(TypingEventMode.unlockRegion);
+                      break;
+                  case KeyEvent.VK_A:
+                      if( ke.isControlDown() )
+                          eta.selectAll();
+                      break;
+                  }
                 
             }
 

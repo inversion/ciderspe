@@ -473,15 +473,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveHome( boolean select )
     {
-        int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
-                - 2;
-        
-        if( start < -1 )
-            start = -1;
-        
+        int start = getCurrentLine().start + getCurrentLine().lineNum - 2;
         if( select )
-            selectedRegion = str.region( start+1 , caretPosition );
-        System.out.println("Selecting from " + (start+1) + " for length " + caretPosition);
+        {
+            System.out.println("Selecting from " + (start) + " to " + caretPosition);
+            selectedRegion = str.region( start , caretPosition+1 );
+        }
+
         this.caretPosition = start;
 
         this.updateUI();
@@ -495,23 +493,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveEnd( boolean select )
     {
-        int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
-                - 2;
-        
-        if( start < -1 )
-            start = -1;
-        
+        int start = getCurrentLine().start + getCurrentLine().lineNum - 2;
         int length = this.getCurrentLine().str.length();
-        System.out.println("Selecting from " + caretPosition + " for length " + length);
         
         if( select )
         {
-            if( caretPosition < 0 )
-                caretPosition = 0;
-            System.out.println("comparing " + caretPosition + " and " + getCurrentLine().start);
-            selectedRegion = str.region( caretPosition , length );
-        }
-            
+            System.out.println("Selecting from " + caretPosition + " to " + (start+length+1));
+            selectedRegion = str.region( caretPosition , (start+length+1) );
+        }   
         
         this.caretPosition = start + length;
 
