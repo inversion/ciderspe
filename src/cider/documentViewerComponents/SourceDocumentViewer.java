@@ -468,27 +468,53 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * Move the caret to the beginning of the current line and update the UI.
      * 
+     * @param select True if selecting the area traversed.
      * @author Andrew, Lawrence
      */
-    protected void moveHome()
+    protected void moveHome( boolean select )
     {
         int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
                 - 2;
+        
+        if( start < -1 )
+            start = -1;
+        
+        if( select )
+            selectedRegion = str.region( start+1 , caretPosition );
+        System.out.println("Selecting from " + (start+1) + " for length " + caretPosition);
         this.caretPosition = start;
+
         this.updateUI();
     }
 
     /**
      * Move the caret to the end of the current line and update the UI.
      * 
+     * @param select True if selecting the area traversed.
      * @author Andrew, Lawrence
      */
-    protected void moveEnd()
+    protected void moveEnd( boolean select )
     {
         int start = this.getCurrentLine().start + this.getCurrentLine().lineNum
                 - 2;
+        
+        if( start < -1 )
+            start = -1;
+        
         int length = this.getCurrentLine().str.length();
+        System.out.println("Selecting from " + caretPosition + " for length " + length);
+        
+        if( select )
+        {
+            if( caretPosition < 0 )
+                caretPosition = 0;
+            System.out.println("comparing " + caretPosition + " and " + getCurrentLine().start);
+            selectedRegion = str.region( caretPosition , length );
+        }
+            
+        
         this.caretPosition = start + length;
+
         this.updateUI();
     }
 
