@@ -26,10 +26,8 @@ package cider.common.network.bot;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 import org.jivesoftware.smack.ChatManager;
@@ -39,6 +37,8 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.network.ConfigurationReader;
+import cider.common.network.DebugPacketFilter;
+import cider.common.network.DebugPacketListener;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.SourceDocument;
 
@@ -137,10 +137,17 @@ public class Bot
 
             if( DEBUG )
                 System.out.println( "Using source path: " + config.getSourceDir().getPath() );
-            
-            //this.testTree();
+                    
             sourceFolder = new LiveFolder("Bot", "root");
             readFromDisk( SOURCE_PATH, sourceFolder );
+            
+            // If source dir doesn't exist create it
+            if( !SOURCE_PATH.exists() )
+                SOURCE_PATH.mkdir();
+            
+            // If source dir is empty make some test files
+            if( SOURCE_PATH.list().length == 0 )
+                this.testTree();
         }
         catch (XMPPException e)
         {
@@ -199,7 +206,9 @@ public class Bot
      * @author Andrew
      */
     private void readFromDisk( File path, LiveFolder folder )
-    {        
+    {   
+        if( !path.exists() )
+            return;
         File[] list = path.listFiles();
         for (File file : list)
         {
@@ -235,6 +244,7 @@ public class Bot
      * 
      * @author Lawrence
      */
+    @SuppressWarnings("unused")
     private void testTree()
     {
         this.sourceFolder = new LiveFolder("Bot", "root");

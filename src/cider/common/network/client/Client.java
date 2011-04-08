@@ -26,9 +26,13 @@ package cider.common.network.client;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -72,6 +76,7 @@ import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventMode;
 import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
 
@@ -1005,5 +1010,58 @@ public class Client
     public void setDiversion(TimeRegion timeRegion)
     {
         this.diversion = timeRegion;
+    }
+    
+    // Credit to http://stackoverflow.com/questions/80476/how-to-concatenate-two-arrays-in-java
+    public static <T> byte[] concat(byte[] bs, byte[] bs2) {
+        byte[] result = Arrays.copyOf(bs, bs.length + bs2.length);
+        System.arraycopy(bs2, 0, result, bs.length, bs2.length);
+        return result;
+      }
+
+    /**
+     * Create a new document on the Bot's side.
+     * 
+     * @param path The path of the folder to create the document in relative to the root, use 2 backslashes to separate dirs.
+     * @param name The name of the document to create.
+     * @param contents Contents of the file, if null a blank file is created.
+     */
+    public void createDocument( String path, String name, String contents )
+    {
+        if( DEBUG )
+            System.out.println("Trying to create document with name " + name + " in " + path);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream os = null;
+        SourceDocument doc = new SourceDocument( name );
+        if( contents != null )
+        {
+            // Generate typing events for current file contents
+            TypingEvent te = new TypingEvent(System.currentTimeMillis() + getClockOffset(), TypingEventMode.insert, 
+                    0, contents.length(), contents, username, null);
+            ArrayList<TypingEvent> events = te.explode();
+            doc.addEvents( events );
+        }
+        
+        try
+        {
+            os = new ObjectOutputStream( bos );
+            os.writeObject( doc );
+            Message msg = new Message();
+            StringUtils.encodeBase64( concat("createDocument=".getBytes(), bos.toByteArray()) );
+            msg.setBody( StringUtils.encodeBase64( concat("createDocument=".getBytes(), bos.toByteArray()) ) );
+            msg.setSubject( StringUtils.encodeBase64( path ) );
+            botChat.sendMessage( msg );
+            os.close();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (XMPPException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }
