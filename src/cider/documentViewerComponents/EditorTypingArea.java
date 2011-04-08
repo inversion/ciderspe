@@ -57,15 +57,15 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public void moveHome()
+    public void moveHome( boolean select )
     {
-        super.moveHome();
+        super.moveHome( select );
     }
 
     @Override
-    public void moveEnd()
+    public void moveEnd( boolean select)
     {
-        super.moveEnd();
+        super.moveEnd( select );
     }
 
     @Override
