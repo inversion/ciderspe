@@ -87,6 +87,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 
 import cider.common.network.client.Client;
 import cider.common.processes.DocumentID;
@@ -168,16 +169,15 @@ public class MainWindow
     {
         this.shared = new ClientSharedComponents();
     }
-
+    /**
+     * This method sets up the profile by asking the Bot if it has the user
+     * on its record. If so, the profile updates appropriately. If not, a
+     * new profile is created.
+     * 
+     * @author Jon
+     */
     private void profileSetup()
     {
-        /**
-         * This method sets up the profile by asking the Bot if it has the user
-         * on its record. If so, the profile updates appropriately. If not, a
-         * new profile is created.
-         * 
-         * @author Jon
-         */
         getProfileFromBot();
 
         try
@@ -257,8 +257,11 @@ public class MainWindow
     {
         try
         {
-            client.botChat.sendMessage("requestusercolour " + username + " "
-                    + user);
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "requestusercolour" );
+            msg.setProperty( "user", user );
+                    .sendMessage( msg );
 
         }
         catch (XMPPException e)
@@ -806,8 +809,15 @@ public class MainWindow
     {
         try
         {
-            client.chatroom.sendMessage("colourchange: " + username + " " + r
-                    + " " + g + " " + b);
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "colourchange" );
+            msg.setProperty("r", r);
+            msg.setProperty("g", g);
+            msg.setProperty("b", b);
+            msg.setProperty( "username", username );
+            msg.setType( Message.Type.groupchat );
+            client.chatroom.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -817,13 +827,19 @@ public class MainWindow
             return;
         }
     }
-
+    
+    @Deprecated
     private void botColourChange(int r, int g, int b)
     {
         try
         {
-            client.botChat.sendMessage("colourchange: " + username + " " + r
-                    + " " + g + " " + b);
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "colourchange" );
+            msg.setProperty("r", r);
+            msg.setProperty("g", g);
+            msg.setProperty("b", b);
+            client.botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -950,10 +966,10 @@ public class MainWindow
         System.out.println(myProfile.toString());
         try
         {
-            String s = myProfile.toString();
-            s = "userprofile:  " + s;
-            System.out.println(s);
-            client.botChat.sendMessage(s);
+            Message msg = new Message( myProfile.toString() );
+            msg.setBody("");
+            msg.setSubject( "userprofile" );
+            client.botChat.sendMessage( msg );
         }
         catch (XMPPException e1)
         {
@@ -965,7 +981,11 @@ public class MainWindow
     {
         try
         {
-            client.botChat.sendMessage("requestprofile " + username);
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "requestprofile" );
+            msg.setProperty( "username", username );
+            client.botChat.sendMessage( msg );
             System.out.println("Requesting profile from server");
         }
         catch (XMPPException e)
@@ -1290,7 +1310,7 @@ public class MainWindow
                                         /**
                                          * TODO: - Get the name from the thing
                                          * the user right clicked - Send
-                                         * "requestprofile USERNAME" to the bot
+                                     * "requestprofile" subject msg to the bot -
                                          * - Wait for 500ms - Check in Client to
                                          * see the new Profile that has appeared
                                          * :)
@@ -1298,11 +1318,13 @@ public class MainWindow
                                         try
                                         {
                                             System.out
-                                                    .println(client.profileFound);
-                                            client.botChat.sendMessage("requestprofile "
-                                                    + shared.userList
-                                                            .getSelectedValue()
-                                                    + " notme");
+                                        Message msg = new Message();
+                                        msg.setBody("");
+                                        msg.setSubject( "requestprofile" );
+                                        msg.setProperty( "username", shared.userList
+                                                .getSelectedValue() );
+                                        msg.setProperty( "notme", "true" );
+                                        client.botChat.sendMessage( msg );
                                             Thread.sleep(1000);
                                             System.out
                                                     .println(client.profileFound);
@@ -1515,6 +1537,7 @@ public class MainWindow
     public void startApplication(JFrame loginWindow)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
+        w.addMouseMotionListener( new IdleTimer( client ) ); 
 
         // FIXME:
         // client.startClockSynchronisation(w);
