@@ -79,7 +79,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
-        else if (body != null && body.startsWith("PROFILE* "))
+        else if (body.startsWith("PROFILE* "))
         {
             System.out.println(body);
             if (client.profile == null)
@@ -112,7 +112,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.profile.uname = body.substring(9);
             }
         }
-        else if (body != null && body.startsWith("PROFILE$ "))
+        else if (body.startsWith("PROFILE$ "))
         {
             if (client.notMyProfile == null)
             {
@@ -144,7 +144,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.notMyProfile.uname = body.substring(9);
             }
         }
-        else if (body != null && body.startsWith("timeReply("))
+        else if (body.startsWith("timeReply("))
         {
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];
