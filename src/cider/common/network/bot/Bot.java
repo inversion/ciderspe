@@ -69,7 +69,7 @@ public class Bot
 
     private XMPPConnection connection;
     private ChatManager chatmanager;
-    private BotChatListener chatListener;
+    protected BotChatListener chatListener;
     private LiveFolder sourceFolder;
 
     // Holds the colours for each user
@@ -122,6 +122,8 @@ public class Bot
                     + "@conference." + SERVICE_NAME);
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
+            BotChatroomParticipantListener participantListener = new BotChatroomParticipantListener(this);
+            chatroom.addParticipantListener( participantListener );
 
             // Verbose debugging to print out every packet leaving or entering
             // the bot

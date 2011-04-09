@@ -338,31 +338,8 @@ public class Client
      */
     public void disconnect()
     {
-        try
-        {
-            // Tell the bot that this client is quitting
-            botChat.sendMessage( "quit" );
-        }
-        catch (XMPPException e1)
-        {
-            e1.printStackTrace();
-        }
         chatroom.leave();
         connection.disconnect();
-
-        // TODO: Is below stuff necessary?
-        while (this.connection.isConnected())
-            System.out.printf(".");
-        try
-        {
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        // TODO: Is above stuff necessary?
-
         if (DEBUG)
             System.out.println("Disconnected from XMPP server...");
     }
@@ -1154,6 +1131,7 @@ public class Client
     {
         Presence idle = new Presence( Presence.Type.available );
         idle.setMode( Presence.Mode.away );
+        idle.setTo( chatroom.getRoom() );
         connection.sendPacket( idle );
     }
 
@@ -1166,6 +1144,7 @@ public class Client
     {
         Presence here = new Presence( Presence.Type.available );
         here.setMode( Presence.Mode.available );
+        here.setTo( chatroom.getRoom() );
         connection.sendPacket( here );
         
     }
