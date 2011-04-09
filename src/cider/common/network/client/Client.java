@@ -173,7 +173,7 @@ public class Client
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log, ClientSharedComponents shared)
     {
-        clientConfig = new ConfigurationReader( "Client.conf" );
+        clientConfig = new ConfigurationReader( "Client.conf" , log );
         
         // Assign objects from parameters
         this.username = username;
