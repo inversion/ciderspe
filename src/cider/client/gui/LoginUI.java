@@ -150,55 +150,25 @@ public class LoginUI
         txtServiceName.setText(DEFAULT_SERVICE_NAME);
         txtHost = new JTextField(13);
         txtHost.setText(DEFAULT_HOST);
-        // TODO: Make this numeric?
         txtPort = new JTextField(13);
         txtPort.setText(DEFAULT_PORT);
 
-        txtUsername.addKeyListener(new KeyAdapter()
-        {
-            public void keyPressed(KeyEvent e)
+        // Add enter key listeners for all fields.
+        JTextField[] fields = {txtUsername, txtServiceName, txtHost, txtPort};
+        
+        for( JTextField field : fields )
+            field.addKeyListener(new KeyAdapter()
             {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                public void keyPressed(KeyEvent e)
                 {
-                    checkLogin();
+                    if (e.getKeyCode() == KeyEvent.VK_ENTER)
+                    {
+                        checkLogin();
+                    }
                 }
-            }
-        });
+            });
 
         txtPassword.addKeyListener(new KeyAdapter()
-        {
-            public void keyPressed(KeyEvent e)
-            {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                {
-                    checkLogin();
-                }
-            }
-        });
-
-        txtServiceName.addKeyListener(new KeyAdapter()
-        {
-            public void keyPressed(KeyEvent e)
-            {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                {
-                    checkLogin();
-                }
-            }
-        });
-
-        txtHost.addKeyListener(new KeyAdapter()
-        {
-            public void keyPressed(KeyEvent e)
-            {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER)
-                {
-                    checkLogin();
-                }
-            }
-        });
-
-        txtPort.addKeyListener(new KeyAdapter()
         {
             public void keyPressed(KeyEvent e)
             {

@@ -58,7 +58,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        if (body.startsWith("quit"))
+        String subject = message.getSubject();
+        if ( subject.equals( "quit" ) )
         {
             JOptionPane
                     .showMessageDialog(
@@ -67,22 +68,18 @@ public class ClientMessageListener implements MessageListener, ActionListener
             client.disconnect();
             System.exit(1);
         }
-        else if (body.equals("yes i am online"))
-        {
+        else if (subject.equals("yes i am online"))
             client.botIsOnline = true;
-        }
-        else if (body.equals("notfound"))
-        {
+        else if (subject.equals("notfound"))
             client.profileFound = false;
-        }
-        else if (body.startsWith("usercolour:"))
+        else if (subject.equals("usercolour"))
         {
-            String[] split = body.split(" ");
-            Color c = new Color(Integer.parseInt(split[1]),
-                    Integer.parseInt(split[2]), Integer.parseInt(split[3]));
-            client.incomingColour = c;
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            client.incomingColour = new Color(r, g, b);
         }
-        else if (body.startsWith("PROFILE* "))
+        else if (body != null && body.startsWith("PROFILE* "))
         {
             System.out.println(body);
             if (client.profile == null)
@@ -115,7 +112,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.profile.uname = body.substring(9);
             }
         }
-        else if (body.startsWith("PROFILE$ "))
+        else if (body != null && body.startsWith("PROFILE$ "))
         {
             if (client.notMyProfile == null)
             {
@@ -147,7 +144,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.notMyProfile.uname = body.substring(9);
             }
         }
-        else if (body.startsWith("timeReply("))
+        else if (body != null && body.startsWith("timeReply("))
         {
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];
@@ -164,7 +161,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
             this.client.addTimeDeltaSample(delta);
         }
         else
-            this.client.processDocumentMessages(body);
+            this.client.processDocumentMessages( message );
     }
 
     @Override

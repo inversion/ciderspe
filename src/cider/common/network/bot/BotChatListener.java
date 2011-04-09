@@ -30,6 +30,7 @@ import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManagerListener;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
@@ -77,7 +78,10 @@ public class BotChatListener implements ChatManagerListener
                                 + " initiated chat, but is already connected from another CIDER client, alerting new instance to quit...");
             try
             {
-                chat.sendMessage( "quit" );
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject( "quit" );
+                chat.sendMessage( msg );
             }
             catch (XMPPException e)
             {
