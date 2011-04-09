@@ -128,26 +128,27 @@ public class MainWindow
 
     tabFlash tabbing = new tabFlash();
 
+    boolean offlineMode = false;
+    
+    
     /**
      * These variable are for the profiles
      * 
      * @author Jon
      */
-    public long startTime;
-    private Profile myProfile;
-
-    boolean offlineMode = false;
-
+    public long startTime = System.currentTimeMillis();
+    public Profile myProfile;
+    
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c, LoginUI loginUI,
             ClientSharedComponents shared) throws XMPPException
     {
         // Register GUI components shared with client
         this.shared = shared;
-
+        myProfile = shared.profile;
+        
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
-        startTime = System.currentTimeMillis();
         this.username = username;
         login = loginUI;
 
@@ -169,39 +170,95 @@ public class MainWindow
     {
         this.shared = new ClientSharedComponents();
     }
+    
+    public void uploadProfile()
+    {
+        // FIXME:
+        /*
+         * int count =
+         * this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE
+         * ).countCharactersFor(username); myProfile.adjustCharCount(0);
+         */
+
+        myProfile.updateTimeSpent(startTime);
+        myProfile.updateProfileInfo();
+        System.out.println( "MainWindow: Uploading profile: " + myProfile.toString());
+        try
+        {
+            Profile profile = myProfile;
+            Message message = new Message();
+            message.setBody("");
+            message.setSubject( "userprofile" );
+            message.setProperty( "username", profile.uname );
+            message.setProperty( "chars", profile.typedChars );
+            message.setProperty( "timeSpent", profile.timeSpent );
+            message.setProperty( "lastOnline", profile.lastOnline );
+            message.setProperty( "r", profile.userColour.getRed() );
+            message.setProperty( "g", profile.userColour.getGreen() );
+            message.setProperty( "b", profile.userColour.getBlue() );
+            client.botChat.sendMessage( message );
+        }
+        catch (XMPPException e1)
+        {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Request one's own profile from the bot.
+     * 
+     * @author Jon, Andrew
+     */
+    private void requestProfile()
+    {
+        try
+        {
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "requestprofile" );
+            msg.setProperty( "username", username );
+            client.botChat.sendMessage( msg );
+            System.out.println("MainWindow: Requesting profile from server for " + username);
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * This method sets up the profile by asking the Bot if it has the user
      * on its record. If so, the profile updates appropriately. If not, a
      * new profile is created.
      * 
-     * @author Jon
+     * @author Jon, Andrew
      */
     private void profileSetup()
     {
-        getProfileFromBot();
+        requestProfile();
 
-        try
-        {
-            /**
-             * This is to negate the effect of latency on checking the new
-             * profile
-             */
-            Thread.sleep(1000);
-        }
-        catch (InterruptedException e)
-        {
-            e.printStackTrace();
-        }
-        if (client.profileFound == false)
-        {
-            myProfile = new Profile(username, client);
-        }
-        else
-            myProfile = client.profile;
-
-        // Inform the bot of the user's current colour
-        botColourChange(myProfile.userColour.getRed(),
-                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
+//        try
+//        {
+//            /**
+//             * This is to negate the effect of latency on checking the new
+//             * profile
+//             */
+//            Thread.sleep(1000);
+//        }
+//        catch (InterruptedException e)
+//        {
+//            e.printStackTrace();
+//        }
+//        if (client.profileFound == false)
+//        {
+//            myProfile = new Profile(username, client);
+//        }
+//        else
+//            myProfile = client.profile;
+//
+//        // Inform the bot of the user's current colour
+//        botColourChange(myProfile.userColour.getRed(),
+//                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
 
         if (client.colours.containsKey(username))
             client.colours.remove(username);
@@ -361,11 +418,11 @@ public class MainWindow
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    sendProfileToBot();
+                    uploadProfile();
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
-                    getProfileFromBot();
+                    requestProfile();
                 }
                 else if (action
                         .equals("DEV: Show list of colours stored locally"))
@@ -796,7 +853,7 @@ public class MainWindow
                 "Are you sure you wish to reset your profile?");
         if (response == 0)
         {
-            myProfile = new Profile(username, client);
+            myProfile = new Profile(username);
             myProfile.setColour(150, 150, 150);
             announceColourChange(150, 150, 150);
             startTime = System.currentTimeMillis();
@@ -951,48 +1008,6 @@ public class MainWindow
         content.add(chars);
 
         frame.setVisible(true);
-    }
-
-    public void sendProfileToBot()
-    {
-        // FIXME:
-        /*
-         * int count =
-         * this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE
-         * ).countCharactersFor(username); myProfile.adjustCharCount(0);
-         */
-
-        myProfile.updateTimeSpent(startTime);
-        myProfile.updateProfileInfo();
-        System.out.println(myProfile.toString());
-        try
-        {
-            Message msg = new Message( myProfile.toString() );
-            msg.setBody("");
-            msg.setSubject( "userprofile" );
-            client.botChat.sendMessage( msg );
-        }
-        catch (XMPPException e1)
-        {
-            e1.printStackTrace();
-        }
-    }
-
-    private void getProfileFromBot()
-    {
-        try
-        {
-            Message msg = new Message();
-            msg.setBody("");
-            msg.setSubject( "requestprofile" );
-            msg.setProperty( "username", username );
-            client.botChat.sendMessage( msg );
-            System.out.println("Requesting profile from server");
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -1585,7 +1600,7 @@ public class MainWindow
                 {
                     myProfile.updateTimeSpent(startTime);
                     myProfile.updateProfileInfo();
-                    sendProfileToBot();
+                    uploadProfile();
                     System.out.println("disconnecting");
                     client.disconnect();
                 }

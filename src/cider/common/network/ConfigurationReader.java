@@ -104,6 +104,14 @@ public class ConfigurationReader
         return dir.getAbsoluteFile();    
     }
     
+    public File getProfileDir()
+    {
+        File dir = new File( config.get( "PROFILE_DIR" ) );
+        
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();    
+    }
+    
     public ConfigurationReader( String fileName, LoginUI l )
     {
     	login = l;

@@ -43,6 +43,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.processes.LiveFolder;
+import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
@@ -71,7 +72,6 @@ public class BotMessageListener implements MessageListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = message.getBody();
         String subject = message.getSubject();
         
         if (subject.equals("are you online mr bot"))
@@ -114,27 +114,29 @@ public class BotMessageListener implements MessageListener
         }
         else if ( subject.equals( "userprofile" ) )
         {
-            String[] splitProfile = body.split("  ");
-            File f = new File("profile_" + splitProfile[1] + ".txt");
-            try
+            // Update the profile in the bot's memory
+            String username = (String) message.getProperty( "username" );
+            Integer chars = (Integer) message.getProperty( "chars" );
+            Long timeSpent = (Long) message.getProperty( "timeSpent"  );
+            String lastOnline = (String) message.getProperty( "lastOnline" );
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            
+            // If the bot doesn't have this profile on record
+            if( !bot.profiles.containsKey( username ) )
             {
-                f.createNewFile();
-                FileWriter fw = new FileWriter(f);
-                BufferedWriter out = new BufferedWriter(fw);
-                String s = splitProfile[1] + "\n" + splitProfile[2] + "\n"
-                        + splitProfile[3] + "\n" + splitProfile[4] + "\n"
-                        + splitProfile[5];
-                System.out
-                        .println("**********RECEIVED PROFILE**********\n" + s);
-                System.out.println("************************************");
-                out.write(s);
-                out.close();
+                System.out.println("BotMessageListener: Don't have a profile for " + username + " creating one");
+                bot.profiles.put( username, new Profile( username ) );
             }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                System.err.println("Error: " + e.getMessage());
-            }
+            
+            
+            Profile profile = bot.profiles.get( username );  
+            profile.typedChars = chars;
+            profile.timeSpent = timeSpent;
+            profile.lastOnline = lastOnline;
+            profile.setColour( r, g, b );
+            System.out.println( "BotMessageListener: Updated profile for " + username + ": " + profile.toString() );           
         }
         else if ( subject.equals("requestprofile") )
             sendProfile( chat, message );
@@ -285,32 +287,25 @@ public class BotMessageListener implements MessageListener
      */
     private void sendProfile(Chat chat, Message message)
     {
-        //boolean notme = ((String)message.getProperty( "notme" )).equals("true");
-        boolean notme = false;
         String username = (String) message.getProperty("username");
 
         try
         {
             System.out.println("trying to send profile for " + username);
-            File f = new File("profile_" + username + ".txt");
-            if (f.exists())
+            if ( bot.profiles.containsKey( username ) )
             {
-                FileInputStream fis = new FileInputStream(f);
-                DataInputStream dis = new DataInputStream(fis);
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        dis));
-                String line;
-                System.out.println("Reading profile, sending:\n");
-                while ((line = br.readLine()) != null)
-                {
-                    System.out.println(line);
-                    // Send profile file to client
-                    if (notme)
-                        chat.sendMessage("PROFILE$ " + line);
-                    else
-                        chat.sendMessage(
-                                ("PROFILE* " + line));
-                }
+                Profile profile = bot.profiles.get( username );
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject("profile");
+                msg.setProperty( "username", profile.uname );
+                msg.setProperty( "chars", profile.typedChars );
+                msg.setProperty( "timeSpent", profile.timeSpent );
+                msg.setProperty( "lastOnline", profile.lastOnline );
+                msg.setProperty( "r", profile.userColour.getRed() );
+                msg.setProperty( "g", profile.userColour.getGreen() );
+                msg.setProperty( "b", profile.userColour.getBlue() );
+                chat.sendMessage( msg );
             }
             else
             {
@@ -318,12 +313,6 @@ public class BotMessageListener implements MessageListener
                 chat.sendMessage("notfound");
                 System.out.println("Profile not found!");
             }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            System.err.println("Error: IO error when retrieving profile for "
-                    + username);
         }
         catch (XMPPException e)
         {

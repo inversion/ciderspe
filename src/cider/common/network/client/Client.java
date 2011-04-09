@@ -138,7 +138,7 @@ public class Client
     private JingleSession outgoing = null;
     
     // The current user's profile
-    public Profile profile = null;
+    public Profile profile;
     public Profile notMyProfile = null;
     public boolean profileFound;
     public static HashMap<String, Color> colours = new HashMap<String, Color>();
@@ -184,6 +184,7 @@ public class Client
 
         // GUI Components shared with MainWindow
         this.shared = shared;
+        this.profile = shared.profile;
 
         EditorTypingArea.addParent(this);
     }
@@ -253,10 +254,10 @@ public class Client
 
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-         connection.addPacketListener(new DebugPacketListener(), new
-         DebugPacketFilter());
-         connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                 new DebugPacketFilter());
+//         connection.addPacketListener(new DebugPacketListener(), new
+//         DebugPacketFilter());
+//         connection.addPacketInterceptor(new DebugPacketInterceptor(),
+//                 new DebugPacketFilter());
 
 
         chatmanager = this.connection.getChatManager();
@@ -910,16 +911,6 @@ public class Client
             return true;
         }
         return false;
-    }
-
-    public void updateProfile(Profile p)
-    {
-        profile = p;
-    }
-
-    public Profile getProfile()
-    {
-        return profile;
     }
 
     public long getClockOffset()

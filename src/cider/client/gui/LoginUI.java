@@ -64,6 +64,7 @@ import javax.swing.UIManager;
 import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.client.Client;
+import cider.common.processes.Profile;
 import cider.shared.ClientSharedComponents;
 
 public class LoginUI
@@ -478,6 +479,7 @@ public class LoginUI
         {
 
             final ClientSharedComponents sharedComponents = new ClientSharedComponents();
+            sharedComponents.profile = new Profile( txtUsername.getText() );
 
             // TODO: Recommended to zero bytes of password after use
             // TODO: Check that fields aren't null/validation stuff
