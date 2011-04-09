@@ -261,7 +261,7 @@ public class MainWindow
             msg.setBody("");
             msg.setSubject( "requestusercolour" );
             msg.setProperty( "user", user );
-                    .sendMessage( msg );
+            client.botChat.sendMessage( msg );
 
         }
         catch (XMPPException e)
@@ -817,6 +817,7 @@ public class MainWindow
             msg.setProperty("b", b);
             msg.setProperty( "username", username );
             msg.setType( Message.Type.groupchat );
+            msg.setTo( client.chatroom.getRoom() );
             client.chatroom.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -1317,13 +1318,13 @@ public class MainWindow
                                          */
                                         try
                                         {
-                                            System.out
+                                            System.out.println(client.profileFound);
                                         Message msg = new Message();
                                         msg.setBody("");
                                         msg.setSubject( "requestprofile" );
                                         msg.setProperty( "username", shared.userList
                                                 .getSelectedValue() );
-                                        msg.setProperty( "notme", "true" );
+                                        //msg.setProperty( "notme", "true" );
                                         client.botChat.sendMessage( msg );
                                             Thread.sleep(1000);
                                             System.out
