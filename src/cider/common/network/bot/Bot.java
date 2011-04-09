@@ -96,7 +96,7 @@ public class Bot
         colours = new HashMap<String, Color>();
 
         // Set up the bot configuration
-        ConfigurationReader config = new ConfigurationReader("Bot.conf");
+        ConfigurationReader config = new ConfigurationReader("Bot.conf", null);
         HOST = config.getHost();
         SERVICE_NAME = config.getServiceName();
         PORT = config.getPort();
