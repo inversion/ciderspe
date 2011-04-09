@@ -56,9 +56,13 @@ import javax.swing.ProgressMonitor;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
+import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
+import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.jingle.JingleManager;
 import org.jivesoftware.smackx.jingle.JingleSession;
@@ -75,6 +79,7 @@ import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
 import cider.common.network.DebugPacketFilter;
+import cider.common.network.DebugPacketInterceptor;
 import cider.common.network.DebugPacketListener;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
@@ -159,7 +164,7 @@ public class Client
     private LiveFolder liveFolder = null;
     private long lastBroadcast = 0;
     private static final long minimumBroadcastDelay = 400;
-    private String outgoingTypingEvents = "";
+    private Message outgoingTypingEvents = new Message();
     private Timer broadcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
@@ -257,6 +262,9 @@ public class Client
         // very verbose debugging
          connection.addPacketListener(new DebugPacketListener(), new
          DebugPacketFilter());
+         connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                 new DebugPacketFilter());
+
 
         chatmanager = this.connection.getChatManager();
 
@@ -281,7 +289,10 @@ public class Client
         //initJingle();
 
         // Check the bot is online
-        botChat.sendMessage( "are you online mr bot" );
+        Message msg = new Message();
+        msg.setBody("");
+        msg.setSubject( "are you online mr bot" );
+        botChat.sendMessage( msg );
         try
         {
             Thread.sleep(1000);
@@ -307,7 +318,10 @@ public class Client
     {
         try
         {
-            botChat.sendMessage("You play 2 hours to die like this?");
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "You play 2 hours to die like this?" );
+            botChat.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -520,6 +534,7 @@ public class Client
      */
     public void sendChatMessageFromGUI(String message)
     {
+        
         try
         {
             Date date = new Date();
@@ -545,6 +560,7 @@ public class Client
                     System.out
                             .println("Client: Sending message on group chat: "
                                     + message);
+                msg.setType( Message.Type.groupchat );
                 chatroom.sendMessage(msg);
                 //TODO: need to escape?
             }
@@ -627,8 +643,12 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage( "pullSimplifiedEvents(" + StringUtils.encodeBase64( strPath  + ","
-                    + String.valueOf(time) + ")" ));
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setProperty( "path", strPath );
+            msg.setProperty( "time", String.valueOf(time) );
+            msg.setSubject( "pullSimplifiedEvents" );
+            botChat.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -641,8 +661,12 @@ public class Client
         try
         {
             // System.out.println("pull since " + time);
-            botChat.sendMessage( "pullEvents(" + StringUtils.encodeBase64( strPath + "," + String.valueOf(time)
-                    + ")") );
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "pullEvents" );
+            msg.setProperty( "path", strPath );
+            msg.setProperty( "time", String.valueOf(time) );
+            botChat.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -655,9 +679,14 @@ public class Client
     {
         try
         {
-            botChat.sendMessage( "pullEvents(" + StringUtils.encodeBase64( strPath  + ","
-                    + String.valueOf(startTime) + "," + String.valueOf(endTime)
-                    + "," + (stopDiversion ? "t" : "f") + ")" ) );
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "pullEvents" );
+            msg.setProperty( "path", strPath );
+            msg.setProperty( "startTime", String.valueOf(startTime) );
+            msg.setProperty( "endTime", String.valueOf(endTime) );
+            msg.setProperty( "stopDiversion", (stopDiversion ? "true" : "false") );
+            botChat.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -668,10 +697,16 @@ public class Client
     public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
             String path)
     {
+        outgoingTypingEvents = new Message();
+        outgoingTypingEvents.setBody("");
+        outgoingTypingEvents.setSubject( "pushto" );
+        outgoingTypingEvents.setType( Message.Type.groupchat );
+        int i = 0;
         for (TypingEvent te : typingEvents)
         {
-            this.outgoingTypingEvents += "pushto(" + StringUtils.encodeBase64( path  + ") " + te.pack() 
-                     ) + "%%";
+            outgoingTypingEvents.setProperty( "path" + i, path );
+            outgoingTypingEvents.setProperty( "te" + i, te.pack() );
+            i++;
         }
         try
         {
@@ -698,7 +733,6 @@ public class Client
                                             "Bug detected: broadcasting too soon");
 
                                 chatroom.sendMessage( outgoingTypingEvents );
-                                outgoingTypingEvents = "";
                                 lastBroadcast = System.currentTimeMillis()
                                         + getClockOffset();
                             }
@@ -717,7 +751,6 @@ public class Client
                 else
                 {
                     chatroom.sendMessage( this.outgoingTypingEvents );
-                    this.outgoingTypingEvents = "";
                     this.lastBroadcast = System.currentTimeMillis();
                 }
             }
@@ -737,7 +770,10 @@ public class Client
     {
         try
         {
-            botChat.sendMessage( "getfilelist" );
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject( "getfilelist" );
+            botChat.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -795,80 +831,133 @@ public class Client
                     anchor));
     }
 
-    public void processDocumentMessages(String body)
+    /**
+     * Process incoming filelist
+     * 
+     * @param msg
+     * 
+     * @author Andrew
+     */
+    public void processFilelist( Message msg )
     {
-        if (body.startsWith("filelist="))
+        String xml = new String( StringUtils.decodeBase64( (String) msg.getProperty( "xml" ) ) );
+        shared.dirView.constructTree(xml);
+        this.setLiveFolder(shared.dirView.getLiveFolder());
+        this.setUpdatesAutomatically(true);
+    }
+    
+    /**
+     * Process pushto
+     * 
+     * @param msg
+     * 
+     * @author Lawrence, Andrew
+     */
+    public void processPushto( Message msg )
+    {
+        Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
+        boolean stopDiversion = false;
+        int eventNum = 0;
+        String dest = "", te;
+        // Loop until we've processed all events in the message
+        while( true )
         {
-            String xml = new String( StringUtils.decodeBase64( body.split("filelist=")[1] ) );
-            shared.dirView.constructTree(xml);
-            this.setLiveFolder(shared.dirView.getLiveFolder());
-            this.setUpdatesAutomatically(true);
-        }
-        else if (body.startsWith("pushto("))
-        {
-            String[] instructions = body.split("%%");
-            Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
-            String dest = "";
-            String packedEvent = "";
-            boolean stopDiversion = false;
-            for (String instruction : instructions)
+            // If destination for this event isn't null change it
+            if( msg.getProperty( "path" + eventNum ) != null )
+                dest = (String) msg.getProperty( "path" + eventNum );
+            
+            te = (String) msg.getProperty( "te" + eventNum );
+            
+            // Processed all events in message
+            if( te == null )
+                break;
+            
+            dest = dest.replace("root\\", "");
+
+            if( te.equals("end") )
+                stopDiversion = true;
+
+            Queue<TypingEvent> queue = queues.get(dest);
+            if (queue == null)
             {
-                if (instruction.startsWith("pushto"))
-                {
-                    instruction = "pushto(" + new String( StringUtils.decodeBase64( instruction.substring( 7 )  ) );
-                    String[] preAndAfter = instruction.split("\\) ");
-                    String[] pre = preAndAfter[0].split("\\(");
-                    dest = pre[1];
-                    dest = dest.replace("root\\", "");
-                    packedEvent = preAndAfter[1];
-                }
-                else if (instruction.startsWith("end")) // TODO: Is this a typo? Should it be 'stopdiversion'
-                {
-                    stopDiversion = true;
-                }
-                else
-                    packedEvent = new String( StringUtils.decodeBase64( instruction ) );
-
-                Queue<TypingEvent> queue = queues.get(dest);
-                if (queue == null)
-                {
-                    queue = new LinkedList<TypingEvent>();
-                    queues.put(dest, queue);
-                }
-                queue.add(new TypingEvent(packedEvent));
-                System.out.println("Push " + packedEvent + " to " + dest);
+                queue = new LinkedList<TypingEvent>();
+                queues.put(dest, queue);
             }
+            queue.add(new TypingEvent( te ));
+            System.out.println("Push " + te + " to " + dest);
+            eventNum++;
+        }
 
-            for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
-                this.push(entry.getValue(), entry.getKey());
+        for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
+            this.push(entry.getValue(), entry.getKey());
 
-            if (stopDiversion)
-            {
-                this.diversion.finishedUpdate();
-                this.diversion = null;
-            }
-        }
-        else if (body.startsWith("isblank("))
+        if (stopDiversion)
         {
-            body = "isblank(" + new String( StringUtils.decodeBase64( body.substring( 8 )  ) );
-            String dest = body.split("\\(")[1].split("\\)")[0];
-            EditorTypingArea eta = shared.openTabs.get(dest)
-                    .getEditorTypingArea();
-            eta.setWaiting(false);
+            this.diversion.finishedUpdate();
+            this.diversion = null;
         }
-        else if (body.startsWith("colourchange:"))
+    }
+    
+    public void processIsblank( Message msg )
+    {
+        String dest = (String) msg.getProperty("path");
+        EditorTypingArea eta = shared.openTabs.get(dest)
+                .getEditorTypingArea();
+        eta.setWaiting(false);
+    }
+    
+    /**
+     * Process a colour change message.
+     * 
+     * @author Jon, Andrew
+     *
+     */
+    public void processColourchange( Message msg )
+    {
+        String changedUser = (String) msg.getProperty("username");
+        Integer r = (Integer) msg.getProperty("r");
+        Integer g = (Integer) msg.getProperty("g");
+        Integer b = (Integer) msg.getProperty("b");
+        Color newColour = new Color(r, g, b);
+        
+        if (colours.containsKey(changedUser))
+            colours.remove(changedUser);
+        colours.put(changedUser, newColour);
+        shared.userList.repaint();
+        // EditorTypingArea.highlightMargin(); //FIXME update current line
+        // colour when user changes profile colour
+    }
+    
+    /**
+     * 
+     * Process document related messages.
+     * @param msg
+     * @return True if this was a document related message
+     */
+    public boolean processDocumentMessages( Message msg )
+    {
+        String subject = msg.getSubject();
+        if ( subject.equals("pushto") )
         {
-            String[] split = body.split(" ");
-            String changedUser = split[1];
-            Color newColour = new Color(Integer.parseInt(split[2]),
-                    Integer.parseInt(split[3]), Integer.parseInt(split[4]));
-            if (colours.containsKey(changedUser))
-                colours.remove(changedUser);
-            colours.put(changedUser, newColour);
-            shared.userList.repaint();
-            // EditorTypingArea.highlightMargin(); //FIXME update current line
-            // colour when user changes profile colour
+            processPushto(msg);
+            return true;
         }
+        else if( subject.equals("filelist") )
+        {
+            processFilelist(msg);
+            return true;
+        }
+        else if( subject.equals("isblank") )
+        {    
+            processIsblank( msg );
+            return true;
+        }
+        else if( subject.equals("colourchange") )
+        {
+            processColourchange(msg);
+            return true;
+        }
+        return false;
     }
 
     public void updateProfile(Profile p)
@@ -1010,9 +1099,10 @@ public class Client
         try
         {
             Message msg = new Message();
-            msg.setBody( "createDocument=name:" + StringUtils.encodeBase64( name ) + 
-                         ":path:" + StringUtils.encodeBase64( path ) +
-                         ":contents:" + StringUtils.encodeBase64( contents ) );
+            msg.setBody("");
+            msg.setProperty( "name", name );
+            msg.setProperty( "path", path );
+            msg.setProperty( "contents", contents );
             botChat.sendMessage( msg );
         }
         catch (XMPPException e)
@@ -1052,6 +1142,31 @@ public class Client
             File fullPath = new File( i.getKey() );
             createDocument( fullPath.getName(), fullPath.getParent(), i.getValue() );
         }
+        
+    }
+    
+    /**
+     * Send idle presence.
+     * 
+     * @author Andrew
+     */
+    public void sendIdlePresence()
+    {
+        Presence idle = new Presence( Presence.Type.available );
+        idle.setMode( Presence.Mode.away );
+        connection.sendPacket( idle );
+    }
+
+    /**
+     * Send back presence.
+     * 
+     * @author Andrew
+     */
+    public void sendHerePresence()
+    {
+        Presence here = new Presence( Presence.Type.available );
+        here.setMode( Presence.Mode.available );
+        connection.sendPacket( here );
         
     }
 }

@@ -57,47 +57,56 @@ public class BotChatroomMessageListener implements PacketListener
     @Override
     public void processPacket(Packet packet)
     {
-        Message msg = (Message) packet;
-        String body = msg.getBody();
-        if (body.startsWith("pushto("))
-            pushto( body );
-        else if (body.startsWith("colourchange:"))
+        Message message = (Message) packet;
+
+        String subject = message.getSubject();
+        if (subject.equals("pushto"))
+            pushto( message );
+        else if ( subject.equals("colourchange") )
         {
-            String[] split = body.split(" ");
-            int R = Integer.parseInt(split[2]);
-            int G = Integer.parseInt(split[3]);
-            int B = Integer.parseInt(split[4]);
-            System.out.println("Colour change received from " + split[1] + ": "
-                    + R + ", " + G + ", " + B);
-            if (bot.colours.containsKey(split[1]))
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            String username = StringUtils.parseResource( packet.getFrom() );
+
+            System.out.println("Colour change received from " + username + ": "
+                    + r + ", " + g + ", " + b);
+            
+            if (bot.colours.containsKey(username))
             {
-                bot.colours.remove(split[1]);
+                bot.colours.remove(username);
             }
-            bot.colours.put(split[1], new Color(R, G, B));
+            bot.colours.put(username, new Color(r, g, b));
         }
     }
     
-    private void pushto( String body )
+    private void pushto( Message msg )
     {
-        String[] instructions = body.split("%%");
+        int i = 0;
         Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
-        for (String instruction : instructions)
+        // Loop until we've processed all events in the message
+        while( true )
         {
-            instruction = "pushto(" + new String( StringUtils.decodeBase64( instruction.substring( 7 )  ) );
-            String[] preAndAfter = instruction.split("\\) ");
-            String[] pre = preAndAfter[0].split("\\(");
-            String dest = pre[1];
+            String dest = (String) msg.getProperty( "path" + i );
+            String te = (String) msg.getProperty( "te" + i );
+            
+            // If all events have been processed
+            if( dest == null && te == null )
+                break;
+
             dest = dest.replace("root\\", "");
             Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-            typingEvents.add(new TypingEvent(preAndAfter[1]));
+            typingEvents.add(new TypingEvent(te));
             // System.out.println("Push " + preAndAfter[1] + " to " + dest);
-            if (instructions.length > 1)
-                System.out.println("Bot received " + instructions.length
-                        + " events at the same time");
             SourceDocument doc = this.bot.getRootFolder().path(dest);
             doc.push(typingEvents);
             changedDocs.put(dest, doc);
+            i++;
         }
+        
+        if (i > 0)
+            System.out.println("Bot received " + i
+                    + " events at the same time");
 
         for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
         {
