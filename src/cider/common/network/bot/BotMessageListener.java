@@ -34,7 +34,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Queue;
 
 import org.jivesoftware.smack.Chat;
@@ -61,14 +60,10 @@ public class BotMessageListener implements MessageListener
 {
     public static boolean DEBUG = true;
 
-    private BotChatListener source;
-    private String name;
     private Bot bot;
 
     public BotMessageListener(BotChatListener source, String name, Bot bot)
     {
-        this.source = source;
-        this.name = name;
         this.bot = bot;
         // System.out.println(this.liveFolder.xml(""));
     }

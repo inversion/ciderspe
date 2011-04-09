@@ -26,15 +26,12 @@ package cider.common.network.client;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -56,12 +53,9 @@ import javax.swing.ProgressMonitor;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
-import org.jivesoftware.smack.Roster;
 import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.packet.IQ;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.jingle.JingleManager;
@@ -87,7 +81,6 @@ import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
-import cider.common.processes.TypingEventMode;
 import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
 
@@ -277,7 +270,7 @@ public class Client
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
-        chatroom.addParticipantListener(new ClientChatroomParticipantListener(
+        chatroom.addParticipantListener(new ClientChatroomPresenceListener(
                 shared.userListModel, shared.userCount, this, clientConfig.getBotUsername(), clientConfig.getCheckerUsername()));
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
@@ -515,8 +508,6 @@ public class Client
         try
         {
             Date date = new Date();
-            // TODO: Potentially a problem that this is creating a MUC message
-            // then maybe sending it privately
             Message msg = chatroom.createMessage();
             msg.setBody(message);
             msg.setSubject(dateFormat.format(date));
@@ -560,7 +551,6 @@ public class Client
         }
         catch (XMPPException e)
         {
-            
             e.printStackTrace();
         }
     }
@@ -610,37 +600,22 @@ public class Client
             sourceEditor.setTabHandle(shared.tabbedPane.add(strPath,
                     sourceEditor));
             shared.openTabs.put(strPath, sourceEditor);
-            this.pullSimplifiedEventsFromBot(strPath,
-                    System.currentTimeMillis() + this.getClockOffset());
+            this.pullEventsFromBot(strPath,
+                    System.currentTimeMillis() + this.getClockOffset(), true);
         }
     }
 
-    public void pullSimplifiedEventsFromBot(String strPath, long time)
+    public void pullEventsFromBot(String strPath, long time, boolean simplified)
     {
         try
         {
             // System.out.println("pull since " + time);
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "path", strPath );
-            msg.setProperty( "time", String.valueOf(time) );
-            msg.setSubject( "pullSimplifiedEvents" );
-            botChat.sendMessage( msg );
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
-    }
-
-    public void pullEventsFromBot(String strPath, long time)
-    {
-        try
-        {
-            // System.out.println("pull since " + time);
-            Message msg = new Message();
-            msg.setBody("");
-            msg.setSubject( "pullEvents" );
+            if( simplified )
+                msg.setSubject( "pullSimplifiedEvents" );
+            else
+                msg.setSubject( "pullEvents" );
             msg.setProperty( "path", strPath );
             msg.setProperty( "time", String.valueOf(time) );
             botChat.sendMessage( msg );

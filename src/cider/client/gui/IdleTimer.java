@@ -9,7 +9,7 @@ import cider.common.network.client.Client;
 
 /**
  * Idle timer for MainWindow GUI. 
- * If user doesn't move the mouse in the windows for 5 seconds it sends an idle presence.
+ * If user doesn't move the mouse in the window for 5 minutes it sends an idle presence.
  * 
  * @author Andrew
  *
@@ -28,7 +28,7 @@ public class IdleTimer implements MouseMotionListener
         public void run()
         {
             idleTime++;
-            if( idleTime == 5 )
+            if( idleTime == 300 )
             {
                 isIdle = true;
                 client.sendIdlePresence();

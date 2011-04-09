@@ -122,7 +122,7 @@ public class Bot
                     + "@conference." + SERVICE_NAME);
             chatroom.create(BOT_USERNAME);
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
-            BotChatroomParticipantListener participantListener = new BotChatroomParticipantListener(this);
+            BotChatroomPresenceListener participantListener = new BotChatroomPresenceListener(this);
             chatroom.addParticipantListener( participantListener );
 
             // Verbose debugging to print out every packet leaving or entering
