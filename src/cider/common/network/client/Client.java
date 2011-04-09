@@ -872,6 +872,7 @@ public class Client
         Integer g = (Integer) msg.getProperty("g");
         Integer b = (Integer) msg.getProperty("b");
         Color newColour = new Color(r, g, b);
+        System.out.println( "Client: Changing colour for " + username + " to " + r + " " + g + " " + b);
         
         if (colours.containsKey(changedUser))
             colours.remove(changedUser);
