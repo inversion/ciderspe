@@ -87,10 +87,14 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
-import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.network.client.Client;
+import cider.common.processes.DocumentID;
 import cider.common.processes.Profile;
+import cider.common.processes.SourceDocument;
+import cider.common.processes.TimeBorder;
+import cider.common.processes.TimeBorderList;
+import cider.documentViewerComponents.DocumentHistoryViewer;
 import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
 
@@ -131,6 +135,8 @@ public class MainWindow
     public long startTime;
     private Profile myProfile;
 
+    boolean offlineMode = false;
+
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c, LoginUI loginUI,
             ClientSharedComponents shared) throws XMPPException
@@ -156,6 +162,11 @@ public class MainWindow
         System.setErr(ps);
 
         // tabFlash.flash(0);
+    }
+
+    MainWindow()
+    {
+        this.shared = new ClientSharedComponents();
     }
 
     private void profileSetup()
@@ -246,8 +257,8 @@ public class MainWindow
     {
         try
         {
-            client.botChat
-                    .sendMessage("requestusercolour " + username + " " + user);
+            client.botChat.sendMessage("requestusercolour " + username + " "
+                    + user);
 
         }
         catch (XMPPException e)
@@ -396,9 +407,69 @@ public class MainWindow
                     // 1));
                     // EditorTypingArea.moveDocEnd();
                 }
+                else if (action.equals("History"))
+                {
+                    startSourceHistory();
+                }
             }
         };
         return AL;
+    }
+
+    private void startSourceHistory()
+    {
+        // DHVSourceHistoryPane shp = new DHVSourceHistoryPane();
+        // JDialog sourceHistoryDialog = new JDialog(this.w,
+        // this.currentFileName
+        // + " Source History");
+        // sourceHistoryDialog.add(shp);
+        // shp.setSize(this.w.getSize());
+        // sourceHistoryDialog.setPreferredSize(this.w.getSize());
+        // sourceHistoryDialog.setVisible(true);
+
+        DocumentID documentID = new DocumentID("Test Document", "testpath",
+                "test owner");
+
+        DocumentHistoryViewer dhv = new DocumentHistoryViewer(
+                new SourceDocument(documentID.name));
+        dhv.setDefaultColor(Color.BLACK);
+        dhv.updateText();
+        dhv.setWaiting(false);
+
+        TimeBorderList tbl = new TimeBorderList();
+        SourceDocument doc = new SourceDocument(documentID.name);
+
+        if (this.offlineMode)
+        {
+            TimeBorder border = new TimeBorder(documentID, 1000,
+                    doc.orderedEvents());
+            tbl.addTimeBorder(border);
+            doc.addEvents(SourceDocument.sampleEvents(1000));
+            border = new TimeBorder(documentID, 4000, doc.orderedEvents());
+            border.fullSet = true;
+            tbl.addTimeBorder(border);
+        }
+        else
+        {
+            tbl.useTimeBordersFrom(this.currentFileName, this.client);
+        }
+
+        tbl.createRegions();
+        TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
+
+        DHVSourceHistoryPane app = new DHVSourceHistoryPane();
+        app.setDocumentHistoryViewer(dhv);
+        app.setTimeRegionBrowser(trb);
+
+        JDialog w = new JDialog(this.w, true);
+        w.setTitle(this.currentFileName + " History");
+        w.setPreferredSize(new Dimension(600, 600));
+        w.setLayout(new BorderLayout());
+        w.add(app);
+        w.pack();
+        w.setVisible(true);
+        w.setAlwaysOnTop(true);
+
     }
 
     private void changeColour()
@@ -735,9 +806,8 @@ public class MainWindow
     {
         try
         {
-            client.chatroom.sendMessage(
-                    "colourchange: " + username + " " + r + " "
-                            + g + " " + b);
+            client.chatroom.sendMessage("colourchange: " + username + " " + r
+                    + " " + g + " " + b);
         }
         catch (XMPPException e)
         {
@@ -752,9 +822,8 @@ public class MainWindow
     {
         try
         {
-            client.botChat.sendMessage(
-                    "colourchange: " + username + " " + r + " "
-                            + g + " " + b);
+            client.botChat.sendMessage("colourchange: " + username + " " + r
+                    + " " + g + " " + b);
         }
         catch (XMPPException e)
         {
@@ -991,6 +1060,12 @@ public class MainWindow
         addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
         addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
 
+        // the game
+        menu = new JMenu("Source");
+        menuBar.add(menu);
+
+        addMenuItem(menu, "History", -1, aL);
+
         return menuBar;
     }
 
@@ -1146,128 +1221,138 @@ public class MainWindow
          * userListModel.add(4, "Person 5");
          */
 
-        shared.userList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-        shared.userList.setCellRenderer(new MyListCellRenderer());
-        shared.userList.setFixedCellWidth(25);
-        shared.userList.setFixedCellHeight(25);
-
-        /*
-         * for (int i=0; i < userList.getModel().getSize(); i++) { Object item =
-         * userList.getModel().getElementAt(i);
-         * userList.setForeground(Color.red); //TODO looking at using different
-         * colours for each user }
-         */
-
-        /* this can be used to initiate a private chat- Alex */
-        MouseListener mouseListener = new MouseAdapter()
+        if (!this.offlineMode)
         {
-            public void mouseClicked(MouseEvent e)
+            shared.userList
+                    .setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+            shared.userList.setCellRenderer(new MyListCellRenderer());
+            shared.userList.setFixedCellWidth(25);
+            shared.userList.setFixedCellHeight(25);
+
+            /*
+             * for (int i=0; i < userList.getModel().getSize(); i++) { Object
+             * item = userList.getModel().getElementAt(i);
+             * userList.setForeground(Color.red); //TODO looking at using
+             * different colours for each user }
+             */
+
+            /* this can be used to initiate a private chat- Alex */
+            MouseListener mouseListener = new MouseAdapter()
             {
-                int i = shared.userList.locationToIndex(e.getPoint());
-                if (e.getClickCount() == 2)
+                public void mouseClicked(MouseEvent e)
                 {
-                    System.out.println("Double clicked on Item " + i);
-                    System.out.println("Double clicked on Item: "
-                            + shared.userList.getModel().getElementAt(i));
-                    client.initiateChat((String) shared.userList
-                            .getSelectedValue());
-                }
-                else if ((e.getButton() == MouseEvent.BUTTON3)
-                        && (shared.userList.locationToIndex(e.getPoint()) != -1))
-                {
-                    /* pop up for viewing users profile/stats etc"); */
-                    shared.userList.setSelectedIndex(shared.userList
-                            .locationToIndex(e.getPoint()));
-
-                    JPopupMenu popupMenu = new JPopupMenu();
-                    JMenuItem chat = new JMenuItem("Chat with User");
-                    JMenuItem showProfile = new JMenuItem("Show User's Profile");
-
-                    chat.addActionListener(new ActionListener()
+                    int i = shared.userList.locationToIndex(e.getPoint());
+                    if (e.getClickCount() == 2)
                     {
-                        public void actionPerformed(ActionEvent e)
-                        {
-                            SwingUtilities.invokeLater(new Runnable()
-                            {
-                                public void run()
-                                {
-                                    client.initiateChat((String) shared.userList
-                                            .getSelectedValue());
-                                }
-                            });
-                        }
-                    });
-                    popupMenu.add(chat);
-
-                    showProfile.addActionListener(new ActionListener()
+                        System.out.println("Double clicked on Item " + i);
+                        System.out.println("Double clicked on Item: "
+                                + shared.userList.getModel().getElementAt(i));
+                        client.initiateChat((String) shared.userList
+                                .getSelectedValue());
+                    }
+                    else if ((e.getButton() == MouseEvent.BUTTON3)
+                            && (shared.userList.locationToIndex(e.getPoint()) != -1))
                     {
-                        public void actionPerformed(final ActionEvent e)
+                        /* pop up for viewing users profile/stats etc"); */
+                        shared.userList.setSelectedIndex(shared.userList
+                                .locationToIndex(e.getPoint()));
+
+                        JPopupMenu popupMenu = new JPopupMenu();
+                        JMenuItem chat = new JMenuItem("Chat with User");
+                        JMenuItem showProfile = new JMenuItem(
+                                "Show User's Profile");
+
+                        chat.addActionListener(new ActionListener()
                         {
-                            SwingUtilities.invokeLater(new Runnable()
+                            public void actionPerformed(ActionEvent e)
                             {
-                                public void run()
+                                SwingUtilities.invokeLater(new Runnable()
                                 {
-                                    /**
-                                     * TODO: - Get the name from the thing the
-                                     * user right clicked - Send
-                                     * "requestprofile USERNAME" to the bot -
-                                     * Wait for 500ms - Check in Client to see
-                                     * the new Profile that has appeared :)
-                                     */
-                                    try
+                                    public void run()
                                     {
-                                        System.out.println(client.profileFound);
-                                        client.botChat.sendMessage("requestprofile "
-                                                + shared.userList
-                                                        .getSelectedValue()
-                                                + " notme");
-                                        Thread.sleep(1000);
-                                        System.out.println(client.profileFound);
-                                        if (!client.profileFound)
-                                            JOptionPane
-                                                    .showMessageDialog(
-                                                            new JPanel(),
-                                                            "Error: user profile not found on server");
-                                        else
+                                        client.initiateChat((String) shared.userList
+                                                .getSelectedValue());
+                                    }
+                                });
+                            }
+                        });
+                        popupMenu.add(chat);
+
+                        showProfile.addActionListener(new ActionListener()
+                        {
+                            public void actionPerformed(final ActionEvent e)
+                            {
+                                SwingUtilities.invokeLater(new Runnable()
+                                {
+                                    public void run()
+                                    {
+                                        /**
+                                         * TODO: - Get the name from the thing
+                                         * the user right clicked - Send
+                                         * "requestprofile USERNAME" to the bot
+                                         * - Wait for 500ms - Check in Client to
+                                         * see the new Profile that has appeared
+                                         * :)
+                                         */
+                                        try
                                         {
-                                            showMyProfile(client.notMyProfile);
-                                            client.profileFound = false;
-                                            client.notMyProfile = null;
+                                            System.out
+                                                    .println(client.profileFound);
+                                            client.botChat.sendMessage("requestprofile "
+                                                    + shared.userList
+                                                            .getSelectedValue()
+                                                    + " notme");
+                                            Thread.sleep(1000);
+                                            System.out
+                                                    .println(client.profileFound);
+                                            if (!client.profileFound)
+                                                JOptionPane
+                                                        .showMessageDialog(
+                                                                new JPanel(),
+                                                                "Error: user profile not found on server");
+                                            else
+                                            {
+                                                showMyProfile(client.notMyProfile);
+                                                client.profileFound = false;
+                                                client.notMyProfile = null;
+                                            }
+                                        }
+                                        catch (XMPPException e)
+                                        {
+                                            e.printStackTrace();
+                                            JOptionPane.showMessageDialog(
+                                                    new JPanel(),
+                                                    "Error: " + e.getMessage());
+                                        }
+                                        catch (InterruptedException e)
+                                        {
+                                            e.printStackTrace();
                                         }
                                     }
-                                    catch (XMPPException e)
-                                    {
-                                        e.printStackTrace();
-                                        JOptionPane.showMessageDialog(
-                                                new JPanel(),
-                                                "Error: " + e.getMessage());
-                                    }
-                                    catch (InterruptedException e)
-                                    {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                        }
-                    });
-                    popupMenu.add(showProfile);
+                                });
+                            }
+                        });
+                        popupMenu.add(showProfile);
 
-                    // display popup near location of mouse click
-                    popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10);
+                        // display popup near location of mouse click
+                        popupMenu.show(e.getComponent(), e.getX(),
+                                e.getY() - 10);
+                    }
                 }
-            }
-        };
-        shared.userList.addMouseListener(mouseListener);
+            };
+            shared.userList.addMouseListener(mouseListener);
 
-        JScrollPane userListScroll = new JScrollPane(shared.userList);
-        // userListScroll.setBorder(emptyBorder);
+            JScrollPane userListScroll = new JScrollPane(shared.userList);
+            // userListScroll.setBorder(emptyBorder);
 
-        shared.userCount.setText(" " + shared.userListModel.getSize()
-                + " Users Online");
-        panel.add(shared.userCount, BorderLayout.NORTH);
-        panel.add(userListScroll);
-        panel.setMinimumSize(new Dimension(0, 100));
+            shared.userCount.setText(" " + shared.userListModel.getSize()
+                    + " Users Online");
+            panel.add(shared.userCount, BorderLayout.NORTH);
+            panel.add(userListScroll);
+            panel.setMinimumSize(new Dimension(0, 100));
+
+        }
         return panel;
     }
 
@@ -1434,9 +1519,11 @@ public class MainWindow
         // FIXME:
         // client.startClockSynchronisation(w);
 
-        // Comment this out if clock synchronisation is being used
-        client.getFileListFromBot();
-
+        if (!this.offlineMode)
+        {
+            // Comment this out if clock synchronisation is being used
+            client.getFileListFromBot();
+        }
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         URL x = this.getClass().getResource("icon.png");
@@ -1463,17 +1550,21 @@ public class MainWindow
         int top = loginWindow.getY();
         w.setLocation(left > 0 ? left : 0, top > 0 ? top : 0);
         w.setVisible(true);
-        w.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        if (!this.offlineMode)
+            w.setExtendedState(JFrame.MAXIMIZED_BOTH);
         w.addWindowListener(new WindowListener()
         {
             @Override
             public void windowClosing(WindowEvent arg0)
             {
-                myProfile.updateTimeSpent(startTime);
-                myProfile.updateProfileInfo();
-                sendProfileToBot();
-                System.out.println("disconnecting");
-                client.disconnect();
+                if (!offlineMode)
+                {
+                    myProfile.updateTimeSpent(startTime);
+                    myProfile.updateProfileInfo();
+                    sendProfileToBot();
+                    System.out.println("disconnecting");
+                    client.disconnect();
+                }
             }
 
             public void windowDeactivated(WindowEvent arg0)
@@ -1515,5 +1606,13 @@ public class MainWindow
     public void killWindow()
     {
         w.dispose();
+    }
+
+    public static void main(String[] args)
+    {
+        MainWindow app = new MainWindow();
+        app.offlineMode = true;
+        app.startApplication(new JFrame());
+        app.w.setTitle("MainWindow offline entry point");
     }
 }

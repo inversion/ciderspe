@@ -28,6 +28,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     boolean movingEye = false;
     long latestTime = 0;
     ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
+    private static final Color highlightColor = new Color(128, 128, 255);
 
     public TimeRegionBrowser(TimeBorderList tbl)
     {
@@ -74,7 +75,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             g.drawLine(x, y, x + width - 1, y);
 
             if (timeBorder.fullSet)
-                g.setColor(new Color(128, 128, 255));
+                g.setColor(highlightColor);
             else
                 g.setColor(Color.LIGHT_GRAY);
 
@@ -91,10 +92,10 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     {
         g.setColor(Color.BLACK);
         g.drawOval(x + 1, (int) (this.eyePosition * this.scale) - 4, 14, 8);
-        g.setColor(Color.cyan);
-        g.fillOval(x + 5, (int) (this.eyePosition * this.scale) - 4, 6, 6);
+        g.setColor(Color.LIGHT_GRAY);
+        g.fillOval(x + 5, (int) (this.eyePosition * this.scale) - 3, 6, 6);
         g.setColor(Color.BLACK);
-        g.drawOval(x + 5, (int) (this.eyePosition * this.scale) - 4, 6, 6);
+        g.drawOval(x + 5, (int) (this.eyePosition * this.scale) - 3, 6, 6);
     }
 
     @Override
