@@ -292,11 +292,13 @@ public class BotMessageListener implements MessageListener
      */
     private void sendProfile(Chat chat, Message message)
     {
-        boolean notme = message.getProperty( "notme" ) != null;
+        //boolean notme = ((String)message.getProperty( "notme" )).equals("true");
+        boolean notme = false;
         String username = (String) message.getProperty("username");
 
         try
         {
+            System.out.println("trying to send profile for " + username);
             File f = new File("profile_" + username + ".txt");
             if (f.exists())
             {
