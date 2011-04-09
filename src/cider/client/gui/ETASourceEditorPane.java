@@ -398,8 +398,10 @@ public class ETASourceEditorPane extends JScrollPane
                                     ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
                                 }
+                                    client.shared.profile.incrementCharCount();
                                     break;
                                 default:
+                                    client.shared.profile.incrementCharCount();
                                     chr = String.valueOf(ke.getKeyChar());
                                     break;
                                 }

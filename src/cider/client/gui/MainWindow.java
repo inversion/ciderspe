@@ -265,9 +265,9 @@ public class MainWindow
         client.colours.put(username, myProfile.userColour);
         System.out.println(myProfile);
 
-        retrieveAllUserColours();
-        announceColourChange(myProfile.userColour.getRed(),
-                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
+//        retrieveAllUserColours();
+//        announceColourChange(myProfile.userColour.getRed(),
+//                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
     }
 
     private void retrieveAllUserColours()
@@ -885,28 +885,7 @@ public class MainWindow
             return;
         }
     }
-    
-    @Deprecated
-    private void botColourChange(int r, int g, int b)
-    {
-        try
-        {
-            Message msg = new Message();
-            msg.setBody("");
-            msg.setSubject( "colourchange" );
-            msg.setProperty("r", r);
-            msg.setProperty("g", g);
-            msg.setProperty("b", b);
-            client.botChat.sendMessage(msg);
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(new JPanel(),
-                    "Error: " + e.getMessage());
-            return;
-        }
-    }
+
 
     private void showMyProfile(Profile myProfile)
     {

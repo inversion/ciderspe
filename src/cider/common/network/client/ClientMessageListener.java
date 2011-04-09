@@ -83,8 +83,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
         {
             String username = (String) message.getProperty( "username" );
             Integer chars = (Integer) message.getProperty( "chars" );
-            Long timeSpent = (Long) message.getProperty( "timespent" );
-            String lastOnline = (String) message.getProperty( "lastonline" );
+            Long timeSpent = (Long) message.getProperty( "timeSpent" );
+            String lastOnline = (String) message.getProperty( "lastOnline" );
             Integer r = (Integer) message.getProperty("r");
             Integer g = (Integer) message.getProperty("g");
             Integer b = (Integer) message.getProperty("b");
@@ -98,6 +98,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.profile.timeSpent = timeSpent;
                 client.profile.lastOnline = lastOnline;
                 client.profile.setColour( r, g, b );
+                client.colours.put(username, client.profile.userColour);
+                client.shared.userList.repaint();
             }
             else
             {
