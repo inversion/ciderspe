@@ -27,9 +27,12 @@ public class BotChatroomPresenceListener implements PacketListener
     public void processPacket(Packet packet)
     {
         Presence pres = (Presence) packet;
-        System.out.println("Ending session for " + StringUtils.parseResource( pres.getFrom() ) );
-        if( pres.getType() == Presence.Type.unavailable )
-            bot.chatListener.endSession( StringUtils.parseResource( pres.getFrom() ) );
+        String user = StringUtils.parseResource( pres.getFrom() );
+        if( !user.equals( bot.BOT_USERNAME ) )
+        {
+            if( pres.getType() == Presence.Type.unavailable )
+                bot.chatListener.endSession( user );  
+        }
     }
 
 }

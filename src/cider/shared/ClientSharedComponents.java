@@ -32,6 +32,7 @@ import javax.swing.JTabbedPane;
 
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.ETASourceEditorPane;
+import cider.common.processes.Profile;
 
 /**
  * (Mostly) GUI Components that the Client needs to share with MainWindow.
@@ -56,4 +57,7 @@ public class ClientSharedComponents
 
     // Tabs for chat sessions
     public JTabbedPane receiveTabs = new JTabbedPane();
+    
+    // The client's profile
+    public Profile profile;
 }

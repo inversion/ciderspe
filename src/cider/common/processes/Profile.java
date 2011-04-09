@@ -33,33 +33,44 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.util.Date;
 
-import cider.common.network.client.Client;
+/**
+ * Represents a user profile.
+ * 
+ * @author Jon, Andrew
+ *
+ */
 
-public class Profile
+public class Profile implements Serializable
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8774619560240198237L;
+    
     public String uname;
     public int typedChars;
     public long timeSpent;
     public String lastOnline;
     public Color userColour;
-    public Client client;
+//    public Client client;
 
     // public static void main (String uname)
     // {
     // new Profile(uname);
     // }
 
-    public Profile(String un, Client c)
+    public Profile(String un)
     {
         uname = un;
         typedChars = 0;
         timeSpent = 0;
         lastOnline = "Never!";
         userColour = new Color(150, 150, 150);
-        client = c;
+//        client = c;
         // readProfileFileFromServer();
     }
 
@@ -100,25 +111,25 @@ public class Profile
                 + userColour.getBlue();
     }
 
-    public void addClient(Client c)
-    {
-        client = c;
-    }
+//    public void addClient(Client c)
+//    {
+//        client = c;
+//    }
 
-    public void setChars(int parseInt)
-    {
-        typedChars = parseInt;
-    }
-
-    public void setTime(long parseLong)
-    {
-        timeSpent = parseLong;
-    }
-
-    public void setLastOnline(String string)
-    {
-        lastOnline = string;
-    }
+//    public void setChars(int parseInt)
+//    {
+//        typedChars = parseInt;
+//    }
+//
+//    public void setTime(long parseLong)
+//    {
+//        timeSpent = parseLong;
+//    }
+//
+//    public void setLastOnline(String string)
+//    {
+//        lastOnline = string;
+//    }
 
     public void setColour(int R, int G, int B)
     {

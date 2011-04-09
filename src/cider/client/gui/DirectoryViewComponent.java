@@ -48,7 +48,7 @@ import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
 {
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
 
     /**
      * 
