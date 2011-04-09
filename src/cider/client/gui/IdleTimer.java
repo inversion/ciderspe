@@ -28,7 +28,7 @@ public class IdleTimer implements MouseMotionListener
         public void run()
         {
             idleTime++;
-            if( idleTime == 5000 )
+            if( idleTime == 5 )
             {
                 isIdle = true;
                 client.sendIdlePresence();

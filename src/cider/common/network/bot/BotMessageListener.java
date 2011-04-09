@@ -79,9 +79,7 @@ public class BotMessageListener implements MessageListener
         String body = message.getBody();
         String subject = message.getSubject();
         
-        if ( subject.equals("quit") )
-            source.endSession(name);
-        else if (subject.equals("are you online mr bot"))
+        if (subject.equals("are you online mr bot"))
         {
             if( DEBUG )
                 System.out.println("Online query received");
