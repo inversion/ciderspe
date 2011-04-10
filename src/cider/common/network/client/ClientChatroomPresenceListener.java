@@ -68,10 +68,7 @@ public class ClientChatroomPresenceListener implements PacketListener {
         Presence pres = (Presence) packet;
         String nickname = StringUtils.parseResource( pres.getFrom() );
         if( pres.getType() == Presence.Type.available )
-        {
-            if( DEBUG )
-                System.out.println( "Presence from: " + nickname + " AVAILABLE" );
-            
+        {            
             if( !nickname.equals( botUsername ) && !nickname.equals( checkerUsername ) )
             {
                 if( pres.getMode() == null || pres.getMode() == Presence.Mode.available )
@@ -100,9 +97,6 @@ public class ClientChatroomPresenceListener implements PacketListener {
         }
         else if( pres.getType() == Presence.Type.unavailable )
         {
-            if( DEBUG )
-                System.out.println( "Presence from: " + nickname + " NOT AVAILABLE" );
-            
             if( nickname.equals( botUsername ) )
             {
                 JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");

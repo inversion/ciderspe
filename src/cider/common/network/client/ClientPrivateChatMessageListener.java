@@ -54,7 +54,6 @@ public class ClientPrivateChatMessageListener implements MessageListener {
     @Override
     public void processMessage(Chat chat, Message message) 
     {
-        // TODO: Bit dodgy about null etc.
         String body = message.getBody();
         if( body == null )
             return;
@@ -69,6 +68,7 @@ public class ClientPrivateChatMessageListener implements MessageListener {
             Date date = new Date();
             client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), Client.dateFormat.format(date), body );
         }
-            
+        
+        client.shared.receiveTabs.tabflash( StringUtils.parseName( chat.getParticipant() ) );
     }
 }

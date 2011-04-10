@@ -24,25 +24,13 @@
 package cider.common.processes;
 
 import java.awt.Color;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.Image;
 import java.io.Serializable;
-import java.net.URL;
 import java.text.DateFormat;
 import java.util.Date;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
-
-import cider.client.gui.MainWindow;
 
 /**
  * Represents a user profile and contains associated methods for getting and putting them
