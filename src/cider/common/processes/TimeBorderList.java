@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
 
+import cider.common.network.client.Client;
+
 /**
  * The TimeBorderList stores an array of time borders which can be sorted with
  * the sort method. You can retrieve a list of border times and create/retrieve
@@ -104,5 +106,11 @@ public class TimeBorderList
             return null;
         else
             return entry.getValue();
+    }
+
+    public void useTimeBordersFrom(String currentFileName, Client client)
+    {
+        // TODO Auto-generated method stub
+
     }
 }

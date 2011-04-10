@@ -93,7 +93,8 @@ public class DHVSourceHistoryPane extends JPanel
 
     public static void main(String[] args)
     {
-        DocumentID documentID = new DocumentID("Test Document", "testpath");
+        DocumentID documentID = new DocumentID("Test Document", "testpath",
+                "test owner");
 
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
                 new SourceDocument(documentID.name));
