@@ -70,8 +70,6 @@ public class ClientMessageListener implements MessageListener, ActionListener
         }
         else if (subject.equals("yes i am online"))
             client.botIsOnline = true;
-        else if (subject.equals("notfound"))
-            client.profileFound = false;
         else if (subject.equals("usercolour"))
         {
             Integer r = (Integer) message.getProperty("r");
@@ -79,6 +77,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
+        else if( subject.equals( "notfound" ) && message.getProperty( "show" ) != null )
+            JOptionPane.showMessageDialog( null, "No profile was found on the server for " + message.getProperty( "username" ) );
         else if( subject.equals( "profile" ) )
         {
             String username = (String) message.getProperty( "username" );
@@ -100,15 +100,22 @@ public class ClientMessageListener implements MessageListener, ActionListener
                 client.profile.setColour( r, g, b );
                 client.colours.put(username, client.profile.userColour);
                 client.shared.userList.repaint();
+                
+                // If we want the profile to pop up
+                if( message.getProperty( "show" ) != null )
+                    client.getParent().showProfile( client.profile );
             }
             else
             {
-                client.notMyProfile = new Profile( username );
-                client.profileFound = true;
-                client.notMyProfile.typedChars = chars;
-                client.notMyProfile.timeSpent = timeSpent;
-                client.notMyProfile.lastOnline = lastOnline;
-                client.notMyProfile.setColour( r, g, b );
+                Profile profile = new Profile( username );
+                profile.typedChars = chars;
+                profile.timeSpent = timeSpent;
+                profile.lastOnline = lastOnline;
+                profile.setColour( r, g, b );
+                
+                // If we want the profile to pop up
+                if( message.getProperty( "show" ) != null )
+                    client.getParent().showProfile( profile );
             }
         }
         else if (body.startsWith("timeReply("))

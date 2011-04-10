@@ -88,7 +88,7 @@ public class BotChatroomMessageListener implements PacketListener
         while( true )
         {
             String dest = (String) msg.getProperty( "path" + i );
-            String te = (String) msg.getProperty( "te" + i );
+            String te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + i ) ) );
             
             // If all events have been processed
             if( dest == null && te == null )

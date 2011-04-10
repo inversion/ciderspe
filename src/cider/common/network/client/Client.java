@@ -139,8 +139,6 @@ public class Client
     
     // The current user's profile
     public Profile profile;
-    public Profile notMyProfile = null;
-    public boolean profileFound;
     public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
 
@@ -254,10 +252,10 @@ public class Client
 
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-//         connection.addPacketListener(new DebugPacketListener(), new
-//         DebugPacketFilter());
-//         connection.addPacketInterceptor(new DebugPacketInterceptor(),
-//                 new DebugPacketFilter());
+         connection.addPacketListener(new DebugPacketListener(), new
+         DebugPacketFilter());
+         connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                 new DebugPacketFilter());
 
 
         chatmanager = this.connection.getChatManager();
@@ -654,11 +652,13 @@ public class Client
         outgoingTypingEvents.setBody("");
         outgoingTypingEvents.setSubject( "pushto" );
         outgoingTypingEvents.setType( Message.Type.groupchat );
+        outgoingTypingEvents.setTo( chatroom.getRoom() );
         int i = 0;
         for (TypingEvent te : typingEvents)
         {
             outgoingTypingEvents.setProperty( "path" + i, path );
-            outgoingTypingEvents.setProperty( "te" + i, te.pack() );
+            // So we can send newlines, encode it
+            outgoingTypingEvents.setProperty( "te" + i, StringUtils.encodeBase64( te.pack() ) );
             i++;
         }
         try
@@ -819,11 +819,12 @@ public class Client
             if( msg.getProperty( "path" + eventNum ) != null )
                 dest = (String) msg.getProperty( "path" + eventNum );
             
-            te = (String) msg.getProperty( "te" + eventNum );
-            
             // Processed all events in message
-            if( te == null )
+            if( msg.getProperty( "te" + eventNum ) == null )
                 break;
+            
+            // So we can send newlines in the message
+            te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + eventNum ) ) );
             
             dest = dest.replace("root\\", "");
 

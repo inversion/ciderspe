@@ -137,10 +137,10 @@ public class Bot
 
             // Verbose debugging to print out every packet leaving or entering
             // the bot
-//            connection.addPacketListener(new DebugPacketListener(),
-//                    new DebugPacketFilter());
-//            connection.addPacketInterceptor(new DebugPacketInterceptor(),
-//                    new DebugPacketFilter());
+            connection.addPacketListener(new DebugPacketListener(),
+                    new DebugPacketFilter());
+            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();
