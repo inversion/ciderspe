@@ -422,7 +422,7 @@ public class Client
      */
     public void initiateChat(String user)
     {
-        if (userChatListener.privateChats.containsKey(user)
+        if (userChatListener.usersToChats.containsKey(user)
                 || user.equals(username))
         {
             if (DEBUG)
@@ -444,7 +444,7 @@ public class Client
     }
 
     /**
-     * Add a chat tab with the specified username as title to the GUI.
+     * Add a chat tab with the specified username as its name to the GUI.
      * 
      * @param user
      * @author Andrew
@@ -488,7 +488,7 @@ public class Client
      */
     public void closeChat(String user)
     {
-        userChatListener.destroyChat(user);
+        userChatListener.closeChat(user);
     }
     
     /**

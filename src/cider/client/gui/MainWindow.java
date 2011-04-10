@@ -86,7 +86,6 @@ import javax.swing.event.ChangeListener;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
-import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
@@ -127,8 +126,6 @@ public class MainWindow
     private DebugWindow debugwindow;
     private OutputStream baos;
 
-    tabFlash tabbing = new tabFlash();
-
     boolean offlineMode = false;
     
     
@@ -163,8 +160,6 @@ public class MainWindow
         PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
         // System.setOut(ps);
         System.setErr(ps);
-
-        // tabFlash.flash(0);
     }
 
     MainWindow()
@@ -1100,86 +1095,6 @@ public class MainWindow
         }
     }
 
-    @SuppressWarnings("serial")
-    public class tabFlash extends JTabbedPane
-    {
-        public TabFlash tabflash(int requiredTabIndex)
-        {
-            TabFlash tabflash = new TabFlash(requiredTabIndex);
-            tabflash.start();
-            return tabflash;
-        }
-
-        public void tabflashstop(int requiredTabIndex)
-        {
-            // tabflash.stopflash();
-        }
-
-        public class TabFlash implements ActionListener
-        {
-            private Color background;
-            private Color foreground;
-            private Color oldBackground;
-            private Color oldForeground;
-            private int requiredTabIndex;
-            private boolean flashon = false;
-            private Timer timer = new Timer(1000, this);
-
-            public TabFlash(int requiredTabIndex)
-            {
-                this.requiredTabIndex = requiredTabIndex;
-                this.oldForeground = shared.receiveTabs.getForeground();
-                this.oldBackground = shared.receiveTabs.getBackground();
-                this.foreground = Color.BLACK;
-                this.background = Color.ORANGE;
-            }
-
-            public void start()
-            {
-                timer.start();
-            }
-
-            public void actionPerformed(ActionEvent e)
-            {
-                flash(flashon);
-                flashon = !flashon;
-            }
-
-            public void flash(boolean flashon)
-            {
-                if (flashon)
-                {
-                    if (foreground != null)
-                    {
-                        setForegroundAt(requiredTabIndex, foreground);
-                    }
-                    if (background != null)
-                    {
-                        setBackgroundAt(requiredTabIndex, background);
-                    }
-                }
-                else
-                {
-                    if (oldForeground != null)
-                    {
-                        setForegroundAt(requiredTabIndex, oldForeground);
-                    }
-                    if (oldBackground != null)
-                    {
-                        setBackgroundAt(requiredTabIndex, oldBackground);
-                    }
-                }
-                repaint();
-            }
-
-            public void stopflash()
-            {
-                timer.stop();
-                setForegroundAt(requiredTabIndex, oldForeground);
-                setBackgroundAt(requiredTabIndex, oldBackground);
-            }
-        }
-    }
 
     public JPanel pnlUsers()
     {
@@ -1322,11 +1237,11 @@ public class MainWindow
             {
                 JTabbedPane tp = (JTabbedPane) changeEvent.getSource();
                 int i = tp.getSelectedIndex();
-                tabbing.tabflashstop(i);
+                shared.receiveTabs.tabflashstop( tp.getTitleAt( i ) );
                 System.out.println("Stop flashing " + tp.getTitleAt(i));
             }
         };
-        tabbing.addChangeListener(changeListener);
+        shared.receiveTabs.addChangeListener(changeListener);
 
         return panel;
     }
@@ -1468,13 +1383,6 @@ public class MainWindow
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
         p.add(this.mainArea());
         w.add(p);
-
-        tabbing.addTab("Tab 1", new JLabel("oh"));
-        tabbing.addTab("Tab 2", new JLabel("hai"));
-        tabbing.addTab("Tab 3", new JLabel("guise"));
-        tabbing.tabflash(0);
-        tabbing.tabflash(1);
-        // w.add(tabbing);
 
         w.pack();
         this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);

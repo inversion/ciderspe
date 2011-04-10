@@ -24,7 +24,6 @@
 package cider.common.network.client;
 
 import java.util.HashMap;
-import java.util.Iterator;
 
 import javax.swing.JScrollPane;
 
@@ -46,7 +45,8 @@ public class ClientPrivateChatListener implements ChatManagerListener {
     
     private static final boolean DEBUG = true;
     
-    protected HashMap<String,Chat> privateChats = new HashMap<String,Chat>();
+    protected HashMap<String,Chat> usersToChats = new HashMap<String,Chat>();
+    private HashMap<String,JScrollPane> usersToTabs = new HashMap<String,JScrollPane>();
     private Client client;
     private String chatroomName;
     
@@ -75,12 +75,23 @@ public class ClientPrivateChatListener implements ChatManagerListener {
         if( DEBUG )
             System.out.println("Private chat accepted from " + name );
         
-        // Add this chat to the hash table of chats
-        privateChats.put( name, chat );
-        
-        // Create a new tab for this chat
-        JScrollPane newTab = client.createChatTab( name );
-        client.tabsToChats.put( newTab, chat );
+        // If this chat is already open
+        if( usersToChats.containsKey( name ) )
+        {
+            // Add this chat to the hash table of chats
+            usersToChats.put( name, chat );
+            
+            // Update the tab to reference the new chat
+            client.tabsToChats.put( usersToTabs.get( name ), chat );
+        }
+        else
+        {            
+            // Create a new tab for this chat
+            JScrollPane newTab = client.createChatTab( name );
+            
+            client.tabsToChats.put( newTab, chat );
+            usersToTabs.put( name, newTab );
+        }
         
         // Listen for new messages on this chat
         chat.addMessageListener( new ClientPrivateChatMessageListener( client ) );
@@ -96,26 +107,17 @@ public class ClientPrivateChatListener implements ChatManagerListener {
      * @author Andrew
      * @param The username associated with the chat to destroy.
      */
-    protected void destroyChat( String name )
+    public void closeChat( String name )
     {
         // Unregister the chatlistener and remove the chat object itself
-        Chat oldChat = privateChats.get( name );
+        Chat oldChat = usersToChats.get( name );
         oldChat.removeMessageListener( (MessageListener) oldChat.getListeners().toArray()[0] );
-        privateChats.remove( name );
+        usersToChats.remove( name );
         
-        // Remove this tab from the hash tables and GUI
-        Iterator<JScrollPane> itr = client.tabsToChats.keySet().iterator();
-        while( itr.hasNext() )
-        {
-            JScrollPane currentTab = itr.next();
-            if( currentTab.getName().equals( name ) )
-            {
-                client.tabsToChats.remove( currentTab );
-                client.shared.receiveTabs.remove( currentTab );
-                client.usersToAreas.remove( name );
-                break;
-            }
-        }
+        JScrollPane tab = usersToTabs.get( name );
+        client.tabsToChats.remove( tab );
+        client.shared.receiveTabs.remove( tab );
+        client.usersToAreas.remove( name );
     }
 
 }

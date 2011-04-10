@@ -30,6 +30,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTabbedPane;
 
+import cider.client.gui.ChatTabs;
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.ETASourceEditorPane;
 import cider.common.processes.Profile;
@@ -56,7 +57,7 @@ public class ClientSharedComponents
     public DirectoryViewComponent dirView = new DirectoryViewComponent();
 
     // Tabs for chat sessions
-    public JTabbedPane receiveTabs = new JTabbedPane();
+    public ChatTabs receiveTabs = new ChatTabs();
     
     // The client's profile
     public Profile profile;

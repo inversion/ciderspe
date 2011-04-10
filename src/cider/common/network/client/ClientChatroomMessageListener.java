@@ -27,6 +27,8 @@ import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 
+import cider.client.gui.MainWindow;
+
 
 /**
  * Listens for new messages in chatrooms.
@@ -58,6 +60,8 @@ public class ClientChatroomMessageListener implements PacketListener
         // If this isn't a document message print it to the chatlog
         if( !docMessage )
             client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
+        
+        client.shared.receiveTabs.tabflash( MainWindow.GROUPCHAT_TITLE );
     }
 
 }
