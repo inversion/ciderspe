@@ -57,7 +57,7 @@ import cider.common.processes.TypingEventMode;
  * alternative to Swing text objects which do not offer enough flexibility (in
  * particular with the way the caret is controlled and text formatting)
  * 
- * @author Lawrence, Miles and Alex
+ * @author Lawrence, Miles, Alex, Andrew
  * @param fontSize
  *            the size of the font in the editortypingarea
  */
@@ -390,10 +390,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * moves the caret left one position and updates the UI
      */
-    protected void moveLeft()
+    protected void moveLeft( boolean select )
     {
         if (this.caretPosition >= 0)
             this.caretPosition--;
+        
+        if( select )
+            selectedRegion = str.region( selectedRegion.start - 1, selectedRegion.end );
 
         this.holdCaretVisibility(true);
         // this.caretFlashing = fa
@@ -403,10 +406,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * moves the caret right one position and updates the UI
      */
-    protected void moveRight()
+    protected void moveRight( boolean select )
     {
         if (this.caretPosition < this.str.length() - 1)
             this.caretPosition++;
+        
+        if( select )
+            selectedRegion = str.region( selectedRegion.start, selectedRegion.end + 1 );
 
         this.holdCaretVisibility(true);
         this.updateUI();
@@ -414,16 +420,38 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
     // TODO:
     // clean up, reuse code between these two methods
-    protected void moveUp()
+    protected void moveUp(boolean select)
     {
         if (this.getCurrentLine().str.newline())
-            this.moveLeft();
+            this.moveLeft( false );
         else
         {
             this.holdCaretVisibility(true);
             int lineNum = this.getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
+            SDVLine line = this.lines.get(lineNum - 1);
+            int start = line.start + line.lineNum - 2;
+            int length = line.str.length();
+            if (this.currentColNum >= length)
+                this.currentColNum = length;
+            this.caretPosition = start + this.currentColNum;
+            this.updateUI();
+        }
+    }
+    
+    /**
+     * Moves the caret down a line
+     */
+    protected void moveDown( boolean select )
+    {
+        if (this.getCurrentLine().str.newline())
+            this.moveRight( false );
+        else
+        {
+            int lineNum = this.getCurrentLine().lineNum + 1;
+            if (lineNum > this.lines.size())
+                lineNum = this.lines.size();
             SDVLine line = this.lines.get(lineNum - 1);
             int start = line.start + line.lineNum - 2;
             int length = line.str.length();
@@ -443,28 +471,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     {
         this.caretVisible = visible;
         this.toggleCaretVisibility.skipNextToggle();
-    }
-
-    /**
-     * Moves the caret down a line
-     */
-    protected void moveDown()
-    {
-        if (this.getCurrentLine().str.newline())
-            this.moveRight();
-        else
-        {
-            int lineNum = this.getCurrentLine().lineNum + 1;
-            if (lineNum > this.lines.size())
-                lineNum = this.lines.size();
-            SDVLine line = this.lines.get(lineNum - 1);
-            int start = line.start + line.lineNum - 2;
-            int length = line.str.length();
-            if (this.currentColNum >= length)
-                this.currentColNum = length;
-            this.caretPosition = start + this.currentColNum;
-            this.updateUI();
-        }
     }
 
     /**
@@ -512,8 +518,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * Move the caret to the start of the file and update the UI.
      * 
+     * @param select If true, transform selected area to include that traversed.
+     * 
      */
-    protected void moveDocHome()
+    protected void moveDocHome( boolean select )
     {
         int start = -1;
         this.caretPosition = start;
@@ -523,8 +531,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * Move the caret to the end of the file and update the UI.
      * 
+     * @param select If true, transform selected area to include that traversed. 
+     * 
      */
-    protected void moveDocEnd()
+    protected void moveDocEnd( boolean select )
     {
         int numLines = this.lines.size();
         SDVLine line = this.lines.get(numLines - 1);
@@ -537,9 +547,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * Move the caret up a page and update the UI.
      * 
+     * @param select If true, transform selected area to include that traversed.
+     * 
      * @author Andrew
      */
-    protected void movePageUp()
+    protected void movePageUp(boolean select)
     {
         this.holdCaretVisibility(true);
         
@@ -566,9 +578,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * Move the caret down a page and update the UI.
      * 
+     * @param select If true, transform selected area to include that traversed.
+     * 
      * @author Andrew
      */
-    protected void movePageDown()
+    protected void movePageDown( boolean select )
     {
         this.holdCaretVisibility(true);
         
@@ -597,10 +611,52 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * 
      * @author Andrew
      */
-    public void selectAll()
+    protected void selectAll()
     {
         selectedRegion = this.str.region( 0 , this.str.length() );
-        moveDocEnd();
+        moveDocEnd( false );
+    }
+
+    /**
+     * Copy current selection to the clipboard
+     * 
+     * @author Andrew
+     */
+    protected void copy()
+    {
+        if( selectedRegion.list.size() == 0 )
+            return;
+        
+        StringBuffer sb = new StringBuffer();
+        for( TypingEvent te : selectedRegion.list )
+            sb.append( te.text );
+        
+        Clipboard clipboard = getToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection( sb.toString() );
+        clipboard.setContents( stringSelection, stringSelection );
+    }
+
+    /**
+     * Cut current selection to clipboard
+     * 
+     * @author Andrew
+     */
+    protected void cut()
+    {
+        if( selectedRegion.list.size() == 0 )
+            return;
+            
+        copy();
+        // FIXME: Makes the whole line go blank for some reason
+        TypingEvent deleteEvent = new TypingEvent( System.currentTimeMillis() + parent.getClockOffset(), 
+                TypingEventMode.delete, selectedRegion.start, selectedRegion.list.size(), 
+                null, parent.getUsername(), null );
+        str.insert( deleteEvent );
+    }
+
+    protected void paste()
+    {
+        // TODO Auto-generated method stub
     }
 
     protected int getCurLine()
@@ -995,21 +1051,5 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     public Color getDefaultColor()
     {
         return defaultColor;
-    }
-
-    /**
-     * Copy current selection to the clipboard
-     * 
-     * @author Andrew
-     */
-    public void copy()
-    {
-        StringBuffer sb = new StringBuffer();
-        for( TypingEvent te : selectedRegion.list )
-            sb.append( te.text );
-        
-        Clipboard clipboard = getToolkit().getSystemClipboard();
-        StringSelection stringSelection = new StringSelection( sb.toString() );
-        clipboard.setContents( stringSelection, stringSelection );
     }
 }

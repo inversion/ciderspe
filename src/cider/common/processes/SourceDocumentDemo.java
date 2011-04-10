@@ -290,16 +290,16 @@ public class SourceDocumentDemo
                     switch (ke.getKeyCode())
                     {
                     case KeyEvent.VK_LEFT:
-                        eta.moveLeft();
+                        eta.moveLeft( false );
                         break;
                     case KeyEvent.VK_RIGHT:
-                        eta.moveRight();
+                        eta.moveRight( false );
                         break;
                     case KeyEvent.VK_UP:
-                        eta.moveUp();
+                        eta.moveUp( false );
                         break;
                     case KeyEvent.VK_DOWN:
-                        eta.moveDown();
+                        eta.moveDown( false );
                         break;
                     }
                 }
@@ -360,13 +360,13 @@ public class SourceDocumentDemo
                         switch (mode)
                         {
                         case insert:
-                            eta.moveRight();
+                            eta.moveRight( false );
                             break;
                         case overwrite:
-                            eta.moveRight();
+                            eta.moveRight( false );
                             break;
                         case backspace:
-                            eta.moveLeft();
+                            eta.moveLeft( false );
                             break;
                         }
                     }

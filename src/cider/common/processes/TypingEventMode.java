@@ -30,5 +30,5 @@ package cider.common.processes;
  */
 public enum TypingEventMode
 {
-    insert, overwrite, backspace, deleteAll, lockRegion, unlockRegion
+    insert, overwrite, backspace, delete, deleteAll, lockRegion, unlockRegion
 }

@@ -29,6 +29,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.HashMap;
@@ -197,6 +198,10 @@ public class Bot
                     input.close();
                     fis.close();
                 }
+                catch (InvalidClassException e)
+                {
+                    System.err.println( "You need to delete the " + PROFILE_DIR.getName() + " folder, you have out of date serialized classes.");
+                }
                 catch (FileNotFoundException e)
                 {
                     // TODO Auto-generated catch block
@@ -317,6 +322,10 @@ public class Bot
                     folder.addDocument((SourceDocument) input.readObject());
                     input.close();
                     fis.close();
+                }
+                catch (InvalidClassException e)
+                {
+                    System.err.println( "You need to delete the " + path.getName() + " folder, you have out of date serialized classes.");
                 }
                 catch (IOException e)
                 {

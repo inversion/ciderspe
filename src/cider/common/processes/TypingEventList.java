@@ -43,7 +43,6 @@ import cider.documentViewerComponents.TypingRegion;
 public class TypingEventList
 {
     private ArrayList<TypingEvent> tel = new ArrayList<TypingEvent>();
-    public static int DeleteType = 0;
 
     public TypingEventList()
     {
@@ -80,24 +79,39 @@ public class TypingEventList
     }
 
     /**
-     * Removes the nearest typing event at position i. TODO: check the delete
-     * hack on this
+     * Removes the nearest typing event at position i.
      * 
-     * @param i
+     * @param position
      * @author Lawrence and Miles
      */
-    public void backspace(int i)
+    public void backspace(int position)
     {
 
-        if (i >= this.tel.size())
-            i = this.tel.size() - 1;
-        if (i < 0)
+        if (position >= tel.size())
+            position = tel.size() - 1;
+        if (position < 0)
             return;
-        if (DeleteType == 0)
-            this.tel.remove(i);
-        if (DeleteType == 1)
-            this.tel.remove(i + 1);
-
+        
+        this.tel.remove(position);
+    }
+    
+    /**
+     * Delete behaviour, reusing backspace method
+     * 
+     * @param position The position to delete at.
+     * @param length The length to delete for, usually 1.
+     * 
+     * @author Andrew
+     */
+    public void delete( int position, int length )
+    {
+        if( position == tel.size() - 1 )
+            return;
+        
+        // FIXME: Not working for length > 1
+        // Delete for length
+        for( int i = 1; i <= length; i++ )
+            backspace( position + i );
     }
 
     /**

@@ -47,8 +47,7 @@ public class SourceDocument implements ICodeLocation, Serializable
     /**
      * 
      */
-    private static final long serialVersionUID = 3L;
-
+    private static final long serialVersionUID = -6700242168976852201L;
     private PriorityQueue<TypingEvent> typingEvents;
     public String name;
     // TODO ownership
@@ -524,7 +523,12 @@ public class SourceDocument implements ICodeLocation, Serializable
             }
             case backspace:
             {
-                string.backspace(event.position);
+                string.backspace( event.position );
+                break;
+            }
+            case delete:
+            {
+                string.delete( event.position, event.length );
                 break;
             }
             case deleteAll:

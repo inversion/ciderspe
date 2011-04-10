@@ -27,15 +27,15 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public void moveLeft()
+    public void moveLeft( boolean select )
     {
-        super.moveLeft();
+        super.moveLeft( select );
     }
 
     @Override
-    public void moveRight()
+    public void moveRight( boolean select )
     {
-        super.moveRight();
+        super.moveRight( select );
     }
 
     @Override
@@ -45,15 +45,15 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public void moveUp()
+    public void moveUp( boolean select )
     {
-        super.moveUp();
+        super.moveUp( select );
     }
 
     @Override
-    public void moveDown()
+    public void moveDown( boolean select )
     {
-        super.moveDown();
+        super.moveDown( select );
     }
 
     @Override
@@ -69,33 +69,34 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public void moveDocHome()
+    public void moveDocHome( boolean select )
     {
-        super.moveDocEnd();
+        super.moveDocHome( select );
+    }
+    
+    @Override
+    public void moveDocEnd( boolean select )
+    {
+        super.moveDocEnd( select );
     }
 
     @Override
-    public void movePageUp()
+    public void movePageUp( boolean select )
     {
-        super.movePageUp();
+        super.movePageUp( select );
+    }
+    
+
+    @Override
+    public void movePageDown( boolean select )
+    {
+        super.movePageDown( select );
     }
 
     @Override
     public int getCurLine()
     {
         return super.getCurLine();
-    }
-
-    @Override
-    public void moveDocEnd()
-    {
-        super.moveDocEnd();
-    }
-
-    @Override
-    public void movePageDown()
-    {
-        super.movePageDown();
     }
     
     @Override
@@ -108,6 +109,16 @@ public class EditorTypingArea extends SourceDocumentViewer
     public void copy()
     {
         super.copy();        
+    }
+    
+    public void cut()
+    {
+        super.cut();
+    }
+
+    public void paste()
+    {
+        super.paste();
     }
 
     @Override

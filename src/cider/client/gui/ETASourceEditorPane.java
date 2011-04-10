@@ -256,52 +256,60 @@ public class ETASourceEditorPane extends JScrollPane
             {
                 switch (ke.getKeyCode())
                 {
-                case KeyEvent.VK_LEFT:
-                    eta.moveLeft();
-                    break;
-                case KeyEvent.VK_RIGHT:
-                    eta.moveRight();
-                    break;
-                case KeyEvent.VK_UP:
-                    eta.moveUp();
-                    break;
-                case KeyEvent.VK_DOWN:
-                    eta.moveDown();
-                    break;
-                case KeyEvent.VK_HOME:
-//                  {
-//                      if (ke.isShiftDown())
-//                          eta.moveDocEnd();
-//                      else if (ke.isControlDown())
-//                          eta.moveDocHome();
-//                      else
-                      eta.moveHome( ke.isShiftDown() );
-                      break;
-                  case KeyEvent.VK_END:
-                      eta.moveEnd( ke.isShiftDown() );
-                      break;
-                  case KeyEvent.VK_PAGE_UP:
-                      eta.movePageUp();
-                      break;
-                  case KeyEvent.VK_PAGE_DOWN:
-                      eta.movePageDown();
-                      break;
-                  case KeyEvent.VK_4:
-                      if (ke.isControlDown())
-                          this.applyToSelection(TypingEventMode.lockRegion);
-                      break;
-                  case KeyEvent.VK_R:
-                      if (ke.isControlDown())
-                          this.applyToSelection(TypingEventMode.unlockRegion);
-                      break;
-                  case KeyEvent.VK_A:
-                      if( ke.isControlDown() )
-                          eta.selectAll();
-                      break;
-                  case KeyEvent.VK_C:
-                      if( ke.isControlDown() )
-                          eta.copy();
-                      break;
+                    case KeyEvent.VK_LEFT:
+                        eta.moveLeft( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_RIGHT:
+                        eta.moveRight( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_UP:
+                        eta.moveUp( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_DOWN:
+                        eta.moveDown( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_HOME:
+                        if (ke.isControlDown())
+                            eta.moveDocHome( ke.isShiftDown() );
+                        else
+                            eta.moveHome( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_END:
+                        if( ke.isControlDown() )
+                            eta.moveDocEnd( ke.isShiftDown() );
+                        else
+                            eta.moveEnd( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_PAGE_UP:
+                        eta.movePageUp( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_PAGE_DOWN:
+                        eta.movePageDown( ke.isShiftDown() );
+                        break;
+                    case KeyEvent.VK_4:
+                        if (ke.isControlDown())
+                            this.applyToSelection(TypingEventMode.lockRegion);
+                        break;
+                    case KeyEvent.VK_R:
+                        if (ke.isControlDown())
+                            this.applyToSelection(TypingEventMode.unlockRegion);
+                        break;
+                    case KeyEvent.VK_A:
+                        if( ke.isControlDown() )
+                            eta.selectAll();
+                        break;
+                    case KeyEvent.VK_C:
+                        if( ke.isControlDown() )
+                            eta.copy();
+                        break;
+                    case KeyEvent.VK_X:
+                        if( ke.isControlDown() )
+                            eta.cut();
+                        break;
+                    case KeyEvent.VK_V:
+                        if( ke.isControlDown() )
+                            eta.paste();
+                        break;
                 }
                 
             }
@@ -353,10 +361,11 @@ public class ETASourceEditorPane extends JScrollPane
                                 // System.out.println(server.lastUpdateTime());
                                 TypingEventMode mode = TypingEventMode.insert;
                                 String chr;
+                                int length;
 
                                 switch (ke.getKeyChar())
                                 {
-                                case '\u007F':
+                                case '\u007F': // Delete character
                                 {
                                     /*
                                      * int CurLine; int CurxLine; CurLine =
@@ -375,22 +384,24 @@ public class ETASourceEditorPane extends JScrollPane
                                          * = TypingEventMode.backspace; chr =
                                          * " "; } else {
                                          */
-                                        TypingEventList.DeleteType = 1;
-                                        mode = TypingEventMode.backspace;
-                                        chr = " ";
                                         // }
+                                        mode = TypingEventMode.delete;
+                                        // If there is a selected region set the delete length to this length
+                                        length = ( eta.getSelectedRegion().getLength() > 0 ) ? eta.getSelectedRegion().getLength() : 1;
+                                        chr = " ";
+                                        
                                     }
                                     else
                                         return;
                                 }
                                     break;
-                                case '\u0008':
+                                case '\u0008': // Backspace char
                                 {
                                     if (eta.getCaretPosition() >= 0)
                                     {
-                                        TypingEventList.DeleteType = 0;
                                         mode = TypingEventMode.backspace;
                                         chr = " ";
+                                        length = 1;
                                     }
                                     else
                                         return;
@@ -399,6 +410,7 @@ public class ETASourceEditorPane extends JScrollPane
                                 case '\t':
                                 {
                                     chr = "    ";
+                                    length = 4;
                                     ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
                                 }
@@ -407,14 +419,16 @@ public class ETASourceEditorPane extends JScrollPane
                                 default:
                                     client.shared.profile.incrementCharCount();
                                     chr = String.valueOf(ke.getKeyChar());
+                                    length = 1;
                                     break;
                                 }
 
+                                // TODO: Will need different position for selections
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
                                                 + client.getClockOffset(),
                                         mode, eta.getCaretPosition(),
-                                        chr.length(), chr,
+                                        length, chr,
                                         client.getUsername(),
                                         r == 1 ? client.getUsername() : null);
                                 ArrayList<TypingEvent> particles = te.explode();
@@ -449,8 +463,7 @@ public class ETASourceEditorPane extends JScrollPane
                                     eta.moveCaret(particles.size());
                                     break;
                                 case backspace:
-                                    if (TypingEventList.DeleteType == 0)
-                                        eta.moveLeft();
+                                    eta.moveLeft( false );
                                     break;
                                 }
                             }

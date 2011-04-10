@@ -42,10 +42,11 @@ import org.jivesoftware.smack.packet.Message;
 
 public class Profile implements Serializable
 {
+    
     /**
      * 
      */
-    private static final long serialVersionUID = 8774619560240198237L;
+    private static final long serialVersionUID = -5594341971483531519L;
     
     public String uname;
     public int typedChars;
