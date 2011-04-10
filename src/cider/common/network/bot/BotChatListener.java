@@ -94,8 +94,7 @@ public class BotChatListener implements ChatManagerListener
             System.out.println(chat.getParticipant() + " initiated chat...");
 
         chats.put(StringUtils.parseName(chat.getParticipant()), chat);
-        chat.addMessageListener(new BotMessageListener(this, StringUtils
-                .parseName(chat.getParticipant()), this.source));
+        chat.addMessageListener(new BotMessageListener( this.source ));
 
         // Invite this user to the chatroom
         chatroom.invite(chat.getParticipant(), " ");

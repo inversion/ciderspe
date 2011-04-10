@@ -86,6 +86,7 @@ import javax.swing.event.ChangeListener;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
+import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
@@ -171,45 +172,14 @@ public class MainWindow
         this.shared = new ClientSharedComponents();
     }
     
-    public void uploadProfile()
-    {
-        // FIXME:
-        /*
-         * int count =
-         * this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE
-         * ).countCharactersFor(username); myProfile.adjustCharCount(0);
-         */
-
-        myProfile.updateTimeSpent(startTime);
-        myProfile.updateProfileInfo();
-        System.out.println( "MainWindow: Uploading profile: " + myProfile.toString());
-        try
-        {
-            Profile profile = myProfile;
-            Message message = new Message();
-            message.setBody("");
-            message.setSubject( "userprofile" );
-            message.setProperty( "username", profile.uname );
-            message.setProperty( "chars", profile.typedChars );
-            message.setProperty( "timeSpent", profile.timeSpent );
-            message.setProperty( "lastOnline", profile.lastOnline );
-            message.setProperty( "r", profile.userColour.getRed() );
-            message.setProperty( "g", profile.userColour.getGreen() );
-            message.setProperty( "b", profile.userColour.getBlue() );
-            client.botChat.sendMessage( message );
-        }
-        catch (XMPPException e1)
-        {
-            e1.printStackTrace();
-        }
-    }
-
     /**
-     * Request one's own profile from the bot.
+     * Request profile for specified user from the Bot.
+     * 
+     * @param username The username of the profile we are requesting.
      * 
      * @author Jon, Andrew
      */
-    private void requestProfile()
+    public void requestProfile( String username, boolean show )
     {
         try
         {
@@ -217,15 +187,17 @@ public class MainWindow
             msg.setBody("");
             msg.setSubject( "requestprofile" );
             msg.setProperty( "username", username );
+            if( show )
+                msg.setProperty( "show", "true" );
             client.botChat.sendMessage( msg );
-            System.out.println("MainWindow: Requesting profile from server for " + username);
+            System.out.println("Profile: Requesting profile from server for " + username);
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
         }
     }
-    
+        
     /**
      * This method sets up the profile by asking the Bot if it has the user
      * on its record. If so, the profile updates appropriately. If not, a
@@ -235,39 +207,97 @@ public class MainWindow
      */
     private void profileSetup()
     {
-        requestProfile();
-
-//        try
-//        {
-//            /**
-//             * This is to negate the effect of latency on checking the new
-//             * profile
-//             */
-//            Thread.sleep(1000);
-//        }
-//        catch (InterruptedException e)
-//        {
-//            e.printStackTrace();
-//        }
-//        if (client.profileFound == false)
-//        {
-//            myProfile = new Profile(username, client);
-//        }
-//        else
-//            myProfile = client.profile;
-//
-//        // Inform the bot of the user's current colour
-//        botColourChange(myProfile.userColour.getRed(),
-//                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
+        requestProfile( username, false );
 
         if (client.colours.containsKey(username))
             client.colours.remove(username);
         client.colours.put(username, myProfile.userColour);
-        System.out.println(myProfile);
 
-//        retrieveAllUserColours();
-//        announceColourChange(myProfile.userColour.getRed(),
-//                myProfile.userColour.getGreen(), myProfile.userColour.getBlue());
+        retrieveAllUserColours();
+    }
+    
+    /**
+     * Show a popup window of the requested profile.
+     * 
+     * @author Jon, Andrew
+     */
+    public void showProfile( Profile profile )
+    {
+//        if (username.equals(myProfile.uname))
+//        {
+//            System.out.println(myProfile.timeSpent);
+//            myProfile.updateTimeSpent(startTime);
+//            System.out.println(myProfile.timeSpent);
+//            startTime = System.currentTimeMillis();
+//        }
+
+        // int count =
+        // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
+        // myProfile.adjustCharCount(count);
+        
+        JFrame profileFrame = new JFrame("View Profile");
+        Container content = profileFrame.getContentPane();
+
+        // set frame icon to cider logo
+        URL x = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x);
+        Image test = image.getImage();
+        profileFrame.setIconImage(test);
+
+        // horizontal box with user image in left cell, info in right cell
+        Box hbox = Box.createHorizontalBox();
+        hbox.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        URL urlImage;
+        ImageIcon photo;
+
+        try
+        {
+            // load custom user photo here
+            urlImage = this.getClass().getResource(profile.uname + ".png");
+            photo = new ImageIcon(urlImage);
+        }
+        catch (NullPointerException npe)
+        {
+            npe.printStackTrace();
+            // load default user photo if custom user doesn't exist
+            urlImage = this.getClass().getResource("defaultuser.png");
+            photo = new ImageIcon(urlImage);
+        }
+
+        JLabel userPhoto = new JLabel(photo);
+        userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
+        hbox.add(userPhoto);
+
+        JLabel userName = new JLabel("<html><u>Username: " + profile.uname
+                + "</u></html>");
+        Font curFont = userName.getFont();
+        userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(),
+                curFont.getSize() + 2));
+
+        JLabel userChars = new JLabel("Characters Typed: "
+                + profile.typedChars);
+        String t = profile.getTimeString();
+        JLabel userTime = new JLabel("Total Time: " + t);
+        JLabel userLastOnline = new JLabel("Last Seen: " + profile.lastOnline);
+
+        // vertical box with user statistics in
+        Box vbox = Box.createVerticalBox();
+
+        vbox.add(userName);
+        vbox.add(userChars);
+        vbox.add(userTime);
+        vbox.add(userLastOnline);
+
+        hbox.add(vbox);
+        content.add(hbox);
+
+        profileFrame.pack();
+        profileFrame.setResizable(false);
+        profileFrame.isDisplayable();
+        profileFrame.setLocationRelativeTo(null);
+
+        profileFrame.setVisible(true);
     }
 
     private void retrieveAllUserColours()
@@ -319,7 +349,6 @@ public class MainWindow
             msg.setSubject( "requestusercolour" );
             msg.setProperty( "user", user );
             client.botChat.sendMessage( msg );
-
         }
         catch (XMPPException e)
         {
@@ -327,7 +356,7 @@ public class MainWindow
         }
     }
 
-    public ActionListener newAction()
+    public ActionListener newAction( )
     {
         ActionListener AL = new ActionListener()
         {
@@ -347,11 +376,11 @@ public class MainWindow
                 }
                 else if (action.equals("My Profile"))
                 {
-                    showMyProfile(myProfile);
+                    showProfile( myProfile );
                 }
                 else if (action.equals("Reset My Profile"))
                 {
-                    restartProfile();
+                    resetProfile();
                 }
                 else if (action.equals("Send"))
                 {
@@ -418,11 +447,11 @@ public class MainWindow
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    uploadProfile();
+                    myProfile.uploadProfile(client.botChat, startTime);
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
-                    requestProfile();
+                    requestProfile( username, false );
                 }
                 else if (action
                         .equals("DEV: Show list of colours stored locally"))
@@ -847,7 +876,12 @@ public class MainWindow
         }
     }
 
-    private void restartProfile()
+    /**
+     * Reset your own profile to the default state.
+     * 
+     * @author Jon
+     */
+    private void resetProfile()
     {
         int response = JOptionPane.showConfirmDialog(null,
                 "Are you sure you wish to reset your profile?");
@@ -862,6 +896,15 @@ public class MainWindow
             return;
     }
 
+    /**
+     * Announce you have changed your colour to all connected parties.
+     * 
+     * @param r Red
+     * @param g Green
+     * @param b Blue
+     * 
+     * @author Andrew, Jon
+     */
     public void announceColourChange(int r, int g, int b)
     {
         try
@@ -884,86 +927,6 @@ public class MainWindow
                     "Error: " + e.getMessage());
             return;
         }
-    }
-
-
-    private void showMyProfile(Profile myProfile)
-    {
-        if (username.equals(myProfile.uname))
-        {
-            System.out.println(myProfile.timeSpent);
-            myProfile.updateTimeSpent(startTime);
-            System.out.println(myProfile.timeSpent);
-            startTime = System.currentTimeMillis();
-        }
-
-        // int count =
-        // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
-        // myProfile.adjustCharCount(count);
-
-        JFrame profileFrame = new JFrame("View Profile");
-        Container content = profileFrame.getContentPane();
-
-        // set frame icon to cider logo
-        URL x = this.getClass().getResource("icon.png");
-        ImageIcon image = new ImageIcon(x);
-        Image test = image.getImage();
-        profileFrame.setIconImage(test);
-
-        // horizontal box with user image in left cell, info in right cell
-        Box hbox = Box.createHorizontalBox();
-        hbox.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        URL urlImage;
-        ImageIcon photo;
-
-        try
-        {
-            // load custom user photo here
-            urlImage = this.getClass().getResource(myProfile.uname + ".png");
-            photo = new ImageIcon(urlImage);
-        }
-        catch (NullPointerException npe)
-        {
-            npe.printStackTrace();
-            // load default user photo if custom user doesn't exist
-            urlImage = this.getClass().getResource("defaultuser.png");
-            photo = new ImageIcon(urlImage);
-        }
-
-        JLabel userPhoto = new JLabel(photo);
-        userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
-        hbox.add(userPhoto);
-
-        JLabel userName = new JLabel("<html><u>Username: " + myProfile.uname
-                + "</u></html>");
-        Font curFont = userName.getFont();
-        userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(),
-                curFont.getSize() + 2));
-
-        JLabel userChars = new JLabel("Characters Typed: "
-                + myProfile.typedChars);
-        String t = myProfile.getTimeString();
-        JLabel userTime = new JLabel("Total Time: " + t);
-        JLabel userLastOnline = new JLabel("Last Seen: " + myProfile.lastOnline);
-
-        // vertical box with user statistics in
-        Box vbox = Box.createVerticalBox();
-
-        vbox.add(userName);
-        vbox.add(userChars);
-        vbox.add(userTime);
-        vbox.add(userLastOnline);
-
-        hbox.add(vbox);
-        content.add(hbox);
-
-        profileFrame.pack();
-        profileFrame.setResizable(false);
-        profileFrame.isDisplayable();
-        profileFrame.setLocationRelativeTo(null);
-
-        profileFrame.setVisible(true);
     }
 
     private void showAbout()
@@ -1017,7 +980,7 @@ public class MainWindow
         menu = new JMenu("File");
         menuBar.add(menu);
 
-        ActionListener aL = newAction();
+        ActionListener aL = newAction( );
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Import", KeyEvent.VK_O, aL);
@@ -1229,13 +1192,6 @@ public class MainWindow
         @SuppressWarnings("unused")
         Border emptyBorder = BorderFactory.createEmptyBorder();
 
-        // temporarily added so there were always users online
-        /*
-         * userListModel.add(0, "Person 1"); userListModel.add(1, "Person 2");
-         * userListModel.add(2, "Person 3"); userListModel.add(3, "Person 4");
-         * userListModel.add(4, "Person 5");
-         */
-
         if (!this.offlineMode)
         {
             shared.userList
@@ -1302,50 +1258,9 @@ public class MainWindow
                                 {
                                     public void run()
                                     {
-                                        /**
-                                         * TODO: - Get the name from the thing
-                                         * the user right clicked - Send
-                                     * "requestprofile" subject msg to the bot -
-                                         * - Wait for 500ms - Check in Client to
-                                         * see the new Profile that has appeared
-                                         * :)
-                                         */
-                                        try
-                                        {
-                                            System.out.println(client.profileFound);
-                                        Message msg = new Message();
-                                        msg.setBody("");
-                                        msg.setSubject( "requestprofile" );
-                                        msg.setProperty( "username", shared.userList
-                                                .getSelectedValue() );
-                                        //msg.setProperty( "notme", "true" );
-                                        client.botChat.sendMessage( msg );
-                                            Thread.sleep(1000);
-                                            System.out
-                                                    .println(client.profileFound);
-                                            if (!client.profileFound)
-                                                JOptionPane
-                                                        .showMessageDialog(
-                                                                new JPanel(),
-                                                                "Error: user profile not found on server");
-                                            else
-                                            {
-                                                showMyProfile(client.notMyProfile);
-                                                client.profileFound = false;
-                                                client.notMyProfile = null;
-                                            }
-                                        }
-                                        catch (XMPPException e)
-                                        {
-                                            e.printStackTrace();
-                                            JOptionPane.showMessageDialog(
-                                                    new JPanel(),
-                                                    "Error: " + e.getMessage());
-                                        }
-                                        catch (InterruptedException e)
-                                        {
-                                            e.printStackTrace();
-                                        }
+                                        // Changed by Andrew to remove need for thread.sleep()
+                                        // See client message listener for new way of displaying profile pane
+                                        requestProfile( (String) shared.userList.getSelectedValue(), true );
                                     }
                                 });
                             }
@@ -1579,7 +1494,7 @@ public class MainWindow
                 {
                     myProfile.updateTimeSpent(startTime);
                     myProfile.updateProfileInfo();
-                    uploadProfile();
+                    myProfile.uploadProfile( client.botChat, startTime );
                     System.out.println("disconnecting");
                     client.disconnect();
                 }

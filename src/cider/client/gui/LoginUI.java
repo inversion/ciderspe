@@ -551,7 +551,6 @@ public class LoginUI
 
         try
         {
-
             ui.displayLogin();
         }
         catch (Exception e)

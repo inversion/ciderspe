@@ -25,14 +25,6 @@ package cider.common.network.bot;
 
 import java.awt.Color;
 import java.awt.Toolkit;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Queue;
 
@@ -63,10 +55,9 @@ public class BotMessageListener implements MessageListener
 
     private Bot bot;
 
-    public BotMessageListener(BotChatListener source, String name, Bot bot)
+    public BotMessageListener( Bot bot )
     {
         this.bot = bot;
-        // System.out.println(this.liveFolder.xml(""));
     }
 
     @Override
@@ -75,21 +66,7 @@ public class BotMessageListener implements MessageListener
         String subject = message.getSubject();
         
         if (subject.equals("are you online mr bot"))
-        {
-            if( DEBUG )
-                System.out.println("Online query received");
-            try
-            {
-                Message msg = new Message();
-                msg.setBody("");
-                msg.setSubject("yes i am online");
-                chat.sendMessage(msg);
-            }
-            catch (XMPPException e)
-            {
-                e.printStackTrace();
-            }
-        }
+            sendOnlineReply( chat );
         else if ( subject.equals( "createDoc" ) )
             createDocument(chat, message);
         else if ( subject.equals("getfilelist") )
@@ -113,31 +90,7 @@ public class BotMessageListener implements MessageListener
             }
         }
         else if ( subject.equals( "userprofile" ) )
-        {
-            // Update the profile in the bot's memory
-            String username = (String) message.getProperty( "username" );
-            Integer chars = (Integer) message.getProperty( "chars" );
-            Long timeSpent = (Long) message.getProperty( "timeSpent"  );
-            String lastOnline = (String) message.getProperty( "lastOnline" );
-            Integer r = (Integer) message.getProperty("r");
-            Integer g = (Integer) message.getProperty("g");
-            Integer b = (Integer) message.getProperty("b");
-            
-            // If the bot doesn't have this profile on record
-            if( !bot.profiles.containsKey( username ) )
-            {
-                System.out.println("BotMessageListener: Don't have a profile for " + username + " creating one");
-                bot.profiles.put( username, new Profile( username ) );
-            }
-            
-            
-            Profile profile = bot.profiles.get( username );  
-            profile.typedChars = chars;
-            profile.timeSpent = timeSpent;
-            profile.lastOnline = lastOnline;
-            profile.setColour( r, g, b );
-            System.out.println( "BotMessageListener: Updated profile for " + username + ": " + profile.toString() );           
-        }
+            updateProfile( chat, message );
         else if ( subject.equals("requestprofile") )
             sendProfile( chat, message );
         // This part is still important for when a file is opened
@@ -169,7 +122,8 @@ public class BotMessageListener implements MessageListener
             String dest = (String) message.getProperty( "path" );
             long time = Long.parseLong( (String) message.getProperty( "time" ) );
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .simplified(time).events(), false);
+                    .simplified(time).events(), true);
+            // TODO: I'm not sure what stopdiversion is (Andrew)
         }
         else if (subject.equals("You play 2 hours to die like this?"))
         {
@@ -231,13 +185,14 @@ public class BotMessageListener implements MessageListener
         {
             msg.setSubject( "pushto" );
             msg.setProperty( "path0", path );
-            msg.setProperty( "te0", queue.poll().pack() );
+            // Encode so we can send newlines
+            msg.setProperty( "te0", StringUtils.encodeBase64( queue.poll().pack() ) );
             for (TypingEvent te : queue)
-                msg.setProperty( "te" + (i++), te.pack() );
+                msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
         }
 
         if (stopDiversion)
-            msg.setProperty( "te" + i, "end" );
+            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
 
         try
         {
@@ -275,6 +230,41 @@ public class BotMessageListener implements MessageListener
         }
     }
 
+    
+    /**
+     * Update the profile in the bot's memory with the one sent by a client.
+     * 
+     * @param message The message containing the new profile information.
+     * @param chat The chat the message was received on.
+     *      
+     * @author Andrew
+     */
+    private void updateProfile( Chat chat, Message message )
+    {
+        String username = StringUtils.parseName( chat.getParticipant() );
+        Integer chars = (Integer) message.getProperty( "chars" );
+        Long timeSpent = (Long) message.getProperty( "timeSpent"  );
+        String lastOnline = (String) message.getProperty( "lastOnline" );
+        Integer r = (Integer) message.getProperty("r");
+        Integer g = (Integer) message.getProperty("g");
+        Integer b = (Integer) message.getProperty("b");
+        
+        // If the bot doesn't have this profile on record
+        if( !bot.profiles.containsKey( username ) )
+        {
+            System.out.println("BotMessageListener: Don't have a profile for " + username + " creating one");
+            bot.profiles.put( username, new Profile( username ) );
+        }
+        
+        // Update the profile at the Bot's end with this new information
+        Profile profile = bot.profiles.get( username );  
+        profile.typedChars = chars;
+        profile.timeSpent = timeSpent;
+        profile.lastOnline = lastOnline;
+        profile.setColour( r, g, b );
+        System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );    
+    }
+    
     /**
      * Send a profile to a user.
      * 
@@ -291,7 +281,7 @@ public class BotMessageListener implements MessageListener
 
         try
         {
-            System.out.println("trying to send profile for " + username);
+            System.out.println("BotMessageListener: Trying to send profile for " + username);
             if ( bot.profiles.containsKey( username ) )
             {
                 Profile profile = bot.profiles.get( username );
@@ -305,13 +295,27 @@ public class BotMessageListener implements MessageListener
                 msg.setProperty( "r", profile.userColour.getRed() );
                 msg.setProperty( "g", profile.userColour.getGreen() );
                 msg.setProperty( "b", profile.userColour.getBlue() );
+                
+                // If we want the profile to pop up at the other end
+                if( message.getProperty( "show" ) != null )
+                    msg.setProperty( "show", "true" );
+                
                 chat.sendMessage( msg );
+                System.out.println("BotMessageListener: Profile found, sent.");
             }
             else
             {
                 // Send message indicating no profile was found
-                chat.sendMessage("notfound");
-                System.out.println("Profile not found!");
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject( "notfound" );
+                msg.setProperty( "username", username );
+                // If we want the warning box to pop up at the other end
+                if( message.getProperty( "show" ) != null )
+                    msg.setProperty( "show", "true" );
+                
+                chat.sendMessage( msg );
+                System.out.println("BotMessageListener: Profile not found for " + username);
             }
         }
         catch (XMPPException e)
@@ -343,7 +347,7 @@ public class BotMessageListener implements MessageListener
         SourceDocument doc = new SourceDocument(name);
 
         if (DEBUG)
-            System.out.println("Creating document " + doc.name + " in " + path);
+            System.out.println("BotMessageListener: Creating document " + doc.name + " in " + path);
 
         if (contents != null)
         {
@@ -362,4 +366,28 @@ public class BotMessageListener implements MessageListener
         sendFileList();
     }
 
+    /**
+     * Reply to the user that the bot is online.
+     * 
+     * @param chat The chat to reply on.
+     * 
+     * @author Andrew
+     */
+    private void sendOnlineReply( Chat chat )
+    {
+        if( DEBUG )
+            System.out.println("BotMessageListener: Online query received from " + chat.getParticipant());
+        try
+        {
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setSubject("yes i am online");
+            chat.sendMessage(msg);
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
 }
