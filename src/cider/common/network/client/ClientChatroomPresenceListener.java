@@ -43,7 +43,7 @@ import org.jivesoftware.smack.util.StringUtils;
  *
  */
 
-public class ClientChatroomParticipantListener implements PacketListener {
+public class ClientChatroomPresenceListener implements PacketListener {
 
     private static final boolean DEBUG = true;
     
@@ -53,7 +53,7 @@ public class ClientChatroomParticipantListener implements PacketListener {
     private String botUsername;
     private String checkerUsername;
     
-    public ClientChatroomParticipantListener( DefaultListModel userListModel, JLabel userTotal , Client parent, String botUsername, String checkerUsername ) 
+    public ClientChatroomPresenceListener( DefaultListModel userListModel, JLabel userTotal , Client parent, String botUsername, String checkerUsername ) 
     {
         this.list = userListModel;
         this.userCount = userTotal;
@@ -72,13 +72,32 @@ public class ClientChatroomParticipantListener implements PacketListener {
         {
             if( DEBUG )
                 System.out.println( "Presence from: " + nickname + " AVAILABLE" );
-            if( !list.contains( nickname ) && !nickname.equals( botUsername ) && !nickname.equals( checkerUsername ) )
+            
+            if( !nickname.equals( botUsername ) && !nickname.equals( checkerUsername ) )
             {
-                if( DEBUG )
-                    System.out.println( "Adding " + nickname + " to list...");
-                list.addElement( nickname );
-                userCount.setText(" " + list.getSize() + " Users Online");
-            }            
+                if( pres.getMode() == null || pres.getMode() == Presence.Mode.available )
+                {
+                    if( !list.contains( nickname )   )
+                    {
+                        if( DEBUG )
+                            System.out.println( "Adding " + nickname + " to list...");
+                        list.addElement( nickname );
+                        userCount.setText(" " + list.getSize() + " Users Online");
+                    }
+                    else
+                    {
+                        // TODO: Add GUI code for coming back from idle here
+                        System.out.println( nickname + " is no longer idle...");
+                    }
+                }
+                else if( pres.getMode() == Presence.Mode.away )
+                {
+                 // TODO: Add GUI code for going idle here
+                    System.out.println( nickname + " went idle...");
+                }
+                    
+            }
+       
         }
         else if( pres.getType() == Presence.Type.unavailable )
         {

@@ -84,8 +84,8 @@ public class TimeRegion
                 }
                 else
                 {
-                    client.pullSimplifiedEventsFromBot(this.documentID.path,
-                            this.start.time);
+                    client.pullEventsFromBot(this.documentID.path,
+                            this.start.time, true);
                 }
             }
             client.pullEventsFromBot(this.documentID.path, this.start.time,
