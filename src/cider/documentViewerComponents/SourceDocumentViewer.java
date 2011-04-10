@@ -29,6 +29,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
@@ -993,5 +995,21 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     public Color getDefaultColor()
     {
         return defaultColor;
+    }
+
+    /**
+     * Copy current selection to the clipboard
+     * 
+     * @author Andrew
+     */
+    public void copy()
+    {
+        StringBuffer sb = new StringBuffer();
+        for( TypingEvent te : selectedRegion.list )
+            sb.append( te.text );
+        
+        Clipboard clipboard = getToolkit().getSystemClipboard();
+        StringSelection stringSelection = new StringSelection( sb.toString() );
+        clipboard.setContents( stringSelection, stringSelection );
     }
 }

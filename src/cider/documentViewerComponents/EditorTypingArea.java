@@ -103,6 +103,12 @@ public class EditorTypingArea extends SourceDocumentViewer
     {
         super.selectAll();
     }
+    
+    @Override
+    public void copy()
+    {
+        super.copy();        
+    }
 
     @Override
     public void setCaretPosition(int position)
@@ -133,4 +139,5 @@ public class EditorTypingArea extends SourceDocumentViewer
     {
         return super.getCurrentLine();
     }
+
 }
