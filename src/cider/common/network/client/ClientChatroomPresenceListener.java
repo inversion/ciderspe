@@ -65,7 +65,6 @@ public class ClientChatroomPresenceListener implements PacketListener {
     @Override
     public void processPacket( Packet packet ) 
     {
-        // TODO: Implement away/idle etc.
         Presence pres = (Presence) packet;
         String nickname = StringUtils.parseResource( pres.getFrom() );
         if( pres.getType() == Presence.Type.available )
