@@ -29,6 +29,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.HashMap;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+import cider.client.gui.LoginUI;
+
 /**
  * Reads a configuration file and stores its values
  * 
@@ -39,6 +44,7 @@ import java.util.HashMap;
 public class ConfigurationReader
 {    
     private HashMap<String,String> config = new HashMap<String,String>();
+    private LoginUI login = null;
     
     public String getHost()
     {
@@ -98,8 +104,17 @@ public class ConfigurationReader
         return dir.getAbsoluteFile();    
     }
     
-    public ConfigurationReader( String fileName )
+    public File getProfileDir()
     {
+        File dir = new File( config.get( "PROFILE_DIR" ) );
+        
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();    
+    }
+    
+    public ConfigurationReader( String fileName, LoginUI l )
+    {
+    	login = l;
         BufferedReader br = null;
         String line;
         
@@ -109,9 +124,12 @@ public class ConfigurationReader
         }
         catch (FileNotFoundException e)
         {
-            System.err.println( "Error: Failed to read config file: " + fileName );
+            JOptionPane.showMessageDialog(new JPanel(), "Error: Failed to read config file: " + fileName);
             e.printStackTrace();
-            System.exit(1);
+            if (login == null)
+            	System.exit(1);
+            else
+            	login.logout();
         }
         
         try
@@ -143,8 +161,11 @@ public class ConfigurationReader
         catch (Exception e)
         {
             e.printStackTrace();
-            System.err.println( "Error reading configuration: " + e.getMessage() );
-            System.exit(1);
+            JOptionPane.showMessageDialog(new JPanel(), "Error reading configuration: " + e.getMessage() );
+            if (login == null)
+            	System.exit(1);
+            else
+            	login.logout();
         }
            
     }

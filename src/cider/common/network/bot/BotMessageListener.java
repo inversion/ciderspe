@@ -34,7 +34,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Queue;
 
 import org.jivesoftware.smack.Chat;
@@ -44,6 +43,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.processes.LiveFolder;
+import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
@@ -61,14 +61,10 @@ public class BotMessageListener implements MessageListener
 {
     public static boolean DEBUG = true;
 
-    private BotChatListener source;
-    private String name;
     private Bot bot;
 
     public BotMessageListener(BotChatListener source, String name, Bot bot)
     {
-        this.source = source;
-        this.name = name;
         this.bot = bot;
         // System.out.println(this.liveFolder.xml(""));
     }
@@ -76,174 +72,179 @@ public class BotMessageListener implements MessageListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String body = null;
-        body = message.getBody();
-
-        if (body.startsWith("quit"))
-            source.endSession(name);
-        else if (body.startsWith("createDocument="))
-            createDocument(chat, body);
-        else if (body.startsWith("requestusercolour"))
+        String subject = message.getSubject();
+        
+        if (subject.equals("are you online mr bot"))
         {
-            String[] split = body.split(" ");
-            Color yaycolour = bot.colours.get(split[2]);
+            if( DEBUG )
+                System.out.println("Online query received");
             try
             {
-                source.chats.get(split[1]).sendMessage(
-                        "usercolour: " + yaycolour.getRed() + " "
-                                + yaycolour.getGreen() + " "
-                                + yaycolour.getBlue());
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject("yes i am online");
+                chat.sendMessage(msg);
             }
             catch (XMPPException e)
             {
                 e.printStackTrace();
             }
         }
-        else if (body.startsWith("userprofile:"))
-        {
-            String[] splitProfile = body.split("  ");
-            File f = new File("profile_" + splitProfile[1] + ".txt");
-            try
-            {
-                f.createNewFile();
-                FileWriter fw = new FileWriter(f);
-                BufferedWriter out = new BufferedWriter(fw);
-                String s = splitProfile[1] + "\n" + splitProfile[2] + "\n"
-                        + splitProfile[3] + "\n" + splitProfile[4] + "\n"
-                        + splitProfile[5];
-                System.out
-                        .println("**********RECEIVED PROFILE**********\n" + s);
-                System.out.println("************************************");
-                out.write(s);
-                out.close();
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                System.err.println("Error: " + e.getMessage());
-            }
-        }
-        else if (body.equals("are you online mr bot"))
-        {
-            System.out.println("Online query received");
-            try
-            {
-                chat.sendMessage("yes i am online");
-            }
-            catch (XMPPException e)
-            {
-                e.printStackTrace();
-            }
-        }
-        else if (body.startsWith("requestprofile"))
-            sendProfile(chat, body);
-        else if (body.equals("getfilelist"))
+        else if ( subject.equals( "createDoc" ) )
+            createDocument(chat, message);
+        else if ( subject.equals("getfilelist") )
             sendFileList();
-        // This part is still important for when a file is opened
-        else if (body.startsWith("pullEvents("))
+        else if ( subject.equals("requestusercolour") )
         {
-            body = "("
-                    + new String(StringUtils.decodeBase64(body.substring(11)));
-
-            String str = body.split("\\(")[1];
-            str = str.split("\\)")[0];
-            String[] args = str.split(",");
-            String dest = args[0];
-            long startTime = Long.parseLong(args[1]);
-
-            if (args.length == 2)
-                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsSince(startTime), false);
+            Color yaycolour = bot.colours.get( message.getProperty( "user" ) );
+            try
+            {
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject( "usercolour" );
+                msg.setProperty("r", yaycolour.getRed());
+                msg.setProperty("g", yaycolour.getGreen());
+                msg.setProperty("b", yaycolour.getBlue());
+                chat.sendMessage( msg );
+            }
+            catch (XMPPException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        else if ( subject.equals( "userprofile" ) )
+        {
+            // Update the profile in the bot's memory
+            String username = (String) message.getProperty( "username" );
+            Integer chars = (Integer) message.getProperty( "chars" );
+            Long timeSpent = (Long) message.getProperty( "timeSpent"  );
+            String lastOnline = (String) message.getProperty( "lastOnline" );
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            
+            // If the bot doesn't have this profile on record
+            if( !bot.profiles.containsKey( username ) )
+            {
+                System.out.println("BotMessageListener: Don't have a profile for " + username + " creating one");
+                bot.profiles.put( username, new Profile( username ) );
+            }
+            
+            
+            Profile profile = bot.profiles.get( username );  
+            profile.typedChars = chars;
+            profile.timeSpent = timeSpent;
+            profile.lastOnline = lastOnline;
+            profile.setColour( r, g, b );
+            System.out.println( "BotMessageListener: Updated profile for " + username + ": " + profile.toString() );           
+        }
+        else if ( subject.equals("requestprofile") )
+            sendProfile( chat, message );
+        // This part is still important for when a file is opened
+        else if ( subject.equals( "pullEvents" ) )
+        {
+            String dest = (String) message.getProperty( "path" );
+            long time = 0, startTime = 0, endTime = 0;
+            
+            // If they haven't asked for a start and end time
+            if( (String) message.getProperty( "time" ) != null )
+                time = Long.parseLong( (String) message.getProperty( "time" ) );
             else
             {
-                long endTime = Long.parseLong(args[2]);
-                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsBetween(startTime, endTime), args[3].equals("t"));
+                startTime = Long.parseLong( (String) message.getProperty( "startTime" ) );
+                endTime = Long.parseLong( (String) message.getProperty( "endTime" ) );
             }
-
+            
+            boolean stopDiversion = ((String) message.getProperty( "stopDiversion" )).equals("true");
+            
+            if( (String) message.getProperty( "time" ) != null )
+                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                        .eventsSince( time ), false);
+            else
+                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+                        .eventsBetween(startTime, endTime), stopDiversion);
         }
-        else if (body.startsWith("pullSimplifiedEvents("))
+        else if ( subject.equals( "pullSimplifiedEvents" ) )
         {
-            body = "("
-                    + new String(StringUtils.decodeBase64(body.substring(21)));
-
-            String str = body.split("\\(")[1];
-            str = str.split("\\)")[0];
-            String[] args = str.split(",");
-            String dest = args[0];
-            long t = Long.parseLong(args[1]);
+            String dest = (String) message.getProperty( "path" );
+            long time = Long.parseLong( (String) message.getProperty( "time" ) );
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .simplified(t).events(), false);
+                    .simplified(time).events(), false);
         }
-        else if (body.startsWith("You play 2 hours to die like this?"))
+        else if (subject.equals("You play 2 hours to die like this?"))
         {
             Toolkit.getDefaultToolkit().beep();
             System.err
                     .println("The bot has been shut down by a backdoor routine");
             System.exit(1);
         }
-        else if (body.startsWith("timeRequest("))
-        {
-            // 2: Upon receipt by server, server stamps server-time and returns
-            try
-            {
-                String sentTime = body.split("\\(")[1];
-                sentTime = sentTime.split("\\)")[0];
-                chat.sendMessage("timeReply(" + sentTime + ","
-                        + System.currentTimeMillis() + ")");
-            }
-            catch (XMPPException e)
-            {
-
-                e.printStackTrace();
-            }
-        }
+//        else if ( subject.equals( "timeRequest" ) )
+//        {
+//            // 2: Upon receipt by server, server stamps server-time and returns
+//            try
+//            {
+//                String sentTime = body.split("\\(")[1];
+//                sentTime = sentTime.split("\\)")[0];
+//                chat.sendMessage("timeReply(" + sentTime + ","
+//                        + System.currentTimeMillis() + ")");
+//            }
+//            catch (XMPPException e)
+//            {
+//
+//                e.printStackTrace();
+//            }
+//        }
+        
         // probably not useful anymore \/ // TODO: Remove
-        else if (body.startsWith("pushto("))
-        {
-            System.err.println("SHOULDNT GET HERE");
-            body = new String("(" + StringUtils.decodeBase64(body.substring(7)));
-            String[] instructions = body.split("\\) \\n");
-            for (String instruction : instructions)
-            {
-                String[] preAndAfter = instruction.split("\\) ");
-                String[] pre = preAndAfter[0].split("\\(");
-                String dest = pre[1];
-                dest = dest.replace("root\\", "");
-                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-                typingEvents.add(new TypingEvent(preAndAfter[1]));
-                System.out.println("Push " + preAndAfter[1] + " to " + dest);
-                this.bot.getRootFolder().path(dest).push(typingEvents);
-            }
-        }
+//        else if (body.startsWith("pushto("))
+//        {
+//            System.err.println("SHOULDNT GET HERE");
+//            body = new String("(" + StringUtils.decodeBase64(body.substring(7)));
+//            String[] instructions = body.split("\\) \\n");
+//            for (String instruction : instructions)
+//            {
+//                String[] preAndAfter = instruction.split("\\) ");
+//                String[] pre = preAndAfter[0].split("\\(");
+//                String dest = pre[1];
+//                dest = dest.replace("root\\", "");
+//                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+//                typingEvents.add(new TypingEvent(preAndAfter[1]));
+//                System.out.println("Push " + preAndAfter[1] + " to " + dest);
+//                this.bot.getRootFolder().path(dest).push(typingEvents);
+//            }
+//        }
     }
 
     private void pushBack(Chat chat, String path, Queue<TypingEvent> queue,
             boolean stopDiversion)
     {
-        String instructions = "";
+        Message msg = new Message();
+        msg.setBody("");
+        int i = 1;
+        
         if (queue.size() == 0)
-            instructions += "isblank(" + StringUtils.encodeBase64(path + ")");
+        {
+            msg.setSubject( "isblank" );
+            msg.setProperty( "path", path );
+        }
         else
         {
-            instructions += "pushto("
-                    + StringUtils.encodeBase64(path + ") "
-                            + queue.poll().pack());
+            msg.setSubject( "pushto" );
+            msg.setProperty( "path0", path );
+            msg.setProperty( "te0", queue.poll().pack() );
             for (TypingEvent te : queue)
-                instructions += StringUtils.encodeBase64(te.pack()) + "%%";
-
+                msg.setProperty( "te" + (i++), te.pack() );
         }
 
         if (stopDiversion)
-            instructions += "stopdiversion";
+            msg.setProperty( "te" + i, "end" );
 
         try
         {
-            chat.sendMessage(instructions);
+            chat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
-
             e.printStackTrace();
         }
     }
@@ -258,8 +259,15 @@ public class BotMessageListener implements MessageListener
         try
         {
             String xml = this.bot.getRootFolder().xml("");
-            bot.chatroom.sendMessage("filelist="
-                    + StringUtils.encodeBase64(xml));
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setTo( bot.chatroom.getRoom() );
+            msg.setType( Message.Type.groupchat );
+            msg.setSubject( "filelist" );
+            msg.setBody("");
+            // TODO: Smack changes it all to &gt; etc. so using base64 for now
+            msg.setProperty( "xml", StringUtils.encodeBase64( xml ) );
+            bot.chatroom.sendMessage( msg );
         }
         catch (XMPPException e)
         {
@@ -272,57 +280,39 @@ public class BotMessageListener implements MessageListener
      * 
      * @param chat
      *            Chat to send it on.
-     * @param body
+     * @param message
      *            Request message to be parsed.
      * 
      * @author Jon, Andrew
      */
-    private void sendProfile(Chat chat, String body)
+    private void sendProfile(Chat chat, Message message)
     {
-        String[] splitbody = body.split(" ");
+        String username = (String) message.getProperty("username");
 
-        System.out.println(body);
-
-        boolean notme = false;
-        for (int i = 0; i < splitbody.length; i++)
-        {
-            if (splitbody[i].equals("notme"))
-                notme = true;
-        }
         try
         {
-            File f = new File("profile_" + splitbody[1] + ".txt");
-            if (f.exists())
+            System.out.println("trying to send profile for " + username);
+            if ( bot.profiles.containsKey( username ) )
             {
-                FileInputStream fis = new FileInputStream(f);
-                DataInputStream dis = new DataInputStream(fis);
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        dis));
-                String line;
-                System.out.println("Reading profile, sending:\n");
-                while ((line = br.readLine()) != null)
-                {
-                    System.out.println(line);
-                    // Send profile file to client
-                    if (notme)
-                        chat.sendMessage("PROFILE$ " + line);
-                    else
-                        source.chats.get(splitbody[1]).sendMessage(
-                                ("PROFILE* " + line));
-                }
+                Profile profile = bot.profiles.get( username );
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setSubject("profile");
+                msg.setProperty( "username", profile.uname );
+                msg.setProperty( "chars", profile.typedChars );
+                msg.setProperty( "timeSpent", profile.timeSpent );
+                msg.setProperty( "lastOnline", profile.lastOnline );
+                msg.setProperty( "r", profile.userColour.getRed() );
+                msg.setProperty( "g", profile.userColour.getGreen() );
+                msg.setProperty( "b", profile.userColour.getBlue() );
+                chat.sendMessage( msg );
             }
             else
             {
                 // Send message indicating no profile was found
-                source.chats.get(splitbody[1]).sendMessage("notfound");
+                chat.sendMessage("notfound");
                 System.out.println("Profile not found!");
             }
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            System.err.println("Error: IO error when retrieving profile for "
-                    + splitbody[1]);
         }
         catch (XMPPException e)
         {
@@ -339,18 +329,17 @@ public class BotMessageListener implements MessageListener
      * 
      * @param chat
      *            The chat the user is on (to get the owner name).
-     * @param body
-     *            The body of the message to parse.
+     * @param message   The message containing a source document.
      * 
      * @author Andrew
      */
-    private void createDocument(Chat chat, String body)
+    private void createDocument(Chat chat, Message msg)
     {
-        String[] components = body.split(":");
-        String name = new String(StringUtils.decodeBase64(components[1]));
-        String path = new String(StringUtils.decodeBase64(components[3]));
-        String contents = new String(StringUtils.decodeBase64(components[5]));
+        String name = (String) msg.getProperty( "name" );
+        String path = (String) msg.getProperty( "path" );
+        String contents = (String) msg.getProperty( "contents" );
         String owner = StringUtils.parseName(chat.getParticipant());
+        
         SourceDocument doc = new SourceDocument(name);
 
         if (DEBUG)

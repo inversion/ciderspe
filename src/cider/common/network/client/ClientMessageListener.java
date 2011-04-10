@@ -58,7 +58,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        if (body.startsWith("quit"))
+        String subject = message.getSubject();
+        if ( subject.equals( "quit" ) )
         {
             JOptionPane
                     .showMessageDialog(
@@ -67,84 +68,47 @@ public class ClientMessageListener implements MessageListener, ActionListener
             client.disconnect();
             System.exit(1);
         }
-        else if (body.equals("yes i am online"))
-        {
+        else if (subject.equals("yes i am online"))
             client.botIsOnline = true;
-        }
-        else if (body.equals("notfound"))
-        {
+        else if (subject.equals("notfound"))
             client.profileFound = false;
-        }
-        else if (body.startsWith("usercolour:"))
+        else if (subject.equals("usercolour"))
         {
-            String[] split = body.split(" ");
-            Color c = new Color(Integer.parseInt(split[1]),
-                    Integer.parseInt(split[2]), Integer.parseInt(split[3]));
-            client.incomingColour = c;
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            client.incomingColour = new Color(r, g, b);
         }
-        else if (body.startsWith("PROFILE* "))
+        else if( subject.equals( "profile" ) )
         {
-            System.out.println(body);
-            if (client.profile == null)
+            String username = (String) message.getProperty( "username" );
+            Integer chars = (Integer) message.getProperty( "chars" );
+            Long timeSpent = (Long) message.getProperty( "timeSpent" );
+            String lastOnline = (String) message.getProperty( "lastOnline" );
+            Integer r = (Integer) message.getProperty("r");
+            Integer g = (Integer) message.getProperty("g");
+            Integer b = (Integer) message.getProperty("b");
+            
+            // If setting our own profile's values
+            if( username.equals( client.getUsername() ) )
             {
-                client.profile = new Profile(client.getUsername(), client);
-            }
-            client.profileFound = true;
-            String[] splitLine = body.split(" ");
-            if (splitLine[1].equals("chars:"))
-            {
-                client.profile.setChars(Integer.parseInt(splitLine[2]));
-            }
-            else if (splitLine[1].equals("timespent:"))
-            {
-                client.profile.setTime(Long.parseLong(splitLine[2]));
-            }
-            else if (splitLine[1].equals("lastonline:"))
-            {
-                String newsplit = body.substring(21);
-                client.profile.setLastOnline(newsplit);
-            }
-            else if (splitLine[1].equals("colour:"))
-            {
-                client.profile.setColour(Integer.parseInt(splitLine[2]),
-                        Integer.parseInt(splitLine[3]),
-                        Integer.parseInt(splitLine[4]));
+                System.out.println( "ClientMessageListener: Updating own profile..." );
+                client.profile.uname = username;
+                client.profile.typedChars = chars;
+                client.profile.timeSpent = timeSpent;
+                client.profile.lastOnline = lastOnline;
+                client.profile.setColour( r, g, b );
+                client.colours.put(username, client.profile.userColour);
+                client.shared.userList.repaint();
             }
             else
             {
-                client.profile.uname = body.substring(9);
-            }
-        }
-        else if (body.startsWith("PROFILE$ "))
-        {
-            if (client.notMyProfile == null)
-            {
-                client.notMyProfile = new Profile("notme", client);
-            }
-            client.profileFound = true;
-            String[] splitLine = body.split(" ");
-            if (splitLine[1].equals("chars:"))
-            {
-                client.notMyProfile.setChars(Integer.parseInt(splitLine[2]));
-            }
-            else if (splitLine[1].equals("timespent:"))
-            {
-                client.notMyProfile.setTime(Long.parseLong(splitLine[2]));
-            }
-            else if (splitLine[1].equals("lastonline:"))
-            {
-                String newsplit = body.substring(21);
-                client.notMyProfile.setLastOnline(newsplit);
-            }
-            else if (splitLine[1].equals("colour:"))
-            {
-                client.notMyProfile.setColour(Integer.parseInt(splitLine[2]),
-                        Integer.parseInt(splitLine[3]),
-                        Integer.parseInt(splitLine[4]));
-            }
-            else
-            {
-                client.notMyProfile.uname = body.substring(9);
+                client.notMyProfile = new Profile( username );
+                client.profileFound = true;
+                client.notMyProfile.typedChars = chars;
+                client.notMyProfile.timeSpent = timeSpent;
+                client.notMyProfile.lastOnline = lastOnline;
+                client.notMyProfile.setColour( r, g, b );
             }
         }
         else if (body.startsWith("timeReply("))
@@ -164,7 +128,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
             this.client.addTimeDeltaSample(delta);
         }
         else
-            this.client.processDocumentMessages(body);
+            this.client.processDocumentMessages( message );
     }
 
     @Override

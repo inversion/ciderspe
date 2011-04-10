@@ -54,17 +54,12 @@ public class ClientChatroomMessageListener implements PacketListener
     {
         // TODO Auto-generated method stub
         Message msg = (Message) packet;
-        if (msg.getType() == Message.Type.groupchat)
-        {
-            String body = msg.getBody();
-            if (body.startsWith("filelist=") 
-                    || body.startsWith("pushto(")
-                    || body.startsWith("empty")
-                    || body.startsWith("colourchange:"))
-                client.processDocumentMessages(body);
-            else
-                client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
-        }
+        String body = msg.getBody();
+        
+        boolean docMessage = client.processDocumentMessages( msg );
+        // If this isn't a document message print it to the chatlog
+        if( !docMessage )
+            client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
     }
 
 }
