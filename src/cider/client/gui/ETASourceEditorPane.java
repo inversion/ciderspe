@@ -298,7 +298,11 @@ public class ETASourceEditorPane extends JScrollPane
                       if( ke.isControlDown() )
                           eta.selectAll();
                       break;
-                  }
+                  case KeyEvent.VK_C:
+                      if( ke.isControlDown() )
+                          eta.copy();
+                      break;
+                }
                 
             }
 
