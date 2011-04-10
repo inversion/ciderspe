@@ -59,6 +59,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.JWindow;
 import javax.swing.UIManager;
 
 import org.jivesoftware.smack.XMPPException;
@@ -73,7 +74,7 @@ public class LoginUI
                                                             // MainWindow.java
 
     static JFrame login; // TODO changed from private to static?
-    private JFrame connecting;
+    private JWindow connecting;
 
     // Default values for login box
     public static final String DEFAULT_HOST = "xmpp.org.uk";
@@ -419,39 +420,41 @@ public class LoginUI
             public void run()
             {
                 // Create New JFrame
-                connecting = new JFrame();
+                connecting = new JWindow();
                 connecting.setLocationRelativeTo(LoginUI.login);
-                connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                connecting.setTitle("CIDEr - Connecting");
-                connecting.setResizable(false);
+                //connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                //connecting.setTitle("CIDEr - Connecting");
+                //connecting.setResizable(false);
                 connecting.toFront();
 
                 login.setVisible(false);
 
                 JPanel panel = new JPanel();
                 /*
-                 * try {
-                 * UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName
-                 * ()); } catch (Exception e) { }
-                 */
-
-                panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+                 * panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
                 Box box = Box.createHorizontalBox();
-
-                // Connecting Image
-                URL u = this.getClass().getResource("connectingimage.gif");
-                ImageIcon image = new ImageIcon(u);
-                JLabel lblImage = new JLabel(image);
-                lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
-                lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
-                box.add(lblImage);
-
+                
                 // Status Text
                 JLabel lblStatus = new JLabel("Connecting to the server...");
                 box.add(lblStatus);
+                */          
+                                
+                URL u = this.getClass().getResource("splash.gif");
+                ImageIcon image = new ImageIcon(u);
+                JLabel lblImage = new JLabel(image);
+                
+                // Connecting Image
+                /*URL u1 = this.getClass().getResource("connectingimage.gif");
+                ImageIcon image1 = new ImageIcon(u1);
+                JLabel lblImage1 = new JLabel(image1);
+                lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+                lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));*/
+                //box.add(lblImage1);            
 
                 // Finalise JFrame
-                panel.add(box);
+                //panel.add(box);
+                panel.add(lblImage);
+               //panel.add(lblImage1);
                 connecting.add(panel);
                 connecting.pack();
                 int x = (int) (login.getX() + login.getWidth() / 2);
