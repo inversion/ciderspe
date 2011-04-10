@@ -118,7 +118,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
                     client.getParent().showProfile( profile );
             }
         }
-        else if (body.startsWith("timeReply("))
+        else if (body.length() > 0 && body.startsWith("timeReply("))
         {
             String str = body.split("\\(")[1];
             str = str.split("\\)")[0];

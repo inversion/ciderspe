@@ -26,8 +26,6 @@ package cider.common.network.client;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
-import org.jivesoftware.smack.util.StringUtils;
-
 
 
 /**

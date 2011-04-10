@@ -250,6 +250,7 @@ public class LoginUI
 
     private void splashScreen()
     {
+        // TODO: Can't we just put a nice image into the connecting box and eliminate the need for this? (Andrew)
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         JFrame f = new JFrame();
         f.setBounds((dim.width - 800) / 2, (dim.height - 600) / 2, 800, 600);

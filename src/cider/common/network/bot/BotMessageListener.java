@@ -122,8 +122,7 @@ public class BotMessageListener implements MessageListener
             String dest = (String) message.getProperty( "path" );
             long time = Long.parseLong( (String) message.getProperty( "time" ) );
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .simplified(time).events(), true);
-            // TODO: I'm not sure what stopdiversion is (Andrew)
+                    .simplified(time).events(), false);
         }
         else if (subject.equals("You play 2 hours to die like this?"))
         {
