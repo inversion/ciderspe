@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -34,7 +34,6 @@ package cider.common.processes;
 public class DocumentID
 {
     public String name;
-    public String owner;
     public String path;
 
     /**
@@ -44,10 +43,9 @@ public class DocumentID
      * @param path
      *            of the SourceDocument
      */
-    public DocumentID(String name, String path, String owner)
+    public DocumentID(String name, String path)
     {
         this.name = name;
-        this.owner = owner;
         this.path = path;
     }
 }

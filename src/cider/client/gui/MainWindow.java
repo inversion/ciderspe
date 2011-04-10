@@ -427,8 +427,7 @@ public class MainWindow
         // sourceHistoryDialog.setPreferredSize(this.w.getSize());
         // sourceHistoryDialog.setVisible(true);
 
-        DocumentID documentID = new DocumentID("Test Document", "testpath",
-                "test owner");
+        DocumentID documentID = new DocumentID("Test Document", "testpath");
 
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
                 new SourceDocument(documentID.name));
@@ -451,7 +450,13 @@ public class MainWindow
         }
         else
         {
-            tbl.useTimeBordersFrom(this.currentFileName, this.client);
+            /*
+             * try { FileWriter fstream = new FileWriter(
+             * this.client.getCurrentDocumentID().path); BufferedWriter out =
+             * new BufferedWriter(fstream); out.write(""); out.close(); } catch
+             * (IOException e) { System.err.println("Error: " + e.getMessage());
+             * e.printStackTrace(); System.exit(0); }
+             */
         }
 
         tbl.createRegions();
