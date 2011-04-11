@@ -78,7 +78,8 @@ public class TimeRegion
                 if (this.start.fullSet)
                 {
                     SourceDocument startDoc = new SourceDocument(
-                            this.documentID.name, this.documentID.owner, this.start.typingEvents);
+                            this.documentID.name, this.documentID.path,
+                            this.start.typingEvents);
                     startDoc.simplify(this.end.time);
                     this.end.typingEvents.addAll(startDoc.events());
                 }

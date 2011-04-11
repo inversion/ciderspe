@@ -38,11 +38,11 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -75,6 +75,7 @@ import cider.common.network.ConfigurationReader;
 import cider.common.network.DebugPacketFilter;
 import cider.common.network.DebugPacketInterceptor;
 import cider.common.network.DebugPacketListener;
+import cider.common.processes.DocumentID;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
@@ -108,7 +109,7 @@ public class Client
 
     // External configuration for the Client
     ConfigurationReader clientConfig;
-    
+
     // XMPP Basics
     private XMPPConnection connection;
     private ChatManager chatmanager;
@@ -131,16 +132,18 @@ public class Client
     // Private chat sessions with other users
     private ClientPrivateChatListener userChatListener;
     protected HashMap<String, JTextArea> usersToAreas = new HashMap<String, JTextArea>();
-    
-    // Jingle (voice chat) stuff    
+
+    // Jingle (voice chat) stuff
     private JingleManager jm;
     private JingleSession incoming = null;
     private JingleSession outgoing = null;
-    
+
     // The current user's profile
     public Profile profile;
     public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
+
+    public DocumentID currentDocumentID;
 
     // FIXME: UNUSED VARIABLE
     // private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
@@ -164,16 +167,17 @@ public class Client
     // FIXME: synchronised is never read!
     @SuppressWarnings("unused")
     private boolean synchronised = false;
-    private TimeRegion diversion;
+    private TimeRegion typingEventDiversion;
 
     public Client(String username, String password, String host, int port,
             String serviceName, LoginUI log, ClientSharedComponents shared)
     {
-        clientConfig = new ConfigurationReader( "Client.conf" , log );
-        
+        clientConfig = new ConfigurationReader("Client.conf", log);
+
         // Assign objects from parameters
         this.username = username;
-        this.chatroomName = clientConfig.getChatroomName() + "@conference." + serviceName;
+        this.chatroomName = clientConfig.getChatroomName() + "@conference."
+                + serviceName;
         this.host = host;
         this.port = port;
         this.serviceName = serviceName;
@@ -186,7 +190,7 @@ public class Client
 
         EditorTypingArea.addParent(this);
     }
-    
+
     /**
      * Initiate handlers for VoIP chat.
      * 
@@ -194,35 +198,40 @@ public class Client
      */
     private void initJingle()
     {
-        ICETransportManager icetm0 = new ICETransportManager(connection, clientConfig.getStunServer(), clientConfig.getStunPort());
+        ICETransportManager icetm0 = new ICETransportManager(connection,
+                clientConfig.getStunServer(), clientConfig.getStunPort());
         List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>();
-        //mediaManagers.add(new JmfMediaManager(icetm0));
+        // mediaManagers.add(new JmfMediaManager(icetm0));
         mediaManagers.add(new SpeexMediaManager(icetm0));
         mediaManagers.add(new ScreenShareMediaManager(icetm0));
         jm = new JingleManager(connection, mediaManagers);
         jm.addCreationListener(icetm0);
 
-        jm.addJingleSessionRequestListener(new JingleSessionRequestListener() {
-            public void sessionRequested(JingleSessionRequest request) {
+        jm.addJingleSessionRequestListener(new JingleSessionRequestListener()
+        {
+            public void sessionRequested(JingleSessionRequest request)
+            {
 
-//                if (incoming != null)
-//                    return;
+                // if (incoming != null)
+                // return;
 
-                try {
+                try
+                {
                     // Accept the call
                     incoming = request.accept();
 
                     // Start the call
                     incoming.startIncoming();
                 }
-                catch (XMPPException e) {
+                catch (XMPPException e)
+                {
                     e.printStackTrace();
                 }
 
             }
         });
     }
-    
+
     /**
      * Tries to connect to the XMPP server, throwing an exception if it fails in
      * any way.
@@ -252,39 +261,40 @@ public class Client
 
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-         connection.addPacketListener(new DebugPacketListener(), new
-         DebugPacketFilter());
-         connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                 new DebugPacketFilter());
-
+        connection.addPacketListener(new DebugPacketListener(),
+                new DebugPacketFilter());
+        connection.addPacketInterceptor(new DebugPacketInterceptor(),
+                new DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
 
         // Establish chat session with the bot
         botChatListener = new ClientMessageListener(this);
-        botChat = chatmanager.createChat( clientConfig.getBotUsername() + "@" + serviceName,
-                botChatListener);
+        botChat = chatmanager.createChat(clientConfig.getBotUsername() + "@"
+                + serviceName, botChatListener);
 
         // Listen for invitation to chatroom and set up message listener for it
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
         chatroom.addParticipantListener(new ClientChatroomPresenceListener(
-                shared.userListModel, shared.userCount, this, clientConfig.getBotUsername(), clientConfig.getCheckerUsername()));
+                shared.userListModel, shared.userCount, this, clientConfig
+                        .getBotUsername(), clientConfig.getCheckerUsername()));
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
         // Add listener for new user chats
-        userChatListener = new ClientPrivateChatListener( this, clientConfig.getChatroomName() );
+        userChatListener = new ClientPrivateChatListener(this,
+                clientConfig.getChatroomName());
         chatmanager.addChatListener(userChatListener);
-        
+
         // Initiate voice chat stuff
-        //initJingle();
+        // initJingle();
 
         // Check the bot is online
         Message msg = new Message();
         msg.setBody("");
-        msg.setSubject( "are you online mr bot" );
-        botChat.sendMessage( msg );
+        msg.setSubject("are you online mr bot");
+        botChat.sendMessage(msg);
         try
         {
             Thread.sleep(1000);
@@ -312,12 +322,12 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "You play 2 hours to die like this?" );
-            botChat.sendMessage( msg );
+            msg.setSubject("You play 2 hours to die like this?");
+            botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
-            
+
             e.printStackTrace();
         }
     }
@@ -490,7 +500,7 @@ public class Client
     {
         userChatListener.closeChat(user);
     }
-    
+
     /**
      * Send a message on the chat session corresponding to the currently
      * selected receive tab in the Client GUI.
@@ -503,7 +513,7 @@ public class Client
      */
     public void sendChatMessageFromGUI(String message)
     {
-        
+
         try
         {
             Date date = new Date();
@@ -527,9 +537,9 @@ public class Client
                     System.out
                             .println("Client: Sending message on group chat: "
                                     + message);
-                msg.setType( Message.Type.groupchat );
+                msg.setType(Message.Type.groupchat);
                 chatroom.sendMessage(msg);
-                //TODO: need to escape?
+                // TODO: need to escape?
             }
             else
             {
@@ -542,7 +552,7 @@ public class Client
                                     + message);
                 ((Chat) tabsToChats.get(shared.receiveTabs
                         .getSelectedComponent())).sendMessage(msg);
-              //TODO: need to escape?
+                // TODO: need to escape?
 
                 // Update the log with the message before it was encoded
                 updatePrivateChatLog(this.username, msg.getSubject(), message);
@@ -601,6 +611,7 @@ public class Client
             shared.openTabs.put(strPath, sourceEditor);
             this.pullEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset(), true);
+            this.currentDocumentID = new DocumentID(strPath, doc.name);
         }
     }
 
@@ -611,13 +622,13 @@ public class Client
             // System.out.println("pull since " + time);
             Message msg = new Message();
             msg.setBody("");
-            if( simplified )
-                msg.setSubject( "pullSimplifiedEvents" );
+            if (simplified)
+                msg.setSubject("pullSimplifiedEvents");
             else
-                msg.setSubject( "pullEvents" );
-            msg.setProperty( "path", strPath );
-            msg.setProperty( "time", String.valueOf(time) );
-            botChat.sendMessage( msg );
+                msg.setSubject("pullEvents");
+            msg.setProperty("path", strPath);
+            msg.setProperty("time", String.valueOf(time));
+            botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -632,12 +643,12 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "pullEvents" );
-            msg.setProperty( "path", strPath );
-            msg.setProperty( "startTime", String.valueOf(startTime) );
-            msg.setProperty( "endTime", String.valueOf(endTime) );
-            msg.setProperty( "stopDiversion", (stopDiversion ? "true" : "false") );
-            botChat.sendMessage( msg );
+            msg.setSubject("pullEvents");
+            msg.setProperty("path", strPath);
+            msg.setProperty("startTime", String.valueOf(startTime));
+            msg.setProperty("endTime", String.valueOf(endTime));
+            msg.setProperty("stopDiversion", (stopDiversion ? "true" : "false"));
+            botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -650,15 +661,16 @@ public class Client
     {
         outgoingTypingEvents = new Message();
         outgoingTypingEvents.setBody("");
-        outgoingTypingEvents.setSubject( "pushto" );
-        outgoingTypingEvents.setType( Message.Type.groupchat );
-        outgoingTypingEvents.setTo( chatroom.getRoom() );
+        outgoingTypingEvents.setSubject("pushto");
+        outgoingTypingEvents.setType(Message.Type.groupchat);
+        outgoingTypingEvents.setTo(chatroom.getRoom());
         int i = 0;
         for (TypingEvent te : typingEvents)
         {
-            outgoingTypingEvents.setProperty( "path" + i, path );
+            outgoingTypingEvents.setProperty("path" + i, path);
             // So we can send newlines, encode it
-            outgoingTypingEvents.setProperty( "te" + i, StringUtils.encodeBase64( te.pack() ) );
+            outgoingTypingEvents.setProperty("te" + i,
+                    StringUtils.encodeBase64(te.pack()));
             i++;
         }
         try
@@ -685,7 +697,7 @@ public class Client
                                     throw new Error(
                                             "Bug detected: broadcasting too soon");
 
-                                chatroom.sendMessage( outgoingTypingEvents );
+                                chatroom.sendMessage(outgoingTypingEvents);
                                 lastBroadcast = System.currentTimeMillis()
                                         + getClockOffset();
                             }
@@ -703,7 +715,7 @@ public class Client
                 }
                 else
                 {
-                    chatroom.sendMessage( this.outgoingTypingEvents );
+                    chatroom.sendMessage(this.outgoingTypingEvents);
                     this.lastBroadcast = System.currentTimeMillis();
                 }
             }
@@ -725,8 +737,8 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "getfilelist" );
-            botChat.sendMessage( msg );
+            msg.setSubject("getfilelist");
+            botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -756,12 +768,12 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         Queue<TypingEvent> remainingEvents;
-        if (this.diversion != null)
+        if (this.typingEventDiversion != null)
         {
             remainingEvents = new LinkedList<TypingEvent>();
             for (TypingEvent typingEvent : typingEvents)
-                if (this.diversion.end.time > typingEvent.time)
-                    this.diversion.end.typingEvents.add(typingEvent);
+                if (this.typingEventDiversion.end.time > typingEvent.time)
+                    this.typingEventDiversion.end.typingEvents.add(typingEvent);
                 else
                     remainingEvents.add(typingEvent);
         }
@@ -791,14 +803,15 @@ public class Client
      * 
      * @author Andrew
      */
-    public void processFilelist( Message msg )
+    public void processFilelist(Message msg)
     {
-        String xml = new String( StringUtils.decodeBase64( (String) msg.getProperty( "xml" ) ) );
+        String xml = new String(StringUtils.decodeBase64((String) msg
+                .getProperty("xml")));
         shared.dirView.constructTree(xml);
         this.setLiveFolder(shared.dirView.getLiveFolder());
         this.setUpdatesAutomatically(true);
     }
-    
+
     /**
      * Process pushto
      * 
@@ -806,29 +819,30 @@ public class Client
      * 
      * @author Lawrence, Andrew
      */
-    public void processPushto( Message msg )
+    public void processPushto(Message msg)
     {
         Hashtable<String, Queue<TypingEvent>> queues = new Hashtable<String, Queue<TypingEvent>>();
         boolean stopDiversion = false;
         int eventNum = 0;
         String dest = "", te;
         // Loop until we've processed all events in the message
-        while( true )
+        while (true)
         {
             // If destination for this event isn't null change it
-            if( msg.getProperty( "path" + eventNum ) != null )
-                dest = (String) msg.getProperty( "path" + eventNum );
-            
+            if (msg.getProperty("path" + eventNum) != null)
+                dest = (String) msg.getProperty("path" + eventNum);
+
             // Processed all events in message
-            if( msg.getProperty( "te" + eventNum ) == null )
+            if (msg.getProperty("te" + eventNum) == null)
                 break;
-            
+
             // So we can send newlines in the message
-            te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + eventNum ) ) );
-            
+            te = new String(StringUtils.decodeBase64((String) msg
+                    .getProperty("te" + eventNum)));
+
             dest = dest.replace("root\\", "");
 
-            if( te.equals("end") )
+            if (te.equals("end"))
                 stopDiversion = true;
 
             Queue<TypingEvent> queue = queues.get(dest);
@@ -837,7 +851,7 @@ public class Client
                 queue = new LinkedList<TypingEvent>();
                 queues.put(dest, queue);
             }
-            queue.add(new TypingEvent( te ));
+            queue.add(new TypingEvent(te));
             System.out.println("Push " + te + " to " + dest);
             eventNum++;
         }
@@ -847,34 +861,34 @@ public class Client
 
         if (stopDiversion)
         {
-            this.diversion.finishedUpdate();
-            this.diversion = null;
+            this.typingEventDiversion.finishedUpdate();
+            this.typingEventDiversion = null;
         }
     }
-    
-    public void processIsblank( Message msg )
+
+    public void processIsblank(Message msg)
     {
         String dest = (String) msg.getProperty("path");
-        EditorTypingArea eta = shared.openTabs.get(dest)
-                .getEditorTypingArea();
+        EditorTypingArea eta = shared.openTabs.get(dest).getEditorTypingArea();
         eta.setWaiting(false);
     }
-    
+
     /**
      * Process a colour change message.
      * 
      * @author Jon, Andrew
-     *
+     * 
      */
-    public void processColourchange( Message msg )
+    public void processColourchange(Message msg)
     {
         String changedUser = (String) msg.getProperty("username");
         Integer r = (Integer) msg.getProperty("r");
         Integer g = (Integer) msg.getProperty("g");
         Integer b = (Integer) msg.getProperty("b");
         Color newColour = new Color(r, g, b);
-        System.out.println( "Client: Changing colour for " + username + " to " + r + " " + g + " " + b);
-        
+        System.out.println("Client: Changing colour for " + username + " to "
+                + r + " " + g + " " + b);
+
         if (colours.containsKey(changedUser))
             colours.remove(changedUser);
         colours.put(changedUser, newColour);
@@ -882,32 +896,33 @@ public class Client
         // EditorTypingArea.highlightMargin(); //FIXME update current line
         // colour when user changes profile colour
     }
-    
+
     /**
      * 
      * Process document related messages.
+     * 
      * @param msg
      * @return True if this was a document related message
      */
-    public boolean processDocumentMessages( Message msg )
+    public boolean processDocumentMessages(Message msg)
     {
         String subject = msg.getSubject();
-        if ( subject.equals("pushto") )
+        if (subject.equals("pushto"))
         {
             processPushto(msg);
             return true;
         }
-        else if( subject.equals("filelist") )
+        else if (subject.equals("filelist"))
         {
             processFilelist(msg);
             return true;
         }
-        else if( subject.equals("isblank") )
-        {    
-            processIsblank( msg );
+        else if (subject.equals("isblank"))
+        {
+            processIsblank(msg);
             return true;
         }
-        else if( subject.equals("colourchange") )
+        else if (subject.equals("colourchange"))
         {
             processColourchange(msg);
             return true;
@@ -1024,42 +1039,47 @@ public class Client
 
     public void setDiversion(TimeRegion timeRegion)
     {
-        this.diversion = timeRegion;
+        this.typingEventDiversion = timeRegion;
     }
 
     /**
      * Create a new document on the Bot's side.
      * 
-     * @param name The name of the document to create.
-     * @param path The path of the folder to create the document in relative to the root, use backslash to separate dirs.
-     * @param contents Contents of the file, if null a blank file is created.
+     * @param name
+     *            The name of the document to create.
+     * @param path
+     *            The path of the folder to create the document in relative to
+     *            the root, use backslash to separate dirs.
+     * @param contents
+     *            Contents of the file, if null a blank file is created.
      * 
      * @author Andrew
      */
-    public void createDocument( String name, String path, String contents )
+    public void createDocument(String name, String path, String contents)
     {
-        if( DEBUG )
-            System.out.println("Trying to create document with name " + name + " in " + path);
-        
+        if (DEBUG)
+            System.out.println("Trying to create document with name " + name
+                    + " in " + path);
+
         try
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "name", name );
-            msg.setProperty( "path", path );
-            msg.setProperty( "contents", contents );
-            botChat.sendMessage( msg );
+            msg.setProperty("name", name);
+            msg.setProperty("path", path);
+            msg.setProperty("contents", contents);
+            botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
-            
+
             e.printStackTrace();
         }
     }
-    
+
     /**
-     * Test importing files and creating them on the Bot, use the CIDER directory as source.
-     * Demonstrates how to parse path etc.
+     * Test importing files and creating them on the Bot, use the CIDER
+     * directory as source. Demonstrates how to parse path etc.
      * 
      * @author Andrew
      */
@@ -1068,7 +1088,7 @@ public class Client
         ImportFiles imp = null;
         try
         {
-            imp = new ImportFiles( "src\\cider\\common\\network" );
+            imp = new ImportFiles("src\\cider\\common\\network");
         }
         catch (FileNotFoundException e1)
         {
@@ -1078,18 +1098,19 @@ public class Client
         {
             e1.printStackTrace();
         }
-        HashMap<String,String> files = imp.getFiles();
-        Iterator<Entry<String,String>> itr = files.entrySet().iterator();
-        
-        while( itr.hasNext() )
+        HashMap<String, String> files = imp.getFiles();
+        Iterator<Entry<String, String>> itr = files.entrySet().iterator();
+
+        while (itr.hasNext())
         {
-            Entry<String,String> i = itr.next();
-            File fullPath = new File( i.getKey() );
-            createDocument( fullPath.getName(), fullPath.getParent(), i.getValue() );
+            Entry<String, String> i = itr.next();
+            File fullPath = new File(i.getKey());
+            createDocument(fullPath.getName(), fullPath.getParent(),
+                    i.getValue());
         }
-        
+
     }
-    
+
     /**
      * Send idle presence.
      * 
@@ -1097,10 +1118,10 @@ public class Client
      */
     public void sendIdlePresence()
     {
-        Presence idle = new Presence( Presence.Type.available );
-        idle.setMode( Presence.Mode.away );
-        idle.setTo( chatroom.getRoom() );
-        connection.sendPacket( idle );
+        Presence idle = new Presence(Presence.Type.available);
+        idle.setMode(Presence.Mode.away);
+        idle.setTo(chatroom.getRoom());
+        connection.sendPacket(idle);
     }
 
     /**
@@ -1110,10 +1131,15 @@ public class Client
      */
     public void sendHerePresence()
     {
-        Presence here = new Presence( Presence.Type.available );
-        here.setMode( Presence.Mode.available );
-        here.setTo( chatroom.getRoom() );
-        connection.sendPacket( here );
-        
+        Presence here = new Presence(Presence.Type.available);
+        here.setMode(Presence.Mode.available);
+        here.setTo(chatroom.getRoom());
+        connection.sendPacket(here);
+
+    }
+
+    public DocumentID getCurrentDocumentID()
+    {
+        return this.currentDocumentID;
     }
 }

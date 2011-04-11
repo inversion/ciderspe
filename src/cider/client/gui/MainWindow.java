@@ -79,7 +79,6 @@ import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -127,8 +126,7 @@ public class MainWindow
     private OutputStream baos;
 
     boolean offlineMode = false;
-    
-    
+
     /**
      * These variable are for the profiles
      * 
@@ -136,7 +134,7 @@ public class MainWindow
      */
     public long startTime = System.currentTimeMillis();
     public Profile myProfile;
-    
+
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c, LoginUI loginUI,
             ClientSharedComponents shared) throws XMPPException
@@ -144,7 +142,7 @@ public class MainWindow
         // Register GUI components shared with client
         this.shared = shared;
         myProfile = shared.profile;
-        
+
         // TODO: Should more stuff be in the constructor rather than the
         // mainArea method? The variables look a bit of a mess
         this.username = username;
@@ -166,43 +164,45 @@ public class MainWindow
     {
         this.shared = new ClientSharedComponents();
     }
-    
+
     /**
      * Request profile for specified user from the Bot.
      * 
-     * @param username The username of the profile we are requesting.
+     * @param username
+     *            The username of the profile we are requesting.
      * 
      * @author Jon, Andrew
      */
-    public void requestProfile( String username, boolean show )
+    public void requestProfile(String username, boolean show)
     {
         try
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "requestprofile" );
-            msg.setProperty( "username", username );
-            if( show )
-                msg.setProperty( "show", "true" );
-            client.botChat.sendMessage( msg );
-            System.out.println("Profile: Requesting profile from server for " + username);
+            msg.setSubject("requestprofile");
+            msg.setProperty("username", username);
+            if (show)
+                msg.setProperty("show", "true");
+            client.botChat.sendMessage(msg);
+            System.out.println("Profile: Requesting profile from server for "
+                    + username);
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
         }
     }
-        
+
     /**
-     * This method sets up the profile by asking the Bot if it has the user
-     * on its record. If so, the profile updates appropriately. If not, a
-     * new profile is created.
+     * This method sets up the profile by asking the Bot if it has the user on
+     * its record. If so, the profile updates appropriately. If not, a new
+     * profile is created.
      * 
      * @author Jon, Andrew
      */
     private void profileSetup()
     {
-        requestProfile( username, false );
+        requestProfile(username, false);
 
         if (client.colours.containsKey(username))
             client.colours.remove(username);
@@ -210,26 +210,26 @@ public class MainWindow
 
         retrieveAllUserColours();
     }
-    
+
     /**
      * Show a popup window of the requested profile.
      * 
      * @author Jon, Andrew
      */
-    public void showProfile( Profile profile )
+    public void showProfile(Profile profile)
     {
-//        if (username.equals(myProfile.uname))
-//        {
-//            System.out.println(myProfile.timeSpent);
-//            myProfile.updateTimeSpent(startTime);
-//            System.out.println(myProfile.timeSpent);
-//            startTime = System.currentTimeMillis();
-//        }
+        // if (username.equals(myProfile.uname))
+        // {
+        // System.out.println(myProfile.timeSpent);
+        // myProfile.updateTimeSpent(startTime);
+        // System.out.println(myProfile.timeSpent);
+        // startTime = System.currentTimeMillis();
+        // }
 
         // int count =
         // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
         // myProfile.adjustCharCount(count);
-        
+
         JFrame profileFrame = new JFrame("View Profile");
         Container content = profileFrame.getContentPane();
 
@@ -270,8 +270,7 @@ public class MainWindow
         userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(),
                 curFont.getSize() + 2));
 
-        JLabel userChars = new JLabel("Characters Typed: "
-                + profile.typedChars);
+        JLabel userChars = new JLabel("Characters Typed: " + profile.typedChars);
         String t = profile.getTimeString();
         JLabel userTime = new JLabel("Total Time: " + t);
         JLabel userLastOnline = new JLabel("Last Seen: " + profile.lastOnline);
@@ -341,9 +340,9 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "requestusercolour" );
-            msg.setProperty( "user", user );
-            client.botChat.sendMessage( msg );
+            msg.setSubject("requestusercolour");
+            msg.setProperty("user", user);
+            client.botChat.sendMessage(msg);
         }
         catch (XMPPException e)
         {
@@ -351,7 +350,7 @@ public class MainWindow
         }
     }
 
-    public ActionListener newAction( )
+    public ActionListener newAction()
     {
         ActionListener AL = new ActionListener()
         {
@@ -371,7 +370,7 @@ public class MainWindow
                 }
                 else if (action.equals("My Profile"))
                 {
-                    showProfile( myProfile );
+                    showProfile(myProfile);
                 }
                 else if (action.equals("Reset My Profile"))
                 {
@@ -446,7 +445,7 @@ public class MainWindow
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
-                    requestProfile( username, false );
+                    requestProfile(username, false);
                 }
                 else if (action
                         .equals("DEV: Show list of colours stored locally"))
@@ -511,8 +510,7 @@ public class MainWindow
         // sourceHistoryDialog.setPreferredSize(this.w.getSize());
         // sourceHistoryDialog.setVisible(true);
 
-        DocumentID documentID = new DocumentID("Test Document", "testpath",
-                "test owner");
+        DocumentID documentID = new DocumentID("Test Document", "testpath");
 
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
                 new SourceDocument(documentID.name));
@@ -546,7 +544,7 @@ public class MainWindow
         app.setTimeRegionBrowser(trb);
 
         JDialog w = new JDialog(this.w, true);
-        w.setTitle(this.currentFileName + " History");
+        w.setTitle(this.client.getCurrentDocumentID().path + " History");
         w.setPreferredSize(new Dimension(600, 600));
         w.setLayout(new BorderLayout());
         w.add(app);
@@ -894,9 +892,12 @@ public class MainWindow
     /**
      * Announce you have changed your colour to all connected parties.
      * 
-     * @param r Red
-     * @param g Green
-     * @param b Blue
+     * @param r
+     *            Red
+     * @param g
+     *            Green
+     * @param b
+     *            Blue
      * 
      * @author Andrew, Jon
      */
@@ -906,13 +907,13 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject( "colourchange" );
+            msg.setSubject("colourchange");
             msg.setProperty("r", r);
             msg.setProperty("g", g);
             msg.setProperty("b", b);
-            msg.setProperty( "username", username );
-            msg.setType( Message.Type.groupchat );
-            msg.setTo( client.chatroom.getRoom() );
+            msg.setProperty("username", username);
+            msg.setType(Message.Type.groupchat);
+            msg.setTo(client.chatroom.getRoom());
             client.chatroom.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -975,7 +976,7 @@ public class MainWindow
         menu = new JMenu("File");
         menuBar.add(menu);
 
-        ActionListener aL = newAction( );
+        ActionListener aL = newAction();
 
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Import", KeyEvent.VK_O, aL);
@@ -1095,7 +1096,6 @@ public class MainWindow
         }
     }
 
-
     public JPanel pnlUsers()
     {
         /* panel for the list of online users */
@@ -1173,9 +1173,12 @@ public class MainWindow
                                 {
                                     public void run()
                                     {
-                                        // Changed by Andrew to remove need for thread.sleep()
-                                        // See client message listener for new way of displaying profile pane
-                                        requestProfile( (String) shared.userList.getSelectedValue(), true );
+                                        // Changed by Andrew to remove need for
+                                        // thread.sleep()
+                                        // See client message listener for new
+                                        // way of displaying profile pane
+                                        requestProfile((String) shared.userList
+                                                .getSelectedValue(), true);
                                     }
                                 });
                             }
@@ -1237,7 +1240,7 @@ public class MainWindow
             {
                 JTabbedPane tp = (JTabbedPane) changeEvent.getSource();
                 int i = tp.getSelectedIndex();
-                shared.receiveTabs.tabflashstop( tp.getTitleAt( i ) );
+                shared.receiveTabs.tabflashstop(tp.getTitleAt(i));
                 System.out.println("Stop flashing " + tp.getTitleAt(i));
             }
         };
@@ -1362,7 +1365,7 @@ public class MainWindow
     public void startApplication(JFrame loginWindow)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        w.addMouseMotionListener( new IdleTimer( client ) ); 
+        w.addMouseMotionListener(new IdleTimer(client));
 
         // FIXME:
         // client.startClockSynchronisation(w);
@@ -1402,7 +1405,7 @@ public class MainWindow
                 {
                     myProfile.updateTimeSpent(startTime);
                     myProfile.updateProfileInfo();
-                    myProfile.uploadProfile( client.botChat, startTime );
+                    myProfile.uploadProfile(client.botChat, startTime);
                     System.out.println("disconnecting");
                     client.disconnect();
                 }
