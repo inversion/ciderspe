@@ -37,12 +37,12 @@ import java.util.ArrayList;
  * 
  */
 public class TypingEvent implements Serializable
-{    
+{
     /**
      * 
      */
     private static final long serialVersionUID = 2L;
-    
+
     public String lockingGroup = null;
     public final TypingEventMode mode;
     public final long time;
@@ -108,10 +108,11 @@ public class TypingEvent implements Serializable
      * 
      * @author Lawrence
      */
-    public TypingEvent(TypingEvent typingEvent, long time, String text)
+    public TypingEvent(TypingEvent typingEvent, long time, int position,
+            String text)
     {
         this.time = time;
-        this.position = typingEvent.position;
+        this.position = position;
         this.mode = typingEvent.mode;
         this.lockingGroup = typingEvent.lockingGroup;
         this.text = text;
@@ -186,9 +187,10 @@ public class TypingEvent implements Serializable
         {
             char[] chrs = this.text.toCharArray();
             long t = this.time;
+            int i = 0;
 
             for (char chr : chrs)
-                particles.add(new TypingEvent(this, t++, "" + chr));
+                particles.add(new TypingEvent(this, t++, i++, "" + chr));
         }
         return particles;
     }
@@ -225,5 +227,21 @@ public class TypingEvent implements Serializable
             if (this.time == te.time)
                 return true;
         return false;
+    }
+
+    public static void main(String[] args)
+    {
+        String originalMessage = "The quick brown jox jumped over the lazy dog";
+        TypingEvent te = new TypingEvent(0, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        SourceDocument doc = new SourceDocument("test");
+        doc.addEvents(te.explode());
+        String resultingMessage = doc.toString();
+        if (resultingMessage.equals(originalMessage))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + originalMessage
+                    + " but got " + resultingMessage);
+
     }
 }
