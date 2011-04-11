@@ -111,7 +111,7 @@ public class TypingEventList
         // FIXME: Not working for length > 1
         // Delete for length
         for( int i = 1; i <= length; i++ )
-            backspace( position + i );
+            backspace( position );          
     }
 
     /**

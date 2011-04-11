@@ -326,10 +326,11 @@ public class Bot
                 catch (InvalidClassException e)
                 {
                     System.err.println( "You need to delete the " + path.getName() + " folder, you have out of date serialized classes.");
+                    e.printStackTrace();
                 }
                 catch (IOException e)
                 {
-
+                    System.err.println( "You need to delete the " + path.getName() + " folder, you have corrupted files probably caused by unclean termination of the bot.");
                     e.printStackTrace();
                 }
                 catch (ClassNotFoundException e)

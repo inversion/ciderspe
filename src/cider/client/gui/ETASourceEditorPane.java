@@ -361,65 +361,65 @@ public class ETASourceEditorPane extends JScrollPane
                                 // System.out.println(server.lastUpdateTime());
                                 TypingEventMode mode = TypingEventMode.insert;
                                 String chr;
-                                int length;
+                                int length = 1, position = eta.getCaretPosition();
 
                                 switch (ke.getKeyChar())
                                 {
                                 case '\u007F': // Delete character
-                                {
+                                    // TODO: Remove obsolete code
                                     /*
                                      * int CurLine; int CurxLine; CurLine =
                                      * eta.GetCurLine() - 1; CurxLine =
                                      * eta.GetCurxLen();
                                      */
-                                    if (eta.getCaretPosition() >= -1)
+                                    /*
+                                     * Needs CurxLine working properly
+                                     * 
+                                     * if ((eta.lines.size() == CurLine) &&
+                                     * (eta.lines.get(CurLine).str.length()
+                                     * <= CurxLine)) {
+                                     * TypingEventList.DeleteType = 0; mode
+                                     * = TypingEventMode.backspace; chr =
+                                     * " "; } else {
+                                     */
+                                    // }
+                                    
+                                    mode = TypingEventMode.delete;
+                                    chr = " ";
+                                    // If there is a region selected change start position to the start of this region
+                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
                                     {
-                                        /*
-                                         * Needs CurxLine working properly
-                                         * 
-                                         * if ((eta.lines.size() == CurLine) &&
-                                         * (eta.lines.get(CurLine).str.length()
-                                         * <= CurxLine)) {
-                                         * TypingEventList.DeleteType = 0; mode
-                                         * = TypingEventMode.backspace; chr =
-                                         * " "; } else {
-                                         */
-                                        // }
-                                        mode = TypingEventMode.delete;
-                                        // If there is a selected region set the delete length to this length
-                                        length = ( eta.getSelectedRegion().getLength() > 0 ) ? eta.getSelectedRegion().getLength() : 1;
-                                        chr = " ";
-                                        
-                                    }
-                                    else
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion().getLength();
+                                    }   
+                                    else if (eta.getCaretPosition() < -1 ) // TODO: I don't think this is possible (Andrew)
                                         return;
-                                }
                                     break;
                                 case '\u0008': // Backspace char
-                                {
-                                    if (eta.getCaretPosition() >= 0)
+                                    mode = TypingEventMode.backspace;
+                                    chr = " ";
+                                    // If there is a region selected change start position to the start of this region
+                                    // And make it a delete event
+                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
                                     {
-                                        mode = TypingEventMode.backspace;
-                                        chr = " ";
-                                        length = 1;
+                                        mode = TypingEventMode.delete;
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion().getLength();
+                                        System.out.println("ETASourceEditorPane: Delete event from " + position + " for length " + length);
                                     }
-                                    else
+                                    else if (eta.getCaretPosition() < 0)
                                         return;
-                                }
                                     break;
                                 case '\t':
-                                {
                                     chr = "    ";
                                     length = 4;
                                     ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
-                                }
                                     client.shared.profile.incrementCharCount();
                                     break;
                                 default:
                                     client.shared.profile.incrementCharCount();
                                     chr = String.valueOf(ke.getKeyChar());
-                                    length = 1;
                                     break;
                                 }
 
@@ -427,7 +427,7 @@ public class ETASourceEditorPane extends JScrollPane
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
                                                 + client.getClockOffset(),
-                                        mode, eta.getCaretPosition(),
+                                        mode, position,
                                         length, chr,
                                         client.getUsername(),
                                         r == 1 ? client.getUsername() : null);
@@ -464,6 +464,8 @@ public class ETASourceEditorPane extends JScrollPane
                                     break;
                                 case backspace:
                                     eta.moveLeft( false );
+                                    break;
+                                case delete:
                                     break;
                                 }
                             }
