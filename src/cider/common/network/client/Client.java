@@ -142,6 +142,8 @@ public class Client
     public Profile profile;
     public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
+    
+    public static ArrayList<String> usersIdle = new ArrayList<String>();
 
     public DocumentID currentDocumentID;
 
@@ -277,9 +279,11 @@ public class Client
         chatroom = new MultiUserChat(connection, chatroomName);
         MultiUserChat.addInvitationListener(connection,
                 new ClientChatroomInviteListener(chatroom, username, this));
+        
         chatroom.addParticipantListener(new ClientChatroomPresenceListener(
                 shared.userListModel, shared.userCount, this, clientConfig
-                        .getBotUsername(), clientConfig.getCheckerUsername()));
+                .getBotUsername(), clientConfig.getCheckerUsername()));
+        
         chatroom.addMessageListener(new ClientChatroomMessageListener(this));
 
         // Add listener for new user chats
@@ -1135,9 +1139,8 @@ public class Client
         here.setMode(Presence.Mode.available);
         here.setTo(chatroom.getRoom());
         connection.sendPacket(here);
-
     }
-
+    
     public DocumentID getCurrentDocumentID()
     {
         return this.currentDocumentID;

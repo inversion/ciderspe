@@ -1078,11 +1078,11 @@ public class MainWindow
 
             if (selected)
             {
-                bg = Color.LIGHT_GRAY;
+                bg = Color.GRAY;
             }
             else
             {
-                bg = Color.WHITE;
+                bg = Color.DARK_GRAY;
             }
 
             // fill background
@@ -1092,7 +1092,18 @@ public class MainWindow
             // draw coloured rectangle and name
             g.setColor(client.colours.get(name)); // get unique user color here
             g.fillRect(6, 6, 13, 13);
-            g.drawString(name, 25, 17);
+
+            String idleString = "";
+            if (Client.usersIdle.contains(name)) {
+                g.setColor(Color.WHITE);
+                g.fillRect(13, 13, 8, 8);
+                g.setColor(Color.MAGENTA);
+                g.fillRect(14, 14, 6, 6);
+                idleString = " (idle)";
+            }
+
+            g.setColor(Color.WHITE);
+            g.drawString(name + idleString, 25, 17);
         }
     }
 
