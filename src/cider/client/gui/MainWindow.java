@@ -1090,8 +1090,10 @@ public class MainWindow
             g.fillRect(0, 0, getWidth(), getHeight());
 
             // draw coloured rectangle and name
-            g.setColor(client.colours.get(name)); // get unique user color here
+            g.setColor(Color.WHITE);
             g.fillRect(6, 6, 13, 13);
+            g.setColor(client.colours.get(name)); // get unique user color here
+            g.fillRect(7, 7, 11, 11);
 
             String idleString = "";
             if (Client.usersIdle.contains(name)) {
