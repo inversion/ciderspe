@@ -181,13 +181,14 @@ public class TypingEvent implements Serializable
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
         if (this.mode == TypingEventMode.lockRegion
-                || this.mode == TypingEventMode.unlockRegion)
+                || this.mode == TypingEventMode.unlockRegion
+                || this.mode == TypingEventMode.delete )
             particles.add(this);
         else
         {
             char[] chrs = this.text.toCharArray();
             long t = this.time;
-            int i = 0;
+            int i = this.position;
 
             for (char chr : chrs)
                 particles.add(new TypingEvent(this, t++, i++, "" + chr));

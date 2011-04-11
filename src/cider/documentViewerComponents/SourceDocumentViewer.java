@@ -1014,7 +1014,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
     /**
      * 
-     * @return a TypingReagion that represents the currently selected region of
+     * @return a TypingRegion that represents the currently selected region of
      *         text
      */
     protected TypingRegion getSelectedRegion()
