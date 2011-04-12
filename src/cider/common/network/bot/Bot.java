@@ -61,7 +61,7 @@ public class Bot
 
     // XMPP Server Configuration
     private final String HOST;
-    private final String SERVICE_NAME;
+    protected final String SERVICE_NAME;
     private final int PORT;
     protected final String BOT_USERNAME;
     private final String BOT_PASSWORD;
@@ -138,10 +138,10 @@ public class Bot
 
             // Verbose debugging to print out every packet leaving or entering
             // the bot
-            connection.addPacketListener(new DebugPacketListener(),
-                    new DebugPacketFilter());
-            connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                    new DebugPacketFilter());
+//            connection.addPacketListener(new DebugPacketListener(),
+//                    new DebugPacketFilter());
+//            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+//                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();

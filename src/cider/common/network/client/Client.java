@@ -158,7 +158,7 @@ public class Client
     private LiveFolder liveFolder = null;
     private long lastBroadcast = 0;
     private static final long minimumBroadcastDelay = 400;
-    private Message outgoingTypingEvents = new Message();
+    private Message outgoingTypingEvents;
     private Timer broadcastTimer = new Timer();
     private boolean isWaitingToBroadcast = false;
     private SourceDocument currentDoc = null;
@@ -183,6 +183,9 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
         this.login = log;
+        
+        // Set blank outgoingTypingEvents
+        resetOutgoingEvents();
 
         // GUI Components shared with MainWindow
         this.shared = shared;
@@ -240,11 +243,18 @@ public class Client
      */
     public boolean attemptConnection() throws XMPPException
     {
+        
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
         connection = new XMPPConnection(config);
         connection.connect();
+        // Prints out every packet received by the client, used when you want
+        // very verbose debugging
+//        connection.addPacketListener(new DebugPacketListener(),
+//                new DebugPacketFilter());
+//        connection.addPacketInterceptor(new DebugPacketInterceptor(),
+//                new DebugPacketFilter());
 
         /*
          * Append a random string to the resource to prevent conflicts with
@@ -258,13 +268,6 @@ public class Client
         if (DEBUG)
             System.out.println("Logged into XMPP server, username=" + username
                     + "/" + rand);
-
-        // Prints out every packet received by the client, used when you want
-        // very verbose debugging
-        connection.addPacketListener(new DebugPacketListener(),
-                new DebugPacketFilter());
-        connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                new DebugPacketFilter());
 
         chatmanager = this.connection.getChatManager();
 
@@ -293,7 +296,7 @@ public class Client
         // Check the bot is online
         Message msg = new Message();
         msg.setBody("");
-        msg.setSubject("are you online mr bot");
+        msg.setProperty( "ciderAction", "are you online mr bot");
         botChat.sendMessage(msg);
         try
         {
@@ -322,7 +325,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("You play 2 hours to die like this?");
+            msg.setProperty( "ciderAction", "You play 2 hours to die like this?");
             botChat.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -623,9 +626,9 @@ public class Client
             Message msg = new Message();
             msg.setBody("");
             if (simplified)
-                msg.setSubject("pullSimplifiedEvents");
+                msg.setProperty( "ciderAction", "pullSimplifiedEvents" );
             else
-                msg.setSubject("pullEvents");
+                msg.setProperty( "ciderAction", "pullEvents" );
             msg.setProperty("path", strPath);
             msg.setProperty("time", String.valueOf(time));
             botChat.sendMessage(msg);
@@ -643,7 +646,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("pullEvents");
+            msg.setProperty( "ciderAction", "pullEvents" );
             msg.setProperty("path", strPath);
             msg.setProperty("startTime", String.valueOf(startTime));
             msg.setProperty("endTime", String.valueOf(endTime));
@@ -655,20 +658,34 @@ public class Client
             e.printStackTrace();
         }
     }
-
-    public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
-            String path)
+    
+    /**
+     * Reset the outgoing typing events to blank
+     * 
+     * @author Andrew
+     */
+    private void resetOutgoingEvents()
     {
         outgoingTypingEvents = new Message();
         outgoingTypingEvents.setBody("");
-        outgoingTypingEvents.setSubject("pushto");
+        outgoingTypingEvents.setProperty( "ciderAction", "pushto");
         outgoingTypingEvents.setType(Message.Type.groupchat);
-        outgoingTypingEvents.setTo(chatroom.getRoom());
+        outgoingTypingEvents.setTo( chatroomName );
+    }
+
+    public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
+            String path)
+    {      
         int i = 0;
+        
+        // Find first position to append typing events
+        while( outgoingTypingEvents.getProperty( "te" + i ) != null )
+            i++;
+        
         for (TypingEvent te : typingEvents)
         {
             outgoingTypingEvents.setProperty("path" + i, path);
-            // So we can send newlines, encode it
+            // So we can send newlines properly, encode it
             outgoingTypingEvents.setProperty("te" + i,
                     StringUtils.encodeBase64(te.pack()));
             i++;
@@ -698,6 +715,7 @@ public class Client
                                             "Bug detected: broadcasting too soon");
 
                                 chatroom.sendMessage(outgoingTypingEvents);
+                                resetOutgoingEvents();
                                 lastBroadcast = System.currentTimeMillis()
                                         + getClockOffset();
                             }
@@ -716,7 +734,8 @@ public class Client
                 else
                 {
                     chatroom.sendMessage(this.outgoingTypingEvents);
-                    this.lastBroadcast = System.currentTimeMillis();
+                    resetOutgoingEvents();
+                    lastBroadcast = System.currentTimeMillis();
                 }
             }
         }
@@ -737,7 +756,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("getfilelist");
+            msg.setProperty( "ciderAction", "getfilelist" );
             botChat.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -826,24 +845,21 @@ public class Client
         int eventNum = 0;
         String dest = "", te;
         // Loop until we've processed all events in the message
-        while (true)
+        for( ; msg.getProperty("te" + eventNum) != null; eventNum++ )
         {
             // If destination for this event isn't null change it
             if (msg.getProperty("path" + eventNum) != null)
+            {
                 dest = (String) msg.getProperty("path" + eventNum);
+                dest = dest.replace("root\\", "");
+            }
 
-            // Processed all events in message
-            if (msg.getProperty("te" + eventNum) == null)
-                break;
-
-            // So we can send newlines in the message
             te = new String(StringUtils.decodeBase64((String) msg
                     .getProperty("te" + eventNum)));
 
-            dest = dest.replace("root\\", "");
-
-            if (te.equals("end"))
-                stopDiversion = true;
+            // TODO: Commented out stopdiversion cos it's not in use yet
+//            if (te.equals("end"))
+//                stopDiversion = true;
 
             Queue<TypingEvent> queue = queues.get(dest);
             if (queue == null)
@@ -853,17 +869,17 @@ public class Client
             }
             queue.add(new TypingEvent(te));
             System.out.println("Push " + te + " to " + dest);
-            eventNum++;
         }
 
         for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
             this.push(entry.getValue(), entry.getKey());
 
-        if (stopDiversion)
-        {
-            this.typingEventDiversion.finishedUpdate();
-            this.typingEventDiversion = null;
-        }
+     // TODO: Commented out stopdiversion cos it's not in use yet
+//        if (stopDiversion)
+//        {
+//            this.typingEventDiversion.finishedUpdate();
+//            this.typingEventDiversion = null;
+//        }
     }
 
     public void processIsblank(Message msg)
@@ -906,23 +922,23 @@ public class Client
      */
     public boolean processDocumentMessages(Message msg)
     {
-        String subject = msg.getSubject();
-        if (subject.equals("pushto"))
+        String ciderAction = (String) msg.getProperty( "ciderAction" );
+        if (ciderAction.equals("pushto"))
         {
             processPushto(msg);
             return true;
         }
-        else if (subject.equals("filelist"))
+        else if (ciderAction.equals("filelist"))
         {
             processFilelist(msg);
             return true;
         }
-        else if (subject.equals("isblank"))
+        else if (ciderAction.equals("isblank"))
         {
             processIsblank(msg);
             return true;
         }
-        else if (subject.equals("colourchange"))
+        else if (ciderAction.equals("colourchange"))
         {
             processColourchange(msg);
             return true;
