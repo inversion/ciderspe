@@ -182,7 +182,8 @@ public class TypingEvent implements Serializable
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
         if (this.mode == TypingEventMode.lockRegion
                 || this.mode == TypingEventMode.unlockRegion
-                || this.mode == TypingEventMode.delete )
+                || this.mode == TypingEventMode.delete
+                || this.mode == TypingEventMode.overwrite )
             particles.add(this);
         else
         {

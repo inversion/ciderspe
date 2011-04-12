@@ -76,6 +76,10 @@ public class TypingEventList
             this.tel.add(te);
         else
             this.tel.set(te.position, te);
+        
+        // If overwriting more than 1 char delete the rest of the stuff to be overwritten
+        if( te.length > 1 )
+            delete( te.position + 1, te.length - 1 );
     }
 
     /**
@@ -90,7 +94,8 @@ public class TypingEventList
         if (position >= tel.size())
             position = tel.size() - 1;
         if (position < 0)
-            return;
+//            return;
+            position = 0;
         
         this.tel.remove(position);
     }
@@ -107,10 +112,6 @@ public class TypingEventList
     {
         if( position == tel.size() - 1 )
             return;
-        
-        // Compensate for when position is at start of document
-        if( position == -1 )
-            position = 0;
         
         // Delete for length
         for( int i = 1; i <= length; i++ )
