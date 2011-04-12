@@ -108,7 +108,10 @@ public class TypingEventList
         if( position == tel.size() - 1 )
             return;
         
-        // FIXME: Not working for length > 1
+        // Compensate for when position is at start of document
+        if( position == -1 )
+            position = 0;
+        
         // Delete for length
         for( int i = 1; i <= length; i++ )
             backspace( position );          

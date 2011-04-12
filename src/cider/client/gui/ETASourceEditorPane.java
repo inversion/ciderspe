@@ -360,6 +360,7 @@ public class ETASourceEditorPane extends JScrollPane
                             {
                                 // System.out.println(server.lastUpdateTime());
                                 TypingEventMode mode = TypingEventMode.insert;
+                                TypingEvent deleteEvent = null;
                                 String chr;
                                 int length = 1, position = eta.getCaretPosition();
 
@@ -419,11 +420,25 @@ public class ETASourceEditorPane extends JScrollPane
                                     break;
                                 default:
                                     client.shared.profile.incrementCharCount();
+                                    // If there's a region selected we need to replace that with the new character
+                                    // Do this by deleting the region first then insert the character as normal
+                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
+                                    {
+                                        position = eta.getSelectedRegion().start;
+                                        deleteEvent = new TypingEvent(
+                                        System.currentTimeMillis()
+                                                + client.getClockOffset(),
+                                        TypingEventMode.delete, position,
+                                        eta.getSelectedRegion().getLength(), " ",
+                                        client.getUsername(),
+                                        r == 1 ? client.getUsername() : null);
+                                        // Insert character just before where we deleted
+                                        position--;
+                                    }
                                     chr = String.valueOf(ke.getKeyChar());
                                     break;
                                 }
 
-                                // TODO: Will need different position for selections
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
                                                 + client.getClockOffset(),
@@ -433,6 +448,15 @@ public class ETASourceEditorPane extends JScrollPane
                                         r == 1 ? client.getUsername() : null);
                                 ArrayList<TypingEvent> particles = te.explode();
 
+                                // If we are deleting a selection, append the delete event for that selection, 
+                                // changing the time to 1 less than next in particles list
+                                if( deleteEvent != null )
+                                {
+                                    deleteEvent = new TypingEvent( particles.get(0).time-1, deleteEvent.mode, position, deleteEvent.length, " ", deleteEvent.owner, deleteEvent.lockingGroup );
+                                    particles.add( 0, deleteEvent );
+                                }
+                                    
+                                
                                 for (TypingEvent particle : particles)
                                     System.out.println("push to server: "
                                             + particle);
@@ -447,12 +471,15 @@ public class ETASourceEditorPane extends JScrollPane
                                 }
 
                                 eta.getSourceDocument().push(internal);
+                                client.broadcastTypingEvents(outgoingEvents,
+                                        path);
+                                
+                                // FIXME: One of these is bailing out when it's the first char in the document
                                 eta.updateText();
                                 eta.scrollRectToVisible(new Rectangle(0, eta
                                         .getCurrentLine().y, eta.getWidth(),
                                         EditorTypingArea.lineSpacing));
-                                client.broadcastTypingEvents(outgoingEvents,
-                                        path);
+
 
                                 switch (mode)
                                 {

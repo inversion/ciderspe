@@ -33,7 +33,6 @@ import javax.swing.JPanel;
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
-import org.jivesoftware.smack.util.StringUtils;
 
 import cider.common.processes.Profile;
 
@@ -58,8 +57,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        String subject = message.getSubject();
-        if ( subject.equals( "quit" ) )
+        String ciderAction = (String) message.getProperty( "ciderAction" );
+        if ( ciderAction.equals( "quit" ) )
         {
             JOptionPane
                     .showMessageDialog(
@@ -68,18 +67,18 @@ public class ClientMessageListener implements MessageListener, ActionListener
             client.disconnect();
             System.exit(1);
         }
-        else if (subject.equals("yes i am online"))
+        else if (ciderAction.equals("yes i am online"))
             client.botIsOnline = true;
-        else if (subject.equals("usercolour"))
+        else if (ciderAction.equals("usercolour"))
         {
             Integer r = (Integer) message.getProperty("r");
             Integer g = (Integer) message.getProperty("g");
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
-        else if( subject.equals( "notfound" ) && message.getProperty( "show" ) != null )
+        else if( ciderAction.equals( "notfound" ) && message.getProperty( "show" ) != null )
             JOptionPane.showMessageDialog( null, "No profile was found on the server for " + message.getProperty( "username" ) );
-        else if( subject.equals( "profile" ) )
+        else if( ciderAction.equals( "profile" ) )
         {
             String username = (String) message.getProperty( "username" );
             Integer chars = (Integer) message.getProperty( "chars" );
@@ -135,7 +134,11 @@ public class ClientMessageListener implements MessageListener, ActionListener
             this.client.addTimeDeltaSample(delta);
         }
         else
+        {
+            System.out.println("ClientMessageListener: Received doc message " + message.toXML() );
             this.client.processDocumentMessages( message );
+        }
+            
     }
 
     @Override

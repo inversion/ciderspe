@@ -133,7 +133,7 @@ public class Profile implements Serializable
             Profile profile = myProfile;
             Message message = new Message();
             message.setBody("");
-            message.setSubject( "userprofile" );
+            message.setProperty( "ciderAction", "userprofile" );
             message.setProperty( "chars", profile.typedChars );
             message.setProperty( "timeSpent", profile.timeSpent );
             message.setProperty( "lastOnline", profile.lastOnline );

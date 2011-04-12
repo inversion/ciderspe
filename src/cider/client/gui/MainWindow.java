@@ -179,7 +179,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("requestprofile");
+            msg.setProperty( "ciderAction", "requestprofile" );
             msg.setProperty("username", username);
             if (show)
                 msg.setProperty("show", "true");
@@ -340,7 +340,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("requestusercolour");
+            msg.setProperty( "ciderAction", "requestusercolour" );
             msg.setProperty("user", user);
             client.botChat.sendMessage(msg);
         }
@@ -907,7 +907,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("colourchange");
+            msg.setProperty( "ciderAction", "colourchange" );
             msg.setProperty("r", r);
             msg.setProperty("g", g);
             msg.setProperty("b", b);
