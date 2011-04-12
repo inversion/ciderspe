@@ -393,8 +393,8 @@ public class ETASourceEditorPane extends JScrollPane
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
                                     }   
-                                    else if (eta.getCaretPosition() < -1 ) // TODO: I don't think this is possible (Andrew)
-                                        return;
+                                    else if (eta.getCaretPosition() < -1 )
+                                        position = 0;
                                     break;
                                 case '\u0008': // Backspace char
                                     mode = TypingEventMode.backspace;
@@ -420,20 +420,12 @@ public class ETASourceEditorPane extends JScrollPane
                                     break;
                                 default:
                                     client.shared.profile.incrementCharCount();
-                                    // If there's a region selected we need to replace that with the new character
-                                    // Do this by deleting the region first then insert the character as normal
+                                    // If there's a region selected we need to overwrite
                                     if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
                                     {
+                                        mode = TypingEventMode.overwrite;
                                         position = eta.getSelectedRegion().start;
-                                        deleteEvent = new TypingEvent(
-                                        System.currentTimeMillis()
-                                                + client.getClockOffset(),
-                                        TypingEventMode.delete, position,
-                                        eta.getSelectedRegion().getLength(), " ",
-                                        client.getUsername(),
-                                        r == 1 ? client.getUsername() : null);
-                                        // Insert character just before where we deleted
-                                        position--;
+                                        length = eta.getSelectedRegion().getLength();
                                     }
                                     chr = String.valueOf(ke.getKeyChar());
                                     break;
@@ -446,16 +438,7 @@ public class ETASourceEditorPane extends JScrollPane
                                         length, chr,
                                         client.getUsername(),
                                         r == 1 ? client.getUsername() : null);
-                                ArrayList<TypingEvent> particles = te.explode();
-
-                                // If we are deleting a selection, append the delete event for that selection, 
-                                // changing the time to 1 less than next in particles list
-                                if( deleteEvent != null )
-                                {
-                                    deleteEvent = new TypingEvent( particles.get(0).time-1, deleteEvent.mode, position, deleteEvent.length, " ", deleteEvent.owner, deleteEvent.lockingGroup );
-                                    particles.add( 0, deleteEvent );
-                                }
-                                    
+                                ArrayList<TypingEvent> particles = te.explode();                                    
                                 
                                 for (TypingEvent particle : particles)
                                     System.out.println("push to server: "

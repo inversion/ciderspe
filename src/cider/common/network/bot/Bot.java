@@ -42,9 +42,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.network.ConfigurationReader;
-import cider.common.network.DebugPacketFilter;
-import cider.common.network.DebugPacketInterceptor;
-import cider.common.network.DebugPacketListener;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
