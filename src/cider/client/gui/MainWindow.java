@@ -128,6 +128,8 @@ public class MainWindow
     private OutputStream baos;
 
     boolean offlineMode = false;
+    
+    private IdleTimer idleTimer;
 
     /**
      * These variable are for the profiles
@@ -167,33 +169,6 @@ public class MainWindow
         this.shared = new ClientSharedComponents();
     }
 
-    /**
-     * Request profile for specified user from the Bot.
-     * 
-     * @param username
-     *            The username of the profile we are requesting.
-     * 
-     * @author Jon, Andrew
-     */
-    public void requestProfile(String username, boolean show)
-    {
-        try
-        {
-            Message msg = new Message();
-            msg.setBody("");
-            msg.setProperty("ciderAction", "requestprofile");
-            msg.setProperty("username", username);
-            if (show)
-                msg.setProperty("show", "true");
-            client.botChat.sendMessage(msg);
-            if (DEBUG)
-            	System.out.println("Profile: Requesting profile from server for " + username);
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
-    }
 
     /**
      * This method sets up the profile by asking the Bot if it has the user on
@@ -204,7 +179,7 @@ public class MainWindow
      */
     private void profileSetup()
     {
-        requestProfile(username, false);
+        Profile.requestProfile(username, false, client.botChat);
 
         if (client.colours.containsKey(username))
             client.colours.remove(username);
@@ -440,15 +415,15 @@ public class MainWindow
                 {
                     myProfile.updateTimeSpent(startTime);
                     startTime = System.currentTimeMillis();
-                    myProfile.updateProfileInfo();
+                    myProfile.updateLastOnline();
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    myProfile.uploadProfile(client.botChat, startTime);
+                    myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
-                    requestProfile(username, false);
+                    Profile.requestProfile(username, false, client.botChat);
                 }
                 else if (action
                         .equals("DEV: Show list of colours stored locally"))
@@ -1163,6 +1138,8 @@ public class MainWindow
                     	}
                         client.initiateChat((String) shared.userList
                                 .getSelectedValue());
+                        shared.receiveTabs.setSelectedIndex( shared.receiveTabs.indexOfTab( (String) shared.userList
+                                .getSelectedValue()) );
                     }
                     else if ((e.getButton() == MouseEvent.BUTTON3)
                             && (shared.userList.locationToIndex(e.getPoint()) != -1))
@@ -1204,8 +1181,8 @@ public class MainWindow
                                         // thread.sleep()
                                         // See client message listener for new
                                         // way of displaying profile pane
-                                        requestProfile((String) shared.userList
-                                                .getSelectedValue(), true);
+                                        Profile.requestProfile((String) shared.userList
+                                                .getSelectedValue(), true, client.botChat);
                                     }
                                 });
                             }
@@ -1393,7 +1370,8 @@ public class MainWindow
     public void startApplication(JFrame loginWindow)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        w.addMouseMotionListener(new IdleTimer(client));
+        idleTimer = new IdleTimer(client);
+        w.addMouseMotionListener( idleTimer );
 
         // FIXME:
         // client.startClockSynchronisation(w);
@@ -1431,9 +1409,7 @@ public class MainWindow
             {
                 if (!offlineMode)
                 {
-                    myProfile.updateTimeSpent(startTime);
-                    myProfile.updateProfileInfo();
-                    myProfile.uploadProfile(client.botChat, startTime);
+                    myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
                     if (DEBUG)
                     	System.out.println("disconnecting");
                     client.disconnect();
