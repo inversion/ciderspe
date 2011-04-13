@@ -135,7 +135,6 @@ public class ClientMessageListener implements MessageListener, ActionListener
         }
         else
         {
-            System.out.println("ClientMessageListener: Received doc message " + message.toXML() );
             this.client.processDocumentMessages( message );
         }
             

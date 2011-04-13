@@ -647,11 +647,12 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             return;
             
         copy();
-        // FIXME: Makes the whole line go blank for some reason
+        
+        // FIXME: Need some way to propagate this delete event
         TypingEvent deleteEvent = new TypingEvent( System.currentTimeMillis() + parent.getClockOffset(), 
-                TypingEventMode.delete, selectedRegion.start, selectedRegion.list.size(), 
+                TypingEventMode.delete, selectedRegion.start, selectedRegion.getLength(), 
                 null, parent.getUsername(), null );
-        str.insert( deleteEvent );
+        
     }
 
     protected void paste()

@@ -67,8 +67,6 @@ public class ClientChatroomMessageListener implements PacketListener
         // If this isn't a document message print it to the chatlog
         if( !docMessage )
             client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
-        else
-            System.out.println("ClientChatroomListener: Received doc message " + msg.toXML() );
         
         client.shared.receiveTabs.tabflash( MainWindow.GROUPCHAT_TITLE );
     }
