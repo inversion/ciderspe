@@ -26,6 +26,10 @@ package cider.client.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -36,6 +40,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,7 +51,6 @@ import javax.swing.JTabbedPane;
 
 import cider.common.network.client.Client;
 import cider.common.processes.TypingEvent;
-import cider.common.processes.TypingEventList;
 import cider.common.processes.TypingEventMode;
 import cider.documentViewerComponents.EditorTypingArea;
 
@@ -67,6 +71,9 @@ public class ETASourceEditorPane extends JScrollPane
     private Component tabHandle = null;
     private Client client;
     private String path;
+    
+    // Mode of input, default to insert at caret
+    private TypingEventMode inputMode = TypingEventMode.insert;
 
     public ETASourceEditorPane(final EditorTypingArea eta, Client client, String path)
     {
@@ -304,18 +311,99 @@ public class ETASourceEditorPane extends JScrollPane
                         break;
                     case KeyEvent.VK_X:
                         if( ke.isControlDown() )
-                            eta.cut();
+                        {
+                            eta.copy();
+                            applyToSelection( TypingEventMode.delete );
+                        }
                         break;
                     case KeyEvent.VK_V:
                         if( ke.isControlDown() )
-                            eta.paste();
+                        {
+                            String text = null;
+                            TypingEvent insertRemainder = null;
+                            Clipboard clipboard = getToolkit().getSystemClipboard();
+                            // Credit help to http://www.javapractices.com/topic/TopicAction.do?Id=82
+                            Transferable contents = clipboard.getContents( null );
+                            boolean isText = (contents != null) && contents.isDataFlavorSupported( DataFlavor.stringFlavor );
+                            
+                            if( isText )
+                                try
+                                {
+                                    text = (String)contents.getTransferData( DataFlavor.stringFlavor );
+                                }
+                                catch (UnsupportedFlavorException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            
+                            if( text == null )
+                                break;
+                            
+                            TypingEventMode mode;
+                            int position, length;
+                            
+                            // If there's a region selected we need to overwrite
+                            if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
+                            {
+                                mode = TypingEventMode.overwrite;
+                                position = eta.getSelectedRegion().start;
+                                length = eta.getSelectedRegion().getLength();
+                            }
+                            else
+                            { // Otherwise just insert text at caret using default mode
+                                mode = inputMode;
+                                position = eta.getCaretPosition();
+                                // If overwriting move position forward 1 to overwrite in front of caret
+                                position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
+                                length = text.length();
+                            }
+                            
+                            // TODO: Doesn't handle locking regions
+                            TypingEvent te = new TypingEvent(
+                                    System.currentTimeMillis()
+                                            + client.getClockOffset(),
+                                    mode, position,
+                                    length, text,
+                                    client.getUsername(),
+                                    null);
+                            
+                            Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                            Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                            outgoingEvents.add(te);
+                            internal.add(te);
+                            System.out.println("push to server: " + te);
+                            eta.getSourceDocument().push(internal);
+                            client.broadcastTypingEvents(outgoingEvents, path);
+                            
+                            eta.updateUI();
+                            
+                            eta.updateText();
+                            eta.scrollRectToVisible(new Rectangle(0, eta
+                                    .getCurrentLine().y, eta.getWidth(),
+                                    EditorTypingArea.lineSpacing));
+                            
+                            eta.moveCaret( length );
+                        }
+                        break;
+                    case KeyEvent.VK_INSERT: // Switch default input mode between insert and overtype
+                        inputMode = (inputMode == TypingEventMode.insert) ? TypingEventMode.overwrite : TypingEventMode.insert;
+                        // TODO: Provide GUI indication of input mode (possibly block caret and status bar indicator)
+                        System.out.println( "Input mode changed to " + inputMode.toString() );
                         break;
                 }
                 
             }
-
+            
             private void applyToSelection(TypingEventMode mode)
             {
+                // Don't do anything if there's no selected region
+                if( eta.getSelectedRegion() == null || eta.getSelectedRegion().getLength() == 0 )
+                    return;
+                
                 Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                 Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
                 TypingEvent te = new TypingEvent(System.currentTimeMillis()
@@ -330,6 +418,11 @@ public class ETASourceEditorPane extends JScrollPane
                 eta.getSourceDocument().push(internal);
                 client.broadcastTypingEvents(outgoingEvents, path);
                 eta.updateUI();
+                
+                eta.updateText();
+                eta.scrollRectToVisible(new Rectangle(0, eta
+                        .getCurrentLine().y, eta.getWidth(),
+                        EditorTypingArea.lineSpacing));
             }
 
             @Override
@@ -359,10 +452,11 @@ public class ETASourceEditorPane extends JScrollPane
                             try
                             {
                                 // System.out.println(server.lastUpdateTime());
-                                TypingEventMode mode = TypingEventMode.insert;
+                                TypingEventMode mode = inputMode;
+                                TypingEvent deleteEvent = null;
                                 String chr;
                                 int length = 1, position = eta.getCaretPosition();
-
+                                
                                 switch (ke.getKeyChar())
                                 {
                                 case '\u007F': // Delete character
@@ -392,8 +486,8 @@ public class ETASourceEditorPane extends JScrollPane
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
                                     }   
-                                    else if (eta.getCaretPosition() < -1 ) // TODO: I don't think this is possible (Andrew)
-                                        return;
+                                    else if (eta.getCaretPosition() < -1 ) // TODO: Not sure if this ever happens
+                                        position = 0;
                                     break;
                                 case '\u0008': // Backspace char
                                     mode = TypingEventMode.backspace;
@@ -405,7 +499,6 @@ public class ETASourceEditorPane extends JScrollPane
                                         mode = TypingEventMode.delete;
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
-                                        System.out.println("ETASourceEditorPane: Delete event from " + position + " for length " + length);
                                     }
                                     else if (eta.getCaretPosition() < 0)
                                         return;
@@ -415,15 +508,26 @@ public class ETASourceEditorPane extends JScrollPane
                                     length = 4;
                                     ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
+                                    // If overwriting move position forward 1 to overwrite in front of caret
+                                    position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
+
                                     client.shared.profile.incrementCharCount();
                                     break;
                                 default:
                                     client.shared.profile.incrementCharCount();
+                                    // If there's a region selected we need to overwrite
+                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
+                                    {
+                                        mode = TypingEventMode.overwrite;
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion().getLength();
+                                    }
                                     chr = String.valueOf(ke.getKeyChar());
+                                    // If overwriting move position forward 1 to overwrite in front of caret
+                                    position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
                                     break;
                                 }
 
-                                // TODO: Will need different position for selections
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
                                                 + client.getClockOffset(),
@@ -431,8 +535,8 @@ public class ETASourceEditorPane extends JScrollPane
                                         length, chr,
                                         client.getUsername(),
                                         r == 1 ? client.getUsername() : null);
-                                ArrayList<TypingEvent> particles = te.explode();
-
+                                ArrayList<TypingEvent> particles = te.explode();                                    
+                                
                                 for (TypingEvent particle : particles)
                                     System.out.println("push to server: "
                                             + particle);
@@ -445,14 +549,19 @@ public class ETASourceEditorPane extends JScrollPane
                                     outgoingEvents.add(particle);
                                     internal.add(particle);
                                 }
+                                
+                                TypingEvent.saveEvents(outgoingEvents, client.getCurrentDocumentID().path);
 
                                 eta.getSourceDocument().push(internal);
+                                client.broadcastTypingEvents(outgoingEvents,
+                                        path);
+                                
+                                // FIXME: One of these is bailing out when it's the first char in the document
                                 eta.updateText();
                                 eta.scrollRectToVisible(new Rectangle(0, eta
                                         .getCurrentLine().y, eta.getWidth(),
                                         EditorTypingArea.lineSpacing));
-                                client.broadcastTypingEvents(outgoingEvents,
-                                        path);
+
 
                                 switch (mode)
                                 {

@@ -26,6 +26,7 @@ package cider.common.network.client;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
+import org.jivesoftware.smack.util.StringUtils;
 
 import cider.client.gui.MainWindow;
 
@@ -52,11 +53,17 @@ public class ClientChatroomMessageListener implements PacketListener
     @Override
     public void processPacket(Packet packet)
     {
-        // TODO Auto-generated method stub
+        
+        boolean docMessage = false;
         Message msg = (Message) packet;
         String body = msg.getBody();
         
-        boolean docMessage = client.processDocumentMessages( msg );
+        // Don't parse your own messages
+        if( !StringUtils.parseResource( packet.getFrom() ).equals( client.getUsername() ) )
+            docMessage = client.processDocumentMessages( msg );
+        else if( msg.getProperty( "ciderAction" ) != null ) // If it's our action don't print to gui
+            return;
+        
         // If this isn't a document message print it to the chatlog
         if( !docMessage )
             client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);

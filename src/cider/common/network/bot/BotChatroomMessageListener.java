@@ -59,10 +59,10 @@ public class BotChatroomMessageListener implements PacketListener
     {
         Message message = (Message) packet;
 
-        String subject = message.getSubject();
-        if (subject.equals("pushto"))
+        String ciderAction = (String) message.getProperty( "ciderAction");
+        if (ciderAction.equals("pushto"))
             pushto( message );
-        else if ( subject.equals("colourchange") )
+        else if ( ciderAction.equals("colourchange") )
         {
             Integer r = (Integer) message.getProperty("r");
             Integer g = (Integer) message.getProperty("g");
@@ -82,30 +82,34 @@ public class BotChatroomMessageListener implements PacketListener
     
     private void pushto( Message msg )
     {
-        int i = 0;
+        String dest = null;
+        int eventNum;
         Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
         // Loop until we've processed all events in the message
-        while( true )
+        for( eventNum = 0; msg.getProperty("te" + eventNum) != null; eventNum++ )
         {
-            String dest = (String) msg.getProperty( "path" + i );
-            String te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + i ) ) );
+            // If destination for this event isn't null change it
+            if (msg.getProperty("path" + eventNum) != null)
+            {
+                dest = (String) msg.getProperty("path" + eventNum);
+                dest = dest.replace("root\\", "");
+            }
+            String te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + eventNum ) ) );
             
             // If all events have been processed
-            if( dest == null && te == null )
+            if( te == null )
                 break;
 
-            dest = dest.replace("root\\", "");
             Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
             typingEvents.add(new TypingEvent(te));
             // System.out.println("Push " + preAndAfter[1] + " to " + dest);
             SourceDocument doc = this.bot.getRootFolder().path(dest);
             doc.push(typingEvents);
             changedDocs.put(dest, doc);
-            i++;
         }
         
-        if (i > 0)
-            System.out.println("Bot received " + i
+        if (eventNum > 0)
+            System.out.println("Bot received " + eventNum
                     + " events at the same time");
 
         for (Entry<String, SourceDocument> entry : changedDocs.entrySet())

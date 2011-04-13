@@ -624,7 +624,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void copy()
     {
-        if( selectedRegion.list.size() == 0 )
+        if( selectedRegion.getLength() == 0 )
             return;
         
         StringBuffer sb = new StringBuffer();
@@ -634,29 +634,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         Clipboard clipboard = getToolkit().getSystemClipboard();
         StringSelection stringSelection = new StringSelection( sb.toString() );
         clipboard.setContents( stringSelection, stringSelection );
-    }
-
-    /**
-     * Cut current selection to clipboard
-     * 
-     * @author Andrew
-     */
-    protected void cut()
-    {
-        if( selectedRegion.list.size() == 0 )
-            return;
-            
-        copy();
-        // FIXME: Makes the whole line go blank for some reason
-        TypingEvent deleteEvent = new TypingEvent( System.currentTimeMillis() + parent.getClockOffset(), 
-                TypingEventMode.delete, selectedRegion.start, selectedRegion.list.size(), 
-                null, parent.getUsername(), null );
-        str.insert( deleteEvent );
-    }
-
-    protected void paste()
-    {
-        // TODO Auto-generated method stub
     }
 
     protected int getCurLine()

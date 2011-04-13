@@ -80,7 +80,7 @@ public class BotChatListener implements ChatManagerListener
             {
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setSubject( "quit" );
+                msg.setProperty( "ciderAction", "quit" );
                 chat.sendMessage( msg );
             }
             catch (XMPPException e)

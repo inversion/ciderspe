@@ -63,22 +63,22 @@ public class BotMessageListener implements MessageListener
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String subject = message.getSubject();
+        String ciderAction = (String) message.getProperty( "ciderAction" );
         
-        if (subject.equals("are you online mr bot"))
+        if (ciderAction.equals("are you online mr bot"))
             sendOnlineReply( chat );
-        else if ( subject.equals( "createDoc" ) )
+        else if ( ciderAction.equals( "createDoc" ) )
             createDocument(chat, message);
-        else if ( subject.equals("getfilelist") )
-            sendFileList();
-        else if ( subject.equals("requestusercolour") )
+        else if ( ciderAction.equals("getfilelist") )
+            sendFileList( chat.getParticipant() );
+        else if ( ciderAction.equals("requestusercolour") )
         {
             Color yaycolour = bot.colours.get( message.getProperty( "user" ) );
             try
             {
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setSubject( "usercolour" );
+                msg.setProperty( "ciderAction", "usercolour" );
                 msg.setProperty("r", yaycolour.getRed());
                 msg.setProperty("g", yaycolour.getGreen());
                 msg.setProperty("b", yaycolour.getBlue());
@@ -89,12 +89,12 @@ public class BotMessageListener implements MessageListener
                 e.printStackTrace();
             }
         }
-        else if ( subject.equals( "userprofile" ) )
+        else if ( ciderAction.equals( "userprofile" ) )
             updateProfile( chat, message );
-        else if ( subject.equals("requestprofile") )
+        else if ( ciderAction.equals("requestprofile") )
             sendProfile( chat, message );
         // This part is still important for when a file is opened
-        else if ( subject.equals( "pullEvents" ) )
+        else if ( ciderAction.equals( "pullEvents" ) )
         {
             String dest = (String) message.getProperty( "path" );
             long time = 0, startTime = 0, endTime = 0;
@@ -117,14 +117,14 @@ public class BotMessageListener implements MessageListener
                 this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
                         .eventsBetween(startTime, endTime), stopDiversion);
         }
-        else if ( subject.equals( "pullSimplifiedEvents" ) )
+        else if ( ciderAction.equals( "pullSimplifiedEvents" ) )
         {
             String dest = (String) message.getProperty( "path" );
             long time = Long.parseLong( (String) message.getProperty( "time" ) );
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
                     .simplified(time).events(), false);
         }
-        else if (subject.equals("You play 2 hours to die like this?"))
+        else if (ciderAction.equals("You play 2 hours to die like this?"))
         {
             Toolkit.getDefaultToolkit().beep();
             System.err
@@ -177,21 +177,25 @@ public class BotMessageListener implements MessageListener
         
         if (queue.size() == 0)
         {
-            msg.setSubject( "isblank" );
+            msg.setProperty( "ciderAction", "isblank" );
             msg.setProperty( "path", path );
         }
         else
         {
-            msg.setSubject( "pushto" );
+            msg.setProperty( "ciderAction", "pushto" );
             msg.setProperty( "path0", path );
             // Encode so we can send newlines
             msg.setProperty( "te0", StringUtils.encodeBase64( queue.poll().pack() ) );
+            
+//            for( ; !queue.isEmpty(); i++ )
+//                msg.setProperty( "te" + i, StringUtils.encodeBase64( queue.poll().pack() ) );
+            // TODO: Below was possibly causing the problem with garbled text
             for (TypingEvent te : queue)
                 msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
         }
 
-        if (stopDiversion)
-            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
+//        if (stopDiversion)
+//            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
 
         try
         {
@@ -206,22 +210,33 @@ public class BotMessageListener implements MessageListener
     /**
      * Send file list to clients.
      * 
+     * @param userJID The FULL JID of the user to send the list to, or null to broadcast it.
      * @author Andrew
      */
-    private void sendFileList()
+    private void sendFileList( String userJID )
     {
         try
         {
             String xml = this.bot.getRootFolder().xml("");
             Message msg = new Message();
             msg.setBody("");
-            msg.setTo( bot.chatroom.getRoom() );
-            msg.setType( Message.Type.groupchat );
-            msg.setSubject( "filelist" );
+            msg.setProperty( "ciderAction", "filelist" );
             msg.setBody("");
             // TODO: Smack changes it all to &gt; etc. so using base64 for now
             msg.setProperty( "xml", StringUtils.encodeBase64( xml ) );
-            bot.chatroom.sendMessage( msg );
+            
+            // Send to everyone or just one user.
+            if( userJID == null )
+            {
+                msg.setTo( bot.chatroom.getRoom() );
+                msg.setType( Message.Type.groupchat );  
+                bot.chatroom.sendMessage( msg );
+            }
+            else
+            {
+                msg.setTo( userJID );
+                bot.chatListener.chats.get( StringUtils.parseName( userJID ) ).sendMessage( msg );
+            }           
         }
         catch (XMPPException e)
         {
@@ -286,7 +301,7 @@ public class BotMessageListener implements MessageListener
                 Profile profile = bot.profiles.get( username );
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setSubject("profile");
+                msg.setProperty( "ciderAction", "profile" );
                 msg.setProperty( "username", profile.uname );
                 msg.setProperty( "chars", profile.typedChars );
                 msg.setProperty( "timeSpent", profile.timeSpent );
@@ -307,7 +322,7 @@ public class BotMessageListener implements MessageListener
                 // Send message indicating no profile was found
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setSubject( "notfound" );
+                msg.setProperty( "ciderAction", "notfound" );
                 msg.setProperty( "username", username );
                 // If we want the warning box to pop up at the other end
                 if( message.getProperty( "show" ) != null )
@@ -361,8 +376,8 @@ public class BotMessageListener implements MessageListener
         // Add the new document to the folder
         LiveFolder.findFolder(path, bot.getRootFolder()).addDocument(doc);
 
-        // Send the updated file list to the clients
-        sendFileList();
+        // Send the updated file list to all the clients
+        sendFileList( null );
     }
 
     /**
@@ -380,7 +395,7 @@ public class BotMessageListener implements MessageListener
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setSubject("yes i am online");
+            msg.setProperty( "ciderAction", "yes i am online");
             chat.sendMessage(msg);
         }
         catch (XMPPException e)
