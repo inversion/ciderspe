@@ -95,8 +95,8 @@ public class TypingEventList
         if (position >= tel.size())
             position = tel.size() - 1;
         if (position < 0)
-//            return;
-            position = 0;
+            return;
+//            position = 0;
         
         this.tel.remove(position);
     }
@@ -113,6 +113,9 @@ public class TypingEventList
     {
         if( position == tel.size() - 1 )
             return;
+        
+        if( position == -1 )
+            position = 0;
         
         // Delete for length
         for( int i = 1; i <= length; i++ )
