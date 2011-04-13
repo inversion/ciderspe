@@ -267,9 +267,8 @@ public class TypingEvent implements Serializable
      */
     public String toString()
     {
-        return this.time + "\t" + this.position + "\t" + this.length
-                + "\t" + this.mode.toString() + "\t" + this.text + "\t"
-                + this.lockingGroup;
+        return this.time + "\t" + this.mode.toString() + "\t" + this.position
+                + "\t" + this.length + "\t" + this.text + "\t" + this.lockingGroup;
     }
 
     /**
@@ -319,6 +318,7 @@ public class TypingEvent implements Serializable
         Set<String> results = new LinkedHashSet<String>();
         boolean foundMatch;
         int i;
+        int start;
         while ((strLine = br.readLine()) != null)
         {
             foundMatch = false;
@@ -327,9 +327,14 @@ public class TypingEvent implements Serializable
             {
                 if (strLine.startsWith(time))
                 {
-                    foundMatch = true;
-                    results.add(time);
-                    break;
+                    start = time.length();
+                    if(strLine.substring(start, strLine.indexOf(' ', start + 1))
+                            .equals(TypingEventMode.homogenized.toString()))
+                    {
+                        foundMatch = true;
+                        results.add(time);
+                        break;
+                    }
                 }
                 i++;
             }
