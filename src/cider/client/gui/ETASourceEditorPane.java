@@ -304,11 +304,17 @@ public class ETASourceEditorPane extends JScrollPane
                         break;
                     case KeyEvent.VK_X:
                         if( ke.isControlDown() )
+                        {
                             eta.cut();
+                            applyToSelection( TypingEventMode.delete );
+                        }
                         break;
                     case KeyEvent.VK_V:
                         if( ke.isControlDown() )
+                        {
                             eta.paste();
+                        }
+
                         break;
                 }
                 
@@ -316,6 +322,10 @@ public class ETASourceEditorPane extends JScrollPane
 
             private void applyToSelection(TypingEventMode mode)
             {
+                // Don't do anything if there's no selected region
+                if( eta.getSelectedRegion() == null || eta.getSelectedRegion().getLength() == 0 )
+                    return;
+                
                 Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                 Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
                 TypingEvent te = new TypingEvent(System.currentTimeMillis()
@@ -330,6 +340,11 @@ public class ETASourceEditorPane extends JScrollPane
                 eta.getSourceDocument().push(internal);
                 client.broadcastTypingEvents(outgoingEvents, path);
                 eta.updateUI();
+                
+                eta.updateText();
+                eta.scrollRectToVisible(new Rectangle(0, eta
+                        .getCurrentLine().y, eta.getWidth(),
+                        EditorTypingArea.lineSpacing));
             }
 
             @Override
