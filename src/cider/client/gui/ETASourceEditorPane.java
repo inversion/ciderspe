@@ -373,12 +373,17 @@ public class ETASourceEditorPane extends JScrollPane
                             System.out.println("push to server: " + te);
                             eta.getSourceDocument().push(internal);
                             client.broadcastTypingEvents(outgoingEvents, path);
+                            
+                            
+                            
                             eta.updateUI();
                             
                             eta.updateText();
                             eta.scrollRectToVisible(new Rectangle(0, eta
                                     .getCurrentLine().y, eta.getWidth(),
                                     EditorTypingArea.lineSpacing));
+                            
+                            eta.moveCaret( length );
                         }
                         break;
                 }
