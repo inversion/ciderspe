@@ -624,7 +624,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void copy()
     {
-        if( selectedRegion.list.size() == 0 )
+        if( selectedRegion.getLength() == 0 )
             return;
         
         StringBuffer sb = new StringBuffer();
@@ -642,17 +642,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * @author Andrew
      */
     protected void cut()
-    {
-        if( selectedRegion.list.size() == 0 )
-            return;
-            
-        copy();
-        
-        // FIXME: Need some way to propagate this delete event
-        TypingEvent deleteEvent = new TypingEvent( System.currentTimeMillis() + parent.getClockOffset(), 
-                TypingEventMode.delete, selectedRegion.start, selectedRegion.getLength(), 
-                null, parent.getUsername(), null );
-        
+    {          
+        copy();        
     }
 
     protected void paste()
