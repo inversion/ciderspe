@@ -72,9 +72,6 @@ import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
-import cider.common.network.DebugPacketFilter;
-import cider.common.network.DebugPacketInterceptor;
-import cider.common.network.DebugPacketListener;
 import cider.common.processes.DocumentID;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
@@ -185,7 +182,7 @@ public class Client
         this.serviceName = serviceName;
         this.password = password;
         this.login = log;
-        
+
         // Set blank outgoingTypingEvents
         resetOutgoingEvents();
 
@@ -245,7 +242,7 @@ public class Client
      */
     public boolean attemptConnection() throws XMPPException
     {
-        
+
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
@@ -253,10 +250,10 @@ public class Client
         connection.connect();
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-//        connection.addPacketListener(new DebugPacketListener(),
-//                new DebugPacketFilter());
-//        connection.addPacketInterceptor(new DebugPacketInterceptor(),
-//                new DebugPacketFilter());
+        // connection.addPacketListener(new DebugPacketListener(),
+        // new DebugPacketFilter());
+        // connection.addPacketInterceptor(new DebugPacketInterceptor(),
+        // new DebugPacketFilter());
 
         /*
          * Append a random string to the resource to prevent conflicts with
@@ -298,7 +295,7 @@ public class Client
         // Check the bot is online
         Message msg = new Message();
         msg.setBody("");
-        msg.setProperty( "ciderAction", "are you online mr bot");
+        msg.setProperty("ciderAction", "are you online mr bot");
         botChat.sendMessage(msg);
         try
         {
@@ -327,7 +324,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "You play 2 hours to die like this?");
+            msg.setProperty("ciderAction", "You play 2 hours to die like this?");
             botChat.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -616,7 +613,7 @@ public class Client
             shared.openTabs.put(strPath, sourceEditor);
             this.pullEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset(), true);
-            this.currentDocumentID = new DocumentID(strPath, doc.name);
+            this.currentDocumentID = new DocumentID(doc.name, strPath);
         }
     }
 
@@ -628,9 +625,9 @@ public class Client
             Message msg = new Message();
             msg.setBody("");
             if (simplified)
-                msg.setProperty( "ciderAction", "pullSimplifiedEvents" );
+                msg.setProperty("ciderAction", "pullSimplifiedEvents");
             else
-                msg.setProperty( "ciderAction", "pullEvents" );
+                msg.setProperty("ciderAction", "pullEvents");
             msg.setProperty("path", strPath);
             msg.setProperty("time", String.valueOf(time));
             botChat.sendMessage(msg);
@@ -648,7 +645,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "pullEvents" );
+            msg.setProperty("ciderAction", "pullEvents");
             msg.setProperty("path", strPath);
             msg.setProperty("startTime", String.valueOf(startTime));
             msg.setProperty("endTime", String.valueOf(endTime));
@@ -660,7 +657,7 @@ public class Client
             e.printStackTrace();
         }
     }
-    
+
     /**
      * Reset the outgoing typing events to blank
      * 
@@ -670,20 +667,20 @@ public class Client
     {
         outgoingTypingEvents = new Message();
         outgoingTypingEvents.setBody("");
-        outgoingTypingEvents.setProperty( "ciderAction", "pushto");
+        outgoingTypingEvents.setProperty("ciderAction", "pushto");
         outgoingTypingEvents.setType(Message.Type.groupchat);
-        outgoingTypingEvents.setTo( chatroomName );
+        outgoingTypingEvents.setTo(chatroomName);
     }
 
     public void broadcastTypingEvents(Queue<TypingEvent> typingEvents,
             String path)
-    {      
+    {
         int i = 0;
-        
+
         // Find first position to append typing events
-        while( outgoingTypingEvents.getProperty( "te" + i ) != null )
+        while (outgoingTypingEvents.getProperty("te" + i) != null)
             i++;
-        
+
         for (TypingEvent te : typingEvents)
         {
             outgoingTypingEvents.setProperty("path" + i, path);
@@ -758,7 +755,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "getfilelist" );
+            msg.setProperty("ciderAction", "getfilelist");
             botChat.sendMessage(msg);
         }
         catch (XMPPException e)
@@ -788,33 +785,43 @@ public class Client
 
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
-        Queue<TypingEvent> remainingEvents;
-        if (this.typingEventDiversion != null)
+        if (this.currentDocumentID == null)
+            System.err
+                    .println("Should not be receiving typing events when current document id is null");
+        else
         {
-            remainingEvents = new LinkedList<TypingEvent>();
-            for (TypingEvent typingEvent : typingEvents)
-                if (this.typingEventDiversion.end.time > typingEvent.time)
-                    this.typingEventDiversion.end.typingEvents.add(typingEvent);
-                else
-                    remainingEvents.add(typingEvent);
+            Queue<TypingEvent> remainingEvents;
+            TypingEvent.saveEvents(typingEvents, this.currentDocumentID.path);
+
+            if (this.typingEventDiversion != null)
+            {
+                remainingEvents = new LinkedList<TypingEvent>();
+                for (TypingEvent typingEvent : typingEvents)
+                    if (this.typingEventDiversion.end.time > typingEvent.time)
+                        this.typingEventDiversion.end.typingEvents
+                                .add(typingEvent);
+                    else
+                        remainingEvents.add(typingEvent);
+            }
+            else
+                remainingEvents = typingEvents;
+
+            EditorTypingArea eta = shared.openTabs.get(dest)
+                    .getEditorTypingArea();
+            int position = eta.getCaretPosition();
+            TypingEvent anchor;
+            if (position >= 0 && position < eta.getTypingEventList().length())
+                anchor = eta.getTypingEventList().get(position);
+            else
+                anchor = null;
+
+            eta.getSourceDocument().push(remainingEvents);
+            eta.setWaiting(false);
+            eta.updateText();
+            if (anchor != null)
+                eta.setCaretPosition(eta.getTypingEventList()
+                        .getLastPositionOf(anchor));
         }
-        else
-            remainingEvents = typingEvents;
-
-        EditorTypingArea eta = shared.openTabs.get(dest).getEditorTypingArea();
-        int position = eta.getCaretPosition();
-        TypingEvent anchor;
-        if (position >= 0 && position < eta.getTypingEventList().length())
-            anchor = eta.getTypingEventList().get(position);
-        else
-            anchor = null;
-
-        eta.getSourceDocument().push(remainingEvents);
-        eta.setWaiting(false);
-        eta.updateText();
-        if (anchor != null)
-            eta.setCaretPosition(eta.getTypingEventList().getLastPositionOf(
-                    anchor));
     }
 
     /**
@@ -847,7 +854,7 @@ public class Client
         int eventNum = 0;
         String dest = "", te;
         // Loop until we've processed all events in the message
-        for( ; msg.getProperty("te" + eventNum) != null; eventNum++ )
+        for (; msg.getProperty("te" + eventNum) != null; eventNum++)
         {
             // If destination for this event isn't null change it
             if (msg.getProperty("path" + eventNum) != null)
@@ -860,8 +867,8 @@ public class Client
                     .getProperty("te" + eventNum)));
 
             // TODO: Commented out stopdiversion cos it's not in use yet
-//            if (te.equals("end"))
-//                stopDiversion = true;
+            // if (te.equals("end"))
+            // stopDiversion = true;
 
             Queue<TypingEvent> queue = queues.get(dest);
             if (queue == null)
@@ -876,12 +883,12 @@ public class Client
         for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
             this.push(entry.getValue(), entry.getKey());
 
-     // TODO: Commented out stopdiversion cos it's not in use yet
-//        if (stopDiversion)
-//        {
-//            this.typingEventDiversion.finishedUpdate();
-//            this.typingEventDiversion = null;
-//        }
+        // TODO: Commented out stopdiversion cos it's not in use yet
+        // if (stopDiversion)
+        // {
+        // this.typingEventDiversion.finishedUpdate();
+        // this.typingEventDiversion = null;
+        // }
     }
 
     public void processIsblank(Message msg)
@@ -924,7 +931,7 @@ public class Client
      */
     public boolean processDocumentMessages(Message msg)
     {
-        String ciderAction = (String) msg.getProperty( "ciderAction" );
+        String ciderAction = (String) msg.getProperty("ciderAction");
         if (ciderAction.equals("pushto"))
         {
             processPushto(msg);

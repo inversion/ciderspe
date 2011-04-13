@@ -549,6 +549,8 @@ public class ETASourceEditorPane extends JScrollPane
                                     outgoingEvents.add(particle);
                                     internal.add(particle);
                                 }
+                                
+                                TypingEvent.saveEvents(outgoingEvents, client.getCurrentDocumentID().path);
 
                                 eta.getSourceDocument().push(internal);
                                 client.broadcastTypingEvents(outgoingEvents,

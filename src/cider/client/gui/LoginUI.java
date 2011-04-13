@@ -66,6 +66,7 @@ import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.client.Client;
 import cider.common.processes.Profile;
+import cider.common.processes.TypingEvent;
 import cider.shared.ClientSharedComponents;
 
 public class LoginUI
@@ -247,7 +248,19 @@ public class LoginUI
         login.pack();
         login.setLocationByPlatform(true);
         login.setVisible(true);
+        
+        makeLocalHistoryFolder();
     }
+    
+    
+    private static void makeLocalHistoryFolder()
+    {
+        File f;
+        f = new File(TypingEvent.folderpath);
+        if (!f.exists())
+            f.mkdirs(); 
+    }
+    
 
     private void splashScreen()
     {
