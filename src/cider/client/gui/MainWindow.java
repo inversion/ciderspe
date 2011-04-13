@@ -181,7 +181,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "requestprofile" );
+            msg.setProperty("ciderAction", "requestprofile");
             msg.setProperty("username", username);
             if (show)
                 msg.setProperty("show", "true");
@@ -342,7 +342,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "requestusercolour" );
+            msg.setProperty("ciderAction", "requestusercolour");
             msg.setProperty("user", user);
             client.botChat.sendMessage(msg);
         }
@@ -644,19 +644,23 @@ public class MainWindow
         try
         {
             JFileChooser fc = new JFileChooser();
-            File f = new File(client.getCurrentDocument().name /* + ".java" */);
+            File f = new File(client.getCurrentDocument().shortName() + ".java" /*
+                                                                                 * +
+                                                                                 * ".java"
+                                                                                 */);
             fc.setSelectedFile(f);
 
             if (currentFileName.equals("Unsaved Document 1")
-                    || savedFiles.contains(client.getCurrentDocument().name) == false)
+                    || savedFiles.contains(client.getCurrentDocument()
+                            .shortName() + ".java") == false)
             {
                 int watdo = fc.showSaveDialog(null);
                 if (watdo != JFileChooser.APPROVE_OPTION)
                 {
                     return;
                 }
-                savedFiles.add(client.getCurrentDocument().name);
-                currentFileName = fc.getSelectedFile().getName();
+                savedFiles.add(client.getCurrentDocument().shortName());
+                currentFileName = fc.getSelectedFile().getName() + ".java";
                 currentDir = fc.getSelectedFile().getAbsolutePath();
             }
             FileWriter fstream = new FileWriter(currentDir);
@@ -911,7 +915,7 @@ public class MainWindow
         {
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "colourchange" );
+            msg.setProperty("ciderAction", "colourchange");
             msg.setProperty("r", r);
             msg.setProperty("g", g);
             msg.setProperty("b", b);
