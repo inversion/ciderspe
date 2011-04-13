@@ -196,8 +196,12 @@ public class TypingEvent implements Serializable
                     particles.add( new TypingEvent( t, this.mode, pos, length, "" + chrs[charIndex], this.owner, this.lockingGroup ) );
                 }
                 else
-                    particles.add(new TypingEvent(this, t++, pos++, "" + chrs[charIndex]));
-                
+                {
+                    if( length < 1 ) // If we've exhausted the length we want to overwrite, insert the remaining characters
+                        particles.add(new TypingEvent(t++, TypingEventMode.insert, (pos++)-1, 1, "" + chrs[charIndex], this.owner, this.lockingGroup ));
+                    else
+                        particles.add(new TypingEvent(this, t++, pos++, "" + chrs[charIndex]));
+                }
                 length--;                
             }
         }
