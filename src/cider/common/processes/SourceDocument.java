@@ -385,8 +385,8 @@ public class SourceDocument implements ICodeLocation, Serializable
     public void simplify(long endTime)
     {
         TypingEventList tel = this.playOutEvents(endTime);
-        //tel.homogenize(endTime);
-        //this.clearUpTo(endTime);
+        tel.homogenize(endTime);
+        this.clearUpTo(endTime);
         this.typingEvents.addAll(tel.events());
     }
 
@@ -405,8 +405,8 @@ public class SourceDocument implements ICodeLocation, Serializable
         SourceDocument doc = new SourceDocument(this.name, null,
                 this.typingEvents);
         TypingEventList tel = this.playOutEvents(endTime);
-        //tel.homogenize(endTime);
-        //doc.clearUpTo(endTime);
+        tel.homogenize(endTime);
+        doc.clearUpTo(endTime);
         doc.typingEvents.addAll(tel.events());
         return doc;
     }
