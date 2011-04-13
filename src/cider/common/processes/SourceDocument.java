@@ -523,12 +523,12 @@ public class SourceDocument implements ICodeLocation, Serializable
             }
             case backspace:
             {
-                string.backspace( event.position );
+                string.backspace(event.position);
                 break;
             }
             case delete:
             {
-                string.delete( event.position, event.length );
+                string.delete(event.position, event.length);
                 break;
             }
             case deleteAll:
@@ -692,5 +692,10 @@ public class SourceDocument implements ICodeLocation, Serializable
     public PriorityQueue<TypingEvent> orderedEvents()
     {
         return this.typingEvents;
+    }
+
+    public String shortName()
+    {
+        return this.name.split("\\.")[0];
     }
 }
