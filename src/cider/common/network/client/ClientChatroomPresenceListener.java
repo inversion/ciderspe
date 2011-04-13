@@ -98,6 +98,7 @@ public class ClientChatroomPresenceListener implements PacketListener {
         {
             if( nickname.equals( botUsername ) )
             {
+                // TODO: Close after x number of seconds
                 JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
                 parent.getParent().login.logout();
             }

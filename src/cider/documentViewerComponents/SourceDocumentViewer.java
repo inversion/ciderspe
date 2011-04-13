@@ -636,21 +636,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         clipboard.setContents( stringSelection, stringSelection );
     }
 
-    /**
-     * Cut current selection to clipboard
-     * 
-     * @author Andrew
-     */
-    protected void cut()
-    {          
-        copy();        
-    }
-
-    protected void paste()
-    {
-        // TODO Auto-generated method stub
-    }
-
     protected int getCurLine()
     {
         try

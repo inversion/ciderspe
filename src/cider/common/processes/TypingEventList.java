@@ -76,8 +76,9 @@ public class TypingEventList
             this.tel.add(te);
         else
             this.tel.set(te.position, te);
+
         
-        // If overwriting more than 1 char delete the rest of the stuff to be overwritten
+        // If overwriting length > 1 delete the rest of the stuff to be overwritten
         if( te.length > 1 )
             delete( te.position + 1, te.length - 1 );
     }

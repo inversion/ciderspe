@@ -180,7 +180,28 @@ public class TypingEvent implements Serializable
     public ArrayList<TypingEvent> explode()
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
-        if (this.mode == TypingEventMode.lockRegion
+        if( this.mode == TypingEventMode.overwrite && this.text.length() > 1 )
+        {
+            /* If doing an overwrite with more than 1 character to input, split it up */
+            char[] chrs = this.text.toCharArray();
+            long t = this.time;
+            int pos = this.position;
+            int length = this.length;
+            
+            for( int charIndex = 0; charIndex < chrs.length; charIndex++ )
+            {
+                if( charIndex == chrs.length - 1 && length > 1 )
+                {
+                    /* If this is the last event to be added, tack the length of remaining deletions needed on the end, if there are any */
+                    particles.add( new TypingEvent( t, this.mode, pos, length, "" + chrs[charIndex], this.owner, this.lockingGroup ) );
+                }
+                else
+                    particles.add(new TypingEvent(this, t++, pos++, "" + chrs[charIndex]));
+                
+                length--;                
+            }
+        }
+        else if (this.mode == TypingEventMode.lockRegion
                 || this.mode == TypingEventMode.unlockRegion
                 || this.mode == TypingEventMode.delete
                 || this.mode == TypingEventMode.overwrite )

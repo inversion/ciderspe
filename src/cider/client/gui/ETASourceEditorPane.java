@@ -26,6 +26,10 @@ package cider.client.gui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Rectangle;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -36,6 +40,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -305,21 +310,81 @@ public class ETASourceEditorPane extends JScrollPane
                     case KeyEvent.VK_X:
                         if( ke.isControlDown() )
                         {
-                            eta.cut();
+                            eta.copy();
                             applyToSelection( TypingEventMode.delete );
                         }
                         break;
                     case KeyEvent.VK_V:
                         if( ke.isControlDown() )
                         {
-                            eta.paste();
+                            String text = null;
+                            Clipboard clipboard = getToolkit().getSystemClipboard();
+                            // Credit help to http://www.javapractices.com/topic/TopicAction.do?Id=82
+                            Transferable contents = clipboard.getContents( null );
+                            boolean isText = (contents != null) && contents.isDataFlavorSupported( DataFlavor.stringFlavor );
+                            
+                            if( isText )
+                                try
+                                {
+                                    text = (String)contents.getTransferData( DataFlavor.stringFlavor );
+                                }
+                                catch (UnsupportedFlavorException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                                catch (IOException e)
+                                {
+                                    e.printStackTrace();
+                                }
+                            
+                            if( text == null )
+                                break;
+                            
+                            TypingEventMode mode;
+                            int position, length;
+                            
+                            // If there's a region selected we need to overwrite
+                            if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
+                            {
+                                mode = TypingEventMode.overwrite;
+                                position = eta.getSelectedRegion().start;
+                                length = eta.getSelectedRegion().getLength();
+                            }
+                            else
+                            { // Otherwise just insert text at caret
+                                mode = TypingEventMode.insert;
+                                position = eta.getCaretPosition();
+                                length = text.length();
+                            }
+                            
+                            // TODO: Doesn't handle locking regions
+                            TypingEvent te = new TypingEvent(
+                                    System.currentTimeMillis()
+                                            + client.getClockOffset(),
+                                    mode, position,
+                                    length, text,
+                                    client.getUsername(),
+                                    null);
+                            
+                            Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                            Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                            outgoingEvents.add(te);
+                            internal.add(te);
+                            System.out.println("push to server: " + te);
+                            eta.getSourceDocument().push(internal);
+                            client.broadcastTypingEvents(outgoingEvents, path);
+                            eta.updateUI();
+                            
+                            eta.updateText();
+                            eta.scrollRectToVisible(new Rectangle(0, eta
+                                    .getCurrentLine().y, eta.getWidth(),
+                                    EditorTypingArea.lineSpacing));
                         }
-
                         break;
                 }
                 
             }
-
+            
             private void applyToSelection(TypingEventMode mode)
             {
                 // Don't do anything if there's no selected region

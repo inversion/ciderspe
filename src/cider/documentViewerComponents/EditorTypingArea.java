@@ -111,16 +111,6 @@ public class EditorTypingArea extends SourceDocumentViewer
     {
         super.copy();        
     }
-    
-    public void cut()
-    {
-        super.cut();
-    }
-
-    public void paste()
-    {
-        super.paste();
-    }
 
     @Override
     public void setCaretPosition(int position)
