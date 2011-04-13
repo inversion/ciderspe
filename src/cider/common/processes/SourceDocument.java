@@ -385,8 +385,8 @@ public class SourceDocument implements ICodeLocation, Serializable
     public void simplify(long endTime)
     {
         TypingEventList tel = this.playOutEvents(endTime);
-        tel.homogenize(endTime);
-        this.clearUpTo(endTime);
+        //tel.homogenize(endTime);
+        //this.clearUpTo(endTime);
         this.typingEvents.addAll(tel.events());
     }
 
@@ -405,8 +405,8 @@ public class SourceDocument implements ICodeLocation, Serializable
         SourceDocument doc = new SourceDocument(this.name, null,
                 this.typingEvents);
         TypingEventList tel = this.playOutEvents(endTime);
-        tel.homogenize(endTime);
-        doc.clearUpTo(endTime);
+        //tel.homogenize(endTime);
+        //doc.clearUpTo(endTime);
         doc.typingEvents.addAll(tel.events());
         return doc;
     }
@@ -523,12 +523,12 @@ public class SourceDocument implements ICodeLocation, Serializable
             }
             case backspace:
             {
-                string.backspace( event.position );
+                string.backspace(event.position);
                 break;
             }
             case delete:
             {
-                string.delete( event.position, event.length );
+                string.delete(event.position, event.length);
                 break;
             }
             case deleteAll:
@@ -692,5 +692,10 @@ public class SourceDocument implements ICodeLocation, Serializable
     public PriorityQueue<TypingEvent> orderedEvents()
     {
         return this.typingEvents;
+    }
+
+    public String shortName()
+    {
+        return this.name.split("\\.")[0];
     }
 }

@@ -42,9 +42,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.network.ConfigurationReader;
-import cider.common.network.DebugPacketFilter;
-import cider.common.network.DebugPacketInterceptor;
-import cider.common.network.DebugPacketListener;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
@@ -61,7 +58,7 @@ public class Bot
 
     // XMPP Server Configuration
     private final String HOST;
-    private final String SERVICE_NAME;
+    protected final String SERVICE_NAME;
     private final int PORT;
     protected final String BOT_USERNAME;
     private final String BOT_PASSWORD;
@@ -138,10 +135,10 @@ public class Bot
 
             // Verbose debugging to print out every packet leaving or entering
             // the bot
-            connection.addPacketListener(new DebugPacketListener(),
-                    new DebugPacketFilter());
-            connection.addPacketInterceptor(new DebugPacketInterceptor(),
-                    new DebugPacketFilter());
+//            connection.addPacketListener(new DebugPacketListener(),
+//                    new DebugPacketFilter());
+//            connection.addPacketInterceptor(new DebugPacketInterceptor(),
+//                    new DebugPacketFilter());
 
             // Listen for new chats being initiated by clients
             chatmanager = connection.getChatManager();

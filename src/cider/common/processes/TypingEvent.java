@@ -23,8 +23,22 @@
 
 package cider.common.processes;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 /**
  * TypingEvents are what make up the history of SourceDocuments. TypingEvents
@@ -50,6 +64,8 @@ public class TypingEvent implements Serializable
     public final int length;
     public final String text;
     public final String owner;
+    public static final String folderpath = System.getenv("APPDATA")
+            + "\\cider\\localhistory\\";
 
     /**
      * 
@@ -155,7 +171,7 @@ public class TypingEvent implements Serializable
 
     /**
      * creates a string which represents this typing event and can be unpacked
-     * by the contructor which takes a string as its argument.
+     * by the contructor which takes a string as its artgument.
      * 
      * @return
      */
@@ -180,9 +196,48 @@ public class TypingEvent implements Serializable
     public ArrayList<TypingEvent> explode()
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
-        if (this.mode == TypingEventMode.lockRegion
+        if (this.mode == TypingEventMode.overwrite && this.text.length() > 1)
+        {
+            /*
+             * If doing an overwrite with more than 1 character to input, split
+             * it up
+             */
+            char[] chrs = this.text.toCharArray();
+            long t = this.time;
+            int pos = this.position;
+            int length = this.length;
+
+            for (int charIndex = 0; charIndex < chrs.length; charIndex++)
+            {
+                if (charIndex == chrs.length - 1 && length > 1)
+                {
+                    /*
+                     * If this is the last event to be added, tack the length of
+                     * remaining deletions needed on the end, if there are any
+                     */
+                    particles.add(new TypingEvent(t, this.mode, pos, length, ""
+                            + chrs[charIndex], this.owner, this.lockingGroup));
+                }
+                else
+                {
+                    if (length < 1) // If we've exhausted the length we want to
+                                    // overwrite, insert the remaining
+                                    // characters
+                        particles.add(new TypingEvent(t++,
+                                TypingEventMode.insert, (pos++) - 1, 1, ""
+                                        + chrs[charIndex], this.owner,
+                                this.lockingGroup));
+                    else
+                        particles.add(new TypingEvent(this, t++, pos++, ""
+                                + chrs[charIndex]));
+                }
+                length--;
+            }
+        }
+        else if (this.mode == TypingEventMode.lockRegion
                 || this.mode == TypingEventMode.unlockRegion
-                || this.mode == TypingEventMode.delete )
+                || this.mode == TypingEventMode.delete
+                || this.mode == TypingEventMode.overwrite)
             particles.add(this);
         else
         {
@@ -212,7 +267,7 @@ public class TypingEvent implements Serializable
      */
     public String toString()
     {
-        return "time " + this.time + "\t" + this.position + "\t" + this.length
+        return this.time + "\t" + this.position + "\t" + this.length
                 + "\t" + this.mode.toString() + "\t" + this.text + "\t"
                 + this.lockingGroup;
     }
@@ -244,5 +299,82 @@ public class TypingEvent implements Serializable
             System.out.println("fail, should of been " + originalMessage
                     + " but got " + resultingMessage);
 
+    }
+    
+    public static Set<String> times(Collection<TypingEvent> typingEvents)
+    {
+        Set<String> results = new LinkedHashSet<String>();
+        for(TypingEvent te : typingEvents)
+            results.add("" + te.time);
+        return results;
+    }
+
+    public static Set<String> eventTimesExistsInFile(String documentPath, Set<String> times)
+            throws IOException
+    {
+        FileInputStream fstream = new FileInputStream(folderpath + documentPath);
+        DataInputStream in = new DataInputStream(fstream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String strLine;
+        Set<String> results = new LinkedHashSet<String>();
+        boolean foundMatch;
+        int i;
+        while ((strLine = br.readLine()) != null)
+        {
+            foundMatch = false;
+            i = 0;
+            for(String time : times)
+            {
+                if (strLine.startsWith(time))
+                {
+                    foundMatch = true;
+                    results.add(time);
+                    break;
+                }
+                i++;
+            }
+            
+            if(foundMatch)
+                times.remove(i);
+        }
+        in.close();
+        return results;
+    }
+
+    public static void saveEvents(Collection<TypingEvent> typingEvents,
+            String documentPath)
+    {
+        try
+        {
+            File f = new File(folderpath + documentPath);
+            System.out.println(f.getPath());
+            new File(f.getParent()).mkdirs();
+            f.createNewFile();
+            
+            Set<String> matches = eventTimesExistsInFile(documentPath, times(typingEvents));
+
+            FileWriter fstream = new FileWriter(f, true);
+            BufferedWriter out = new BufferedWriter(fstream);
+            
+            for (TypingEvent typingEvent : typingEvents)
+                if(!matches.contains("" + typingEvent.time))
+                    out.write(typingEvent.toString() + "\n");
+            
+            out.close();
+        }
+        catch (IOException e1)
+        {
+            e1.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    ("Error: " + e1.getMessage()));
+            return;
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: There is no document open!");
+            return;
+        }
     }
 }

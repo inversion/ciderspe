@@ -1,5 +1,6 @@
 package cider.documentViewerComponents;
 
+import cider.client.gui.ETASourceEditorPane;
 import cider.common.processes.SourceDocument;
 
 /**
@@ -109,16 +110,6 @@ public class EditorTypingArea extends SourceDocumentViewer
     public void copy()
     {
         super.copy();        
-    }
-    
-    public void cut()
-    {
-        super.cut();
-    }
-
-    public void paste()
-    {
-        super.paste();
     }
 
     @Override
