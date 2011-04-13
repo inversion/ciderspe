@@ -1089,11 +1089,11 @@ public class MainWindow
 
             if (selected)
             {
-                bg = Color.GRAY;
+                bg = Color.LIGHT_GRAY;
             }
             else
             {
-                bg = Color.DARK_GRAY;
+                bg = Color.WHITE;
             }
 
             // fill background
@@ -1101,22 +1101,18 @@ public class MainWindow
             g.fillRect(0, 0, getWidth(), getHeight());
 
             // draw coloured rectangle and name
-            g.setColor(Color.WHITE);
-            g.fillRect(6, 6, 13, 13);
-            g.setColor(client.colours.get(name)); // get unique user color here
-            g.fillRect(7, 7, 11, 11);
-
-            String idleString = "";
-            if (Client.usersIdle.contains(name)) {
-                g.setColor(Color.WHITE);
-                g.fillRect(13, 13, 8, 8);
-                g.setColor(Color.MAGENTA);
-                g.fillRect(14, 14, 6, 6);
-                idleString = " (idle)";
+            if(client.colours.get(name) != null)
+            {
+            	g.setColor(client.colours.get(name)); // get unique user color here
             }
-
-            g.setColor(Color.WHITE);
-            g.drawString(name + idleString, 25, 17);
+            else
+            {
+            	g.setColor(new Color(150, 150, 150));
+                //TODO: user colour not appearing properly, only seems to happen if they havent set a colour, as soon as the colour is changed, its fine- Alex
+            }             
+            
+            g.fillRect(6, 6, 13, 13);
+            g.drawString(name, 25, 17);
         }
     }
 

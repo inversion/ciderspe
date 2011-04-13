@@ -142,8 +142,6 @@ public class Client
     public Profile profile;
     public static HashMap<String, Color> colours = new HashMap<String, Color>();
     public Color incomingColour;
-    
-    public static ArrayList<String> usersIdle = new ArrayList<String>();
 
     public DocumentID currentDocumentID;
 

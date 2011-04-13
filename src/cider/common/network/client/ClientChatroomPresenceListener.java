@@ -82,12 +82,12 @@ public class ClientChatroomPresenceListener implements PacketListener {
                 
                 if( pres.getMode() == null || pres.getMode() == Presence.Mode.available )
                 {
-                	Client.usersIdle.remove(nickname);
+                    // TODO: Add GUI code for coming back from idle here
                     System.out.println( nickname + " is no longer idle...");
                 }
                 else if( pres.getMode() == Presence.Mode.away )
                 {
-                	Client.usersIdle.add(nickname);
+                    // TODO: Add GUI code for going idle here
                     System.out.println( nickname + " went idle...");
                 }
                     
@@ -113,7 +113,6 @@ public class ClientChatroomPresenceListener implements PacketListener {
         else
             if( DEBUG ) 
                 System.out.println( "Presence type unknown" );
-        
-        parent.shared.userList.repaint();
     }
+
 }
