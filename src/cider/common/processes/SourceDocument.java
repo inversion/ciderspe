@@ -408,7 +408,6 @@ public class SourceDocument implements ICodeLocation, Serializable
         tel.homogenize(endTime);
         doc.clearUpTo(endTime);
         doc.typingEvents.addAll(tel.events());
-        doc.typingEvents.add(new TypingEvent(0, TypingEventMode.deleteAll, 0, 0, "", "", null));
         return doc;
     }
 
