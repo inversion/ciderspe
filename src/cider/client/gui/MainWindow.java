@@ -192,9 +192,13 @@ public class MainWindow
      * Show a popup window of the requested profile.
      * 
      * @author Jon, Andrew
+     * @return false if profile didn't exist.
      */
-    public void showProfile(Profile profile)
+    public boolean showProfile(Profile profile)
     {
+        if( profile == null )
+            return false;
+        System.out.println("Showing profile " + profile.toString());
         // if (username.equals(myProfile.uname))
         // {
         // System.out.println(myProfile.timeSpent);
@@ -248,8 +252,8 @@ public class MainWindow
                 curFont.getSize() + 2));
 
         JLabel userChars = new JLabel("Characters Typed: " + profile.typedChars);
-        String t = profile.getTimeString();
-        JLabel userTime = new JLabel("Total Time: " + t);
+        JLabel userTime = new JLabel("Total Time: " + Profile.getTimeString( profile.timeSpent ) );
+        JLabel idleTime = new JLabel("Idle Time: " + Profile.getTimeString( profile.idleTime * 1000 ) + " (" + profile.idlePercentString() + "%)" );
         JLabel userLastOnline = new JLabel("Last Seen: " + profile.lastOnline);
 
         // vertical box with user statistics in
@@ -258,6 +262,7 @@ public class MainWindow
         vbox.add(userName);
         vbox.add(userChars);
         vbox.add(userTime);
+        vbox.add(idleTime);
         vbox.add(userLastOnline);
 
         hbox.add(vbox);
@@ -269,6 +274,8 @@ public class MainWindow
         profileFrame.setLocationRelativeTo(null);
 
         profileFrame.setVisible(true);
+        
+        return true;
     }
 
     private void retrieveAllUserColours()
@@ -347,7 +354,9 @@ public class MainWindow
                 }
                 else if (action.equals("My Profile"))
                 {
-                    showProfile(myProfile);
+                    boolean exists = showProfile(myProfile);
+                    if( exists == false )
+                        JOptionPane.showMessageDialog( null , "Your own profile is not stored locally yet, if you quit and rejoin it will be updated." );
                 }
                 else if (action.equals("Reset My Profile"))
                 {

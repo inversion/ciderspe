@@ -26,6 +26,7 @@ package cider.common.processes;
 import java.awt.Color;
 import java.io.Serializable;
 import java.text.DateFormat;
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import org.jivesoftware.smack.Chat;
@@ -43,11 +44,12 @@ import org.jivesoftware.smack.packet.Message;
 public class Profile implements Serializable
 {
     
+    
     /**
      * 
      */
-    private static final long serialVersionUID = -5594341971483531519L;
-    
+    private static final long serialVersionUID = -4978676304815568223L;
+
     private static boolean DEBUG = true;
     
     public String uname;
@@ -64,6 +66,7 @@ public class Profile implements Serializable
         uname = un;
         typedChars = 0;
         timeSpent = 0;
+        idleTime = 0;
         lastOnline = "Never!";
         userColour = new Color(150, 150, 150);
     }
@@ -160,17 +163,33 @@ public class Profile implements Serializable
 
     /*
      * Source: http://goo.gl/e4p3x
+     * 
+     * Time string from milliseconds time.
      */
-    public String getTimeString()
+    public static String getTimeString( long t )
     {
-        long t = timeSpent;
         String format = String.format("%%0%dd", 2);
-        t = timeSpent / 1000;
+        t /= 1000;
         String seconds = String.format(format, t % 60);
         String minutes = String.format(format, (t % 3600) / 60);
         String hours = String.format(format, t / 3600);
         String time = hours + ":" + minutes + ":" + seconds;
         return time;
+    }
+    
+    /**
+     * Percentage of time spent idle.
+     * 
+     * @return String of rounded percentage.
+     * 
+     * @author Andrew
+     */
+    public String idlePercentString()
+    {
+        DecimalFormat df = new DecimalFormat("#.#");
+        int spent = (int) (timeSpent/1000);
+        Float percentage = new Float( ((float)idleTime/(float)spent) * 100 );
+        return df.format( percentage );
     }
     
     /**

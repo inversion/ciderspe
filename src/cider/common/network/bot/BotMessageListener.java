@@ -258,6 +258,7 @@ public class BotMessageListener implements MessageListener
         String username = StringUtils.parseName( chat.getParticipant() );
         Integer chars = (Integer) message.getProperty( "chars" );
         Long timeSpent = (Long) message.getProperty( "timeSpent"  );
+        Integer idleTime = (Integer) message.getProperty( "idleTime");
         String lastOnline = (String) message.getProperty( "lastOnline" );
         Integer r = (Integer) message.getProperty("r");
         Integer g = (Integer) message.getProperty("g");
@@ -274,6 +275,7 @@ public class BotMessageListener implements MessageListener
         Profile profile = bot.profiles.get( username );  
         profile.typedChars = chars;
         profile.timeSpent = timeSpent;
+        profile.idleTime = idleTime;
         profile.lastOnline = lastOnline;
         profile.setColour( r, g, b );
         System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );    
@@ -305,6 +307,7 @@ public class BotMessageListener implements MessageListener
                 msg.setProperty( "username", profile.uname );
                 msg.setProperty( "chars", profile.typedChars );
                 msg.setProperty( "timeSpent", profile.timeSpent );
+                msg.setProperty( "idleTime", profile.idleTime );
                 msg.setProperty( "lastOnline", profile.lastOnline );
                 msg.setProperty( "r", profile.userColour.getRed() );
                 msg.setProperty( "g", profile.userColour.getGreen() );
