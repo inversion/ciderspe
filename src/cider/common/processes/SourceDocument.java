@@ -516,6 +516,11 @@ public class SourceDocument implements ICodeLocation, Serializable
                 string.insert(event);
             }
                 break;
+            case homogenized:
+            {
+                string.insert(event);
+            }
+            break;
             case overwrite:
             {
                 string.overwrite(event);
