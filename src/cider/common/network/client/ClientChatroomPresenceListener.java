@@ -67,28 +67,27 @@ public class ClientChatroomPresenceListener implements PacketListener {
     {
         Presence pres = (Presence) packet;
         String nickname = StringUtils.parseResource( pres.getFrom() );
+
         if( pres.getType() == Presence.Type.available )
         {            
             if( !nickname.equals( botUsername ) && !nickname.equals( checkerUsername ) )
             {
+                if( !list.contains( nickname )   )
+                {
+                    if( DEBUG )
+                        System.out.println( "Adding " + nickname + " to list...");
+                    list.addElement( nickname );
+                    userCount.setText(" " + list.getSize() + " Users Online");
+                }
+                
                 if( pres.getMode() == null || pres.getMode() == Presence.Mode.available )
                 {
-                    if( !list.contains( nickname )   )
-                    {
-                        if( DEBUG )
-                            System.out.println( "Adding " + nickname + " to list...");
-                        list.addElement( nickname );
-                        userCount.setText(" " + list.getSize() + " Users Online");
-                    }
-                    else
-                    {
-                        // TODO: Add GUI code for coming back from idle here
-                        System.out.println( nickname + " is no longer idle...");
-                    }
+                    // TODO: Add GUI code for coming back from idle here
+                    System.out.println( nickname + " is no longer idle...");
                 }
                 else if( pres.getMode() == Presence.Mode.away )
                 {
-                 // TODO: Add GUI code for going idle here
+                    // TODO: Add GUI code for going idle here
                     System.out.println( nickname + " went idle...");
                 }
                     
