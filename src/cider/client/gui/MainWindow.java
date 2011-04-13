@@ -100,6 +100,8 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
+	private static final boolean DEBUG = true;
+	
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
@@ -184,8 +186,8 @@ public class MainWindow
             if (show)
                 msg.setProperty("show", "true");
             client.botChat.sendMessage(msg);
-            System.out.println("Profile: Requesting profile from server for "
-                    + username);
+            if (DEBUG)
+            	System.out.println("Profile: Requesting profile from server for " + username);
         }
         catch (XMPPException e)
         {
@@ -400,7 +402,8 @@ public class MainWindow
                     String s = (String) JOptionPane.showInputDialog(
                             new JPanel(), "Enter new username:",
                             "New username", JOptionPane.PLAIN_MESSAGE);
-                    System.out.println("*************************\n"
+                    if (DEBUG)
+                    	System.out.println("*************************\n"
                             + "USERNAME CHANGED TO: \"" + s + "\"\n"
                             + "*************************\n");
                 }
@@ -474,7 +477,7 @@ public class MainWindow
                 }
                 else if (action.equals("Line Home"))
                 {
-                    // eta.moveHome();
+                    //eta.moveHome();
                 }
                 else if (action.equals("Line End"))
                 {
@@ -577,7 +580,8 @@ public class MainWindow
         {
             public void actionPerformed(ActionEvent action)
             {
-                System.out.println("Colour change cancelled");
+            	if (DEBUG)
+            		System.out.println("Colour change cancelled");
             }
         };
 
@@ -1000,14 +1004,20 @@ public class MainWindow
         addMenuItem(menu, "User Highlighting", -1, aL);
         addMenuItem(menu, "Line Locking", -1, aL);
 
-        // menu x
+        // menu 3
         menu = new JMenu("Run");
         menuBar.add(menu);
 
         addMenuItem(menu, "Compile", KeyEvent.VK_F9, aL);
         addMenuItem(menu, "Run", KeyEvent.VK_F10, aL);
+        
+        // menu 4
+        menu = new JMenu("Source");
+        menuBar.add(menu);
 
-        // menu 3
+        addMenuItem(menu, "History", -1, aL);
+
+        // menu 5
         menu = new JMenu("Profile");
         menuBar.add(menu);
 
@@ -1016,7 +1026,7 @@ public class MainWindow
         addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
 
-        // menu 4
+        // menu 6
         menu = new JMenu("Help");
         menuBar.add(menu);
 
@@ -1025,20 +1035,17 @@ public class MainWindow
         // the DEV(eloper) menu is for us to test back-end things such as saving
         // and pushing
         // NYI = not yet implemented
-        menu = new JMenu("DEV");
-        menuBar.add(menu);
+        if (DEBUG)
+        {
+        	menu = new JMenu("DEV");
+        	menuBar.add(menu);
 
-        addMenuItem(menu, "DEV: Push profile to server", -1, aL);
-        addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
-        addMenuItem(menu, "DEV: Get profile from server", -1, aL);
-        addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
-        addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
-
-        // the game
-        menu = new JMenu("Source");
-        menuBar.add(menu);
-
-        addMenuItem(menu, "History", -1, aL);
+        	addMenuItem(menu, "DEV: Push profile to server", -1, aL);
+        	addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
+        	addMenuItem(menu, "DEV: Get profile from server", -1, aL);
+        	addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
+        	addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
+        }
 
         return menuBar;
     }
@@ -1090,7 +1097,16 @@ public class MainWindow
             g.fillRect(0, 0, getWidth(), getHeight());
 
             // draw coloured rectangle and name
-            g.setColor(client.colours.get(name)); // get unique user color here
+            if(client.colours.get(name) != null)
+            {
+            	g.setColor(client.colours.get(name)); // get unique user color here
+            }
+            else
+            {
+            	g.setColor(new Color(150, 150, 150));
+                //TODO: user colour not appearing properly, only seems to happen if they havent set a colour, as soon as the colour is changed, its fine- Alex
+            }             
+            
             g.fillRect(6, 6, 13, 13);
             g.drawString(name, 25, 17);
         }
@@ -1131,9 +1147,12 @@ public class MainWindow
                     int i = shared.userList.locationToIndex(e.getPoint());
                     if (e.getClickCount() == 2)
                     {
-                        System.out.println("Double clicked on Item " + i);
-                        System.out.println("Double clicked on Item: "
-                                + shared.userList.getModel().getElementAt(i));
+                    	if (DEBUG)
+                    	{
+                    		System.out.println("Double clicked on Item " + i);
+                    		System.out.println("Double clicked on Item: "
+                    				+ shared.userList.getModel().getElementAt(i));
+                    	}
                         client.initiateChat((String) shared.userList
                                 .getSelectedValue());
                     }
@@ -1241,7 +1260,8 @@ public class MainWindow
                 JTabbedPane tp = (JTabbedPane) changeEvent.getSource();
                 int i = tp.getSelectedIndex();
                 shared.receiveTabs.tabflashstop(tp.getTitleAt(i));
-                System.out.println("Stop flashing " + tp.getTitleAt(i));
+                if (DEBUG)
+                	System.out.println("Stop flashing " + tp.getTitleAt(i));
             }
         };
         shared.receiveTabs.addChangeListener(changeListener);
@@ -1406,7 +1426,8 @@ public class MainWindow
                     myProfile.updateTimeSpent(startTime);
                     myProfile.updateProfileInfo();
                     myProfile.uploadProfile(client.botChat, startTime);
-                    System.out.println("disconnecting");
+                    if (DEBUG)
+                    	System.out.println("disconnecting");
                     client.disconnect();
                 }
             }
