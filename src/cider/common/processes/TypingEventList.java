@@ -328,8 +328,9 @@ public class TypingEventList
         long t = start;
         for (int i = 0; i < size; i++)
             this.tel.set(i, new TypingEvent(this.tel.get(i), t++, i,
-                    TypingEventMode.insert));
+                    TypingEventMode.homogenized));
     }
+
 
     /**
      * @param te
