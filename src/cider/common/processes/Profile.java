@@ -48,17 +48,16 @@ public class Profile implements Serializable
      */
     private static final long serialVersionUID = -5594341971483531519L;
     
+    private static boolean DEBUG = true;
+    
     public String uname;
     public int typedChars;
     public long timeSpent;
+    public int idleTime;
     public String lastOnline;
     public Color userColour;
-//    public Client client;
 
-    // public static void main (String uname)
-    // {
-    // new Profile(uname);
-    // }
+    
 
     public Profile(String un)
     {
@@ -67,8 +66,6 @@ public class Profile implements Serializable
         timeSpent = 0;
         lastOnline = "Never!";
         userColour = new Color(150, 150, 150);
-//        client = c;
-        // readProfileFileFromServer();
     }
 
     public void incrementCharCount()
@@ -92,8 +89,20 @@ public class Profile implements Serializable
         System.out.println("Profile: UPDATING TIME " + spent + timeSpent);
         timeSpent += spent;
     }
+    
+    /**
+     * Update the amount of time spent idle
+     * 
+     * @param time The amount of time to be added.
+     * 
+     * @author Andrew
+     */
+    public void updateIdleTime( int time )
+    {
+        idleTime += time;
+    }
 
-    public void updateProfileInfo()
+    public void updateLastOnline()
     {
         Date d = new Date();
         DateFormat df = DateFormat.getDateInstance(DateFormat.FULL);
@@ -103,7 +112,7 @@ public class Profile implements Serializable
     public String toString()
     {
         return uname + "  " + "chars: " + typedChars + "  timespent: "
-                + timeSpent + "  lastonline: " + lastOnline + "  colour: "
+                + timeSpent + "  idletime: " + idleTime + "  lastonline: " + lastOnline + "  colour: "
                 + userColour.getRed() + " " + userColour.getGreen() + " "
                 + userColour.getBlue();
     }
@@ -119,27 +128,28 @@ public class Profile implements Serializable
      * 
      * @param botChat The chat session with the bot.
      * @param startTime The start time of this session, used to update the time spent in the profile.
+     * @param idleTime The amount of time spent idle in this session.
      * 
      * @author Andrew, Jon
      */
-    public void uploadProfile( Chat botChat, long startTime )
-    {
-        Profile myProfile = this;
-        myProfile.updateTimeSpent(startTime);
-        myProfile.updateProfileInfo();
-        System.out.println( "Profile: Uploading profile: " + myProfile.toString());
+    public void uploadProfile( Chat botChat, long startTime, int idleTime )
+    {        
+        updateTimeSpent(startTime);
+        updateLastOnline();
+        updateIdleTime( idleTime );
+        System.out.println( "Profile: Uploading profile: " + this.toString());
         try
         {
-            Profile profile = myProfile;
             Message message = new Message();
             message.setBody("");
             message.setProperty( "ciderAction", "userprofile" );
-            message.setProperty( "chars", profile.typedChars );
-            message.setProperty( "timeSpent", profile.timeSpent );
-            message.setProperty( "lastOnline", profile.lastOnline );
-            message.setProperty( "r", profile.userColour.getRed() );
-            message.setProperty( "g", profile.userColour.getGreen() );
-            message.setProperty( "b", profile.userColour.getBlue() );
+            message.setProperty( "chars", typedChars );
+            message.setProperty( "timeSpent", timeSpent );
+            message.setProperty( "idleTime", this.idleTime );
+            message.setProperty( "lastOnline", lastOnline );
+            message.setProperty( "r", userColour.getRed() );
+            message.setProperty( "g", userColour.getGreen() );
+            message.setProperty( "b", userColour.getBlue() );
             botChat.sendMessage( message );
         }
         catch (XMPPException e1)
@@ -161,5 +171,35 @@ public class Profile implements Serializable
         String hours = String.format(format, t / 3600);
         String time = hours + ":" + minutes + ":" + seconds;
         return time;
+    }
+    
+    /**
+     * Request profile for specified user from the Bot.
+     * 
+     * @param username
+     *            The username of the profile we are requesting.
+     * @param show Show the pop up dialog when this profile is returned or not.
+     * @param botChat The chat session with the bot.
+     * 
+     * @author Jon, Andrew
+     */
+    public static void requestProfile(String username, boolean show, Chat botChat)
+    {
+        try
+        {
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setProperty("ciderAction", "requestprofile");
+            msg.setProperty("username", username);
+            if (show)
+                msg.setProperty("show", "true");
+            botChat.sendMessage(msg);
+            if (DEBUG )
+                System.out.println("Profile: Requesting profile from server for " + username);
+        }
+        catch (XMPPException e)
+        {
+            e.printStackTrace();
+        }
     }
 }

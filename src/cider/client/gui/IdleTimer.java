@@ -21,6 +21,7 @@ public class IdleTimer implements MouseMotionListener
     public boolean isIdle = false;
     private Timer timer = new Timer();
     private Client client;
+    private int totalIdleTime = 0;
     
     TimerTask increment = new TimerTask()
     {
@@ -53,6 +54,7 @@ public class IdleTimer implements MouseMotionListener
     @Override
     public void mouseMoved(MouseEvent arg0)
     {
+        totalIdleTime += idleTime;
         idleTime = 0;
         if( isIdle )
         {
@@ -60,6 +62,11 @@ public class IdleTimer implements MouseMotionListener
             System.out.println("IdleTimer: Back...");
             isIdle = false;
         }
+    }
+    
+    protected int getTotalIdleTime()
+    {
+        return totalIdleTime;
     }
 
 }
