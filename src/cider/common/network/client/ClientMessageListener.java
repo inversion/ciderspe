@@ -26,6 +26,7 @@ package cider.common.network.client;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -35,6 +36,7 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.processes.Profile;
+import cider.common.processes.TypingEvent;
 
 /**
  * This class waits for a message to be received by the client on its chat
@@ -76,8 +78,17 @@ public class ClientMessageListener implements MessageListener, ActionListener
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
-        else if( ciderAction.equals( "notfound" ) && message.getProperty( "show" ) != null )
-            JOptionPane.showMessageDialog( null, "No profile was found on the server for " + message.getProperty( "username" ) );
+        else if( ciderAction.equals( "notfound" ))
+        {
+            if(message.getProperty( "show" ) != null )
+                JOptionPane.showMessageDialog( null, "No profile was found on the server for " + message.getProperty( "username" ) );
+            
+            if(client.getUsername().equals(message.getProperty( "username")))
+            {
+                File file = new File(TypingEvent.folderpath);
+                file.delete();
+            }
+        }
         else if( ciderAction.equals( "profile" ) )
         {
             String username = (String) message.getProperty( "username" );
