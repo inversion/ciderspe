@@ -28,6 +28,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.PriorityQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -38,6 +39,7 @@ import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.common.processes.TimeRegion;
+import cider.common.processes.TypingEvent;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 
 @SuppressWarnings("serial")
@@ -104,11 +106,13 @@ public class DHVSourceHistoryPane extends JPanel
         TimeBorderList tbl = new TimeBorderList();
         SourceDocument doc = new SourceDocument(documentID.name);
         TimeBorder border = new TimeBorder(documentID, 1000,
-                doc.orderedEvents());
+                new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         doc.addEvents(SourceDocument.sampleEvents(1000));
         border = new TimeBorder(documentID, 4000, doc.orderedEvents());
         border.fullSet = true;
+        tbl.addTimeBorder(border);
+        border = new TimeBorder(documentID, 5000, new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         tbl.createRegions();
         TimeRegionBrowser trb = new TimeRegionBrowser(tbl);

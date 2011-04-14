@@ -89,8 +89,8 @@ public class TimeRegion
                             this.start.time, true);
                 }
             }
-            client.pullEventsFromBot(this.documentID.path, this.start.time,
-                    this.end.time, true);
+            client.pullEventsFromBot(this.documentID.path, this.getStartTime(),
+                    this.getEndTime(), true);
         }
     }
 
@@ -119,5 +119,15 @@ public class TimeRegion
     public void addActionListener(ActionListener actionListener)
     {
         this.actionListeners.add(actionListener);
+    }
+    
+    public long getStartTime()
+    {
+        return this.start == null ? 0 : this.start.time;
+    }
+    
+    public long getEndTime()
+    {
+        return this.end.time;
     }
 }

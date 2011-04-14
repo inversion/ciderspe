@@ -101,6 +101,10 @@ public class TimeBorderList
 
     public TimeRegion regionThatCovers(long t)
     {
+        long last = this.timeBorders.lastKey();
+        if(t > last)
+            t = last;
+        
         Entry<Long, TimeRegion> entry = this.timeRegions.ceilingEntry(t);
         if (entry == null)
             return null;
