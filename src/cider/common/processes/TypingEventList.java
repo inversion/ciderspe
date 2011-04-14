@@ -96,7 +96,6 @@ public class TypingEventList
             position = tel.size() - 1;
         if (position < 0)
             return;
-//            position = 0;
         
         this.tel.remove(position);
     }

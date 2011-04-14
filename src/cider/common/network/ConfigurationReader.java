@@ -112,6 +112,14 @@ public class ConfigurationReader
         return dir.getAbsoluteFile();    
     }
     
+    public File getChatHistoryDir()
+    {
+        File dir = new File( config.get( "CHAT_HISTORY_DIR" ) );
+        
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();    
+    }
+    
     public ConfigurationReader( String fileName, LoginUI l )
     {
     	login = l;

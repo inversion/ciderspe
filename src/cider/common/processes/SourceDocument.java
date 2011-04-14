@@ -310,7 +310,7 @@ public class SourceDocument implements ICodeLocation, Serializable
 
         if (!typingEvent.existsIn(tes) && !this.lockingEvent(typingEvent))
         {
-            if (this.latestTime > typingEvent.time)
+            if (this.latestTime < typingEvent.time)
                 this.latestTime = typingEvent.time;
             this.typingEvents.add(typingEvent);
         }

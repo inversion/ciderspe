@@ -101,6 +101,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     static Client parent;
     public static int Highlighting;
 
+//    public static void main( String[] args )
+//    {
+//        SourceDocument doc = new SourceDocument( "testdoc" );
+//        SourceDocumentViewer sdv = new SourceDocumentViewer( doc );
+//        // TODO: Complete this testing for cut, paste, etc.
+//    }
+//    
     /**
      * 
      * @param owner
@@ -378,25 +385,51 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     /**
      * the caret indicates which part of the document text typing events will be
      * applied to. This method returns the position of the caret starting from
-     * the very beginning of the document.
+     * the very beginning of the document in the "friendly" format.
      * 
-     * @return
+     * @return The caret position (NB: 0 is before event 0, 1 is before event 1, etc.)
      */
     protected int getCaretPosition()
     {
-        return this.caretPosition;
+        return this.caretPosition + 1;
+    }
+    
+
+    /**
+     * sets the caret position amongst the text
+     * 
+     * @param position
+     *            is the number of characters into the document that you want
+     *            the caret to be located
+     */
+    protected void setCaretPosition(int position)
+    {
+        if( position == 0 )
+            this.caretPosition = -1;
+        else
+            this.caretPosition = constrain(position-1);
+        this.updateUI();
     }
 
     /**
      * moves the caret left one position and updates the UI
      */
     protected void moveLeft( boolean select )
-    {
-        if (this.caretPosition >= 0)
-            this.caretPosition--;
+    {        
+        if( getCaretPosition() == 0 )
+            return;
         
         if( select )
-            selectedRegion = str.region( selectedRegion.start - 1, selectedRegion.end );
+        {
+            if( selectedRegion == null )
+                selectedRegion = str.region( getCaretPosition() - 1, getCaretPosition() );
+            else if( getCaretPosition() == selectedRegion.start )
+                selectedRegion = str.region( selectedRegion.start - 1, selectedRegion.end );
+            else
+                selectedRegion = str.region( selectedRegion.start, selectedRegion.end - 1 );
+        }
+        
+        caretPosition--;
 
         this.holdCaretVisibility(true);
         // this.caretFlashing = fa
@@ -407,35 +440,61 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * moves the caret right one position and updates the UI
      */
     protected void moveRight( boolean select )
-    {
-        if (this.caretPosition < this.str.length() - 1)
-            this.caretPosition++;
+    {   
+        if( getCaretPosition() == this.str.length() )
+            return;
         
         if( select )
-            selectedRegion = str.region( selectedRegion.start, selectedRegion.end + 1 );
+        {
+            if( selectedRegion == null )
+                selectedRegion = str.region( getCaretPosition(), getCaretPosition() + 1 );
+            else if ( getCaretPosition() == selectedRegion.end )
+                selectedRegion = str.region( selectedRegion.start, selectedRegion.end + 1 );
+            else
+                selectedRegion = str.region( selectedRegion.start + 1, selectedRegion.end );
+        }
+        
+        this.caretPosition++;
 
         this.holdCaretVisibility(true);
         this.updateUI();
     }
 
-    // TODO:
-    // clean up, reuse code between these two methods
+
+    /**
+     * Move up 
+     * @param select Selecting or not.
+     * 
+     * @author Lawrence, Andrew
+     */
     protected void moveUp(boolean select)
     {
-        if (this.getCurrentLine().str.newline())
-            this.moveLeft( false );
+        if (getCurrentLine().str.newline())
+            moveLeft( select );
         else
         {
-            this.holdCaretVisibility(true);
-            int lineNum = this.getCurrentLine().lineNum - 1;
+            int lineNum = getCurrentLine().lineNum - 1;
             if (lineNum < 1)
                 lineNum = 1;
-            SDVLine line = this.lines.get(lineNum - 1);
-            int start = line.start + line.lineNum - 2;
+            SDVLine line = lines.get(lineNum - 1);
+            int start = line.start;
             int length = line.str.length();
-            if (this.currentColNum >= length)
-                this.currentColNum = length;
-            this.caretPosition = start + this.currentColNum;
+            if (currentColNum >= length)
+                currentColNum = length;
+           
+            if( select )
+            {
+                if( selectedRegion == null )
+                    selectedRegion = str.region( start + currentColNum, getCaretPosition() );
+                else if( start + currentColNum < selectedRegion.start )
+                    selectedRegion = str.region( start + currentColNum, selectedRegion.end );
+                else
+                    selectedRegion = str.region( selectedRegion.start, start + currentColNum );
+            }
+            
+            setCaretPosition( start + currentColNum );
+
+            this.holdCaretVisibility(true);
             this.updateUI();
         }
     }
@@ -446,18 +505,42 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     protected void moveDown( boolean select )
     {
         if (this.getCurrentLine().str.newline())
-            this.moveRight( false );
+            this.moveRight( select );
         else
         {
-            int lineNum = this.getCurrentLine().lineNum + 1;
-            if (lineNum > this.lines.size())
-                lineNum = this.lines.size();
-            SDVLine line = this.lines.get(lineNum - 1);
-            int start = line.start + line.lineNum - 2;
+//            int lineNum = this.getCurrentLine().lineNum + 1;
+//            if (lineNum > this.lines.size())
+//                lineNum = this.lines.size();
+//            SDVLine line = this.lines.get(lineNum - 1);
+//            int start = line.start + line.lineNum - 2;
+//            int length = line.str.length();
+//            if (this.currentColNum >= length)
+//                this.currentColNum = length;
+//            this.caretPosition = start + this.currentColNum;
+//            this.updateUI();
+            
+            int lineNum = getCurrentLine().lineNum + 1;
+            if (lineNum > lines.size())
+                lineNum = lines.size();
+            SDVLine line = lines.get(lineNum - 1);
+            int start = line.start;
             int length = line.str.length();
-            if (this.currentColNum >= length)
-                this.currentColNum = length;
-            this.caretPosition = start + this.currentColNum;
+            if (currentColNum >= length)
+                currentColNum = length;
+           
+            if( select )
+            {
+                if( selectedRegion == null )
+                    selectedRegion = str.region( getCaretPosition(), start + currentColNum );
+                else if( start + currentColNum > selectedRegion.start )
+                    selectedRegion = str.region( selectedRegion.end, start + currentColNum );
+                else
+                    selectedRegion = str.region( start + currentColNum, selectedRegion.start );
+            }
+            
+            setCaretPosition( start + currentColNum );
+
+            this.holdCaretVisibility(true);
             this.updateUI();
         }
     }
@@ -523,8 +606,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveDocHome( boolean select )
     {
-        int start = -1;
-        this.caretPosition = start;
+        setCaretPosition( 0 );
+        selectedRegion = null;
         this.updateUI();
     }
 
@@ -536,11 +619,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveDocEnd( boolean select )
     {
-        int numLines = this.lines.size();
-        SDVLine line = this.lines.get(numLines - 1);
-        int startLastLine = line.start + numLines - 2;
-        int length = line.str.length();
-        this.caretPosition = startLastLine + length;
+//        int numLines = this.lines.size();
+//        SDVLine line = this.lines.get(numLines - 1);
+//        int startLastLine = line.start + numLines - 2;
+//        int length = line.str.length();
+//        this.caretPosition = startLastLine + length;
+        setCaretPosition( str.length() );
+        selectedRegion = null;
         this.updateUI();
     }
 
@@ -818,20 +903,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.caretPosition = constrain(this.caretPosition);
         this.selectedRegion = null;
         this.holdCaretVisibility(true);
-        this.updateUI();
-    }
-
-    /**
-     * sets the caret position amongst the text
-     * 
-     * @param position
-     *            is the number of characters into the document that you want
-     *            the caret to be located
-     */
-    protected void setCaretPosition(int position)
-    {
-        this.caretPosition = constrain(position);
-        this.selectedRegion = null;
         this.updateUI();
     }
 
