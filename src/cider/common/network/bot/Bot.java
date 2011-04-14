@@ -214,7 +214,7 @@ public class Bot
             {
                 log = new File( CHAT_HISTORY_DIR, date + ".log" );
                 log.createNewFile();
-                fw = new FileWriter( log );
+                fw = new FileWriter( log, true );
                 bw = new BufferedWriter( fw );
             }
             else if( date != log.getName().substring( 0, 10 ) ) // If we've got to a new day
@@ -223,7 +223,7 @@ public class Bot
                 fw.close();
                 log = new File( CHAT_HISTORY_DIR, date + ".log" );
                 log.createNewFile();
-                fw = new FileWriter( log );
+                fw = new FileWriter( log, true );
                 bw = new BufferedWriter( fw );
             }
             bw.append( item + "\n" );
