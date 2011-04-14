@@ -64,7 +64,7 @@ public class TypingEvent implements Serializable
     public final int length;
     public final String text;
     public final String owner;
-    public static final String folderpath = System.getenv("APPDATA")
+    public static final String localEventFolderPath = System.getenv("APPDATA")
             + "\\cider\\localhistory\\";
 
     /**
@@ -311,7 +311,7 @@ public class TypingEvent implements Serializable
     public static Set<String> eventTimesExistsInFile(String documentPath, Set<String> times)
             throws IOException
     {
-        FileInputStream fstream = new FileInputStream(folderpath + documentPath);
+        FileInputStream fstream = new FileInputStream(localEventFolderPath + documentPath);
         DataInputStream in = new DataInputStream(fstream);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         String strLine;
@@ -351,7 +351,7 @@ public class TypingEvent implements Serializable
     {
         try
         {
-            File f = new File(folderpath + documentPath);
+            File f = new File(localEventFolderPath + documentPath);
             System.out.println(f.getPath());
             new File(f.getParent()).mkdirs();
             f.createNewFile();

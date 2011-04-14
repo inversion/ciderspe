@@ -85,8 +85,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
             
             if(client.getUsername().equals(message.getProperty( "username")))
             {
-                File file = new File(TypingEvent.folderpath);
-                file.delete();
+                File file = new File(TypingEvent.localEventFolderPath + "\\");
+                deleteSubFiles(file);
             }
         }
         else if( ciderAction.equals( "profile" ) )
@@ -152,6 +152,20 @@ public class ClientMessageListener implements MessageListener, ActionListener
             this.client.processDocumentMessages( message );
         }
             
+    }
+
+    public void deleteSubFiles(File file)
+    {
+        for(File f : file.listFiles())
+        {
+            if(f.isDirectory())
+                this.deleteSubFiles(f);
+            else
+            {
+                System.out.println(f.exists());
+                System.out.println(f.delete());
+            }
+        }
     }
 
     @Override
