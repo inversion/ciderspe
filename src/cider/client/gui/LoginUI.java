@@ -256,7 +256,7 @@ public class LoginUI
     private static void makeLocalHistoryFolder()
     {
         File f;
-        f = new File(TypingEvent.folderpath);
+        f = new File(TypingEvent.localEventFolderPath);
         if (!f.exists())
             f.mkdirs(); 
     }
