@@ -24,16 +24,22 @@
 package cider.common.network.bot;
 
 import java.awt.Color;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -56,6 +62,9 @@ public class Bot
 {
     private static final boolean DEBUG = true;
 
+    public static final DateFormat dateFormat = new SimpleDateFormat(
+    "yyyy-MM-dd HH:mm:ss");
+    
     // XMPP Server Configuration
     private final String HOST;
     protected final String SERVICE_NAME;
@@ -67,6 +76,7 @@ public class Bot
     private final String CHECKER_PASSWORD;
     private final File SOURCE_DIR;
     private final File PROFILE_DIR;
+    private final File CHAT_HISTORY_DIR;
     private ConnectionConfiguration conConfig;
 
     protected MultiUserChat chatroom;
@@ -81,6 +91,8 @@ public class Bot
     
     protected HashMap<String,Profile> profiles;
 
+    protected Queue<String> history;
+
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
@@ -90,6 +102,7 @@ public class Bot
             System.in.read();
             bot.sourceFolder.writeToDisk(bot.SOURCE_DIR);
             bot.writeProfiles();
+            bot.writeChatHistory();
         }
         catch (IOException e)
         {
@@ -114,6 +127,7 @@ public class Bot
         CHECKER_PASSWORD = config.getCheckerPassword();
         SOURCE_DIR = config.getSourceDir();
         PROFILE_DIR = config.getProfileDir();
+        CHAT_HISTORY_DIR = config.getChatHistoryDir();
         conConfig = new ConnectionConfiguration(HOST, PORT, SERVICE_NAME);
 
         try
@@ -132,6 +146,8 @@ public class Bot
             chatroom.addMessageListener(new BotChatroomMessageListener(this));
             BotChatroomPresenceListener participantListener = new BotChatroomPresenceListener(this);
             chatroom.addParticipantListener( participantListener );
+            
+            history = new LinkedList<String>();
 
             // Verbose debugging to print out every packet leaving or entering
             // the bot
@@ -164,7 +180,11 @@ public class Bot
             if( !PROFILE_DIR.exists() )
                 PROFILE_DIR.mkdir();
             
-            readProfiles();            
+            readProfiles();         
+            
+            // Make chat history directory if it doesn't exist
+            if( !CHAT_HISTORY_DIR.exists())
+                CHAT_HISTORY_DIR.mkdir();
         }
         catch (XMPPException e)
         {
@@ -172,6 +192,49 @@ public class Bot
             System.err.println("Error:" + e.getMessage());
         }
     }
+    
+    /**
+     * Flush chat history buffer to disk
+     * 
+     * @author Andrew
+     * @throws IOException 
+     */
+    private void writeChatHistory() throws IOException
+    {
+        File log = null;
+        FileWriter fw = null;
+        BufferedWriter bw = null;
+        String item, dateTime, date;
+        while( !history.isEmpty() )
+        {
+            item = history.poll();
+            dateTime = item.substring( 1, 20 );
+            date = dateTime.substring( 0, 10 );
+            if( log == null ) // If there's no log file for this day
+            {
+                log = new File( CHAT_HISTORY_DIR, date + ".log" );
+                log.createNewFile();
+                fw = new FileWriter( log );
+                bw = new BufferedWriter( fw );
+            }
+            else if( date != log.getName().substring( 0, 10 ) ) // If we've got to a new day
+            {
+                bw.close();
+                fw.close();
+                log = new File( CHAT_HISTORY_DIR, date + ".log" );
+                log.createNewFile();
+                fw = new FileWriter( log );
+                bw = new BufferedWriter( fw );
+            }
+            bw.append( item + "\n" );
+        }
+        if( bw != null )
+        {
+            bw.close();
+            fw.close();
+        }
+    }
+    
     
     /**
      * Read serialized profiles into the profiles table.

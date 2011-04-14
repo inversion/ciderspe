@@ -355,6 +355,7 @@ public class MainWindow
                 else if (action.equals("My Profile"))
                 {
                     boolean exists = showProfile(myProfile);
+                    // FIXME: Never displays
                     if( exists == false )
                         JOptionPane.showMessageDialog( null , "Your own profile is not stored locally yet, if you quit and rejoin it will be updated." );
                 }

@@ -31,10 +31,11 @@ package cider.common.network.bot;
  */
 
 import java.awt.Color;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.LinkedList;
-import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Map.Entry;
 
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Message;
@@ -60,7 +61,16 @@ public class BotChatroomMessageListener implements PacketListener
         Message message = (Message) packet;
 
         String ciderAction = (String) message.getProperty( "ciderAction");
-        if (ciderAction.equals("pushto"))
+        if( ciderAction == null )
+        {
+            String username = StringUtils.parseResource( message.getFrom() );
+            Date date = new Date();
+            String dateStr = Bot.dateFormat.format( date );
+            String msg = message.getBody();
+            bot.history.add( "[" + dateStr + "] " + username + ": " + msg );
+            System.out.println("Adding " + "[" + dateStr + "] " + username + ": " + msg);
+        }
+        else if (ciderAction.equals("pushto"))
             pushto( message );
         else if ( ciderAction.equals("colourchange") )
         {

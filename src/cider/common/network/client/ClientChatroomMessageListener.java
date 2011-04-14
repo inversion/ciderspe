@@ -53,19 +53,13 @@ public class ClientChatroomMessageListener implements PacketListener
     @Override
     public void processPacket(Packet packet)
     {
-        
-        boolean docMessage = false;
         Message msg = (Message) packet;
         String body = msg.getBody();
         
         // Don't parse your own messages
-        if( !StringUtils.parseResource( packet.getFrom() ).equals( client.getUsername() ) )
-            docMessage = client.processDocumentMessages( msg );
-        else if( msg.getProperty( "ciderAction" ) != null ) // If it's our action don't print to gui
-            return;
-        
-        // If this isn't a document message print it to the chatlog
-        if( !docMessage )
+        if( msg.getProperty( "ciderAction" ) != null && !StringUtils.parseResource( packet.getFrom() ).equals( client.getUsername() ) ) // If it's our action don't print to gui
+            client.processDocumentMessages( msg );
+        else if ( msg.getProperty( "ciderAction" ) == null )
             client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
         
         client.shared.receiveTabs.tabflash( MainWindow.GROUPCHAT_TITLE );
