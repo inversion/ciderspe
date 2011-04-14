@@ -25,10 +25,17 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     PriorityQueue<Long> borderTimes;
     double scale = 0.1;
     long eyePosition = 500;
+    long startSelection = 0;
+    long endSelection = 0;
     boolean movingEye = false;
+    int selecting = 0;
     long latestTime = 0;
     ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
+    private long lowSelection;
+    private long highSelection;
     private static final Color highlightColor = new Color(128, 128, 255);
+    private static final Color selectionColor = new Color(highlightColor.getRed(),
+            highlightColor.getGreen(), highlightColor.getBlue(), highlightColor.getAlpha() / 3);
 
     public TimeRegionBrowser(TimeBorderList tbl)
     {
@@ -86,8 +93,13 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         g.setColor(Color.WHITE);
         g.fillRect(x, y + 1, width, this.getHeight() - y);
         this.paintEye(g, x + width);
+        
+        int start = (int) (this.startSelection * this.scale);
+        int end = (int) (this.endSelection * this.scale);
+        g.setColor(selectionColor);
+        g.fillRect(x, start, width, end - start);
     }
-
+    
     public void paintEye(Graphics g, int x)
     {
         g.setColor(Color.BLACK);
@@ -108,13 +120,41 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
                 this.eyePosition = 0;
             if (this.eyePosition > this.latestTime)
                 this.eyePosition = this.latestTime;
-            this.repaint();
             this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             for (ActionListener al : this.actionListeners)
                 al.actionPerformed(new ActionEvent(this.eyePosition, 0,
                         "Eye Moved"));
         }
+        
+        if(this.selecting != 0)
+        {
+            long position = (long) (me.getY() / this.scale);
+            
+            this.endSelection = position;
+           
+            TimeRegion currentRegion = this.tbl.regionThatCovers(this.startSelection);
+            long earliest = currentRegion.getStartTime();
+            long latest = currentRegion.getEndTime();
+            
+            this.lowSelection = this.startSelection;
+            this.highSelection = this.endSelection;
+            
+            if(this.lowSelection > this.highSelection)
+            {
+                this.highSelection = this.lowSelection;
+                this.lowSelection = this.endSelection;
+            }
+            
+            if(this.endSelection < earliest)
+                this.endSelection = earliest;
+            if(this.endSelection > latest)
+                this.endSelection = latest;
+            
+            this.repaint();
+        }
+        
+        this.repaint();
     }
 
     @Override
@@ -153,12 +193,23 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             this.movingEye = true;
             this.repaint();
         }
+        else
+        {
+            if(this.selecting == 0)
+            {
+                this.selecting = -1;
+                this.startSelection = (long) (me.getY() / this.scale);
+                this.endSelection = this.startSelection;
+                this.repaint();
+            }
+        }
     }
 
     @Override
     public void mouseReleased(MouseEvent arg0)
     {
         this.movingEye = false;
+        this.selecting = 0;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
