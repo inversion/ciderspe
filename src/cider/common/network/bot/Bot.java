@@ -37,9 +37,14 @@ import java.io.ObjectOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.Map.Entry;
 
 import org.jivesoftware.smack.ChatManager;
 import org.jivesoftware.smack.ConnectionConfiguration;
@@ -86,12 +91,20 @@ public class Bot
     protected BotChatListener chatListener;
     private LiveFolder sourceFolder;
 
+    // Documents that have been changed or created during this execution
+    protected HashMap<String,SourceDocument> updatedDocs;
+    
     // Holds the colours for each user
     public HashMap<String, Color> colours;
     
     protected HashMap<String,Profile> profiles;
+    
+    // Profiles that have been updated in this execution
+    protected HashSet<String> updatedProfiles;
 
     protected Queue<String> history;
+    
+    private CommitTimer commitTimer;
 
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
@@ -100,8 +113,9 @@ public class Bot
         try
         {
             System.in.read();
-            bot.sourceFolder.writeToDisk(bot.SOURCE_DIR);
-            bot.writeProfiles();
+            bot.commitTimer.stopTimer();
+            bot.writeUpdatedDocs();
+            bot.writeUpdatedProfiles();
             bot.writeChatHistory();
         }
         catch (IOException e)
@@ -114,6 +128,8 @@ public class Bot
     {
         colours = new HashMap<String, Color>();
         profiles = new HashMap<String,Profile>();
+        updatedProfiles = new HashSet<String>();
+        updatedDocs = new HashMap<String,SourceDocument>();
 
         // Set up the bot configuration
         ConfigurationReader config = new ConfigurationReader("Bot.conf", null);
@@ -185,6 +201,8 @@ public class Bot
             // Make chat history directory if it doesn't exist
             if( !CHAT_HISTORY_DIR.exists())
                 CHAT_HISTORY_DIR.mkdir();
+          
+            commitTimer = new CommitTimer( this );
         }
         catch (XMPPException e)
         {
@@ -199,7 +217,7 @@ public class Bot
      * @author Andrew
      * @throws IOException 
      */
-    private void writeChatHistory() throws IOException
+    protected void writeChatHistory() throws IOException
     {
         File log = null;
         FileWriter fw = null;
@@ -282,11 +300,88 @@ public class Bot
     }
     
     /**
-     * Write profiles back to disk on close
+     * Writes updated source documents to disk and flushes the list of updated docs.
      * 
      * @author Andrew
      */
-    private void writeProfiles()
+    protected void writeUpdatedDocs()
+    {
+        Set<Entry<String,SourceDocument>> entries = updatedDocs.entrySet();
+
+        for ( Entry<String,SourceDocument> entry : entries )
+        {
+            String path = entry.getKey();
+            SourceDocument doc = entry.getValue();
+            // Append this file to the pathname
+            File file = new File(SOURCE_DIR, path);
+            
+            // Make parent dirs if they don't exist
+            file.getParentFile().mkdirs();
+            
+            try
+            {               
+                // Create the file if it doesn't exist
+                file.createNewFile();
+
+                // Write the simplified source document to the file
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fos);
+                out.writeObject(doc.simplified(Long.MAX_VALUE));
+                out.close();
+                fos.close();
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
+        
+        updatedDocs.clear();
+    }
+    
+    /**
+     * Write profiles that have been modified to disk
+     * 
+     * @author Andrew
+     */
+    protected void writeUpdatedProfiles()
+    {
+        Iterator<String> itr = updatedProfiles.iterator();
+        while( itr.hasNext() )
+        {
+            try
+            {
+                String username = itr.next();
+                File file = new File( PROFILE_DIR, username + ".dat" );
+                file.createNewFile();
+                
+                FileOutputStream fos = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fos);
+                out.writeObject( profiles.get( username ) );
+                out.close();
+                fos.close();
+                updatedProfiles.remove( username );
+            }
+            catch (FileNotFoundException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            catch (IOException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    @Deprecated
+    /**
+     * Write all profiles back to disk
+     * 
+     * @author Andrew
+     */
+    private void writeAllProfiles()
     {
         Iterator<String> itr = profiles.keySet().iterator();
         while( itr.hasNext() )
@@ -314,7 +409,6 @@ public class Bot
                 e.printStackTrace();
             }
         }
-
     }
 
     /**
@@ -395,7 +489,6 @@ public class Bot
                 }
                 catch (ClassNotFoundException e)
                 {
-
                     e.printStackTrace();
                 }
             }

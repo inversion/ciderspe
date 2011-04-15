@@ -131,5 +131,8 @@ public class BotChatroomMessageListener implements PacketListener
                     .countCharactersAll();
 
         }
+        
+        // Update list of documents to be committed to the disk
+        bot.updatedDocs.putAll( changedDocs );
     }
 }
