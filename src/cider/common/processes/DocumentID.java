@@ -48,4 +48,16 @@ public class DocumentID
         this.name = name;
         this.path = path;
     }
+    
+    @Override
+    public boolean equals(Object obj)
+    {
+        if(obj.getClass().equals(this.getClass()))
+        {
+            DocumentID docID = (DocumentID)obj;
+            return docID.path.equals(this.path);
+        }
+        else
+            return super.equals(obj);
+    }
 }

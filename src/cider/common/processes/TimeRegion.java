@@ -55,11 +55,6 @@ public class TimeRegion
         this.documentID = end.documentID;
     }
 
-    public TimeRegion(long time)
-    {
-        this.end = new TimeBorder(time);
-    }
-
     /**
      * Loads the required typing events from the client. The Client may use the
      * TimeRegion to work out which typing events it receives need to be
@@ -129,5 +124,11 @@ public class TimeRegion
     public long getEndTime()
     {
         return this.end.time;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "" + this.end.time;
     }
 }

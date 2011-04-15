@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.PriorityQueue;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -49,10 +50,35 @@ public class DHVSourceHistoryPane extends JPanel
     private JScrollPane documentScrollPane;
     private TimeRegionBrowser trb;
     private JScrollPane regionBrowserScrollPane;
+    private JPanel westPanel;
+    private JButton downloadRegion;
 
     public DHVSourceHistoryPane()
     {
         super(new BorderLayout());
+        this.westPanel = new JPanel(new BorderLayout());
+        this.add(this.westPanel, BorderLayout.WEST);
+        this.downloadRegion = new JButton("Download Region");
+        this.downloadRegion.setEnabled(false);
+        this.westPanel.add(this.downloadRegion, BorderLayout.SOUTH);
+        this.downloadRegion.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                try
+                {
+                    trb.downloadSelectedRegion();
+                }
+                catch (Exception e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        });
     }
 
     public void setDocumentHistoryViewer(final DocumentHistoryViewer dhv)
@@ -69,14 +95,13 @@ public class DHVSourceHistoryPane extends JPanel
     public void setTimeRegionBrowser(final TimeRegionBrowser trb)
     {
         this.trb = trb;
-
         if (this.regionBrowserScrollPane != null)
-            this.remove(this.regionBrowserScrollPane);
+            this.westPanel.remove(this.regionBrowserScrollPane);
 
         this.regionBrowserScrollPane = new JScrollPane(trb);
         this.regionBrowserScrollPane
                 .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        this.add(this.regionBrowserScrollPane, BorderLayout.WEST);
+        this.westPanel.add(this.regionBrowserScrollPane, BorderLayout.WEST);
 
         trb.addActionListener(new ActionListener()
         {
@@ -84,10 +109,23 @@ public class DHVSourceHistoryPane extends JPanel
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                TimeRegion currentRegion = trb.getCurrentRegion();
-                dhv.useEventsFrom(currentRegion);
-                long t = (Long) e.getSource();
-                dhv.updateText(t);
+                switch (e.getID())
+                {
+                case TimeRegionBrowser.EYE_MOVED:
+                {
+                    TimeRegion currentRegion = trb.getCurrentRegion();
+                    dhv.useEventsFrom(currentRegion);
+                    long t = (Long) e.getSource();
+                    dhv.updateText(t);
+                    break;
+                }
+                case TimeRegionBrowser.SELECTION:
+                {
+                    downloadRegion.setEnabled(trb.getSelectionLength() > 0
+                            && !trb.selectionLiesWithinFullRegion());
+                    break;
+                }
+                }
             }
 
         });
@@ -103,7 +141,7 @@ public class DHVSourceHistoryPane extends JPanel
         dhv.updateText();
         dhv.setWaiting(false);
 
-        TimeBorderList tbl = new TimeBorderList();
+        TimeBorderList tbl = new TimeBorderList(documentID);
         SourceDocument doc = new SourceDocument(documentID.name);
         TimeBorder border = new TimeBorder(documentID, 1000,
                 new PriorityQueue<TypingEvent>());
@@ -112,7 +150,8 @@ public class DHVSourceHistoryPane extends JPanel
         border = new TimeBorder(documentID, 4000, doc.orderedEvents());
         border.fullSet = true;
         tbl.addTimeBorder(border);
-        border = new TimeBorder(documentID, 5000, new PriorityQueue<TypingEvent>());
+        border = new TimeBorder(documentID, 5000,
+                new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         tbl.createRegions();
         TimeRegionBrowser trb = new TimeRegionBrowser(tbl);

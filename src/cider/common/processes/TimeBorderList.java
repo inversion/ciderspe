@@ -43,10 +43,19 @@ public class TimeBorderList
     public static final TimeBorderComparer comparer = new TimeBorderComparer();
     private TreeMap<Long, TimeBorder> timeBorders = new TreeMap<Long, TimeBorder>();
     private TreeMap<Long, TimeRegion> timeRegions = new TreeMap<Long, TimeRegion>();
+    private DocumentID documentID;
 
+    public TimeBorderList(DocumentID documentID)
+    {
+        this.documentID = documentID;
+    }
+    
     public void addTimeBorder(TimeBorder timeBorder)
     {
-        this.timeBorders.put(timeBorder.time, timeBorder);
+        if(!timeBorder.documentID.equals(this.documentID))
+            throw new Error("Time Border belongs to a different document");
+        else
+            this.timeBorders.put(timeBorder.time, timeBorder);
     }
 
     public TimeBorder getBorder(long time)
@@ -116,5 +125,33 @@ public class TimeBorderList
     {
         // TODO Auto-generated method stub
 
+    }
+    
+    public DocumentID getDocumentID()
+    {
+        return this.documentID;
+    }
+
+    public void addRegion(TimeRegion timeRegion)
+    {
+        this.timeRegions.put(timeRegion.getEndTime(), timeRegion);
+    }
+    
+    @Override
+    public String toString()
+    {
+        String out = "";
+        for(Entry<Long, TimeRegion> entry : this.timeRegions.entrySet())
+        {
+            out += entry.getValue().toString() + "\n";
+        }
+        return out;
+    }
+
+    public void replaceEndBorder(TimeRegion region, TimeBorder newBorder)
+    {
+        this.timeRegions.remove(region.end.time);
+        region.end = newBorder;
+        this.timeRegions.put(region.end.time, region);     
     }
 }

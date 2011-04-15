@@ -60,10 +60,6 @@ public class TimeBorder
         this.typingEvents = typingEvents;
     }
 
-    public TimeBorder(long time)
-    {
-        this.time = time;
-    }
 
     @Override
     public boolean equals(Object obj)

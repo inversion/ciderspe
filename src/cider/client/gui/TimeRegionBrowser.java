@@ -21,21 +21,23 @@ import cider.common.processes.TimeRegion;
 public class TimeRegionBrowser extends JPanel implements MouseListener,
         MouseMotionListener
 {
-    TimeBorderList tbl;
-    PriorityQueue<Long> borderTimes;
-    double scale = 0.1;
-    long eyePosition = 500;
-    long startSelection = 0;
-    long endSelection = 0;
-    boolean movingEye = false;
-    int selecting = 0;
-    long latestTime = 0;
-    ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
+    private TimeBorderList tbl;
+    private PriorityQueue<Long> borderTimes;
+    private double scale = 0.1;
+    private long eyePosition = 500;
+    private long startSelection = 0;
+    private long endSelection = 0;
+    private boolean movingEye = false;
+    private int selecting = 0;
+    private long latestTime = 0;
+    private ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
     private long lowSelection;
     private long highSelection;
     private static final Color highlightColor = new Color(128, 128, 255);
     private static final Color selectionColor = new Color(highlightColor.getRed(),
-            highlightColor.getGreen(), highlightColor.getBlue(), highlightColor.getAlpha() / 3);
+            highlightColor.getGreen(), highlightColor.getBlue() / 2, highlightColor.getAlpha() / 3);
+    public static final int EYE_MOVED = 0;
+    public static final int SELECTION = 1;
 
     public TimeRegionBrowser(TimeBorderList tbl)
     {
@@ -123,7 +125,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
             for (ActionListener al : this.actionListeners)
-                al.actionPerformed(new ActionEvent(this.eyePosition, 0,
+                al.actionPerformed(new ActionEvent(this.eyePosition, EYE_MOVED,
                         "Eye Moved"));
         }
         
@@ -133,9 +135,14 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             
             this.endSelection = position;
            
-            TimeRegion currentRegion = this.tbl.regionThatCovers(this.startSelection);
+            TimeRegion currentRegion = this.getRegionContainingSelectedArea();
             long earliest = currentRegion.getStartTime();
             long latest = currentRegion.getEndTime();
+            
+            if(this.endSelection <= earliest)
+                this.endSelection = earliest + 1;
+            if(this.endSelection > latest)
+                this.endSelection = latest;
             
             this.lowSelection = this.startSelection;
             this.highSelection = this.endSelection;
@@ -146,12 +153,11 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
                 this.lowSelection = this.endSelection;
             }
             
-            if(this.endSelection < earliest)
-                this.endSelection = earliest;
-            if(this.endSelection > latest)
-                this.endSelection = latest;
-            
             this.repaint();
+            
+            for (ActionListener al : this.actionListeners)
+                al.actionPerformed(new ActionEvent(this.eyePosition, SELECTION,
+                        "Selection Changed"));
         }
         
         this.repaint();
@@ -221,5 +227,53 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     public TimeRegion getCurrentRegion()
     {
         return this.tbl.regionThatCovers(this.eyePosition);
+    }
+    
+    public long getSelectionLength()
+    {
+        return this.highSelection - this.lowSelection;
+    }
+    
+    public long getSelectionUpperLowerBound()
+    {
+        return this.lowSelection;
+    }
+    
+    public long getSelectionLowerUpperBound()
+    {
+        return this.highSelection;
+    }
+
+    public void downloadSelectedRegion() throws Exception
+    {
+        TimeBorder selectedBorder1 = new TimeBorder(this.tbl.getDocumentID(), this.getSelectionUpperLowerBound());
+        TimeBorder selectedBorder2 = new TimeBorder(this.tbl.getDocumentID(), this.getSelectionLowerUpperBound());
+        TimeRegion outerRegion = this.getRegionContainingSelectedArea();
+        
+        //regions during and after selection
+        TimeRegion selectedRegion = new TimeRegion(selectedBorder1, selectedBorder2);
+        TimeRegion afterSelection = new TimeRegion(selectedBorder2, outerRegion.end);
+        
+        //adjust borders
+        this.tbl.replaceEndBorder(outerRegion, selectedBorder1);
+        this.tbl.addTimeBorder(selectedBorder1);
+        this.tbl.addTimeBorder(selectedBorder2);
+        
+        //add new regions
+        this.tbl.addRegion(selectedRegion);
+        this.tbl.addRegion(afterSelection);
+        
+        this.updateBorderTimes();
+        this.updateUI();
+    }
+
+    private TimeRegion getRegionContainingSelectedArea()
+    {
+        return this.tbl.regionThatCovers(this.startSelection);
+    }
+
+    public boolean selectionLiesWithinFullRegion()
+    {
+        return this.getRegionContainingSelectedArea().end.fullSet;
     }
 }

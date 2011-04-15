@@ -506,7 +506,7 @@ public class MainWindow
         dhv.updateText();
         dhv.setWaiting(false);
 
-        TimeBorderList tbl = new TimeBorderList();
+        TimeBorderList tbl = new TimeBorderList(documentID);
         SourceDocument doc = new SourceDocument(documentID.name);
 
         if (this.offlineMode)
