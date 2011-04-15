@@ -278,7 +278,10 @@ public class BotMessageListener implements MessageListener
         profile.idleTime = idleTime;
         profile.lastOnline = lastOnline;
         profile.setColour( r, g, b );
-        System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );    
+        System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );
+        
+        // Register this user's profile to be committed to the disk
+        bot.updatedProfiles.add( username );
     }
     
     /**
