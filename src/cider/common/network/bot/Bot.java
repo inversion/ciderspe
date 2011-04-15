@@ -319,8 +319,8 @@ public class Bot
             file.getParentFile().mkdirs();
             
             try
-            {               
-                // Create the file if it doesn't exist
+            {   
+                file.delete();
                 file.createNewFile();
 
                 // Write the simplified source document to the file
@@ -353,6 +353,7 @@ public class Bot
             {
                 String username = itr.next();
                 File file = new File( PROFILE_DIR, username + ".dat" );
+                file.delete();
                 file.createNewFile();
                 
                 FileOutputStream fos = new FileOutputStream(file);
