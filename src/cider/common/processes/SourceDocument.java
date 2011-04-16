@@ -50,14 +50,11 @@ public class SourceDocument implements ICodeLocation, Serializable
     private static final long serialVersionUID = -6700242168976852201L;
     private PriorityQueue<TypingEvent> typingEvents;
     public String name;
-    // TODO ownership
-    private String owner;
     private long latestTime;
 
     public SourceDocument(String name)
     {
         this.name = name;
-        this.owner = owner;
         this.typingEvents = new PriorityQueue<TypingEvent>(1000,
                 new EventComparer());
     }
@@ -66,13 +63,13 @@ public class SourceDocument implements ICodeLocation, Serializable
             PriorityQueue<TypingEvent> typingEvents)
     {
         this.name = name;
-        this.owner = owner;
         this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
     }
 
     public static void main(String[] args)
     {
-        System.out.println(test());
+        System.out.println(lawrencesTests());
+        andrewsTests();
     }
 
     /**
@@ -83,7 +80,7 @@ public class SourceDocument implements ICodeLocation, Serializable
      * @author Lawrence
      * @return test results
      */
-    public static String test()
+    public static String lawrencesTests()
     {
         String testLog = shuffleAndSimplificationTest() + "\n";
         testLog += lengthTest();
@@ -108,7 +105,7 @@ public class SourceDocument implements ICodeLocation, Serializable
             testDoc.addEvent(event);
 
         String result = testDoc.toString();
-        String testResult = expected.equals(result) ? "pass\n"
+        String testResult = expected.equals(result) ? "pass shuffle test\n"
                 : "fail: did not pass shuffled events test since toString returned '"
                         + result
                         + "', where as it should of been '"
@@ -127,7 +124,7 @@ public class SourceDocument implements ICodeLocation, Serializable
             testDoc.addEvent(event);
 
         result = testDoc.toString();
-        testResult += expected.equals(result) ? "pass"
+        testResult += expected.equals(result) ? "pass simplification test"
                 : "fail: simplification followed by new events produced '"
                         + result + "', where as it should of been '" + expected
                         + "'.";
@@ -194,7 +191,7 @@ public class SourceDocument implements ICodeLocation, Serializable
         for (TypingEvent event : tes)
             testDoc.addEvent(event);
         String result = testDoc.toString();
-        return (result.startsWith("<") && result.endsWith(">")) ? "pass"
+        return (result.startsWith("<") && result.endsWith(">")) ? "pass length test"
                 : "fail: did not pass the length test.";
     }
 
@@ -223,6 +220,101 @@ public class SourceDocument implements ICodeLocation, Serializable
         }
 
         return tes;
+    }
+    
+    /**
+     * @author Andrew
+     */
+    private static void andrewsTests()
+    {
+        final String originalMessage = "The quick brown fox jumped over the lazy dog";
+        String msg;
+        
+        System.out.print( "Simple insert into nothing: ");
+        SourceDocument doc = new SourceDocument("test");
+        TypingEvent te = new TypingEvent(0, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        String resultingMessage = doc.toString();
+        if (resultingMessage.equals(originalMessage))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + originalMessage
+                    + " but got " + resultingMessage);
+        
+        System.out.print( "Insert into existing string at beginning: ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "Thus, ";
+        te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert, 0,
+                msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals( "Thus, The quick brown fox jumped over the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + "Thus, The quick brown fox jumped over the lazy dog"
+                    + " but got " + resultingMessage);
+
+        // Testing for overwrites
+        System.out.print( "Overwriting nothing: " );
+        doc = new SourceDocument("test");
+        te = new TypingEvent(0, TypingEventMode.overwrite, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals(originalMessage))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + originalMessage
+                    + " but got " + resultingMessage);
+        
+        System.out.print( "Full overwrite (same length): " );
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "The furry brown fox jumped over the blue dog";
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 0, msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());    
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals( "The furry brown fox jumped over the blue dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + msg
+                    + " but got " + resultingMessage);
+        
+        System.out.print( "Partial overwrite (same length): " );
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "vaults";
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());    
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals( "The quick brown fox vaults over the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + "The quick brown fox vaults over the lazy dog"
+                    + " but got " + resultingMessage);
+        
+        System.out.print( "Partial overwrite (short text, trailing deletions): " );
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "vaults";
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length()+5, msg, "owner", null);
+        doc.addEvents(te.explode());    
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals( "The quick brown fox vaults the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + "The quick brown fox vaults the lazy dog"
+                    + " but got " + resultingMessage);
     }
 
     /**
