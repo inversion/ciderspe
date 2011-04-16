@@ -51,6 +51,13 @@ public class TimeBorder
         this.time = time;
         this.documentID = documentID;
     }
+    
+    public TimeBorder(DocumentID documentID, long time, boolean fullSet)
+    {
+        this.time = time;
+        this.documentID = documentID;
+        this.fullSet = fullSet;
+    }
 
     public TimeBorder(DocumentID documentID, long time,
             PriorityQueue<TypingEvent> typingEvents)

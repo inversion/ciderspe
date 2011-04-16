@@ -23,7 +23,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 {
     private TimeBorderList tbl;
     private PriorityQueue<Long> borderTimes;
-    private double scale = 0.1;
+    private double scale = 0.0001;
     private long eyePosition = 500;
     private long startSelection = 0;
     private long endSelection = 0;
