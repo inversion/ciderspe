@@ -40,6 +40,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,6 +52,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import cider.common.network.client.Client;
+import cider.common.processes.SiHistoryFiles;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
 import cider.documentViewerComponents.EditorTypingArea;
@@ -94,6 +97,9 @@ public class ETASourceEditorPane extends JScrollPane
 
         this.setWheelScrollingEnabled(false);
         this.addMouseWheelListener(this.newMouseWheelListener());
+        this.client.getParent().w.addWindowListener(this.newWindowListener());
+        SiHistoryFiles.markDocumentOpening(path, System.currentTimeMillis()
+                + client.getClockOffset());
     }
 
     private MouseWheelListener newMouseWheelListener()
@@ -113,6 +119,63 @@ public class ETASourceEditorPane extends JScrollPane
 
         };
         return mwl;
+    }
+    
+    private WindowListener newWindowListener()
+    {
+        return new WindowListener()
+        {
+
+            @Override
+            public void windowActivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void windowClosed(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void windowClosing(WindowEvent arg0)
+            {
+                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
+                        + client.getClockOffset());
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void windowIconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+
+            @Override
+            public void windowOpened(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+                
+            }
+            
+        };
     }
 
     private ActionListener lockingActionListener()
@@ -550,7 +613,7 @@ public class ETASourceEditorPane extends JScrollPane
                                     internal.add(particle);
                                 }
                                 
-                                TypingEvent.saveEvents(outgoingEvents, client.getCurrentDocumentID().path);
+                                SiHistoryFiles.saveEvents(outgoingEvents, client.getCurrentDocumentID().path);
 
                                 eta.getSourceDocument().push(internal);
                                 client.broadcastTypingEvents(outgoingEvents,

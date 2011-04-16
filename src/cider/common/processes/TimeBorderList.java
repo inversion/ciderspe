@@ -154,4 +154,9 @@ public class TimeBorderList
         region.end = newBorder;
         this.timeRegions.put(region.end.time, region);     
     }
+
+    public void loadLocalHistory()
+    {
+        
+    }
 }

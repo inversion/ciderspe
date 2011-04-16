@@ -76,6 +76,7 @@ import cider.common.processes.DocumentID;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
+import cider.common.processes.SiHistoryFiles;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
@@ -793,7 +794,7 @@ public class Client
         else
         {
             Queue<TypingEvent> remainingEvents;
-            TypingEvent.saveEvents(typingEvents, this.currentDocumentID.path);
+            SiHistoryFiles.saveEvents(typingEvents, this.currentDocumentID.path);
 
             if (this.typingEventDiversion != null)
             {
