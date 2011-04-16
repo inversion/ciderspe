@@ -73,12 +73,7 @@ public class SourceDocument implements ICodeLocation, Serializable
     }
 
     /**
-     * No we probably wont write tests all that often, but in this case it was
-     * actually the quickest way of trying my code out. It's not a particularly
-     * rigorous test.
-     * 
      * @author Lawrence
-     * @return test results
      */
     public static String lawrencesTests()
     {
