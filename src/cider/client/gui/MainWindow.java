@@ -507,6 +507,9 @@ public class MainWindow
         dhv.setWaiting(false);
 
         TimeBorderList tbl = new TimeBorderList(documentID);
+        
+        tbl.loadLocalHistory();
+        
         SourceDocument doc = new SourceDocument(documentID.name);
 
         if (this.offlineMode)

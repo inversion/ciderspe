@@ -36,7 +36,7 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.processes.Profile;
-import cider.common.processes.TypingEvent;
+import cider.common.processes.SiHistoryFiles;
 
 /**
  * This class waits for a message to be received by the client on its chat
@@ -85,7 +85,7 @@ public class ClientMessageListener implements MessageListener, ActionListener
             
             if(client.getUsername().equals(message.getProperty( "username")))
             {
-                File file = new File(TypingEvent.localEventFolderPath + "\\");
+                File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
                 deleteSubFiles(file);
             }
         }

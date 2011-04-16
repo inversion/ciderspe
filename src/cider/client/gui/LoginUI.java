@@ -66,7 +66,7 @@ import org.jivesoftware.smack.XMPPException;
 
 import cider.common.network.client.Client;
 import cider.common.processes.Profile;
-import cider.common.processes.TypingEvent;
+import cider.common.processes.SiHistoryFiles;
 import cider.shared.ClientSharedComponents;
 
 public class LoginUI
@@ -256,7 +256,7 @@ public class LoginUI
     private static void makeLocalHistoryFolder()
     {
         File f;
-        f = new File(TypingEvent.localEventFolderPath);
+        f = new File(SiHistoryFiles.localEventFolderPath);
         if (!f.exists())
             f.mkdirs(); 
     }
