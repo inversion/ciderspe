@@ -5,9 +5,11 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -18,20 +20,21 @@ import javax.swing.JPanel;
 public class SiHistoryFiles
 {
     public static final String localEventFolderPath = System.getenv("APPDATA")
-        + "\\cider\\localhistory\\";
-    
+            + "\\cider\\localhistory\\";
+
     public static Set<String> times(Collection<TypingEvent> typingEvents)
     {
         Set<String> results = new LinkedHashSet<String>();
-        for(TypingEvent te : typingEvents)
+        for (TypingEvent te : typingEvents)
             results.add("" + te.time);
         return results;
     }
 
-    public static Set<String> eventTimesExistsInFile(String documentPath, Set<String> times)
-            throws IOException
+    public static Set<String> eventTimesExistsInFile(String documentPath,
+            Set<String> times) throws IOException
     {
-        FileInputStream fstream = new FileInputStream(localEventFolderPath + documentPath);
+        FileInputStream fstream = new FileInputStream(localEventFolderPath
+                + documentPath);
         DataInputStream in = new DataInputStream(fstream);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         String strLine;
@@ -43,13 +46,14 @@ public class SiHistoryFiles
         {
             foundMatch = false;
             i = 0;
-            for(String time : times)
+            for (String time : times)
             {
                 if (strLine.startsWith(time))
                 {
                     start = time.length();
-                    if(strLine.substring(start, strLine.indexOf(' ', start + 1))
-                            .equals(TypingEventMode.homogenized.toString()))
+                    if (strLine.substring(start,
+                            strLine.indexOf(' ', start + 1)).equals(
+                            TypingEventMode.homogenized.toString()))
                     {
                         foundMatch = true;
                         results.add(time);
@@ -58,8 +62,8 @@ public class SiHistoryFiles
                 }
                 i++;
             }
-            
-            if(foundMatch)
+
+            if (foundMatch)
                 times.remove(i);
         }
         in.close();
@@ -72,14 +76,15 @@ public class SiHistoryFiles
         try
         {
             File f = openFileForWriting(documentPath);
-            Set<String> matches = eventTimesExistsInFile(documentPath, times(typingEvents));
+            Set<String> matches = eventTimesExistsInFile(documentPath,
+                    times(typingEvents));
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
-            
+
             for (TypingEvent typingEvent : typingEvents)
-                if(!matches.contains("" + typingEvent.time))
+                if (!matches.contains("" + typingEvent.time))
                     out.write(typingEvent.toString() + "\n");
-            
+
             out.close();
         }
         catch (IOException e1)
@@ -139,5 +144,68 @@ public class SiHistoryFiles
         {
             e.printStackTrace();
         }
+    }
+
+    public static ArrayList<Long> getBorderTimes(String path)
+    {
+        try
+        {
+            ArrayList<Long> times = new ArrayList<Long>();
+            FileInputStream fstream;
+
+            fstream = new FileInputStream(localEventFolderPath + path);
+
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            String closed = "Closed ";
+            String open = "Open ";
+            int a = closed.length();
+            int b = open.length();
+            long start = 0;
+            long t = 0;
+            boolean border;
+            while ((strLine = br.readLine()) != null)
+            {
+                border = true;
+                
+                if (strLine.startsWith(closed))
+                    t = Long.parseLong(strLine.substring(a,
+                            strLine.indexOf(' ', a)));
+                else if (strLine.startsWith(open))
+                    t = Long.parseLong(strLine.substring(b,
+                            strLine.indexOf(' ', b)));
+                else
+                    border = false;
+                
+                if(border)
+                {
+                    if(start == 0)
+                        start = t;
+                    
+                    t -= start;
+                    times.add(t);
+                }
+            }
+            in.close();
+            return times;
+        }
+        catch (FileNotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (NumberFormatException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
+        return null;
     }
 }

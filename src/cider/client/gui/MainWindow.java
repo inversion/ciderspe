@@ -89,10 +89,8 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.network.client.Client;
-import cider.common.processes.DocumentID;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
-import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 import cider.documentViewerComponents.EditorTypingArea;
@@ -498,19 +496,17 @@ public class MainWindow
         // sourceHistoryDialog.setPreferredSize(this.w.getSize());
         // sourceHistoryDialog.setVisible(true);
 
-        DocumentID documentID = new DocumentID("Test Document", "testpath");
-
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
-                new SourceDocument(documentID.name));
+                new SourceDocument(this.client.getCurrentDocumentID().name));
         dhv.setDefaultColor(Color.BLACK);
         dhv.updateText();
         dhv.setWaiting(false);
 
-        TimeBorderList tbl = new TimeBorderList(documentID);
+        TimeBorderList tbl = new TimeBorderList(this.client.getCurrentDocumentID());
         
         tbl.loadLocalHistory();
         
-        SourceDocument doc = new SourceDocument(documentID.name);
+        /*SourceDocument doc = new SourceDocument(documentID.name);
 
         if (this.offlineMode)
         {
@@ -525,7 +521,7 @@ public class MainWindow
         else
         {
             tbl.useTimeBordersFrom(this.currentFileName, this.client);
-        }
+        }*/
 
         tbl.createRegions();
         TimeRegionBrowser trb = new TimeRegionBrowser(tbl);

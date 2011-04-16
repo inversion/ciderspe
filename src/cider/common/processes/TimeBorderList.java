@@ -23,6 +23,7 @@
 
 package cider.common.processes;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
@@ -157,6 +158,12 @@ public class TimeBorderList
 
     public void loadLocalHistory()
     {
-        
+        ArrayList<Long> borderTimes = SiHistoryFiles.getBorderTimes(this.documentID.path);
+        boolean fullSet = false;
+        for(long t : borderTimes)
+        {
+            this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
+            fullSet = !fullSet;
+        }
     }
 }
