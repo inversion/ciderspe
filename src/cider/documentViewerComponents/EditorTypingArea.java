@@ -1,6 +1,7 @@
 package cider.documentViewerComponents;
 
 import cider.client.gui.ETASourceEditorPane;
+import cider.client.gui.MainWindow;
 import cider.common.processes.SourceDocument;
 
 /**

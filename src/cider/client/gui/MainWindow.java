@@ -132,6 +132,7 @@ public class MainWindow
     boolean offlineMode = false;
     
     private IdleTimer idleTimer;
+    public static StatusBar statusBar;
 
     /**
      * These variable are for the profiles
@@ -1412,9 +1413,18 @@ public class MainWindow
         Image test = image.getImage();
         w.setIconImage(test);
 
-        JPanel p = new JPanel(new BorderLayout());
+        JPanel p = new JPanel(new BorderLayout(0,0));
+        p.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
         p.add(this.mainMenuBar(), BorderLayout.PAGE_START);
-        p.add(this.mainArea());
+        p.add(this.mainArea(), BorderLayout.CENTER);
+        
+        
+        statusBar = new StatusBar();
+        statusBar.setUsername(username);
+        statusBar.setInputMode("INSERT");
+        p.add(statusBar, BorderLayout.SOUTH);
+        
+        
         w.add(p);
 
         w.pack();
