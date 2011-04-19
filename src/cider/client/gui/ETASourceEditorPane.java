@@ -454,7 +454,10 @@ public class ETASourceEditorPane extends JScrollPane
                         break;
                     case KeyEvent.VK_INSERT: // Switch default input mode between insert and overtype
                         inputMode = (inputMode == TypingEventMode.insert) ? TypingEventMode.overwrite : TypingEventMode.insert;
-                        // TODO: Provide GUI indication of input mode (possibly block caret and status bar indicator)
+                        
+                        // Provide GUI indication of input mode (possibly block caret and status bar indicator)
+                        MainWindow.statusBar.setInputMode(inputMode.toString().toUpperCase());
+                        
                         System.out.println( "Input mode changed to " + inputMode.toString() );
                         break;
                 }
