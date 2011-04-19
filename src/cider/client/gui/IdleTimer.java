@@ -15,7 +15,7 @@ import cider.common.network.client.Client;
  *
  */
 
-public class IdleTimer implements MouseMotionListener
+public class IdleTimer
 {
     private int idleTime = 0;
     public boolean isIdle = false;
@@ -46,27 +46,21 @@ public class IdleTimer implements MouseMotionListener
         timer.scheduleAtFixedRate( increment, 0, 1000 );
     }
     
-    @Override
-    public void mouseDragged(MouseEvent arg0)
-    {
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent arg0)
-    {
-        totalIdleTime += idleTime;
-        idleTime = 0;
-        if( isIdle )
-        {
-            client.sendHerePresence();
-            System.out.println("IdleTimer: Back...");
-            isIdle = false;
-        }
-    }
-    
     protected int getTotalIdleTime()
     {
         return totalIdleTime;
+    }
+	
+    public void mouseMoved()
+    {
+	    totalIdleTime += idleTime;
+	    idleTime = 0;
+	    if( isIdle )
+	    {
+	        client.sendHerePresence();
+	        System.out.println("IdleTimer: Back...");
+	        isIdle = false;
+	    }
     }
 
 }
