@@ -23,6 +23,7 @@
 
 package cider.client.gui;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -32,6 +33,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -39,6 +42,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedOutputStream;
@@ -1350,7 +1354,7 @@ public class MainWindow
         this.debugwindow.setAutoscrolls(true);
 
         JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                this.sourceEditorSection(), this.debugwindow/* test */);
+                this.sourceEditorSection(), this.debugwindow/* test */);;
         EditorDebugSplit.setBorder(emptyBorder);
         EditorDebugSplit.setOneTouchExpandable(true);
         EditorDebugSplit.setDividerLocation(800);
@@ -1371,7 +1375,8 @@ public class MainWindow
         this.editorChatSplit.setResizeWeight(1.0);
 
         // Provide minimum sizes for the two components in the split pane
-        panel.add(editorChatSplit);
+        panel.add(editorChatSplit);        
+
         return panel;
     }
 
@@ -1379,8 +1384,18 @@ public class MainWindow
     public void startApplication(JFrame loginWindow)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        idleTimer = new IdleTimer(client);
-        w.addMouseMotionListener( idleTimer );
+        idleTimer = new IdleTimer(client);        
+        
+        // Detect mouse events across whole window
+        // Filter only motion events to set not idle
+        long eventMask = AWTEvent.MOUSE_MOTION_EVENT_MASK;
+        Toolkit.getDefaultToolkit().addAWTEventListener( new AWTEventListener()
+        {
+            public void eventDispatched(AWTEvent e)
+            {
+                idleTimer.mouseMoved();
+            }
+        }, eventMask);
 
         // FIXME:
         // client.startClockSynchronisation(w);
