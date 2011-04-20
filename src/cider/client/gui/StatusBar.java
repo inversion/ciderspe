@@ -1,9 +1,13 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.net.URL;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -17,27 +21,43 @@ public class StatusBar extends JPanel {
 	
 	public StatusBar()
 	{
-		GridLayout grid = new GridLayout(1,3);
-		this.setLayout(grid);
+		//GridLayout grid = new GridLayout(1,3);
+		//this.setLayout(grid);
 		
-		//this.setLayout(new BorderLayout());
+		this.setLayout(new BorderLayout());
 		
-		this.setBorder(BorderFactory.createEmptyBorder(2,2,2,2));
+		this.setBorder(BorderFactory.createEmptyBorder(2,5,2,5));
 
-		lblUsername = new JLabel("Logged in as: ");
+        Box userBox = Box.createHorizontalBox();
+        URL u = this.getClass().getResource("iconuser.png");
+        ImageIcon image = new ImageIcon(u);
+        JLabel lblImage = new JLabel(image);
+        userBox.add(lblImage);
+        lblUsername = new JLabel(" Logged in as: ");
+        userBox.add(lblUsername);
+        
 		lblCurrentPos = new JLabel("Line: TODO | Col: TODO");
 		lblCurrentPos.setHorizontalAlignment(SwingConstants.CENTER);
+		
+        Box inputBox = Box.createHorizontalBox();
+        inputBox.setAlignmentX(RIGHT_ALIGNMENT);
 		lblInputMode = new JLabel("Input Mode: ");
 		lblInputMode.setHorizontalAlignment(SwingConstants.RIGHT);
+        inputBox.add(lblInputMode);
+        URL u2 = this.getClass().getResource("iconinput.png");
+        ImageIcon image2 = new ImageIcon(u2);
+        JLabel lblImage2 = new JLabel(image2);
+        lblImage2.setAlignmentX(RIGHT_ALIGNMENT);
+        inputBox.add(lblImage2);
 		
-		this.add(lblUsername, BorderLayout.WEST);
-		this.add(lblCurrentPos, BorderLayout.CENTER);
-		this.add(lblInputMode, BorderLayout.EAST);
+		this.add(userBox, BorderLayout.WEST);
+		this.add(lblCurrentPos);
+		this.add(inputBox, BorderLayout.EAST);
 	}
 	
 	public void setInputMode(String mode)
 	{
-		lblInputMode.setText("Input Mode: " + mode);
+		lblInputMode.setText("Input Mode: " + mode + " ");
 	}
 	
 	public void setCurrentPos(int line, int col)
@@ -47,6 +67,6 @@ public class StatusBar extends JPanel {
 	
 	public void setUsername(String name)
 	{
-		lblUsername.setText("Logged in as: " + name);
+		lblUsername.setText(" Logged in as: " + name);
 	}	
 }
