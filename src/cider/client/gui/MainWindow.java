@@ -98,6 +98,7 @@ import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorderList;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 import cider.documentViewerComponents.EditorTypingArea;
+import cider.documentViewerComponents.SourceDocumentViewer;
 import cider.shared.ClientSharedComponents;
 
 public class MainWindow
@@ -484,6 +485,16 @@ public class MainWindow
                 else if (action.equals("History"))
                 {
                     startSourceHistory();
+                }
+                else if (action.equals("Font Size"))
+                {
+                	 String s =  JOptionPane.showInputDialog( new JPanel(), "Enter font size:", "Editor Font Size", JOptionPane.PLAIN_MESSAGE);
+                     if (DEBUG)
+                     	System.out.println("*************************\n" + "fontsize: \"" + s + "\"\n" + "*************************\n");
+                                         
+                     myProfile.setFontSize(Integer.parseInt(s));
+                     SourceDocumentViewer.fontSize = Integer.parseInt(s);
+                     //SourceDocumentViewer.REFRESH ALL PLEASE
                 }
             }
         };
@@ -1016,6 +1027,7 @@ public class MainWindow
 
         addMenuItem(menu, "My Profile", -1, aL);
         addMenuItem(menu, "Change Profile Colour", -1, aL);
+        addMenuItem(menu, "Font Size", -1, aL);
         addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
 

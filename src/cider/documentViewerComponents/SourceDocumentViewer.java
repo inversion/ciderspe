@@ -59,7 +59,7 @@ import cider.common.processes.TypingEventMode;
  * 
  * @author Lawrence, Miles, Alex, Andrew
  * @param fontSize
- *            the size of the font in the editortypingarea
+ *            the size of the font in the editortypingarea (14 default)
  */
 public class SourceDocumentViewer extends JPanel implements MouseListener,
         MouseMotionListener
@@ -78,7 +78,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     private int currentColNum = 0;
     public static final int LINE_LOCKED = 0;
     public static final int LINE_UNLOCKED = 1;
-    public static final int fontSize = 14;
+    public static int fontSize = 14;
     public static final Font fontbold = new Font("Monospaced", Font.BOLD,
             fontSize);
     public static final Font font = new Font("Monospaced", Font.PLAIN, fontSize);

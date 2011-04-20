@@ -58,6 +58,7 @@ public class Profile implements Serializable
     public int idleTime;
     public String lastOnline;
     public Color userColour;
+    public int userFontSize;
 
     
 
@@ -69,6 +70,7 @@ public class Profile implements Serializable
         idleTime = 0;
         lastOnline = "Never!";
         userColour = new Color(150, 150, 150);
+        userFontSize = 14;
     }
 
     public void incrementCharCount()
@@ -117,13 +119,19 @@ public class Profile implements Serializable
         return uname + "  " + "chars: " + typedChars + "  timespent: "
                 + timeSpent + "  idletime: " + idleTime + "  lastonline: " + lastOnline + "  colour: "
                 + userColour.getRed() + " " + userColour.getGreen() + " "
-                + userColour.getBlue();
+                + userColour.getBlue() + " fontSize: " + userFontSize;
     }
 
     public void setColour(int R, int G, int B)
     {
         userColour = new Color(R, G, B);
         System.out.println("Colour updated to: " + R + " " + G + " " + B);
+    }
+    
+    public void setFontSize(int s)
+    {
+        userFontSize = s;
+        System.out.println("Font size updated to: " + s);
     }
 
     /**
@@ -153,6 +161,7 @@ public class Profile implements Serializable
             message.setProperty( "r", userColour.getRed() );
             message.setProperty( "g", userColour.getGreen() );
             message.setProperty( "b", userColour.getBlue() );
+            message.setProperty("fontSize", userFontSize);
             botChat.sendMessage( message );
         }
         catch (XMPPException e1)

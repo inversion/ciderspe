@@ -39,6 +39,7 @@ import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
+import cider.documentViewerComponents.SourceDocumentViewer;
 
 /**
  * This class waits for a message to be received on a chat session and then
@@ -130,6 +131,31 @@ public class BotMessageListener implements MessageListener
             System.err
                     .println("The bot has been shut down by a backdoor routine");
             System.exit(1);
+        }
+        else if(ciderAction.equals("what my font size?"))
+        {
+        	 String username = (String) message.getProperty("username");
+        	 int sizetosend;
+             try
+             {
+            	 if ( bot.profiles.containsKey( username ) )
+            	 {
+            		 Profile profile = bot.profiles.get( username );
+            		 sizetosend =  profile.userFontSize;
+            	 }
+            	 else
+            	 {
+            		 sizetosend = SourceDocumentViewer.fontSize; 
+            	 }
+            	 Message msg = new Message();
+            	 msg.setBody("");
+            	 msg.setProperty("fontSize", sizetosend);
+            	 chat.sendMessage( msg );
+             }   
+             catch (XMPPException e)
+             {
+                 e.printStackTrace();
+             }
         }
 //        else if ( subject.equals( "timeRequest" ) )
 //        {
@@ -263,6 +289,7 @@ public class BotMessageListener implements MessageListener
         Integer r = (Integer) message.getProperty("r");
         Integer g = (Integer) message.getProperty("g");
         Integer b = (Integer) message.getProperty("b");
+        Integer s = (Integer) message.getProperty("userFontSize");
         
         // If the bot doesn't have this profile on record
         if( !bot.profiles.containsKey( username ) )
@@ -278,6 +305,7 @@ public class BotMessageListener implements MessageListener
         profile.idleTime = idleTime;
         profile.lastOnline = lastOnline;
         profile.setColour( r, g, b );
+        profile.setFontSize(s);
         System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );
         
         // Register this user's profile to be committed to the disk
@@ -315,6 +343,7 @@ public class BotMessageListener implements MessageListener
                 msg.setProperty( "r", profile.userColour.getRed() );
                 msg.setProperty( "g", profile.userColour.getGreen() );
                 msg.setProperty( "b", profile.userColour.getBlue() );
+                msg.setProperty("fontSize", profile.userFontSize);
                 
                 // If we want the profile to pop up at the other end
                 if( message.getProperty( "show" ) != null )
