@@ -260,6 +260,7 @@ public class MainWindow
         JLabel userTime = new JLabel("Total Time: " + Profile.getTimeString( profile.timeSpent ) );
         JLabel idleTime = new JLabel("Idle Time: " + Profile.getTimeString( profile.idleTime * 1000 ) + " (" + profile.idlePercentString() + "%)" );
         JLabel userLastOnline = new JLabel("Last Seen: " + profile.lastOnline);
+        //JLabel userFontSize = new JLabel("Font Size: " + profile.userFontSize);
 
         // vertical box with user statistics in
         Box vbox = Box.createVerticalBox();
@@ -269,6 +270,7 @@ public class MainWindow
         vbox.add(userTime);
         vbox.add(idleTime);
         vbox.add(userLastOnline);
+        //vbox.add(userFontSize);
 
         hbox.add(vbox);
         content.add(hbox);
@@ -487,9 +489,9 @@ public class MainWindow
                 {
                     startSourceHistory();
                 }
-                else if (action.equals("Font Size"))
+                else if (action.equals("Change Font Size"))
                 {
-                	 String s =  JOptionPane.showInputDialog( new JPanel(), "Enter font size:", "Editor Font Size", JOptionPane.PLAIN_MESSAGE);
+                	 String s =  JOptionPane.showInputDialog( new JPanel(), "Enter font size (default is 14):", "Editor Font Size", JOptionPane.PLAIN_MESSAGE);
                      if (DEBUG)
                      	System.out.println("*************************\n" + "fontsize: \"" + s + "\"\n" + "*************************\n");
                                          
@@ -938,43 +940,69 @@ public class MainWindow
     {
         JFrame frame = new JFrame("About CIDEr");
         Container content = frame.getContentPane();
-        content.setLayout(new GridLayout(10, 2));
+        //content.setLayout(new GridLayout(10, 2));
 
-        URL x = this.getClass().getResource("icon.png");
-        ImageIcon image = new ImageIcon(x);
+        URL x1 = this.getClass().getResource("icon.png");
+        ImageIcon image = new ImageIcon(x1);
         Image test = image.getImage();
         frame.setIconImage(test);
 
-        frame.setBounds(100, 100, 400, 350);
+        //frame.setBounds(100, 100, 400, 350);
         frame.setResizable(false);
         frame.isDisplayable();
         frame.setLocationRelativeTo(null);
 
-        JLabel chars = new JLabel(
-                "CIDEr- Collaborative Integrated Development EnviRonment.");
-        content.add(chars);
+        /*JLabel chars = new JLabel("CIDEr- Collaborative Integrated Development EnviRonment.");
+        content.add(chars);*/
 
+        URL u = this.getClass().getResource("ciderabout.png");
+        ImageIcon image1 = new ImageIcon(u);
+        JLabel lblImage = new JLabel(image1);
+        content.add(lblImage);   
+        
+        frame.pack();
+        int x = (int) (w.getX() + w.getWidth() / 2);
+        int y = (int) (w.getY() + w.getHeight() / 2);
+        frame.setLocation(x - frame.getWidth() / 2, y - frame.getHeight() / 3);
         frame.setVisible(true);
     }
 
-    /**
-     * FIXME: UNUSED METHOD!
-     * 
-     */
-    /*
-     * private void tabClicked(MouseEvent e) { if (e.getButton() !=
-     * MouseEvent.BUTTON1 && e.getClickCount() == 1) { // if is right-click
-     * 
-     * // create popup with Close menuitem JPopupMenu popupMenu = new
-     * JPopupMenu(); JMenuItem closeBtn = new JMenuItem("Close");
-     * closeBtn.addActionListener(new ActionListener() { public void
-     * actionPerformed(ActionEvent e) { SwingUtilities.invokeLater(new
-     * Runnable() { public void run() { // closeFile("Close File"); } }); } });
-     * popupMenu.add(closeBtn);
-     * 
-     * // display popup near location of mouse click
-     * popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10); } }
-     */
+    //FIXME: UNUSED METHOD!
+    private void tabClicked(MouseEvent e) 
+    { 
+    	if (DEBUG)
+			System.out.println("A CLICK...");
+    	
+    	if (e.getButton() !=  MouseEvent.BUTTON1 && e.getClickCount() == 1) 
+    	{ // if is right-click
+    		if (DEBUG)
+    			System.out.println("RIGHT CLICK!");
+    		
+    		// create popup with Close menuitem 
+    		JPopupMenu popupMenu = new JPopupMenu();
+    		JMenuItem closeBtn = new JMenuItem("Close");
+    		closeBtn.addActionListener(new ActionListener() 
+    		{ 
+    			public void
+    			actionPerformed(ActionEvent e)
+    			{ 
+    				SwingUtilities.invokeLater(new
+    						Runnable()
+    				{ 
+    					public void run() 
+    					{ 
+    						closeFile("Close File");
+    					} 
+    				});
+    			}
+    		});
+
+    		popupMenu.add(closeBtn);
+
+    		// display popup near location of mouse click
+    		popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10); 
+    	}
+    }
 
     public JMenuBar mainMenuBar()
     {
@@ -1028,7 +1056,7 @@ public class MainWindow
 
         addMenuItem(menu, "My Profile", -1, aL);
         addMenuItem(menu, "Change Profile Colour", -1, aL);
-        addMenuItem(menu, "Font Size", -1, aL);
+        addMenuItem(menu, "Change Font Size", -1, aL);
         addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
 

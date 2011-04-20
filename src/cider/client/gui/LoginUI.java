@@ -470,10 +470,11 @@ public class LoginUI
                //panel.add(lblImage1);
                 connecting.add(panel);
                 connecting.pack();
-                int x = (int) (login.getX() + login.getWidth() / 2);
-                int y = (int) (login.getY() + login.getHeight() / 2);
-                connecting.setLocation(x - connecting.getWidth() / 2, y
-                        - connecting.getHeight() / 3);
+                //int x = (int) (login.getX() + login.getWidth() / 2);
+                //int y = (int) (login.getY() + login.getHeight() / 2);
+                Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+                connecting.setLocation((dim.width - lblImage.getWidth()) / 2, (dim.height - lblImage.getHeight()) / 2);
+                //connecting.setLocation(x - connecting.getWidth() / 2, y - connecting.getHeight() / 3);
                 connecting.setVisible(true);
                 connecting.repaint();
                 // connecting.setUndecorated(true);
