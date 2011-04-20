@@ -29,6 +29,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -1130,7 +1131,7 @@ public class MainWindow
          * FIXME: this variable is never used!
          */
         @SuppressWarnings("unused")
-        Border emptyBorder = BorderFactory.createEmptyBorder();
+        Border emptyBorder = BorderFactory.createEmptyBorder(0,0,0,0);
 
         if (!this.offlineMode)
         {
@@ -1228,10 +1229,22 @@ public class MainWindow
 
             shared.userCount.setText(" " + shared.userListModel.getSize()
                     + " Users Online");
-            panel.add(shared.userCount, BorderLayout.NORTH);
+            
+            JPanel usersHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            Box box = Box.createHorizontalBox();
+            
+            URL u = this.getClass().getResource("iconusers.png");
+            ImageIcon image = new ImageIcon(u);
+            JLabel lblImage = new JLabel(image);
+            box.add(lblImage);
+            box.add(shared.userCount);
+            usersHeader.add(box);
+            
+            panel.add(usersHeader, BorderLayout.NORTH);
             panel.add(userListScroll);
             panel.setMinimumSize(new Dimension(0, 100));
 
+            panel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
         }
         return panel;
     }
@@ -1254,9 +1267,20 @@ public class MainWindow
 
         // receiveTabs = new JTabbedPane();
 
-        panel.add(new JLabel(" User Chat"), BorderLayout.NORTH);
+        JPanel usersHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        Box box = Box.createHorizontalBox();
+        
+        URL u = this.getClass().getResource("iconchat.png");
+        ImageIcon image = new ImageIcon(u);
+        JLabel lblImage = new JLabel(image);
+        box.add(lblImage);
+        box.add(new JLabel(" User Chat"));
+        usersHeader.add(box);
+        
+        panel.add(usersHeader, BorderLayout.NORTH);
         panel.add(shared.receiveTabs, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 800));
+        panel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
 
         /**
          * We are not actually intiating the group chat here, so we just need to
