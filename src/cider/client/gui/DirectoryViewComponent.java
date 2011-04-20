@@ -24,12 +24,18 @@
 package cider.client.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
 import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -77,8 +83,20 @@ public class DirectoryViewComponent extends JPanel
         // new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
-        this.add(new JLabel(" File Explorer"), BorderLayout.NORTH);
+        
+        JPanel filesHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        Box box = Box.createHorizontalBox();
+        
+        URL u = this.getClass().getResource("iconfiles.png");
+        ImageIcon image = new ImageIcon(u);
+        JLabel lblImage = new JLabel(image);
+        box.add(lblImage);
+        box.add(new JLabel(" File Explorer"));
+        filesHeader.add(box);
+        
+        this.add(filesHeader, BorderLayout.NORTH);
         this.add(scrollpane, BorderLayout.CENTER);
+        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
     }
 
     public void setClient(Client client)
