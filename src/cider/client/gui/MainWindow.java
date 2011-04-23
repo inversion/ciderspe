@@ -104,8 +104,8 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-	private static final boolean DEBUG = true;
-	
+    private static final boolean DEBUG = true;
+    
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
@@ -395,7 +395,7 @@ public class MainWindow
                             new JPanel(), "Enter new username:",
                             "New username", JOptionPane.PLAIN_MESSAGE);
                     if (DEBUG)
-                    	System.out.println("*************************\n"
+                        System.out.println("*************************\n"
                             + "USERNAME CHANGED TO: \"" + s + "\"\n"
                             + "*************************\n");
                 }
@@ -491,9 +491,9 @@ public class MainWindow
                 }
                 else if (action.equals("Change Font Size"))
                 {
-                	 String s =  JOptionPane.showInputDialog( new JPanel(), "Enter font size (default is 14):", "Editor Font Size", JOptionPane.PLAIN_MESSAGE);
+                     String s =  JOptionPane.showInputDialog( new JPanel(), "Enter font size (default is 14):", "Editor Font Size", JOptionPane.PLAIN_MESSAGE);
                      if (DEBUG)
-                     	System.out.println("*************************\n" + "fontsize: \"" + s + "\"\n" + "*************************\n");
+                        System.out.println("*************************\n" + "fontsize: \"" + s + "\"\n" + "*************************\n");
                                          
                      myProfile.setFontSize(Integer.parseInt(s));
                      SourceDocumentViewer.fontSize = Integer.parseInt(s);
@@ -583,8 +583,8 @@ public class MainWindow
         {
             public void actionPerformed(ActionEvent action)
             {
-            	if (DEBUG)
-            		System.out.println("Colour change cancelled");
+                if (DEBUG)
+                    System.out.println("Colour change cancelled");
             }
         };
 
@@ -970,38 +970,38 @@ public class MainWindow
     //FIXME: UNUSED METHOD!
     private void tabClicked(MouseEvent e) 
     { 
-    	if (DEBUG)
-			System.out.println("A CLICK...");
-    	
-    	if (e.getButton() !=  MouseEvent.BUTTON1 && e.getClickCount() == 1) 
-    	{ // if is right-click
-    		if (DEBUG)
-    			System.out.println("RIGHT CLICK!");
-    		
-    		// create popup with Close menuitem 
-    		JPopupMenu popupMenu = new JPopupMenu();
-    		JMenuItem closeBtn = new JMenuItem("Close");
-    		closeBtn.addActionListener(new ActionListener() 
-    		{ 
-    			public void
-    			actionPerformed(ActionEvent e)
-    			{ 
-    				SwingUtilities.invokeLater(new
-    						Runnable()
-    				{ 
-    					public void run() 
-    					{ 
-    						closeFile("Close File");
-    					} 
-    				});
-    			}
-    		});
+        if (DEBUG)
+            System.out.println("A CLICK...");
+        
+        if (e.getButton() !=  MouseEvent.BUTTON1 && e.getClickCount() == 1) 
+        { // if is right-click
+            if (DEBUG)
+                System.out.println("RIGHT CLICK!");
+            
+            // create popup with Close menuitem 
+            JPopupMenu popupMenu = new JPopupMenu();
+            JMenuItem closeBtn = new JMenuItem("Close");
+            closeBtn.addActionListener(new ActionListener() 
+            { 
+                public void
+                actionPerformed(ActionEvent e)
+                { 
+                    SwingUtilities.invokeLater(new
+                            Runnable()
+                    { 
+                        public void run() 
+                        { 
+                            closeFile("Close File");
+                        } 
+                    });
+                }
+            });
 
-    		popupMenu.add(closeBtn);
+            popupMenu.add(closeBtn);
 
-    		// display popup near location of mouse click
-    		popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10); 
-    	}
+            // display popup near location of mouse click
+            popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10); 
+        }
     }
 
     public JMenuBar mainMenuBar()
@@ -1071,14 +1071,14 @@ public class MainWindow
         // NYI = not yet implemented
         if (DEBUG)
         {
-        	menu = new JMenu("DEV");
-        	menuBar.add(menu);
+            menu = new JMenu("DEV");
+            menuBar.add(menu);
 
-        	addMenuItem(menu, "DEV: Push profile to server", -1, aL);
-        	addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
-        	addMenuItem(menu, "DEV: Get profile from server", -1, aL);
-        	addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
-        	addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
+            addMenuItem(menu, "DEV: Push profile to server", -1, aL);
+            addMenuItem(menu, "DEV: Pretend to quit", -1, aL);
+            addMenuItem(menu, "DEV: Get profile from server", -1, aL);
+            addMenuItem(menu, "DEV: Terminate Bot Remotely", -1, aL);
+            addMenuItem(menu, "DEV: Show list of colours stored locally", -1, aL);
         }
 
         return menuBar;
@@ -1185,12 +1185,12 @@ public class MainWindow
                     int i = shared.userList.locationToIndex(e.getPoint());
                     if (e.getClickCount() == 2)
                     {
-                    	if (DEBUG)
-                    	{
-                    		System.out.println("Double clicked on Item " + i);
-                    		System.out.println("Double clicked on Item: "
-                    				+ shared.userList.getModel().getElementAt(i));
-                    	}
+                        if (DEBUG)
+                        {
+                            System.out.println("Double clicked on Item " + i);
+                            System.out.println("Double clicked on Item: "
+                                    + shared.userList.getModel().getElementAt(i));
+                        }
                         client.initiateChat((String) shared.userList
                                 .getSelectedValue());
                         shared.receiveTabs.setSelectedIndex( shared.receiveTabs.indexOfTab( (String) shared.userList
@@ -1324,7 +1324,7 @@ public class MainWindow
                 int i = tp.getSelectedIndex();
                 shared.receiveTabs.tabflashstop(tp.getTitleAt(i));
                 if (DEBUG)
-                	System.out.println("Stop flashing " + tp.getTitleAt(i));
+                    System.out.println("Stop flashing " + tp.getTitleAt(i));
             }
         };
         shared.receiveTabs.addChangeListener(changeListener);
@@ -1509,7 +1509,7 @@ public class MainWindow
                 {
                     myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
                     if (DEBUG)
-                    	System.out.println("disconnecting");
+                        System.out.println("disconnecting");
                     client.disconnect();
                 }
             }

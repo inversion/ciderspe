@@ -42,6 +42,7 @@ public class TypingEvent implements Serializable
      * 
      */
     private static final long serialVersionUID = 2L;
+    public static final int radix = 35;
 
     public String lockingGroup = null;
     public final TypingEventMode mode;
@@ -137,9 +138,9 @@ public class TypingEvent implements Serializable
         {
             this.mode = TypingEventMode.values()[Integer.parseInt(split[0])];
             this.text = split[1];
-            this.position = Integer.parseInt(split[2], 35);
+            this.position = Integer.parseInt(split[2], radix);
             this.length = Integer.parseInt(split[3]);
-            this.time = Long.parseLong(split[4], 35);
+            this.time = Long.parseLong(split[4], radix);
             this.owner = split[5];
             if (split.length == 7)
                 this.lockingGroup = split[6];
@@ -152,7 +153,7 @@ public class TypingEvent implements Serializable
             throw new Error("Failed to parse " + str + ". " + e.getMessage());
         }
     }
-
+    
     /**
      * creates a string which represents this typing event and can be unpacked
      * by the contructor which takes a string as its artgument.
@@ -162,8 +163,8 @@ public class TypingEvent implements Serializable
     public String pack()
     {
         return this.mode.ordinal() + "~" + this.text + "~"
-                + Integer.toString(this.position, 35) + "~" + this.length + "~"
-                + Long.toString(this.time, 35) + "~" + this.owner
+                + Integer.toString(this.position, radix) + "~" + this.length + "~"
+                + Long.toString(this.time, radix) + "~" + this.owner
                 + (this.lockingGroup == null ? "" : "~" + this.lockingGroup);
     }
 
