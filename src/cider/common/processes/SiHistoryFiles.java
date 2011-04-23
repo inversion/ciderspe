@@ -12,6 +12,9 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
@@ -21,6 +24,8 @@ public class SiHistoryFiles
 {
     public static final String localEventFolderPath = System.getenv("APPDATA")
             + "\\cider\\localhistory\\";
+    private static final String opened = "Opened ";
+    private static final String closed = "Closed ";
 
     public static Set<String> times(Collection<TypingEvent> typingEvents)
     {
@@ -82,8 +87,8 @@ public class SiHistoryFiles
             BufferedWriter out = new BufferedWriter(fstream);
 
             for (TypingEvent typingEvent : typingEvents)
-                if (!matches.contains("" + typingEvent.time))
-                    out.write(typingEvent.toString() + "\n");
+                if (!matches.contains(Long.toString(typingEvent.time, TypingEvent.radix)))
+                    out.write(typingEvent.pack() + "\n");
 
             out.close();
         }
@@ -120,7 +125,7 @@ public class SiHistoryFiles
             f = openFileForWriting(path);
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
-            out.write("Opened " + time + " " + path + "\n");
+            out.write("Opened " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
             out.close();
         }
         catch (IOException e)
@@ -137,7 +142,7 @@ public class SiHistoryFiles
             f = openFileForWriting(path);
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
-            out.write("Closed " + time + " " + path + "\n");
+            out.write("Closed " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
             out.close();
         }
         catch (IOException e)
@@ -152,16 +157,12 @@ public class SiHistoryFiles
         {
             ArrayList<Long> times = new ArrayList<Long>();
             FileInputStream fstream;
-
             fstream = new FileInputStream(localEventFolderPath + path);
-
             DataInputStream in = new DataInputStream(fstream);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String strLine;
-            String closed = "Closed ";
-            String open = "Open ";
             int a = closed.length();
-            int b = open.length();
+            int b = opened.length();
             long start = 0;
             long t = 0;
             boolean border;
@@ -171,10 +172,10 @@ public class SiHistoryFiles
                 
                 if (strLine.startsWith(closed))
                     t = Long.parseLong(strLine.substring(a,
-                            strLine.indexOf(' ', a)));
-                else if (strLine.startsWith(open))
+                            strLine.indexOf(' ', a)), TypingEvent.radix);
+                else if (strLine.startsWith(opened))
                     t = Long.parseLong(strLine.substring(b,
-                            strLine.indexOf(' ', b)));
+                            strLine.indexOf(' ', b)), TypingEvent.radix);
                 else
                     border = false;
                 
@@ -207,5 +208,55 @@ public class SiHistoryFiles
         }
         
         return null;
+    }
+    
+
+    public static void getEvents(String path, TimeBorderList tbl)
+    {
+        try
+        {
+            PriorityQueue<Long> times = tbl.borderTimes();
+            FileInputStream fstream;
+            fstream = new FileInputStream(localEventFolderPath + path);
+            DataInputStream in = new DataInputStream(fstream);
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String strLine;
+            Queue<TypingEvent> homogenizedEventQueue = new LinkedList<TypingEvent>();
+            TimeBorder border;
+            TypingEvent te;
+            
+            border = tbl.getBorder(times.poll());
+            
+            while ((strLine = br.readLine()) != null)
+            {
+                if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
+                {
+                    te = new TypingEvent(strLine);
+                    if(te.time < border.time)
+                    {
+                        if(te.mode.equals(TypingEventMode.homogenized))
+                            homogenizedEventQueue.add(te);
+                        else
+                            border.typingEvents.add(te);
+                    }
+                    else
+                    {
+                        border = tbl.getBorder(times.poll());
+                        while(!homogenizedEventQueue.isEmpty())
+                            border.typingEvents.add(homogenizedEventQueue.poll());
+                    }
+                }
+            }
+        }
+        catch (FileNotFoundException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 }

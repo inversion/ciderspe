@@ -25,9 +25,9 @@ package cider.common.processes;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import cider.common.network.client.Client;
 
@@ -165,5 +165,14 @@ public class TimeBorderList
             this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
             fullSet = !fullSet;
         }
+        
+        this.createRegions();
+        ArrayList<TypingEvent> typingEvents;
+        
+//        for(Entry<Long, TimeRegion> region : this.timeRegions.entrySet())
+//        {
+//            typingEvents = SiHistoryFiles.getEvents(this.documentID.path);
+//        }
+        
     }
 }

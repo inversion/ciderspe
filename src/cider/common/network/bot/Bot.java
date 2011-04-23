@@ -42,8 +42,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Map.Entry;
 
 import org.jivesoftware.smack.ChatManager;
@@ -90,6 +88,8 @@ public class Bot
     private ChatManager chatmanager;
     protected BotChatListener chatListener;
     private LiveFolder sourceFolder;
+    
+    private boolean autosave = false;
 
     // Documents that have been changed or created during this execution
     protected HashMap<String,SourceDocument> updatedDocs;
@@ -109,12 +109,21 @@ public class Bot
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
+        boolean autosave = true;
+        
+        for(String arg : args)
+            if(arg.equals("-autosave=false"))
+                autosave  = false;
+        
         Bot bot = new Bot();
         try
         {
             System.in.read();
             bot.commitTimer.stopTimer();
-            bot.writeUpdatedDocs();
+            
+            if(autosave)
+                bot.writeUpdatedDocs();
+            
             bot.writeUpdatedProfiles();
             bot.writeChatHistory();
         }
@@ -177,19 +186,24 @@ public class Bot
             chatListener = new BotChatListener(this);
             chatmanager.addChatListener(chatListener);
 
-            if (DEBUG)
-                System.out.println("Using source path: "
-                        + config.getSourceDir().getPath());
-
-            sourceFolder = new LiveFolder("root", "Bot");
-            readFromDisk(SOURCE_DIR, sourceFolder);
-
-            // If source dir doesn't exist create it
-            if (!SOURCE_DIR.exists())
-                SOURCE_DIR.mkdir();
-
-            // If source dir is empty make some test files
-            if (SOURCE_DIR.list().length == 0)
+            if(this.autosave)
+            {
+                if (DEBUG)
+                    System.out.println("Using source path: "
+                            + config.getSourceDir().getPath());
+    
+                sourceFolder = new LiveFolder("root", "Bot");
+                readFromDisk(SOURCE_DIR, sourceFolder);
+    
+                // If source dir doesn't exist create it
+                if (!SOURCE_DIR.exists())
+                    SOURCE_DIR.mkdir();
+    
+                // If source dir is empty make some test files
+                if (SOURCE_DIR.list().length == 0)
+                    this.testTree();
+            }
+            else
                 this.testTree();
             
             // Make profiles directory if it doesn't exist
@@ -306,6 +320,8 @@ public class Bot
      */
     protected void writeUpdatedDocs()
     {
+        this.autosave = true;
+        
         Set<Entry<String,SourceDocument>> entries = updatedDocs.entrySet();
 
         for ( Entry<String,SourceDocument> entry : entries )
