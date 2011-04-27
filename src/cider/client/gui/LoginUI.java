@@ -69,8 +69,11 @@ import cider.common.processes.Profile;
 import cider.common.processes.SiHistoryFiles;
 import cider.shared.ClientSharedComponents;
 
+
 public class LoginUI
 {
+
+	private int NotPort;
     public String currentDir = "src\\cider\\client\\gui\\"; // this is from
                                                             // MainWindow.java
 
@@ -82,6 +85,7 @@ public class LoginUI
     // TODO: Should be numeric really
     public static final String DEFAULT_PORT = "5222";
     public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
+    
 
     // Login box fields
     JTextField txtUsername;
@@ -368,9 +372,10 @@ public class LoginUI
             mainWindowThread.start();
         }
 
-        else
+        else 
         {
-            displayLogin();
+        	if (NotPort == 0)
+        		displayLogin();
             // program.killWindow();
         }
     }
@@ -492,6 +497,7 @@ public class LoginUI
 
         // System.out.println(passwordEncrypt.encrypt(new
         // String(txtPassword.getPassword())));
+    	NotPort = 0;
         final Client client;
         try
         {
@@ -520,7 +526,9 @@ public class LoginUI
                             JOptionPane.showMessageDialog(connecting, errmsg);
                             connecting.setVisible(false);
                             connecting.dispose();
-                            System.exit(1);
+
+                            LoginUI ui = new LoginUI();
+                            ui.displayLogin();
                         }
                         else
                         {
@@ -543,7 +551,9 @@ public class LoginUI
                         JOptionPane.showMessageDialog(connecting, errmsg);
                         connecting.setVisible(false);
                         connecting.dispose();
-                        System.exit(1);
+
+                        LoginUI ui = new LoginUI();
+                        ui.displayLogin();
                     }
                 }
 
@@ -554,7 +564,9 @@ public class LoginUI
         catch (NumberFormatException e)
         {
             errmsg = "Invalid port number";
+            JOptionPane.showMessageDialog(connecting, errmsg);
             e.printStackTrace();
+            NotPort = 1;
         }
         return null;
     }
