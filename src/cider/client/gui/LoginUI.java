@@ -538,8 +538,12 @@ public class LoginUI
                     }
                     catch (XMPPException e)
                     {
-                        
                         e.printStackTrace();
+                        errmsg = "Incorrect Username or Password";
+                        JOptionPane.showMessageDialog(connecting, errmsg);
+                        connecting.setVisible(false);
+                        connecting.dispose();
+                        System.exit(1);
                     }
                 }
 
