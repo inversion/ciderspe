@@ -45,6 +45,7 @@ import java.util.Timer;
 
 import javax.swing.JPanel;
 
+import cider.client.gui.MainWindow;
 import cider.common.network.client.Client;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
@@ -237,8 +238,24 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         int x = ((columnNumber + 1) * EditorTypingArea.characterSpacing)
                 + EditorTypingArea.leftMargin;
         int y = yPixelCoordinate + 5;
-        g.fillRect(x, y - EditorTypingArea.lineSpacing, 3,
+        
+        //Draw Caret for OVERWRITE and INSERT mode
+        if (MainWindow.statusBar.isOverwrite() == true)
+        {
+        	g.drawRect(x, y - EditorTypingArea.lineSpacing - 1, characterSpacing,
                 EditorTypingArea.lineSpacing);
+        	g.drawRect(x + 1, y - EditorTypingArea.lineSpacing, characterSpacing - 2,
+                EditorTypingArea.lineSpacing - 2);
+        }
+        else
+        {
+        	g.fillRect(x, y - EditorTypingArea.lineSpacing - 1, 3,
+                EditorTypingArea.lineSpacing);
+        }
+        
+        //TEMP StatusBar update
+        MainWindow.statusBar.setColNo(columnNumber + 1);
+        MainWindow.statusBar.setLineNo((int)(yPixelCoordinate/lineSpacing));
     }
 
     /**
@@ -275,7 +292,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected int yToLineNumber(int y)
     {
-        return (int) (y / (double) lineSpacing) + 1;
+    	int line = (int) (y / (double) lineSpacing) + 1;
+        return line;
     }
 
     /**
@@ -286,7 +304,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected int xToColumnNumber(int x)
     {
-        return (int) ((x - leftMargin) / (double) characterSpacing);
+    	int col = (int) ((x - leftMargin) / (double) characterSpacing);
+    	return col;
     }
 
     /**
