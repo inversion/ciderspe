@@ -18,6 +18,9 @@ public class StatusBar extends JPanel {
 	private JLabel lblUsername;
 	private JLabel lblCurrentPos;
 	private JLabel lblInputMode;
+	private boolean overwrite = false;
+	private int lineNo = 0;
+	private int colNo = 0;
 	
 	public StatusBar()
 	{
@@ -57,6 +60,9 @@ public class StatusBar extends JPanel {
 	
 	public void setInputMode(String mode)
 	{
+		
+		if (mode.equals("OVERWRITE")) overwrite = true;
+		else overwrite = false;
 		lblInputMode.setText("Input Mode: " + mode + " ");
 	}
 	
@@ -68,5 +74,22 @@ public class StatusBar extends JPanel {
 	public void setUsername(String name)
 	{
 		lblUsername.setText(" Logged in as: " + name);
-	}	
+	}
+	
+	public void setLineNo(int line)
+	{
+		lineNo = line;
+		setCurrentPos(lineNo, colNo);
+	}
+	
+	public void setColNo(int col)
+	{
+		colNo = col;
+		setCurrentPos(lineNo, colNo);
+	}
+	
+	public boolean isOverwrite()
+	{
+		return overwrite;
+	}
 }
