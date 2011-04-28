@@ -72,10 +72,10 @@ public class TypingEventList
      */
     public void overwrite(TypingEvent te)
     {
-        if (te.position >= tel.size())
+        if (te.position >= (tel.size() + 1))
             this.tel.add(te);
         else
-            this.tel.set(te.position, te);
+            this.tel.set(te.position - 1, te);
 
         
         // If overwriting length > 1 delete the rest of the stuff to be overwritten
