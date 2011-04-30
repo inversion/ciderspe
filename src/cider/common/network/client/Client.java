@@ -25,7 +25,12 @@ package cider.common.network.client;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -44,11 +49,16 @@ import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingConstants;
+import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -479,10 +489,48 @@ public class Client
 
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         messageReceiveBoxScroll.setName(user);
-        shared.receiveTabs.add(messageReceiveBoxScroll);
-        shared.receiveTabs.setTitleAt(shared.receiveTabs.getTabCount() - 1,
-                user);
 
+        
+        
+        
+        /* START OF CLOSE TAB BUTTON EDIT ---------------------------------------- */
+        JButton tabCloseButton = new JButton();
+        tabCloseButton.setPreferredSize(new Dimension(12, 12));
+        tabCloseButton.setToolTipText("Close Tab");
+        tabCloseButton.setFocusable(false);
+        tabCloseButton.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        tabCloseButton.setBackground(new Color(255,30,30));
+        tabCloseButton.setActionCommand(user);
+        ActionListener al;
+        al = new ActionListener() {
+          public void actionPerformed(ActionEvent ae) {
+            JButton btn = (JButton) ae.getSource();
+            String s1 = btn.getActionCommand();
+            for (int i = 0; i < shared.receiveTabs.getTabCount(); i++) {
+              JPanel pnl = (JPanel) shared.receiveTabs.getTabComponentAt(i);
+              btn = (JButton) pnl.getComponent(1);
+              String s2 = btn.getActionCommand();
+              if (s1.equals(s2)) {
+                shared.receiveTabs.remove(i);
+                break;
+              }
+            }
+          }
+        };
+        tabCloseButton.addActionListener(al);
+        JPanel pnl = new JPanel();
+        pnl.setLayout(new FlowLayout(FlowLayout.CENTER,2,2));
+        pnl.setOpaque(false);
+        JLabel lblUser = new JLabel(user);
+        lblUser.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+        pnl.add(lblUser);
+        pnl.add(tabCloseButton);
+        shared.receiveTabs.add(messageReceiveBoxScroll);
+        shared.receiveTabs.setTabComponentAt(shared.receiveTabs.getTabCount() - 1, pnl);
+        /* END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
+        
+        
+        
         // If creating a tab for the chatroom, register the chatroom message
         // receive box
         if (user.equals(MainWindow.GROUPCHAT_TITLE))
