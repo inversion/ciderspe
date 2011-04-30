@@ -560,7 +560,7 @@ public class MainWindow
             app.setDocumentHistoryViewer(dhv);
             app.setTimeRegionBrowser(trb);
     
-            JDialog w = new JDialog(this.w, true);
+            JDialog w = new JDialog(this.w, false);
             w.setTitle(docID.path + " History");
             w.setPreferredSize(new Dimension(600, 600));
             w.setLayout(new BorderLayout());
