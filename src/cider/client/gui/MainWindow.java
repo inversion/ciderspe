@@ -105,7 +105,7 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
@@ -524,7 +524,6 @@ public class MainWindow
                 docID = this.client.currentDocumentID;
             
             DocumentHistoryViewer dhv = new DocumentHistoryViewer(new SourceDocument(docID.name));
-            
             if(DEBUG)
                 dhv.setDefaultColor(Color.BLACK);
             else
