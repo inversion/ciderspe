@@ -419,7 +419,7 @@ public class ETASourceEditorPane extends JScrollPane
                             else
                             { // Otherwise just insert text at caret using default mode
                                 mode = inputMode;
-                                position = eta.getCaretPosition();
+                                position = eta.getCaretPosition() - 1;
                                 // If overwriting move position forward 1 to overwrite in front of caret
                                 position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
                                 length = text.length();
@@ -526,23 +526,6 @@ public class ETASourceEditorPane extends JScrollPane
                                 switch (ke.getKeyChar())
                                 {
                                 case '\u007F': // Delete character
-                                    // TODO: Remove obsolete code
-                                    /*
-                                     * int CurLine; int CurxLine; CurLine =
-                                     * eta.GetCurLine() - 1; CurxLine =
-                                     * eta.GetCurxLen();
-                                     */
-                                    /*
-                                     * Needs CurxLine working properly
-                                     * 
-                                     * if ((eta.lines.size() == CurLine) &&
-                                     * (eta.lines.get(CurLine).str.length()
-                                     * <= CurxLine)) {
-                                     * TypingEventList.DeleteType = 0; mode
-                                     * = TypingEventMode.backspace; chr =
-                                     * " "; } else {
-                                     */
-                                    // }
                                     
                                     mode = TypingEventMode.delete;
                                     chr = " ";
@@ -593,6 +576,9 @@ public class ETASourceEditorPane extends JScrollPane
                                     position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
                                     break;
                                 }
+                                
+                                if( mode == TypingEventMode.insert )
+                                    position--;
 
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
