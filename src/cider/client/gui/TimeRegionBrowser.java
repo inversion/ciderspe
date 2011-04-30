@@ -23,7 +23,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 {
     private TimeBorderList tbl;
     private PriorityQueue<Long> borderTimes;
-    private double scale = 0.0001;
+    private double scale = 0.001;
     private long eyePosition = 500;
     private long startSelection = 0;
     private long endSelection = 0;
@@ -35,12 +35,14 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     private long highSelection;
     private static final Color highlightColor = new Color(128, 128, 255);
     private static final Color selectionColor = new Color(highlightColor.getRed(),
-            highlightColor.getGreen(), highlightColor.getBlue() / 2, highlightColor.getAlpha() / 3);
+            highlightColor.getGreen(), highlightColor.getBlue(
+                    ) / 2, highlightColor.getAlpha() / 3);
     public static final int EYE_MOVED = 0;
     public static final int SELECTION = 1;
 
     public TimeRegionBrowser(TimeBorderList tbl)
     {
+        this.eyePosition = System.currentTimeMillis();
         this.tbl = tbl;
         this.borderTimes = tbl.borderTimes();
         this.setPreferredSize(new Dimension(128, 128));
@@ -65,21 +67,24 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 
     @Override
     public void paintComponent(Graphics g)
-    {
-        g.clearRect(0, 0, this.getWidth(), this.getHeight());
+    {        
         int x = 16;
         int y = 0;
         int prevY = 0;
         int width = this.getWidth() - 32;
         TimeBorder timeBorder;
         g.setColor(Color.BLACK);
-        g.drawRect(x - 1, 1, width + 1, this.getHeight() - 1);
+        this.latestTime = this.tbl.getEndTime();
+        int endY = this.timeToYPixel(this.latestTime);
+        this.setPreferredSize(new Dimension(this.getWidth(), endY));
+        g.clearRect(0, 0, this.getWidth(), endY);
+        
+        g.drawRect(x - 1, 1, width + 1, endY - 1);
 
         for (long t : this.borderTimes)
         {
-            this.latestTime = t;
             timeBorder = this.tbl.getBorder(t);
-            y = (int) (((double) t) * this.scale);
+            y = this.timeToYPixel(t);
             g.setColor(Color.BLACK);
             g.drawLine(x, y, x + width - 1, y);
 
@@ -93,23 +98,33 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         }
 
         g.setColor(Color.WHITE);
-        g.fillRect(x, y + 1, width, this.getHeight() - y);
+        g.fillRect(x, y + 1, width, endY - y);
         this.paintEye(g, x + width);
         
-        int start = (int) (this.startSelection * this.scale);
-        int end = (int) (this.endSelection * this.scale);
+        int start = this.timeToYPixel(this.startSelection);
+        int end = this.timeToYPixel(this.endSelection);
         g.setColor(selectionColor);
         g.fillRect(x, start, width, end - start);
+    }
+    
+    public int timeToYPixel(long t)
+    {
+        return (int) ((t - this.tbl.getFirstTime()) * this.scale);
+    }
+    
+    public long yPixelToTime(int pix)
+    {
+        return (long) ((pix / this.scale) + this.tbl.getFirstTime());
     }
     
     public void paintEye(Graphics g, int x)
     {
         g.setColor(Color.BLACK);
-        g.drawOval(x + 1, (int) (this.eyePosition * this.scale) - 4, 14, 8);
+        g.drawOval(x + 1, this.timeToYPixel(this.eyePosition) - 4, 14, 8);
         g.setColor(Color.LIGHT_GRAY);
-        g.fillOval(x + 5, (int) (this.eyePosition * this.scale) - 3, 6, 6);
+        g.fillOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
         g.setColor(Color.BLACK);
-        g.drawOval(x + 5, (int) (this.eyePosition * this.scale) - 3, 6, 6);
+        g.drawOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
     }
 
     @Override
@@ -117,7 +132,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     {
         if (this.movingEye)
         {
-            this.eyePosition = (long) (me.getY() / this.scale);
+            this.eyePosition = this.yPixelToTime(me.getY());
             if (this.eyePosition < 0)
                 this.eyePosition = 0;
             if (this.eyePosition > this.latestTime)
@@ -131,7 +146,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         
         if(this.selecting != 0)
         {
-            long position = (long) (me.getY() / this.scale);
+            long position = this.yPixelToTime(me.getY());
             
             this.endSelection = position;
            
@@ -204,7 +219,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             if(this.selecting == 0)
             {
                 this.selecting = -1;
-                this.startSelection = (long) (me.getY() / this.scale);
+                this.startSelection = this.yPixelToTime(me.getY());
                 this.endSelection = this.startSelection;
                 this.repaint();
             }

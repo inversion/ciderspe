@@ -11,11 +11,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.NavigableMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -163,7 +166,6 @@ public class SiHistoryFiles
             String strLine;
             int a = closed.length();
             int b = opened.length();
-            long start = 0;
             long t = 0;
             boolean border;
             while ((strLine = br.readLine()) != null)
@@ -181,10 +183,6 @@ public class SiHistoryFiles
                 
                 if(border)
                 {
-                    if(start == 0)
-                        start = t;
-                    
-                    t -= start;
                     times.add(t);
                 }
             }
@@ -215,7 +213,6 @@ public class SiHistoryFiles
     {
         try
         {
-            PriorityQueue<Long> times = tbl.borderTimes();
             FileInputStream fstream;
             fstream = new FileInputStream(localEventFolderPath + path);
             DataInputStream in = new DataInputStream(fstream);
@@ -225,25 +222,45 @@ public class SiHistoryFiles
             TimeBorder border;
             TypingEvent te;
             
-            border = tbl.getBorder(times.poll());
+            Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
+            border = borderQueue.poll().getValue();
+            
+            
+            String prevLine = null;
             
             while ((strLine = br.readLine()) != null)
             {
-                if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
+                if(prevLine != null)
                 {
-                    te = new TypingEvent(strLine);
-                    if(te.time < border.time)
+                    strLine = prevLine + strLine;
+                    prevLine = null;
+                }
+                
+                if(strLine.endsWith("~"))
+                    prevLine = strLine + "\n";
+                else
+                {
+                    if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
                     {
-                        if(te.mode.equals(TypingEventMode.homogenized))
-                            homogenizedEventQueue.add(te);
+                        te = new TypingEvent(strLine);
+                        System.out.println(te.time);
+                        if(te.time < border.time)
+                        {
+                            if(te.mode.equals(TypingEventMode.homogenized))
+                                homogenizedEventQueue.add(te);
+                            else
+                                border.typingEvents.add(te);
+                        }
                         else
-                            border.typingEvents.add(te);
-                    }
-                    else
-                    {
-                        border = tbl.getBorder(times.poll());
-                        while(!homogenizedEventQueue.isEmpty())
-                            border.typingEvents.add(homogenizedEventQueue.poll());
+                        {
+                            border = borderQueue.poll().getValue();
+                            while(!homogenizedEventQueue.isEmpty())
+                            {
+                                te = homogenizedEventQueue.poll();
+                                border.typingEvents.add(te);
+                                System.out.println(te.pack());
+                            }
+                        }
                     }
                 }
             }
@@ -256,6 +273,10 @@ public class SiHistoryFiles
         catch (IOException e)
         {
             // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        catch(Exception e)
+        {
             e.printStackTrace();
         }
     }

@@ -42,7 +42,7 @@ public class TimeBorder
 {
     public final long time;
     public String path;
-    public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>();
+    public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>(1000, new EventComparer());
     public boolean fullSet = false;
     public DocumentID documentID;
 
@@ -66,7 +66,6 @@ public class TimeBorder
         this.documentID = documentID;
         this.typingEvents = typingEvents;
     }
-
 
     @Override
     public boolean equals(Object obj)

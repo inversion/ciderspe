@@ -25,7 +25,10 @@ package cider.common.processes;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.NavigableMap;
 import java.util.PriorityQueue;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -45,6 +48,8 @@ public class TimeBorderList
     private TreeMap<Long, TimeBorder> timeBorders = new TreeMap<Long, TimeBorder>();
     private TreeMap<Long, TimeRegion> timeRegions = new TreeMap<Long, TimeRegion>();
     private DocumentID documentID;
+    private Long firstTime;
+    private long endTime;
 
     public TimeBorderList(DocumentID documentID)
     {
@@ -53,10 +58,18 @@ public class TimeBorderList
     
     public void addTimeBorder(TimeBorder timeBorder)
     {
+        if(this.firstTime == null)
+            this.firstTime = timeBorder.time;
+        
         if(!timeBorder.documentID.equals(this.documentID))
             throw new Error("Time Border belongs to a different document");
         else
+        {
+            if(timeBorder.time > this.endTime)
+                this.endTime = timeBorder.time;
+            
             this.timeBorders.put(timeBorder.time, timeBorder);
+        }
     }
 
     public TimeBorder getBorder(long time)
@@ -111,9 +124,12 @@ public class TimeBorderList
 
     public TimeRegion regionThatCovers(long t)
     {
-        long last = this.timeBorders.lastKey();
-        if(t > last)
-            t = last;
+        if(this.timeBorders.size() != 0)
+        {
+            Long last = this.timeBorders.lastKey();
+            if(t > last)
+                t = last;
+        }
         
         Entry<Long, TimeRegion> entry = this.timeRegions.ceilingEntry(t);
         if (entry == null)
@@ -126,6 +142,11 @@ public class TimeBorderList
     {
         // TODO Auto-generated method stub
 
+    }
+    
+    public LinkedList<Entry<Long,TimeBorder>> borderList()
+    {
+        return new LinkedList<Entry<Long, TimeBorder>>(this.timeBorders.entrySet());
     }
     
     public DocumentID getDocumentID()
@@ -158,21 +179,33 @@ public class TimeBorderList
 
     public void loadLocalHistory()
     {
-        ArrayList<Long> borderTimes = SiHistoryFiles.getBorderTimes(this.documentID.path);
-        boolean fullSet = false;
-        for(long t : borderTimes)
+        try
         {
-            this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
-            fullSet = !fullSet;
+            ArrayList<Long> borderTimes = SiHistoryFiles.getBorderTimes(this.documentID.path);
+            boolean fullSet = false;
+            for(long t : borderTimes)
+            {
+                this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
+                fullSet = !fullSet;
+            }
+            
+            this.firstTime = borderTimes.get(0) - 1;
+            this.createRegions();
+            SiHistoryFiles.getEvents(this.documentID.path, this);
         }
-        
-        this.createRegions();
-        ArrayList<TypingEvent> typingEvents;
-        
-//        for(Entry<Long, TimeRegion> region : this.timeRegions.entrySet())
-//        {
-//            typingEvents = SiHistoryFiles.getEvents(this.documentID.path);
-//        }
-        
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+    
+    public long getFirstTime()
+    {
+        return this.firstTime;
+    }
+
+    public long getEndTime()
+    {
+        return this.endTime;
     }
 }

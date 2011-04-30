@@ -672,32 +672,6 @@ public class SourceDocument implements ICodeLocation, Serializable
         return treeToString(this.playOutEvents(endTime));
     }
 
-    /**
-     * Compares event priority based on their time of creation, used by the
-     * priority queue
-     * 
-     * @author Lawrence
-     * 
-     */
-    private class EventComparer implements Comparator<TypingEvent>,
-            Serializable
-    {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 1L;
-
-        public int compare(TypingEvent e1, TypingEvent e2)
-        {
-            if (e1.time > e2.time)
-                return 1;
-            else if (e1.time < e2.time)
-                return -1;
-            else
-                return 0;
-        }
-    }
-
     @Override
     public void push(Queue<TypingEvent> typingEvents)
     {
