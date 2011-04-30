@@ -186,6 +186,7 @@ public class SiHistoryFiles
                     times.add(t);
                 }
             }
+
             in.close();
             return times;
         }

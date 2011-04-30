@@ -105,7 +105,7 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-    private static final boolean DEBUG = false;
+    private static boolean DEBUG = false;
     
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
@@ -554,20 +554,24 @@ public class MainWindow
             }*/
     
             tbl.createRegions();
-            TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
+            TimeRegionBrowser trb = new TimeRegionBrowser(tbl, 128, 600);
     
-            DHVSourceHistoryPane app = new DHVSourceHistoryPane();
+            DHVSourceHistoryPane app = new DHVSourceHistoryPane(128);
             app.setDocumentHistoryViewer(dhv);
             app.setTimeRegionBrowser(trb);
-    
+
             JDialog w = new JDialog(this.w, false);
             w.setTitle(docID.path + " History");
             w.setPreferredSize(new Dimension(600, 600));
             w.setLayout(new BorderLayout());
             w.add(app);
             w.pack();
+            
+            trb.setScale(TimeRegionBrowser.defaultScale);
+            
             w.setVisible(true);
             w.setAlwaysOnTop(true);
+            
         }
         catch(Exception e)
         {
@@ -1574,6 +1578,7 @@ public class MainWindow
 
     public static void main(String[] args)
     {
+        DEBUG = true;
         MainWindow app = new MainWindow();
         app.offlineMode = true;
         app.startApplication(new JFrame());

@@ -58,7 +58,7 @@ public class DHVSourceHistoryPane extends JPanel
     private JSlider scaleSlider;
     private static final double slideScale = 100000.0;
 
-    public DHVSourceHistoryPane()
+    public DHVSourceHistoryPane(int borderBrowserWidth)
     {
         super(new BorderLayout());
         this.westPanel = new JPanel(new BorderLayout());
@@ -67,7 +67,7 @@ public class DHVSourceHistoryPane extends JPanel
         this.downloadRegion.setEnabled(false);
         this.westPanel.add(this.downloadRegion, BorderLayout.SOUTH);
         this.scaleSlider = new JSlider(0, 200, (int) (TimeRegionBrowser.defaultScale * slideScale));
-        this.scaleSlider.setPreferredSize(new Dimension(128, 16));
+        this.scaleSlider.setPreferredSize(new Dimension(borderBrowserWidth, 16));
         this.westPanel.add(this.scaleSlider, BorderLayout.NORTH);
         
         this.scaleSlider.addChangeListener(new ChangeListener()
@@ -173,9 +173,9 @@ public class DHVSourceHistoryPane extends JPanel
                 new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         tbl.createRegions();
-        TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
+        TimeRegionBrowser trb = new TimeRegionBrowser(tbl, 128, 512);
 
-        DHVSourceHistoryPane app = new DHVSourceHistoryPane();
+        DHVSourceHistoryPane app = new DHVSourceHistoryPane(128);
         app.setDocumentHistoryViewer(dhv);
         app.setTimeRegionBrowser(trb);
 
