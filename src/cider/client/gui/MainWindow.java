@@ -94,6 +94,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.network.client.Client;
+import cider.common.processes.DocumentID;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorderList;
@@ -514,51 +515,68 @@ public class MainWindow
         // shp.setSize(this.w.getSize());
         // sourceHistoryDialog.setPreferredSize(this.w.getSize());
         // sourceHistoryDialog.setVisible(true);
-
-        DocumentHistoryViewer dhv = new DocumentHistoryViewer(
-                new SourceDocument(this.client.getCurrentDocumentID().name));
-        dhv.setDefaultColor(Color.BLACK);
-        dhv.updateText();
-        dhv.setWaiting(false);
-
-        TimeBorderList tbl = new TimeBorderList(this.client.getCurrentDocumentID());
-        
-        tbl.loadLocalHistory();
-        
-        /*SourceDocument doc = new SourceDocument(documentID.name);
-
-        if (this.offlineMode)
+        try
         {
-            TimeBorder border = new TimeBorder(documentID, 1000,
-                    doc.orderedEvents());
-            tbl.addTimeBorder(border);
-            doc.addEvents(SourceDocument.sampleEvents(1000));
-            border = new TimeBorder(documentID, 4000, doc.orderedEvents());
-            border.fullSet = true;
-            tbl.addTimeBorder(border);
+            DocumentID docID;
+            if(DEBUG)
+                docID = new DocumentID("t1", "t1.SourceDocument");
+            else
+                docID = this.client.currentDocumentID;
+            
+            DocumentHistoryViewer dhv = new DocumentHistoryViewer(new SourceDocument(docID.name));
+            
+            if(DEBUG)
+                dhv.setDefaultColor(Color.BLACK);
+            else
+                dhv.setDefaultColor(Color.WHITE);
+            
+            dhv.updateText();
+            dhv.setWaiting(false);
+    
+            TimeBorderList tbl = new TimeBorderList(docID);
+            
+            tbl.loadLocalHistory();
+            
+            /*SourceDocument doc = new SourceDocument(documentID.name);
+    
+            if (this.offlineMode)
+            {
+                TimeBorder border = new TimeBorder(documentID, 1000,
+                        doc.orderedEvents());
+                tbl.addTimeBorder(border);
+                doc.addEvents(SourceDocument.sampleEvents(1000));
+                border = new TimeBorder(documentID, 4000, doc.orderedEvents());
+                border.fullSet = true;
+                tbl.addTimeBorder(border);
+            }
+            else
+            {
+                tbl.useTimeBordersFrom(this.currentFileName, this.client);
+            }*/
+    
+            tbl.createRegions();
+            TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
+    
+            DHVSourceHistoryPane app = new DHVSourceHistoryPane();
+            app.setDocumentHistoryViewer(dhv);
+            app.setTimeRegionBrowser(trb);
+    
+            JDialog w = new JDialog(this.w, true);
+            w.setTitle(docID.path + " History");
+            w.setPreferredSize(new Dimension(600, 600));
+            w.setLayout(new BorderLayout());
+            w.add(app);
+            w.pack();
+            w.setVisible(true);
+            w.setAlwaysOnTop(true);
         }
-        else
+        catch(Exception e)
         {
-            tbl.useTimeBordersFrom(this.currentFileName, this.client);
-        }*/
-
-        tbl.createRegions();
-        TimeRegionBrowser trb = new TimeRegionBrowser(tbl);
-
-        DHVSourceHistoryPane app = new DHVSourceHistoryPane();
-        app.setDocumentHistoryViewer(dhv);
-        app.setTimeRegionBrowser(trb);
-
-        JDialog w = new JDialog(this.w, true);
-        w.setTitle(this.client.getCurrentDocumentID().path + " History");
-        w.setPreferredSize(new Dimension(600, 600));
-        w.setLayout(new BorderLayout());
-        w.add(app);
-        w.pack();
-        w.setVisible(true);
-        w.setAlwaysOnTop(true);
+            e.printStackTrace();
+        }
 
     }
+
 
     private void changeColour()
     {
