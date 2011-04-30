@@ -23,7 +23,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 {
     private TimeBorderList tbl;
     private PriorityQueue<Long> borderTimes;
-    private double scale = 0.001;
+    public static final double defaultScale = 0.001;
+    private double scale = defaultScale;
     private long eyePosition = 500;
     private long startSelection = 0;
     private long endSelection = 0;
@@ -131,20 +132,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     public void mouseDragged(MouseEvent me)
     {
         if (this.movingEye)
-        {
-            this.eyePosition = this.yPixelToTime(me.getY());
-            if (this.eyePosition < 0)
-                this.eyePosition = 0;
-            if (this.eyePosition > this.latestTime)
-                this.eyePosition = this.latestTime;
-            this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-            for (ActionListener al : this.actionListeners)
-                al.actionPerformed(new ActionEvent(this.eyePosition, EYE_MOVED,
-                        "Eye Moved"));
-        }
-        
-        if(this.selecting != 0)
+            this.updateEyePosition(me);
+        else if(this.selecting != 0)
         {
             long position = this.yPixelToTime(me.getY());
             
@@ -176,6 +165,20 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         }
         
         this.repaint();
+    }
+
+    public void updateEyePosition(MouseEvent me)
+    {
+        this.eyePosition = this.yPixelToTime(me.getY());
+        if (this.eyePosition < 0)
+            this.eyePosition = 0;
+        if (this.eyePosition > this.latestTime)
+            this.eyePosition = this.latestTime;
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        for (ActionListener al : this.actionListeners)
+            al.actionPerformed(new ActionEvent(this.eyePosition, EYE_MOVED,
+                    "Eye Moved"));
     }
 
     @Override
@@ -212,6 +215,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         if (me.getX() > this.getWidth() - 16)
         {
             this.movingEye = true;
+            this.updateEyePosition(me);
             this.repaint();
         }
         else

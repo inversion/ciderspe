@@ -34,6 +34,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import cider.common.processes.DocumentID;
 import cider.common.processes.SourceDocument;
@@ -52,6 +55,8 @@ public class DHVSourceHistoryPane extends JPanel
     private JScrollPane regionBrowserScrollPane;
     private JPanel westPanel;
     private JButton downloadRegion;
+    private JSlider scaleSlider;
+    private static final double slideScale = 100000.0;
 
     public DHVSourceHistoryPane()
     {
@@ -61,6 +66,20 @@ public class DHVSourceHistoryPane extends JPanel
         this.downloadRegion = new JButton("Download Region");
         this.downloadRegion.setEnabled(false);
         this.westPanel.add(this.downloadRegion, BorderLayout.SOUTH);
+        this.scaleSlider = new JSlider(0, 200, (int) (TimeRegionBrowser.defaultScale * slideScale));
+        this.scaleSlider.setPreferredSize(new Dimension(128, 16));
+        this.westPanel.add(this.scaleSlider, BorderLayout.NORTH);
+        
+        this.scaleSlider.addChangeListener(new ChangeListener()
+        {
+            @Override
+            public void stateChanged(ChangeEvent ce)
+            {
+                trb.setScale(scaleSlider.getValue() / slideScale);
+                westPanel.updateUI();
+            }
+        });
+        
         this.downloadRegion.addActionListener(new ActionListener()
         {
 

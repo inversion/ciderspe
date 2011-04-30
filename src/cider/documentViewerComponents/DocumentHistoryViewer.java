@@ -23,6 +23,9 @@
 
 package cider.documentViewerComponents;
 
+import java.awt.Color;
+import java.awt.Graphics;
+
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 
