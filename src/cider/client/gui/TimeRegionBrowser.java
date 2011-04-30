@@ -23,8 +23,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
 {
     private TimeBorderList tbl;
     private PriorityQueue<Long> borderTimes;
-    public static final double defaultScale = 0.001;
-    private double scale = defaultScale;
+    private double scale;
     private long eyePosition = 500;
     private long startSelection = 0;
     private long endSelection = 0;
@@ -34,6 +33,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     private ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
     private long lowSelection;
     private long highSelection;
+    private int minHeight;
+    public static final double defaultScale = 0.001;
     private static final Color highlightColor = new Color(128, 128, 255);
     private static final Color selectionColor = new Color(highlightColor.getRed(),
             highlightColor.getGreen(), highlightColor.getBlue(
@@ -41,14 +42,15 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     public static final int EYE_MOVED = 0;
     public static final int SELECTION = 1;
 
-    public TimeRegionBrowser(TimeBorderList tbl)
+    public TimeRegionBrowser(TimeBorderList tbl, int width, int height)
     {
         this.eyePosition = System.currentTimeMillis();
         this.tbl = tbl;
         this.borderTimes = tbl.borderTimes();
-        this.setPreferredSize(new Dimension(128, 128));
+        this.setPreferredSize(new Dimension(width, height));
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
+        this.minHeight = height;
     }
 
     public void updateBorderTimes()
@@ -59,6 +61,12 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     public void setScale(double scale)
     {
         this.scale = scale;
+        this.latestTime = this.tbl.getEndTime();
+        Dimension size = new Dimension(this.getWidth(), this.timeToYPixel(this.latestTime));
+        this.setMinimumSize(size);
+        this.setMaximumSize(size);
+        this.setSize(size);
+        this.setPreferredSize(size);
     }
 
     public double getScale()
@@ -75,11 +83,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         int width = this.getWidth() - 32;
         TimeBorder timeBorder;
         g.setColor(Color.BLACK);
-        this.latestTime = this.tbl.getEndTime();
         int endY = this.timeToYPixel(this.latestTime);
-        this.setPreferredSize(new Dimension(this.getWidth(), endY));
-        g.clearRect(0, 0, this.getWidth(), endY);
-        
+        g.clearRect(0, 0, this.getWidth(), Math.max(endY, minHeight));
         g.drawRect(x - 1, 1, width + 1, endY - 1);
 
         for (long t : this.borderTimes)
