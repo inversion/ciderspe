@@ -62,6 +62,7 @@ public class TypingEventList
             this.tel.add(te);
         else
             this.tel.add(te.position + 1, te);
+        
     }
 
     /**
@@ -110,7 +111,7 @@ public class TypingEventList
      */
     public void delete( int position, int length )
     {
-        if( position == tel.size() - 1 )
+        if( position == tel.size() )
             return;
         
         if( position == -1 )

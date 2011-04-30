@@ -488,34 +488,31 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveUp(boolean select)
     {
-        if (getCurrentLine().str.newline())
-            moveLeft( select );
-        else
+        // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
+        int lineNum = getCurrentLine().lineNum - 2;
+        if (lineNum < 0)
+            return;
+        
+        SDVLine line = lines.get(lineNum);
+        int start = line.start;
+        int length = line.str.length();
+        if (currentColNum > length)
+            currentColNum = length;
+       
+        if( select )
         {
-            int lineNum = getCurrentLine().lineNum - 1;
-            if (lineNum < 1)
-                lineNum = 1;
-            SDVLine line = lines.get(lineNum - 1);
-            int start = line.start;
-            int length = line.str.length();
-            if (currentColNum >= length)
-                currentColNum = length;
-           
-            if( select )
-            {
-                if( selectedRegion == null )
-                    selectedRegion = str.region( start + currentColNum, getCaretPosition() );
-                else if( start + currentColNum < selectedRegion.start )
-                    selectedRegion = str.region( start + currentColNum, selectedRegion.end );
-                else
-                    selectedRegion = str.region( selectedRegion.start, start + currentColNum );
-            }
-            
-            setCaretPosition( start + currentColNum );
-
-            this.holdCaretVisibility(true);
-            this.updateUI();
+            if( selectedRegion == null )
+                selectedRegion = str.region( start + currentColNum, getCaretPosition() );
+            else if( start + currentColNum < selectedRegion.start )
+                selectedRegion = str.region( start + currentColNum, selectedRegion.end );
+            else
+                selectedRegion = str.region( selectedRegion.start, start + currentColNum );
         }
+        
+        setCaretPosition( start + currentColNum );
+
+        this.holdCaretVisibility(true);
+        this.updateUI();
     }
     
     /**
@@ -523,10 +520,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveDown( boolean select )
     {
-        if (this.getCurrentLine().str.newline())
-            this.moveRight( select );
-        else
-        {
+//        if (this.getCurrentLine().str.newline())
+//            this.moveRight( select );
+//        else
+//        {
 //            int lineNum = this.getCurrentLine().lineNum + 1;
 //            if (lineNum > this.lines.size())
 //                lineNum = this.lines.size();
@@ -538,13 +535,15 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 //            this.caretPosition = start + this.currentColNum;
 //            this.updateUI();
             
-            int lineNum = getCurrentLine().lineNum + 1;
-            if (lineNum > lines.size())
-                lineNum = lines.size();
-            SDVLine line = lines.get(lineNum - 1);
+            // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
+            int lineNum = getCurrentLine().lineNum;
+            if (lineNum >= lines.size())
+                return;
+            
+            SDVLine line = lines.get(lineNum);
             int start = line.start;
             int length = line.str.length();
-            if (currentColNum >= length)
+            if (currentColNum > length)
                 currentColNum = length;
            
             if( select )
@@ -557,11 +556,12 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                     selectedRegion = str.region( start + currentColNum, selectedRegion.start );
             }
             
-            setCaretPosition( start + currentColNum );
+            // TODO: Plus 1 to compensate for newline not included in typing event list
+            setCaretPosition( start + currentColNum + 1);
 
             this.holdCaretVisibility(true);
             this.updateUI();
-        }
+//        }
     }
 
     /**
