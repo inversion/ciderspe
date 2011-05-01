@@ -25,7 +25,7 @@ public class CommitTimer
         @Override
         public void run()
         {
-            if(bot.getAuotosave())
+            if(!bot.isDebugbot())
                 bot.writeUpdatedDocs();
 
             bot.writeUpdatedProfiles();

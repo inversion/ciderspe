@@ -1526,12 +1526,20 @@ public class MainWindow
             @Override
             public void windowClosing(WindowEvent arg0)
             {
-                if (!offlineMode)
+                try
                 {
-                    myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
-                    if (DEBUG)
-                        System.out.println("disconnecting");
-                    client.disconnect();
+                    if (!offlineMode)
+                    {
+                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                        if (DEBUG)
+                            System.out.println("disconnecting");
+                        client.disconnect();
+                    }
+                    idleTimer.stop();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
                 }
             }
 
@@ -1553,6 +1561,21 @@ public class MainWindow
 
             public void windowClosed(WindowEvent arg0)
             {
+                try
+                {
+                    if (!offlineMode)
+                    {
+                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                        if (DEBUG)
+                            System.out.println("disconnecting");
+                        client.disconnect();
+                    }
+                    idleTimer.stop();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
             }
 
             public void windowActivated(WindowEvent arg0)
