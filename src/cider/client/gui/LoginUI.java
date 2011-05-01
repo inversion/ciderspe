@@ -99,7 +99,16 @@ public class LoginUI
     JCheckBox chkRemember;
 
     String errmsg;
+    private Thread mainWindowThread;
+    private Thread connectBoxThread;
+    
+    CiderApplication ciderApplication;
 
+    public LoginUI(CiderApplication ciderApplication)
+    {
+        this.ciderApplication = ciderApplication;
+    }
+    
     public void displayLogin()
     {
         // splashScreen();
@@ -362,14 +371,14 @@ public class LoginUI
                 err.printStackTrace();
             }
         }
-        Thread mainWindowThread = connectMainWindow();
-        if (mainWindowThread != null)
+        this.mainWindowThread = connectMainWindow();
+        if (this.mainWindowThread != null)
         {
-            Thread connectBoxThread = connectBox();
+            this.connectBoxThread = connectBox();
 
             // Run connect box and main window thread in parallel
-            connectBoxThread.start();
-            mainWindowThread.start();
+            this.connectBoxThread.start();
+            this.mainWindowThread.start();
         }
 
         else 
@@ -526,9 +535,8 @@ public class LoginUI
                             JOptionPane.showMessageDialog(connecting, errmsg);
                             connecting.setVisible(false);
                             connecting.dispose();
-
-                            LoginUI ui = new LoginUI();
-                            ui.displayLogin();
+                            ciderApplication.restarted();
+                            ciderApplication = null;
                         }
                         else
                         {
@@ -551,9 +559,8 @@ public class LoginUI
                         JOptionPane.showMessageDialog(connecting, errmsg);
                         connecting.setVisible(false);
                         connecting.dispose();
-
-                        LoginUI ui = new LoginUI();
-                        ui.displayLogin();
+                        ciderApplication.restarted();
+                        ciderApplication = null;
                     }
                 }
 
@@ -573,23 +580,10 @@ public class LoginUI
 
     public void logout()
     {
-        program.client.disconnect();
-        program.killWindow();
-        LoginUI ui = new LoginUI();
-        ui.displayLogin();
+        this.program.client.disconnect();
+        this.program.killWindow();
+        this.ciderApplication.restarted();
+        ciderApplication = null;
     }
 
-    public static void main(String[] args)
-    {
-        LoginUI ui = new LoginUI();
-
-        try
-        {
-            ui.displayLogin();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
 }

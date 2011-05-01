@@ -35,7 +35,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     private long highSelection;
     private int minHeight;
     public static final double defaultScale = 0.001;
-    private static final Color highlightColor = new Color(128, 128, 255);
+    private static final Color darkColor = new Color(48, 48, 48);
+    private static final Color highlightColor = new Color(240, 175, 0);//new Color(128, 128, 255);
     private static final Color selectionColor = new Color(highlightColor.getRed(),
             highlightColor.getGreen(), highlightColor.getBlue(
                     ) / 2, highlightColor.getAlpha() / 3);
@@ -82,22 +83,23 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         int prevY = 0;
         int width = this.getWidth() - 32;
         TimeBorder timeBorder;
-        g.setColor(Color.BLACK);
         int endY = this.timeToYPixel(this.latestTime);
-        g.clearRect(0, 0, this.getWidth(), Math.max(endY, minHeight));
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, this.getWidth(), Math.max(endY, minHeight));
+        g.setColor(Color.WHITE);
         g.drawRect(x - 1, 1, width + 1, endY - 1);
 
         for (long t : this.borderTimes)
         {
             timeBorder = this.tbl.getBorder(t);
             y = this.timeToYPixel(t);
-            g.setColor(Color.BLACK);
+            g.setColor(Color.WHITE);
             g.drawLine(x, y, x + width - 1, y);
 
             if (timeBorder.fullSet)
                 g.setColor(highlightColor);
             else
-                g.setColor(Color.LIGHT_GRAY);
+                g.setColor(darkColor);
 
             g.fillRect(x, prevY + 1, width, y - prevY - 1);
             prevY = y;
@@ -125,11 +127,9 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     
     public void paintEye(Graphics g, int x)
     {
-        g.setColor(Color.BLACK);
+        g.setColor(Color.WHITE);
         g.drawOval(x + 1, this.timeToYPixel(this.eyePosition) - 4, 14, 8);
-        g.setColor(Color.LIGHT_GRAY);
         g.fillOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
-        g.setColor(Color.BLACK);
         g.drawOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
     }
 
