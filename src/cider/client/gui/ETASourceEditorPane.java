@@ -136,8 +136,8 @@ public class ETASourceEditorPane extends JScrollPane
             @Override
             public void windowClosed(WindowEvent arg0)
             {
-                // TODO Auto-generated method stub
-                
+                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
+                        + client.getClockOffset());
             }
 
             @Override
