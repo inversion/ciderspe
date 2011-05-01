@@ -118,9 +118,9 @@ public class BotChatroomMessageListener implements PacketListener
             changedDocs.put(dest, doc);
         }
         
-        if (eventNum > 0)
-            System.out.println("Bot received " + eventNum
-                    + " events at the same time");
+//        if (eventNum > 0)
+//            System.out.println("Bot received " + eventNum
+//                    + " events at the same time");
 
         for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
         {

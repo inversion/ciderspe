@@ -549,7 +549,7 @@ public class LoginUI
 
                             connecting.setVisible(false);
                             connecting.dispose();
-                            program.startApplication(login);
+                            program.startApplication(login, CiderApplication.debugApp);
                         }
                     }
                     catch (XMPPException e)

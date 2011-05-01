@@ -89,6 +89,8 @@ public class Bot
     protected BotChatListener chatListener;
     private LiveFolder sourceFolder;
     
+    private HashSet<String> connectedDuringThisRun = new HashSet<String>();
+    
     private boolean debugbot = true;
 
     // Documents that have been changed or created during this execution
@@ -212,9 +214,8 @@ public class Bot
             // Make profiles directory if it doesn't exist
             if( !PROFILE_DIR.exists() )
                 PROFILE_DIR.mkdir();
-            
-            if(this.debugbot)
-                readProfiles();         
+
+            readProfiles();         
             
             // Make chat history directory if it doesn't exist
             if( !CHAT_HISTORY_DIR.exists())
@@ -547,5 +548,15 @@ public class Bot
     public boolean isDebugbot()
     {
         return this.debugbot;
+    }
+
+    public boolean hasConnectedDuringThisRun(String username)
+    {
+        return this.connectedDuringThisRun.contains(username);
+    }
+
+    public void connectedDuringThisRun(String username)
+    {
+        this.connectedDuringThisRun.add(username);
     }
 }
