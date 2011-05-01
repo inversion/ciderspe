@@ -78,7 +78,7 @@ public class SiHistoryFiles
         return results;
     }
 
-    public static void saveEvents(Collection<TypingEvent> typingEvents,
+    public static void saveEvents(PriorityQueue<TypingEvent> typingEvents,
             String documentPath)
     {
         try
