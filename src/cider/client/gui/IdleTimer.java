@@ -39,11 +39,12 @@ public class IdleTimer
         }
     };
     
-    public IdleTimer(Client client)
+    public IdleTimer(Client client, boolean enabled)
     {
         idleTime = 0;
         this.client = client;
-        timer.scheduleAtFixedRate( increment, 0, 1000 );
+        if(enabled)
+            timer.scheduleAtFixedRate( increment, 0, 1000 );
     }
     
     public void stop()

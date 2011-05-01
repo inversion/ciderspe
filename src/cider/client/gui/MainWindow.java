@@ -1467,10 +1467,10 @@ public class MainWindow
     }
 
     // TODO: Update chatlog moved to Client for now
-    public void startApplication(JFrame loginWindow)
+    public void startApplication(JFrame loginWindow, boolean debugApp)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        idleTimer = new IdleTimer(client);        
+        idleTimer = new IdleTimer(client, !debugApp);        
         
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
@@ -1604,7 +1604,7 @@ public class MainWindow
         DEBUG = true;
         MainWindow app = new MainWindow();
         app.offlineMode = true;
-        app.startApplication(new JFrame());
+        app.startApplication(new JFrame(), true);
         app.w.setTitle("MainWindow offline entry point");
     }
 }

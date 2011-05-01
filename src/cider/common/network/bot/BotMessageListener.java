@@ -26,6 +26,7 @@ package cider.common.network.bot;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Queue;
 
 import org.jivesoftware.smack.Chat;
@@ -312,6 +313,24 @@ public class BotMessageListener implements MessageListener
         bot.updatedProfiles.add( username );
     }
     
+    public boolean sendToClearHistory(String username)
+    {
+        if(!this.bot.isDebugbot())
+            return false;
+        
+        boolean seen = this.bot.hasConnectedDuringThisRun(username);
+        
+        if(seen)
+            System.out.println(username + " has connected during this run before."); 
+        else
+        {
+            System.out.println(username + " has not connected during this run before.");
+            this.bot.connectedDuringThisRun(username);
+        }
+        
+        return !seen;
+    }
+    
     /**
      * Send a profile to a user.
      * 
@@ -329,7 +348,7 @@ public class BotMessageListener implements MessageListener
         try
         {
             System.out.println("BotMessageListener: Trying to send profile for " + username);
-            if ( bot.profiles.containsKey( username ) )
+            if ( bot.profiles.containsKey( username ) && !this.sendToClearHistory(username))
             {
                 Profile profile = bot.profiles.get( username );
                 Message msg = new Message();

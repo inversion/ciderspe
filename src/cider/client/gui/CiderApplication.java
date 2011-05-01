@@ -2,6 +2,7 @@ package cider.client.gui;
 
 public class CiderApplication
 {
+    public static boolean debugApp;
     LoginUI ui;
     
     public CiderApplication()
@@ -31,6 +32,11 @@ public class CiderApplication
     
     public static void main(String[] args)
     {
+        debugApp = true;
+        for(String arg : args)
+            if(arg.equals("debugapp=true"))
+                debugApp = false;
+        
         CiderApplication app = new CiderApplication();
         app.ui = new LoginUI(app);
         app.startCider();
