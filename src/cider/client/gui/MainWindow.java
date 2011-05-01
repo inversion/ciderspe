@@ -165,9 +165,9 @@ public class MainWindow
         profileSetup();
 
         this.baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
+        //PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
         // System.setOut(ps);
-        System.setErr(ps);
+        //System.setErr(ps);
     }
 
     MainWindow()
@@ -786,7 +786,8 @@ public class MainWindow
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         // System.out.println(currentDir);
-        int results = javac.run(System.in, System.out, System.err, currentDir);
+        int results = javac.run(System.in, System.out, baos, currentDir);
+        
         if (results == 0)
         {
             this.debugwindow.println("Compilation Successful");
