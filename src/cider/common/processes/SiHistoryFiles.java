@@ -281,4 +281,24 @@ public class SiHistoryFiles
             e.printStackTrace();
         }
     }
+
+    public static void clearAllHistory()
+    {
+        File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
+        deleteSubFiles(file);
+    }
+    
+    public static void deleteSubFiles(File file)
+    {
+        for(File f : file.listFiles())
+        {
+            if(f.isDirectory())
+                deleteSubFiles(f);
+            else
+            {
+                System.out.println(f.exists());
+                System.out.println(f.delete());
+            }
+        }
+    }
 }

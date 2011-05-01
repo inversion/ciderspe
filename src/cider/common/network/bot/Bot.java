@@ -89,7 +89,7 @@ public class Bot
     protected BotChatListener chatListener;
     private LiveFolder sourceFolder;
     
-    private boolean autosave = false;
+    private boolean debugbot = true;
 
     // Documents that have been changed or created during this execution
     protected HashMap<String,SourceDocument> updatedDocs;
@@ -109,11 +109,14 @@ public class Bot
     // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
-        boolean autosave = true;
+        boolean debugbot = true;
         
         for(String arg : args)
-            if(arg.equals("-autosave=false"))
-                autosave  = false;
+            if(arg.equals("-debugbot=true"))
+            {
+                debugbot = true;
+                System.out.println("debugbot");
+            }
         
         Bot bot = new Bot();
         try
@@ -121,7 +124,7 @@ public class Bot
             System.in.read();
             bot.commitTimer.stopTimer();
             
-            if(autosave)
+            if(!debugbot)
                 bot.writeUpdatedDocs();
             
             bot.writeUpdatedProfiles();
@@ -186,7 +189,7 @@ public class Bot
             chatListener = new BotChatListener(this);
             chatmanager.addChatListener(chatListener);
 
-            if(this.autosave)
+            if(!this.debugbot)
             {
                 if (DEBUG)
                     System.out.println("Using source path: "
@@ -210,7 +213,8 @@ public class Bot
             if( !PROFILE_DIR.exists() )
                 PROFILE_DIR.mkdir();
             
-            readProfiles();         
+            if(this.debugbot)
+                readProfiles();         
             
             // Make chat history directory if it doesn't exist
             if( !CHAT_HISTORY_DIR.exists())
@@ -320,7 +324,7 @@ public class Bot
      */
     protected void writeUpdatedDocs()
     {
-        this.autosave = true;
+        this.debugbot = false;
         
         Set<Entry<String,SourceDocument>> entries = updatedDocs.entrySet();
 
@@ -540,8 +544,8 @@ public class Bot
         return this.sourceFolder;
     }
 
-    public boolean getAuotosave()
+    public boolean isDebugbot()
     {
-        return this.autosave;
+        return this.debugbot;
     }
 }

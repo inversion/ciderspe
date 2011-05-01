@@ -46,6 +46,12 @@ public class IdleTimer
         timer.scheduleAtFixedRate( increment, 0, 1000 );
     }
     
+    public void stop()
+    {
+        this.timer.cancel();
+        this.timer.purge();
+    }
+    
     protected int getTotalIdleTime()
     {
         return totalIdleTime;
