@@ -539,4 +539,9 @@ public class Bot
     {
         return this.sourceFolder;
     }
+
+    public boolean getAuotosave()
+    {
+        return this.autosave;
+    }
 }
