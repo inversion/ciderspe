@@ -313,7 +313,7 @@ public class Client
         botChat.sendMessage(msg);
         try
         {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
             return botIsOnline;
         }
         catch (InterruptedException e)

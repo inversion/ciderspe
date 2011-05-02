@@ -474,21 +474,19 @@ public class MainWindow
                 }
                 else if (action.equals("Line Home"))
                 {
-                    //eta.moveHome();
+                    shared.openTabs.get( client.getCurrentDocument().name ).eta.moveHome( false );
                 }
                 else if (action.equals("Line End"))
                 {
-                    // eta.moveEnd();
+                    shared.openTabs.get( client.getCurrentDocument().name ).eta.moveEnd( false );
                 }
                 else if (action.equals("Document Home"))
                 {
-                    // eta.moveDocHome();
+                    shared.openTabs.get( client.getCurrentDocument().name ).eta.moveDocHome( false );
                 }
                 else if (action.equals("Document End"))
                 {
-                    // client.openTabs.get(this.getPathToSourceDocument(client.getCurrentDocument().name),
-                    // 1));
-                    // EditorTypingArea.moveDocEnd();
+                    shared.openTabs.get( client.getCurrentDocument().name ).eta.moveDocEnd( false );
                 }
                 else if (action.equals("History"))
                 {

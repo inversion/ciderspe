@@ -72,7 +72,7 @@ public class ETASourceEditorPane extends JScrollPane
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
 
-    private EditorTypingArea eta;
+    protected EditorTypingArea eta;
     private Component tabHandle = null;
     private Client client;
     private String path;

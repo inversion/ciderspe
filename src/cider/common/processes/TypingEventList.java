@@ -73,8 +73,10 @@ public class TypingEventList
      */
     public void overwrite(TypingEvent te)
     {
-        if (te.position >= (tel.size() + 1))
+        if( te.position >= tel.size() )
             this.tel.add(te);
+        else if( te.position == 0 ) // Fix for trying to overwrite -1 bug
+            this.tel.set(te.position, te);
         else
             this.tel.set(te.position - 1, te);
 

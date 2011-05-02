@@ -531,7 +531,7 @@ public class LoginUI
                     {
                         if (!client.attemptConnection())
                         {
-                            errmsg = "Bot is not online";
+                            errmsg = "Bot is not online or connection to bot timed out.";
                             JOptionPane.showMessageDialog(connecting, errmsg);
                             connecting.setVisible(false);
                             connecting.dispose();
