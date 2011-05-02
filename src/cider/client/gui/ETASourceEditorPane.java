@@ -46,12 +46,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 
 import cider.common.network.client.Client;
+import cider.common.processes.EventComparer;
 import cider.common.processes.SiHistoryFiles;
 import cider.common.processes.TypingEvent;
 import cider.common.processes.TypingEventMode;
@@ -595,14 +597,17 @@ public class ETASourceEditorPane extends JScrollPane
 
                                 Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
                                 Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                                PriorityQueue<TypingEvent> toFile = new PriorityQueue<TypingEvent>(particles.size(), new EventComparer());
 
                                 for (TypingEvent particle : particles)
                                 {
                                     outgoingEvents.add(particle);
                                     internal.add(particle);
+                                    toFile.add(particle);
                                 }
                                 
-                                SiHistoryFiles.saveEvents(outgoingEvents, client.getCurrentDocumentID().path);
+                                
+                                SiHistoryFiles.saveEvents(toFile, client.getCurrentDocumentID().path);
 
                                 eta.getSourceDocument().push(internal);
                                 client.broadcastTypingEvents(outgoingEvents,
