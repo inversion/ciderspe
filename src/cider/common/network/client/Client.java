@@ -83,6 +83,7 @@ import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
 import cider.common.processes.DocumentID;
+import cider.common.processes.EventComparer;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
@@ -841,12 +842,11 @@ public class Client
                     .println("Should not be receiving typing events when current document id is null");
         else
         {
-            Queue<TypingEvent> remainingEvents;
-            SiHistoryFiles.saveEvents(typingEvents, this.currentDocumentID.path);
+            PriorityQueue<TypingEvent> remainingEvents;
 
             if (this.typingEventDiversion != null)
             {
-                remainingEvents = new LinkedList<TypingEvent>();
+                remainingEvents = new PriorityQueue<TypingEvent>(typingEvents.size(), new EventComparer());
                 for (TypingEvent typingEvent : typingEvents)
                     if (this.typingEventDiversion.end.time > typingEvent.time)
                         this.typingEventDiversion.end.typingEvents
@@ -855,7 +855,7 @@ public class Client
                         remainingEvents.add(typingEvent);
             }
             else
-                remainingEvents = typingEvents;
+                remainingEvents = new PriorityQueue<TypingEvent>(typingEvents);
 
             EditorTypingArea eta = shared.openTabs.get(dest)
                     .getEditorTypingArea();
@@ -866,6 +866,7 @@ public class Client
             else
                 anchor = null;
 
+            SiHistoryFiles.saveEvents(new PriorityQueue<TypingEvent>(remainingEvents), this.currentDocumentID.path);
             eta.getSourceDocument().push(remainingEvents);
             eta.setWaiting(false);
             eta.updateText();
