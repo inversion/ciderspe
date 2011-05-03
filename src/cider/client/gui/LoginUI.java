@@ -72,7 +72,7 @@ import cider.shared.ClientSharedComponents;
 
 public class LoginUI
 {
-
+	private int Retrieved = 0;
 	private int NotPort;
     public String currentDir = "src\\cider\\client\\gui\\"; // this is from
                                                             // MainWindow.java
@@ -247,6 +247,10 @@ public class LoginUI
         box.add(chkRemember);
 
         fetchLogin();
+        if (Retrieved == 0)
+        {
+        	GetLogin();
+        }
 
         // Submit Button
         JButton btnSubmit = new JButton("Submit");
@@ -325,7 +329,7 @@ public class LoginUI
                 }
             }
             in.close();
-
+            Retrieved = 1;
             txtUsername.setText(text[0]);
             txtPassword.setText(text[1]);
             txtServiceName.setText(text[2]);
@@ -345,6 +349,44 @@ public class LoginUI
         }
     }
 
+    void GetLogin()
+    {
+    	try
+        {
+            FileReader fstream = new FileReader(currentDir + "BotTEST.conf");
+            BufferedReader in = new BufferedReader(fstream);
+
+            String line;
+            int i = 0;
+            String[] text = new String[6];
+
+            while ((line = in.readLine()) != null)
+            {
+                StringTokenizer token = new StringTokenizer(line, "=");
+                while ((token.hasMoreTokens()) && (i<6))
+                {
+                    text[i] = (token.nextToken());
+                    i++;
+                }
+            }
+            in.close();
+
+            txtServiceName.setText(text[1]);
+            txtHost.setText(text[3]);
+            txtPort.setText(text[5]);
+        }
+        catch (FileNotFoundException e)
+        {
+            // System.out.println("File not found");
+            e.printStackTrace();
+        }
+        catch (IOException e)
+        {
+            // System.out.println("File not found");
+            e.printStackTrace();
+        }
+    }
+    
     void checkLogin()
     {
         // TODO: Can we have some commenting on what methods actually do please

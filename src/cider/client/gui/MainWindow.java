@@ -1053,8 +1053,8 @@ public class MainWindow
         addMenuItem(menu, "Cut", KeyEvent.VK_X, aL);
         addMenuItem(menu, "Copy", KeyEvent.VK_C, aL);
         addMenuItem(menu, "Paste", KeyEvent.VK_V, aL);
-        addMenuItem(menu, "Line Home", KeyEvent.VK_HOME, aL);
-        addMenuItem(menu, "Line End", KeyEvent.VK_END, aL);
+        addMenuItem(menu, "Line Home", KeyEvent.VK_LEFT, aL);
+        addMenuItem(menu, "Line End", KeyEvent.VK_RIGHT, aL);
         addMenuItem(menu, "Document Home", KeyEvent.VK_HOME, aL);
         addMenuItem(menu, "Document End", KeyEvent.VK_END, aL);
         addMenuItem(menu, "Syntax Highlighting", -1, aL);
