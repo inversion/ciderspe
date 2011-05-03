@@ -804,10 +804,17 @@ public class MainWindow
     public void updateOutput()
     {
         this.debugwindow.println(this.baos.toString());
-        /*
-         * try { this.baos.flush(); } catch (IOException e) {
-         * e.printStackTrace(); }
-         */
+        
+        try 
+        {
+        	this.baos.flush(); 
+        	if (DEBUG)
+        		System.out.println("FLUSH");
+        }
+        catch (IOException e) 
+        {
+        	e.printStackTrace(); 
+        }
     }
 
     void runFile()
