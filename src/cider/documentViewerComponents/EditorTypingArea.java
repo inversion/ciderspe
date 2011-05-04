@@ -94,9 +94,9 @@ public class EditorTypingArea extends SourceDocumentViewer
     }
 
     @Override
-    public int getCurLine()
+    public int getCurrentLineNumber()
     {
-        return super.getCurLine();
+        return super.getCurrentLineNumber();
     }
     
     @Override
@@ -139,6 +139,11 @@ public class EditorTypingArea extends SourceDocumentViewer
     public SDVLine getCurrentLine()
     {
         return super.getCurrentLine();
+    }
+
+    public boolean isEmpty()
+    {
+        return super.isEmpty();
     }
 
 }
