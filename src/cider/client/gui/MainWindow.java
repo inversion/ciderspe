@@ -168,10 +168,11 @@ public class MainWindow
         //PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
         // System.setOut(ps);
         //System.setErr(ps);
-        if(!CiderApplication.debugApp)
-        
-        System.out.println("Non-error message");
-        System.err.println("Error message");
+        if(CiderApplication.debugApp)
+        {
+            System.out.println("Standard output stream working");
+            System.err.println("Error output stream working");
+        }
     }
 
     MainWindow()
