@@ -182,16 +182,19 @@ public class TimeBorderList
         try
         {
             ArrayList<Long> borderTimes = SiHistoryFiles.getBorderTimes(this.documentID.path);
-            boolean fullSet = false;
-            for(long t : borderTimes)
+            if(borderTimes != null)
             {
-                this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
-                fullSet = !fullSet;
+                boolean fullSet = false;
+                for(long t : borderTimes)
+                {
+                    this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
+                    fullSet = !fullSet;
+                }
+                
+                this.firstTime = borderTimes.get(0) - 1;
+                this.createRegions();
+                SiHistoryFiles.getEvents(this.documentID.path, this);
             }
-            
-            this.firstTime = borderTimes.get(0) - 1;
-            this.createRegions();
-            SiHistoryFiles.getEvents(this.documentID.path, this);
         }
         catch(Exception e)
         {

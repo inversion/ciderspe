@@ -101,8 +101,8 @@ public class ETASourceEditorPane extends JScrollPane
         this.addMouseWheelListener(this.newMouseWheelListener());
         this.client.getParent().w.addWindowListener(this.newWindowListener());
         // FIXME: Caused exception
-//        SiHistoryFiles.markDocumentOpening(path, System.currentTimeMillis()
-//                + client.getClockOffset());
+        SiHistoryFiles.markDocumentOpening(path, System.currentTimeMillis()
+                + client.getClockOffset());
     }
 
     private MouseWheelListener newMouseWheelListener()
@@ -139,15 +139,15 @@ public class ETASourceEditorPane extends JScrollPane
             @Override
             public void windowClosed(WindowEvent arg0)
             {
-                //SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
-                //        + client.getClockOffset());
+                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
+                        + client.getClockOffset());
             }
 
             @Override
             public void windowClosing(WindowEvent arg0)
             {
-                //SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
-                //        + client.getClockOffset());
+                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
+                        + client.getClockOffset());
             }
 
             @Override
@@ -608,7 +608,7 @@ public class ETASourceEditorPane extends JScrollPane
                                 }
                                 
                                 
-//                                SiHistoryFiles.saveEvents(toFile, client.getCurrentDocumentID().path);
+                                SiHistoryFiles.saveEvents(toFile, client.getCurrentDocumentID().path);
 
                                 eta.getSourceDocument().push(internal);
                                 client.broadcastTypingEvents(outgoingEvents,

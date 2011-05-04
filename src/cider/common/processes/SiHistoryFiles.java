@@ -25,12 +25,13 @@ import javax.swing.JPanel;
 
 public class SiHistoryFiles
 {
+    private static boolean working = true;
     public static final String localEventFolderPath = System.getenv("APPDATA")
             + "\\cider\\localhistory\\";
     private static final String opened = "Opened ";
     private static final String closed = "Closed ";
 
-    public static Set<String> times(Collection<TypingEvent> typingEvents)
+    private static Set<String> times(Collection<TypingEvent> typingEvents)
     {
         Set<String> results = new LinkedHashSet<String>();
         for (TypingEvent te : typingEvents)
@@ -38,7 +39,7 @@ public class SiHistoryFiles
         return results;
     }
 
-    public static Set<String> eventTimesExistsInFile(String documentPath,
+    private static Set<String> eventTimesExistsInFile(String documentPath,
             Set<String> times) throws IOException
     {
         FileInputStream fstream = new FileInputStream(localEventFolderPath
@@ -78,40 +79,60 @@ public class SiHistoryFiles
         return results;
     }
 
+    private static void notWorking(String message)
+    {
+        System.err.println("Cannot " + message + " because history files are not working - continuing...");
+    }
+
     public static void saveEvents(PriorityQueue<TypingEvent> typingEvents,
             String documentPath)
     {
         try
         {
-            File f = openFileForWriting(documentPath);
-            Set<String> matches = eventTimesExistsInFile(documentPath,
-                    times(typingEvents));
-            FileWriter fstream = new FileWriter(f, true);
-            BufferedWriter out = new BufferedWriter(fstream);
-
-            for (TypingEvent typingEvent : typingEvents)
-                if (!matches.contains(Long.toString(typingEvent.time, TypingEvent.radix)))
-                    out.write(typingEvent.pack() + "\n");
-
-            out.close();
+            if(working)
+            {
+                File f = openFileForWriting(documentPath);
+                Set<String> matches = eventTimesExistsInFile(documentPath,
+                        times(typingEvents));
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+    
+                for (TypingEvent typingEvent : typingEvents)
+                    if (!matches.contains(Long.toString(typingEvent.time, TypingEvent.radix)))
+                        out.write(typingEvent.pack() + "\n");
+    
+                out.close();
+            }
+            else
+                notWorking("save events");
         }
         catch (IOException e1)
         {
+            working = false;
             e1.printStackTrace();
+            notWorking("save events");
             JOptionPane.showMessageDialog(new JPanel(),
                     ("Error: " + e1.getMessage()));
             return;
         }
         catch (NullPointerException e)
         {
+            working = false;
             e.printStackTrace();
+            notWorking("save events");
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: There is no document open!");
             return;
         }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            working = false;
+            notWorking("save events");
+        }
     }
 
-    public static File openFileForWriting(String documentPath)
+    private static File openFileForWriting(String documentPath)
             throws IOException
     {
         File f = new File(localEventFolderPath + documentPath);
@@ -125,15 +146,22 @@ public class SiHistoryFiles
         File f;
         try
         {
-            f = openFileForWriting(path);
-            FileWriter fstream = new FileWriter(f, true);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("Opened " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
-            out.close();
+            if(working)
+            {
+                f = openFileForWriting(path);
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+                out.write("Opened " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
+                out.close();
+            }
+            else
+                notWorking("mark document opening");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             e.printStackTrace();
+            working = false;
+            notWorking("mark document opening");
         }
     }
 
@@ -142,15 +170,22 @@ public class SiHistoryFiles
         File f;
         try
         {
-            f = openFileForWriting(path);
-            FileWriter fstream = new FileWriter(f, true);
-            BufferedWriter out = new BufferedWriter(fstream);
-            out.write("Closed " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
-            out.close();
+            if(working)
+            {
+                f = openFileForWriting(path);
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+                out.write("Closed " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
+                out.close();
+            }
+            else
+                notWorking("mark document closing");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             e.printStackTrace();
+            working = false;
+            notWorking("mark document closing");
         }
     }
 
@@ -158,52 +193,48 @@ public class SiHistoryFiles
     {
         try
         {
-            ArrayList<Long> times = new ArrayList<Long>();
-            FileInputStream fstream;
-            fstream = new FileInputStream(localEventFolderPath + path);
-            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String strLine;
-            int a = closed.length();
-            int b = opened.length();
-            long t = 0;
-            boolean border;
-            while ((strLine = br.readLine()) != null)
+            if(working)
             {
-                border = true;
-                
-                if (strLine.startsWith(closed))
-                    t = Long.parseLong(strLine.substring(a,
-                            strLine.indexOf(' ', a)), TypingEvent.radix);
-                else if (strLine.startsWith(opened))
-                    t = Long.parseLong(strLine.substring(b,
-                            strLine.indexOf(' ', b)), TypingEvent.radix);
-                else
-                    border = false;
-                
-                if(border)
+                ArrayList<Long> times = new ArrayList<Long>();
+                FileInputStream fstream;
+                fstream = new FileInputStream(localEventFolderPath + path);
+                DataInputStream in = new DataInputStream(fstream);
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                String strLine;
+                int a = closed.length();
+                int b = opened.length();
+                long t = 0;
+                boolean border;
+                while ((strLine = br.readLine()) != null)
                 {
-                    times.add(t);
+                    border = true;
+                    
+                    if (strLine.startsWith(closed))
+                        t = Long.parseLong(strLine.substring(a,
+                                strLine.indexOf(' ', a)), TypingEvent.radix);
+                    else if (strLine.startsWith(opened))
+                        t = Long.parseLong(strLine.substring(b,
+                                strLine.indexOf(' ', b)), TypingEvent.radix);
+                    else
+                        border = false;
+                    
+                    if(border)
+                    {
+                        times.add(t);
+                    }
                 }
+    
+                in.close();
+                return times;
             }
-
-            in.close();
-            return times;
+            else
+                notWorking("getting border times");
         }
-        catch (FileNotFoundException e)
+        catch (Exception e)
         {
-            // TODO Auto-generated catch block
             e.printStackTrace();
-        }
-        catch (NumberFormatException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            working = false;
+            notWorking("getting border times");
         }
         
         return null;
@@ -214,81 +245,94 @@ public class SiHistoryFiles
     {
         try
         {
-            FileInputStream fstream;
-            fstream = new FileInputStream(localEventFolderPath + path);
-            DataInputStream in = new DataInputStream(fstream);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String strLine;
-            Queue<TypingEvent> homogenizedEventQueue = new LinkedList<TypingEvent>();
-            TimeBorder border;
-            TypingEvent te;
-            
-            Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
-            border = borderQueue.poll().getValue();
-            
-            
-            String prevLine = null;
-            
-            while ((strLine = br.readLine()) != null)
+            if(working)
             {
-                if(prevLine != null)
-                {
-                    strLine = prevLine + strLine;
-                    prevLine = null;
-                }
+                FileInputStream fstream;
+                fstream = new FileInputStream(localEventFolderPath + path);
+                DataInputStream in = new DataInputStream(fstream);
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                String strLine;
+                Queue<TypingEvent> homogenizedEventQueue = new LinkedList<TypingEvent>();
+                TimeBorder border;
+                TypingEvent te;
                 
-                if(strLine.endsWith("~"))
-                    prevLine = strLine + "\n";
-                else
+                Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
+                border = borderQueue.poll().getValue();
+                
+                
+                String prevLine = null;
+                
+                while ((strLine = br.readLine()) != null)
                 {
-                    if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
+                    if(prevLine != null)
                     {
-                        te = new TypingEvent(strLine);
-                        System.out.println(te.time);
-                        if(te.time < border.time)
+                        strLine = prevLine + strLine;
+                        prevLine = null;
+                    }
+                    
+                    if(strLine.endsWith("~"))
+                        prevLine = strLine + "\n";
+                    else
+                    {
+                        if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
                         {
-                            if(te.mode.equals(TypingEventMode.homogenized))
-                                homogenizedEventQueue.add(te);
-                            else
-                                border.typingEvents.add(te);
-                        }
-                        else
-                        {
-                            border = borderQueue.poll().getValue();
-                            while(!homogenizedEventQueue.isEmpty())
+                            te = new TypingEvent(strLine);
+                            System.out.println(te.time);
+                            if(te.time < border.time)
                             {
-                                te = homogenizedEventQueue.poll();
-                                border.typingEvents.add(te);
-                                System.out.println(te.pack());
+                                if(te.mode.equals(TypingEventMode.homogenized))
+                                    homogenizedEventQueue.add(te);
+                                else
+                                    border.typingEvents.add(te);
+                            }
+                            else
+                            {
+                                border = borderQueue.poll().getValue();
+                                while(!homogenizedEventQueue.isEmpty())
+                                {
+                                    te = homogenizedEventQueue.poll();
+                                    border.typingEvents.add(te);
+                                    System.out.println(te.pack());
+                                }
                             }
                         }
                     }
                 }
             }
+            else
+                notWorking("getting events");
         }
-        catch (FileNotFoundException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        catch(Exception e)
+        catch (Exception e)
         {
             e.printStackTrace();
+            working = false;
+            notWorking("getting events");
         }
     }
 
     public static void clearAllHistory()
     {
-        File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
-        deleteSubFiles(file);
+        if(working)
+        {
+            try
+            {
+                File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
+                deleteSubFiles(file);
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+                working = false;
+                notWorking("clear all history");
+            }
+        }
+        else
+        {
+            notWorking("clearing history");
+        }
     }
     
-    public static void deleteSubFiles(File file)
+    private static void deleteSubFiles(File file)
     {
         for(File f : file.listFiles())
         {
