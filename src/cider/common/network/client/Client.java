@@ -846,18 +846,13 @@ public class Client
         {
             PriorityQueue<TypingEvent> remainingEvents;
 
-            if (this.typingEventDiversion != null)
-            {
                 remainingEvents = new PriorityQueue<TypingEvent>(typingEvents.size(), new EventComparer());
                 for (TypingEvent typingEvent : typingEvents)
-                    if (this.typingEventDiversion.end.time > typingEvent.time)
+                    if (this.typingEventDiversion != null && this.typingEventDiversion.end.time > typingEvent.time)
                         this.typingEventDiversion.end.typingEvents
                                 .add(typingEvent);
                     else
                         remainingEvents.add(typingEvent);
-            }
-            else
-                remainingEvents = new PriorityQueue<TypingEvent>(typingEvents);
 
             EditorTypingArea eta = shared.openTabs.get(dest)
                     .getEditorTypingArea();
