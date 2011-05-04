@@ -496,7 +496,7 @@ public class Client
         
         
         
-        /* START OF CLOSE TAB BUTTON EDIT ---------------------------------------- */
+        /* START OF CLOSE TAB BUTTON EDIT ----------------------------------------
         JButton tabCloseButton = new JButton();
         tabCloseButton.setPreferredSize(new Dimension(12, 12));
         tabCloseButton.setToolTipText("Close Tab");
@@ -530,8 +530,9 @@ public class Client
         pnl.add(tabCloseButton);
         shared.receiveTabs.add(messageReceiveBoxScroll);
         shared.receiveTabs.setTabComponentAt(shared.receiveTabs.getTabCount() - 1, pnl);
-        /* END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
+        END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
         
+        shared.receiveTabs.add(messageReceiveBoxScroll);
         
         
         // If creating a tab for the chatroom, register the chatroom message
