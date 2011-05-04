@@ -82,6 +82,9 @@ import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
+import cider.common.network.DebugPacketFilter;
+import cider.common.network.DebugPacketInterceptor;
+import cider.common.network.DebugPacketListener;
 import cider.common.processes.DocumentID;
 import cider.common.processes.EventComparer;
 import cider.common.processes.ImportFiles;
@@ -254,7 +257,6 @@ public class Client
      */
     public boolean attemptConnection() throws XMPPException
     {
-
         // Connect and login to the XMPP server
         ConnectionConfiguration config = new ConnectionConfiguration(host,
                 port, serviceName);
@@ -262,10 +264,10 @@ public class Client
         connection.connect();
         // Prints out every packet received by the client, used when you want
         // very verbose debugging
-        // connection.addPacketListener(new DebugPacketListener(),
-        // new DebugPacketFilter());
-        // connection.addPacketInterceptor(new DebugPacketInterceptor(),
-        // new DebugPacketFilter());
+//         connection.addPacketListener(new DebugPacketListener(),
+//         new DebugPacketFilter());
+//         connection.addPacketInterceptor(new DebugPacketInterceptor(),
+//         new DebugPacketFilter());
 
         /*
          * Append a random string to the resource to prevent conflicts with
@@ -866,7 +868,7 @@ public class Client
             else
                 anchor = null;
 
-            SiHistoryFiles.saveEvents(new PriorityQueue<TypingEvent>(remainingEvents), this.currentDocumentID.path);
+            //SiHistoryFiles.saveEvents(new PriorityQueue<TypingEvent>(remainingEvents), this.currentDocumentID.path);
             eta.getSourceDocument().push(remainingEvents);
             eta.setWaiting(false);
             eta.updateText();
