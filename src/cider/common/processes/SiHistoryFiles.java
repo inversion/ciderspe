@@ -26,11 +26,17 @@ import javax.swing.JPanel;
 public class SiHistoryFiles
 {
     private static boolean working = true;
+    private static boolean showStackTrace = false;
     public static final String localEventFolderPath = System.getenv("APPDATA")
             + "\\cider\\localhistory\\";
     private static final String opened = "Opened ";
     private static final String closed = "Closed ";
 
+    private static void notWorking(String message)
+    {
+        System.err.println("Cannot " + message + " because history files are not working - ( showStackTrace = " + showStackTrace + ") continuing...");
+    }
+    
     private static Set<String> times(Collection<TypingEvent> typingEvents)
     {
         Set<String> results = new LinkedHashSet<String>();
@@ -79,11 +85,6 @@ public class SiHistoryFiles
         return results;
     }
 
-    private static void notWorking(String message)
-    {
-        System.err.println("Cannot " + message + " because history files are not working - continuing...");
-    }
-
     public static void saveEvents(PriorityQueue<TypingEvent> typingEvents,
             String documentPath)
     {
@@ -106,19 +107,21 @@ public class SiHistoryFiles
             else
                 notWorking("save events");
         }
-        catch (IOException e1)
+        catch (IOException e)
         {
             working = false;
-            e1.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             notWorking("save events");
             JOptionPane.showMessageDialog(new JPanel(),
-                    ("Error: " + e1.getMessage()));
+                    ("Error: " + e.getMessage()));
             return;
         }
         catch (NullPointerException e)
         {
             working = false;
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             notWorking("save events");
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: There is no document open!");
@@ -126,7 +129,8 @@ public class SiHistoryFiles
         }
         catch(Exception e)
         {
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             working = false;
             notWorking("save events");
         }
@@ -159,7 +163,8 @@ public class SiHistoryFiles
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             working = false;
             notWorking("mark document opening");
         }
@@ -183,7 +188,8 @@ public class SiHistoryFiles
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             working = false;
             notWorking("mark document closing");
         }
@@ -228,13 +234,14 @@ public class SiHistoryFiles
                 return times;
             }
             else
-                notWorking("getting border times");
+                notWorking("get border times");
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
             working = false;
-            notWorking("getting border times");
+            notWorking("get border times");
         }
         
         return null;
@@ -300,13 +307,15 @@ public class SiHistoryFiles
                 }
             }
             else
-                notWorking("getting events");
+                notWorking("get events");
         }
         catch (Exception e)
         {
-            e.printStackTrace();
+            if(showStackTrace)
+                e.printStackTrace();
+            
             working = false;
-            notWorking("getting events");
+            notWorking("get events");
         }
     }
 
@@ -321,14 +330,15 @@ public class SiHistoryFiles
             }
             catch(Exception e)
             {
-                e.printStackTrace();
+                if(showStackTrace)
+                    e.printStackTrace();
                 working = false;
                 notWorking("clear all history");
             }
         }
         else
         {
-            notWorking("clearing history");
+            notWorking("clear all history");
         }
     }
     
