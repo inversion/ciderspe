@@ -1572,21 +1572,21 @@ public class MainWindow
 
             public void windowClosed(WindowEvent arg0)
             {
-                try
-                {
-                    if (!offlineMode)
-                    {
-                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
-                        if (DEBUG)
-                            System.out.println("disconnecting");
-                        client.disconnect();
-                    }
-                    idleTimer.stop();
-                }
-                catch(Exception e)
-                {
-                    e.printStackTrace();
-                }
+//                try
+//                {
+//                    if (!offlineMode)
+//                    {
+//                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+//                        if (DEBUG)
+//                            System.out.println("disconnecting");
+//                        client.disconnect();
+//                    }
+//                    idleTimer.stop();
+//                }
+//                catch(Exception e)
+//                {
+//                    e.printStackTrace();
+//                }
             }
 
             public void windowActivated(WindowEvent arg0)
