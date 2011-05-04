@@ -147,7 +147,9 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             try
             {
                 if (this.lines.size() == 0)
+                {
                     this.paintCaret(g, -1, lineSpacing);
+                }
                 else
                     for (SDVLine line : this.lines)
                     {
@@ -189,17 +191,21 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         // already been drawn at the start
                         for (int i = 0; i < line.str.length(); i++)
                         {
-                            if (!caretFound && p == this.caretPosition - ln)
+                            if (!caretFound)
                             {
-                                if (this.caretVisible)
-                                {
-                                    this.paintCaret(g, i, line.y);
+                                if(p == this.caretPosition - ln - 1)
                                     this.currentLine = line;
-                                    currentColNum = i + 1;
-                                    caretFound = true;
+                                else if(p == this.caretPosition - ln)
+                                {
+                                    if (this.caretVisible)
+                                    {
+                                        this.paintCaret(g, i, line.y);
+                                        currentColNum = i + 1;
+                                        caretFound = true;
+                                    }
+                                    if (this.hasFocus())
+                                        line.highlightMargin(g);
                                 }
-                                if (this.hasFocus())
-                                    line.highlightMargin(g);
                             }
                             p++;
                             line.paintCharacter(g, i);
@@ -660,7 +666,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.holdCaretVisibility(true);
         
         // Move up 26 lines
-        int lineNum = getCurLine() - 26;
+        int lineNum = getCurrentLineNumber() - 26;
         
         // If trying to move above top of document
         if (lineNum < 1)
@@ -691,7 +697,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         this.holdCaretVisibility(true);
         
         // Move down 26 lines
-        int lineNum = getCurLine() + 26;
+        int lineNum = getCurrentLineNumber() + 26;
         
         // If trying to move below the bottom of document
         if (lineNum > lines.size())
@@ -740,7 +746,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         clipboard.setContents( stringSelection, stringSelection );
     }
 
-    protected int getCurLine()
+    protected int getCurrentLineNumber()
     {
         try
         {
@@ -1118,5 +1124,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     public Color getDefaultColor()
     {
         return defaultColor;
+    }
+
+    public boolean isEmpty()
+    {
+        return this.getCurrentLine() == null;
     }
 }

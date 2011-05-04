@@ -257,7 +257,7 @@ public class ETASourceEditorPane extends JScrollPane
     @Override
     public void requestFocus()
     {
-        Thread.dumpStack();
+        System.out.println("Requested focus");
         super.requestFocus();
     }
 
@@ -614,11 +614,16 @@ public class ETASourceEditorPane extends JScrollPane
                                 client.broadcastTypingEvents(outgoingEvents,
                                         path);
                                 
-                                // FIXME: One of these is bailing out when it's the first char in the document
                                 eta.updateText();
-                                eta.scrollRectToVisible(new Rectangle(0, eta
-                                        .getCurrentLine().y, eta.getWidth(),
-                                        EditorTypingArea.lineSpacing));
+                                
+                                if(!eta.isEmpty())
+                                    eta.scrollRectToVisible(new Rectangle(0, eta
+                                            .getCurrentLine().y, eta.getWidth(),
+                                            EditorTypingArea.lineSpacing));
+                                else
+                                    if(CiderApplication.debugApp)
+                                        System.out.println(
+                                                "Cannot scroll rect to visible because this is an empty document (current line would be null)");
 
 
                                 switch (mode)
@@ -638,6 +643,7 @@ public class ETASourceEditorPane extends JScrollPane
                             }
                             catch (Exception e)
                             {
+                                System.err.println("There was a problem involving keyTyped");
                                 e.printStackTrace();
                             }
                         }
