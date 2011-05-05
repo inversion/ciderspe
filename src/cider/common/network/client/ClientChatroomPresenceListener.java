@@ -23,6 +23,8 @@
 
 package cider.common.network.client;
 
+import java.awt.Toolkit;
+
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -98,9 +100,12 @@ public class ClientChatroomPresenceListener implements PacketListener {
         {
             if( nickname.equals( botUsername ) )
             {
-                // TODO: Close after x number of seconds
+                parent.disconnect();
+                Toolkit.getDefaultToolkit().removeAWTEventListener( parent.getParent().activityListener );
+                parent.getParent().shared.idleTimer.stop();
+                parent.getParent().login.logout();               
                 JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
-                parent.getParent().login.logout();
+                return;
             }
             
             if( list.contains( nickname ) )

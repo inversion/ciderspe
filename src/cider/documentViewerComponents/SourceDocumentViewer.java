@@ -860,6 +860,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                     ln = this.lines.size();
 
                 SDVLine line = this.getLine(ln - 1);
+                
+                // Bail out if the line doesn't exist
+                if( line == null )
+                    return;
+                
                 if (col > line.str.length() - 1)
                     col = line.str.length() - 1;
                 int end = line.start + ln - 1 + col;
@@ -1033,7 +1038,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     public SDVLine getLine(int lineNumber)
     {
-        return this.lines.get(lineNumber);
+        try
+        {
+            return this.lines.get(lineNumber);
+        }
+        catch( ArrayIndexOutOfBoundsException e )
+        {
+            return null;
+        }       
     }
 
     /**

@@ -116,6 +116,7 @@ public class MainWindow
     public LoginUI login;
 
     public ClientSharedComponents shared;
+    public AWTEventListener activityListener;
 
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
@@ -134,7 +135,6 @@ public class MainWindow
 
     boolean offlineMode = false;
     
-    private IdleTimer idleTimer;
     public static StatusBar statusBar;
 
     /**
@@ -159,6 +159,7 @@ public class MainWindow
         login = loginUI;
 
         client = c;
+        
         receivePanel = pnlReceive();
         shared.dirView.setClient(client);
         client.addParent(this);
@@ -246,8 +247,9 @@ public class MainWindow
         }
         catch (NullPointerException npe)
         {
-            npe.printStackTrace();
             // load default user photo if custom user doesn't exist
+            if( CiderApplication.debugApp )
+                System.out.println( "No profile image for " + profile.uname + ", using default.");
             urlImage = this.getClass().getResource("defaultuser.png");
             photo = new ImageIcon(urlImage);
         }
@@ -442,7 +444,7 @@ public class MainWindow
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                    myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
@@ -1484,19 +1486,22 @@ public class MainWindow
     public void startApplication(JFrame loginWindow, boolean debugApp)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        idleTimer = new IdleTimer(client, !debugApp);        
+        shared.idleTimer = new IdleTimer(client, true);        
         
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
+        // TODO: I could have avoided making idle timer shared cos I didn't notice this, can fix later if bothered but it works ok atm (Andrew)
         long eventMask = AWTEvent.MOUSE_MOTION_EVENT_MASK;
-        Toolkit.getDefaultToolkit().addAWTEventListener( new AWTEventListener()
+        
+        activityListener = new AWTEventListener()
         {
             public void eventDispatched(AWTEvent e)
             {
-                idleTimer.mouseMoved();
+                shared.idleTimer.activityDetected();
             }
-        }, eventMask);
-
+        };
+        
+        Toolkit.getDefaultToolkit().addAWTEventListener( activityListener , eventMask);
         // FIXME:
         // client.startClockSynchronisation(w);
 
@@ -1544,12 +1549,12 @@ public class MainWindow
                 {
                     if (!offlineMode)
                     {
-                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                        myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
                         if (DEBUG)
                             System.out.println("disconnecting");
                         client.disconnect();
                     }
-                    idleTimer.stop();
+                    shared.idleTimer.stop();
                 }
                 catch(Exception e)
                 {
