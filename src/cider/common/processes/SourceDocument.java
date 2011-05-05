@@ -50,7 +50,8 @@ public class SourceDocument implements ICodeLocation, Serializable
     private static final long serialVersionUID = -6700242168976852201L;
     private PriorityQueue<TypingEvent> typingEvents;
     public String name;
-    private long latestTime;
+    private long latestTime = 0;
+    private long creationTime = Long.MAX_VALUE;
 
     public SourceDocument(String name)
     {
@@ -399,9 +400,12 @@ public class SourceDocument implements ICodeLocation, Serializable
         {
             if (this.latestTime < typingEvent.time)
                 this.latestTime = typingEvent.time;
+            if(this.creationTime > typingEvent.time)
+                this.creationTime = typingEvent.time;
             this.typingEvents.add(typingEvent);
         }
     }
+
 
     /**
      * For locking events only
@@ -763,5 +767,20 @@ public class SourceDocument implements ICodeLocation, Serializable
     public String shortName()
     {
         return this.name.split("\\.")[0];
+    }
+
+    public Long getCreationTime()
+    {
+        return this.creationTime;
+    }
+
+    public String docFieldXML(String indent)
+    {
+        return indent + "<Name>" + this.name + "</Name>\n" + indent + "<CreationTime>" + this.creationTime + "</CreationTime>\n";
+    }
+
+    public void setCreationTime(long creationTime)
+    {
+        this.creationTime = creationTime;
     }
 }

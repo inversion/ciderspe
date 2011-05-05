@@ -44,26 +44,26 @@ public class TimeBorder
     public String path;
     public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>(1000, new EventComparer());
     public boolean fullSet = false;
-    public DocumentID documentID;
+    public DocumentProperties documentProperties;
 
-    public TimeBorder(DocumentID documentID, long time)
+    public TimeBorder(DocumentProperties documentProperties, long time)
     {
         this.time = time;
-        this.documentID = documentID;
+        this.documentProperties = documentProperties;
     }
     
-    public TimeBorder(DocumentID documentID, long time, boolean fullSet)
+    public TimeBorder(DocumentProperties documentProperties, long time, boolean fullSet)
     {
         this.time = time;
-        this.documentID = documentID;
+        this.documentProperties = documentProperties;
         this.fullSet = fullSet;
     }
 
-    public TimeBorder(DocumentID documentID, long time,
+    public TimeBorder(DocumentProperties documentID, long time,
             PriorityQueue<TypingEvent> typingEvents)
     {
         this.time = time;
-        this.documentID = documentID;
+        this.documentProperties = documentID;
         this.typingEvents = typingEvents;
     }
 

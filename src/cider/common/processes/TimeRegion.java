@@ -42,17 +42,18 @@ public class TimeRegion
 {
     public TimeBorder start;
     public TimeBorder end;
-    public DocumentID documentID;
+    public DocumentProperties documentProperties;
+    public static final int FINISHED_UPDATE = 0;
     private ArrayList<ActionListener> actionListeners = new ArrayList<ActionListener>();
 
     public TimeRegion(TimeBorder start, TimeBorder end) throws Exception
     {
-        if (this.start != null && this.start.documentID != this.end.documentID)
+        if (this.start != null && this.start.documentProperties != this.end.documentProperties)
             throw new Exception("time borders must belong to the same document");
 
         this.start = start;
         this.end = end;
-        this.documentID = end.documentID;
+        this.documentProperties = end.documentProperties;
     }
 
     /**
@@ -73,18 +74,18 @@ public class TimeRegion
                 if (this.start.fullSet)
                 {
                     SourceDocument startDoc = new SourceDocument(
-                            this.documentID.name, this.documentID.path,
+                            this.documentProperties.name, this.documentProperties.path,
                             this.start.typingEvents);
                     startDoc.simplify(this.end.time);
                     this.end.typingEvents.addAll(startDoc.events());
                 }
                 else
                 {
-                    client.pullEventsFromBot(this.documentID.path,
+                    client.pullEventsFromBot(this.documentProperties.path,
                             this.start.time, true);
                 }
             }
-            client.pullEventsFromBot(this.documentID.path, this.getStartTime(),
+            client.pullEventsFromBot(this.documentProperties.path, this.getStartTime(),
                     this.getEndTime(), true);
         }
     }
@@ -107,6 +108,8 @@ public class TimeRegion
      */
     public void finishedUpdate()
     {
+        this.end.fullSet = true;
+        
         for (ActionListener al : this.actionListeners)
             al.actionPerformed(new ActionEvent(this, 0, "finished update"));
     }

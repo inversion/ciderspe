@@ -245,6 +245,10 @@ public class BotMessageListener implements MessageListener
         try
         {
             String xml = this.bot.getRootFolder().xml("");
+            
+            if(DEBUG)
+                System.out.println(xml);
+            
             Message msg = new Message();
             msg.setBody("");
             msg.setProperty( "ciderAction", "filelist" );

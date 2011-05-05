@@ -266,6 +266,7 @@ public class SiHistoryFiles
                 int a = closed.length();
                 int b = opened.length();
                 Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
+                borderQueue.poll();
                 border = borderQueue.poll().getValue();
                 
                 String prevLine = null;

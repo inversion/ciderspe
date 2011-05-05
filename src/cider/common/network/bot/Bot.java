@@ -531,13 +531,13 @@ public class Bot
         this.sourceFolder = new LiveFolder("root", "Bot");
         // FIXME: t1 is unused
         @SuppressWarnings("unused")
-        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument");
+        SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument", System.currentTimeMillis());
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         // t1.push(tes);
         this.sourceFolder.makeFolder("testFolder").makeFolder("test2")
-                .makeDocument("test2Doc.SourceDocument");
+                .makeDocument("test2Doc.SourceDocument", System.currentTimeMillis());
     }
 
     public LiveFolder getRootFolder()

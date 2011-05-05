@@ -86,7 +86,7 @@ import cider.common.network.ConfigurationReader;
 import cider.common.network.DebugPacketFilter;
 import cider.common.network.DebugPacketInterceptor;
 import cider.common.network.DebugPacketListener;
-import cider.common.processes.DocumentID;
+import cider.common.processes.DocumentProperties;
 import cider.common.processes.EventComparer;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.LiveFolder;
@@ -158,7 +158,7 @@ public class Client
     
     public static ArrayList<String> usersIdle = new ArrayList<String>();
 
-    public DocumentID currentDocumentID;
+    public DocumentProperties currentDocumentProperties;
 
     // FIXME: UNUSED VARIABLE
     // private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
@@ -669,7 +669,8 @@ public class Client
             shared.openTabs.put(strPath, sourceEditor);
             this.pullEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset(), true);
-            this.currentDocumentID = new DocumentID(doc.name, strPath);
+            this.currentDocumentProperties = new DocumentProperties(doc.name, strPath);
+            this.currentDocumentProperties.creationTime = doc.getCreationTime();
         }
     }
 
@@ -841,7 +842,7 @@ public class Client
 
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
-        if (this.currentDocumentID == null)
+        if (this.currentDocumentProperties == null)
         {
             if(CiderApplication.debugApp)
                 System.err
@@ -868,7 +869,7 @@ public class Client
             else
                 anchor = null;
 
-            SiHistoryFiles.saveEvents(new PriorityQueue<TypingEvent>(remainingEvents), this.currentDocumentID.path);
+            SiHistoryFiles.saveEvents(new PriorityQueue<TypingEvent>(remainingEvents), this.currentDocumentProperties.path);
             eta.getSourceDocument().push(remainingEvents);
             eta.setWaiting(false);
             eta.updateText();
@@ -920,9 +921,9 @@ public class Client
             te = new String(StringUtils.decodeBase64((String) msg
                     .getProperty("te" + eventNum)));
 
-            // TODO: Commented out stopdiversion cos it's not in use yet
-            // if (te.equals("end"))
-            // stopDiversion = true;
+            
+            if (te.equals("end"))
+                stopDiversion = true;
 
             Queue<TypingEvent> queue = queues.get(dest);
             if (queue == null)
@@ -937,12 +938,11 @@ public class Client
         for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
             this.push(entry.getValue(), entry.getKey());
 
-        // TODO: Commented out stopdiversion cos it's not in use yet
-        // if (stopDiversion)
-        // {
-        // this.typingEventDiversion.finishedUpdate();
-        // this.typingEventDiversion = null;
-        // }
+         if (stopDiversion)
+         {
+             this.typingEventDiversion.finishedUpdate();
+             this.typingEventDiversion = null;
+         }
     }
 
     public void processIsblank(Message msg)
@@ -1216,8 +1216,8 @@ public class Client
         connection.sendPacket(here);
     }
     
-    public DocumentID getCurrentDocumentID()
+    public DocumentProperties getCurrentDocumentID()
     {
-        return this.currentDocumentID;
+        return this.currentDocumentProperties;
     }
 }

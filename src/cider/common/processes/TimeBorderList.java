@@ -47,13 +47,13 @@ public class TimeBorderList
     public static final TimeBorderComparer comparer = new TimeBorderComparer();
     private TreeMap<Long, TimeBorder> timeBorders = new TreeMap<Long, TimeBorder>();
     private TreeMap<Long, TimeRegion> timeRegions = new TreeMap<Long, TimeRegion>();
-    private DocumentID documentID;
+    private DocumentProperties documentProperties;
     private Long firstTime;
     private long endTime;
 
-    public TimeBorderList(DocumentID documentID)
+    public TimeBorderList(DocumentProperties documentProperties)
     {
-        this.documentID = documentID;
+        this.documentProperties = documentProperties;
     }
     
     public void addTimeBorder(TimeBorder timeBorder)
@@ -61,7 +61,7 @@ public class TimeBorderList
         if(this.firstTime == null)
             this.firstTime = timeBorder.time;
         
-        if(!timeBorder.documentID.equals(this.documentID))
+        if(!timeBorder.documentProperties.equals(this.documentProperties))
             throw new Error("Time Border belongs to a different document");
         else
         {
@@ -137,21 +137,15 @@ public class TimeBorderList
         else
             return entry.getValue();
     }
-
-    public void useTimeBordersFrom(String currentFileName, Client client)
-    {
-        // TODO Auto-generated method stub
-
-    }
     
     public LinkedList<Entry<Long,TimeBorder>> borderList()
     {
         return new LinkedList<Entry<Long, TimeBorder>>(this.timeBorders.entrySet());
     }
     
-    public DocumentID getDocumentID()
+    public DocumentProperties getDocumentProperties()
     {
-        return this.documentID;
+        return this.documentProperties;
     }
 
     public void addRegion(TimeRegion timeRegion)
@@ -177,29 +171,38 @@ public class TimeBorderList
         this.timeRegions.put(region.end.time, region);     
     }
 
-    public void loadLocalHistory()
+    public void loadLocalBorderTimes(ArrayList<Long> borderTimes)
     {
         try
         {
-            ArrayList<Long> borderTimes = SiHistoryFiles.getBorderTimes(this.documentID.path);
-            if(borderTimes != null)
+            borderTimes.addAll(SiHistoryFiles.getBorderTimes(this.documentProperties.path));
+
+            if(borderTimes != null && borderTimes.size() > 1)
             {
-                boolean fullSet = false;
+                boolean fullSet = true;
                 for(long t : borderTimes)
                 {
-                    this.addTimeBorder(new TimeBorder(this.documentID, t, fullSet));
+                    this.addTimeBorder(new TimeBorder(this.documentProperties, t, fullSet));
                     fullSet = !fullSet;
                 }
-                
-                this.firstTime = borderTimes.get(0) - 1;
-                this.createRegions();
-                SiHistoryFiles.getEvents(this.documentID.path, this);
             }
         }
         catch(Exception e)
         {
             e.printStackTrace();
         }
+    }
+    
+    public void loadLocalEvents()
+    {
+        this.firstTime = this.timeBorders.firstKey();
+        this.createRegions();
+        SiHistoryFiles.getEvents(this.documentProperties.path, this);
+    }
+    
+    public boolean hasNoBorders()
+    {
+        return this.timeBorders.isEmpty();
     }
     
     public long getFirstTime()

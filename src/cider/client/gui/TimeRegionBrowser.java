@@ -14,6 +14,7 @@ import java.util.PriorityQueue;
 
 import javax.swing.JPanel;
 
+import cider.common.network.client.Client;
 import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.common.processes.TimeRegion;
@@ -117,12 +118,18 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     
     public int timeToYPixel(long t)
     {
-        return (int) ((t - this.tbl.getFirstTime()) * this.scale);
+        if(this.tbl.hasNoBorders())
+            return 0;
+        else
+            return (int) ((t - this.tbl.getFirstTime()) * this.scale);
     }
     
     public long yPixelToTime(int pix)
     {
-        return (long) ((pix / this.scale) + this.tbl.getFirstTime());
+        if(this.tbl.hasNoBorders())
+            return 0;
+        else
+            return (long) ((pix / this.scale) + this.tbl.getFirstTime());
     }
     
     public void paintEye(Graphics g, int x)
@@ -268,10 +275,10 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         return this.highSelection;
     }
 
-    public void downloadSelectedRegion() throws Exception
+    public void downloadSelectedRegion(Client client) throws Exception
     {
-        TimeBorder selectedBorder1 = new TimeBorder(this.tbl.getDocumentID(), this.getSelectionUpperLowerBound());
-        TimeBorder selectedBorder2 = new TimeBorder(this.tbl.getDocumentID(), this.getSelectionLowerUpperBound());
+        TimeBorder selectedBorder1 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionUpperLowerBound());
+        TimeBorder selectedBorder2 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionLowerUpperBound());
         TimeRegion outerRegion = this.getRegionContainingSelectedArea();
         
         //regions during and after selection
@@ -286,9 +293,24 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         //add new regions
         this.tbl.addRegion(selectedRegion);
         this.tbl.addRegion(afterSelection);
-        
-        this.updateBorderTimes();
-        this.updateUI();
+
+        client.setDiversion(selectedRegion);
+        selectedRegion.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                switch(ae.getID())
+                {
+                case TimeRegion.FINISHED_UPDATE:
+                {
+                    updateBorderTimes();
+                    updateUI();  
+                } break;
+                }
+            }
+        });
     }
 
     private TimeRegion getRegionContainingSelectedArea()

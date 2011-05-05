@@ -31,10 +31,11 @@ package cider.common.processes;
  * @author Lawrence
  * 
  */
-public class DocumentID
+public class DocumentProperties
 {
     public String name;
     public String path;
+    public Long creationTime;
 
     /**
      * 
@@ -43,10 +44,11 @@ public class DocumentID
      * @param path
      *            of the SourceDocument
      */
-    public DocumentID(String name, String path)
+    public DocumentProperties(String name, String path)
     {
         this.name = name;
         this.path = path;
+        this.creationTime = System.currentTimeMillis();
     }
     
     @Override
@@ -54,7 +56,7 @@ public class DocumentID
     {
         if(obj.getClass().equals(this.getClass()))
         {
-            DocumentID docID = (DocumentID)obj;
+            DocumentProperties docID = (DocumentProperties)obj;
             return docID.path.equals(this.path);
         }
         else

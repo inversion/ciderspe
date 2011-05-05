@@ -61,10 +61,12 @@ public class LiveFolder
      *            of the document
      * @return the document
      * @author Lawrence
+     * @param  
      */
-    public SourceDocument makeDocument(String name)
+    public SourceDocument makeDocument(String name, long creationTime)
     {
         SourceDocument sourceDocument = new SourceDocument(name);
+        sourceDocument.setCreationTime(creationTime);
         this.documents.put(name, sourceDocument);
         return sourceDocument;
     }
@@ -183,7 +185,7 @@ public class LiveFolder
         }
 
         for (SourceDocument doc : this.documents.values())
-            str += indent + "<Doc>" + doc.name + "</Doc>\n";
+            str += indent + "<Doc>\n" + doc.docFieldXML(indent + "\t") + indent + "</Doc>\n";
         for (LiveFolder folder : this.folders.values())
             str += indent + "<Sub>\n" + indent + "\t" + "<Folder>"
                     + folder.name + "</Folder>\n" + folder.xml(indent + "\t")
@@ -197,8 +199,8 @@ public class LiveFolder
     public static void main(String[] args)
     {
         LiveFolder folder = new LiveFolder("root", "test owner");
-        folder.makeDocument("t1");
-        folder.makeFolder("testFolder").makeDocument("t2");
+        folder.makeDocument("t1", 0);
+        folder.makeFolder("testFolder").makeDocument("t2", 0);
         // System.out.println(folder.xml(""));
     }
 

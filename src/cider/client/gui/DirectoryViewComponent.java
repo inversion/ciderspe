@@ -31,6 +31,7 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -48,13 +49,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import cider.common.network.client.Client;
 import cider.common.processes.LiveFolder;
 
 public class DirectoryViewComponent extends JPanel
 {
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
 
     /**
      * 
@@ -217,11 +219,12 @@ public class DirectoryViewComponent extends JPanel
             for (int i = 0; i < docs.size(); i++)
             {
                 Element el = (Element) docs.get(i);
-                String docName = el.getChildNodes().item(0).getNodeValue()
-                        .trim();
+                Element el2 = (Element) getChildrenByTagName(el, "Name").get(0);
+                String docName = el2.getChildNodes().item(0).getNodeValue().trim();
                 folder.add(new DefaultMutableTreeNode(docName));
-                // TODO: owner
-                parentFolder.makeDocument(docName);
+                el2 = (Element) getChildrenByTagName(el, "CreationTime").get(0);
+                String creationTime = el2.getChildNodes().item(0).getNodeValue().trim();
+                parentFolder.makeDocument(docName, Long.parseLong(creationTime));
             }
         }
     }

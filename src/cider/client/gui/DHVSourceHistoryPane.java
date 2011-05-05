@@ -38,7 +38,7 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import cider.common.processes.DocumentID;
+import cider.common.processes.DocumentProperties;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
@@ -88,7 +88,7 @@ public class DHVSourceHistoryPane extends JPanel
             {
                 try
                 {
-                    trb.downloadSelectedRegion();
+                    trb.downloadSelectedRegion(dhv.getClient());
                 }
                 catch (Exception e)
                 {
@@ -152,24 +152,24 @@ public class DHVSourceHistoryPane extends JPanel
 
     public static void main(String[] args)
     {
-        DocumentID documentID = new DocumentID("Test Document", "testpath");
+        DocumentProperties docProperties = new DocumentProperties("Test Document", "testpath");
 
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
-                new SourceDocument(documentID.name));
+                new SourceDocument(docProperties.name), null);
         dhv.setDefaultColor(Color.BLACK);
         dhv.updateText();
         dhv.setWaiting(false);
 
-        TimeBorderList tbl = new TimeBorderList(documentID);
-        SourceDocument doc = new SourceDocument(documentID.name);
-        TimeBorder border = new TimeBorder(documentID, 1000,
+        TimeBorderList tbl = new TimeBorderList(docProperties);
+        SourceDocument doc = new SourceDocument(docProperties.name);
+        TimeBorder border = new TimeBorder(docProperties, 1000,
                 new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         doc.addEvents(SourceDocument.sampleEvents(1000));
-        border = new TimeBorder(documentID, 4000, doc.orderedEvents());
+        border = new TimeBorder(docProperties, 4000, doc.orderedEvents());
         border.fullSet = true;
         tbl.addTimeBorder(border);
-        border = new TimeBorder(documentID, 5000,
+        border = new TimeBorder(docProperties, 5000,
                 new PriorityQueue<TypingEvent>());
         tbl.addTimeBorder(border);
         tbl.createRegions();

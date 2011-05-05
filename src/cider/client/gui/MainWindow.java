@@ -94,7 +94,7 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.network.client.Client;
-import cider.common.processes.DocumentID;
+import cider.common.processes.DocumentProperties;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorderList;
@@ -520,13 +520,13 @@ public class MainWindow
         // sourceHistoryDialog.setVisible(true);
         try
         {
-            DocumentID docID;
+            DocumentProperties docProperties;
             if(DEBUG)
-                docID = new DocumentID("t1", "t1.SourceDocument");
+                docProperties = new DocumentProperties("t1", "t1.SourceDocument");
             else
-                docID = this.client.currentDocumentID;
+                docProperties = this.client.currentDocumentProperties;
             
-            DocumentHistoryViewer dhv = new DocumentHistoryViewer(new SourceDocument(docID.name));
+            DocumentHistoryViewer dhv = new DocumentHistoryViewer(new SourceDocument(docProperties.name), this.client);
             if(DEBUG)
                 dhv.setDefaultColor(Color.BLACK);
             else
@@ -535,9 +535,12 @@ public class MainWindow
             dhv.updateText();
             dhv.setWaiting(false);
     
-            TimeBorderList tbl = new TimeBorderList(docID);
+            TimeBorderList tbl = new TimeBorderList(docProperties);
             
-            tbl.loadLocalHistory();
+            ArrayList<Long> borderTimes = new ArrayList<Long>();
+            borderTimes.add(docProperties.creationTime);
+            tbl.loadLocalBorderTimes(borderTimes);
+            tbl.loadLocalEvents();
             
             /*SourceDocument doc = new SourceDocument(documentID.name);
     
@@ -564,7 +567,7 @@ public class MainWindow
             app.setTimeRegionBrowser(trb);
 
             JDialog w = new JDialog(this.w, false);
-            w.setTitle(docID.path + " History");
+            w.setTitle(docProperties.path + " History");
             w.setPreferredSize(new Dimension(600, 600));
             w.setLayout(new BorderLayout());
             w.add(app);
