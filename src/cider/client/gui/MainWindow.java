@@ -116,6 +116,7 @@ public class MainWindow
     public LoginUI login;
 
     public ClientSharedComponents shared;
+    public AWTEventListener activityListener;
 
     Client client;
     private JSplitPane dirSourceEditorSeletionSplit;
@@ -1486,15 +1487,18 @@ public class MainWindow
         
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
+        // TODO: I could have avoided making idle timer shared cos I didn't notice this, can fix later if bothered but it works ok atm (Andrew)
         long eventMask = AWTEvent.MOUSE_MOTION_EVENT_MASK;
-        Toolkit.getDefaultToolkit().addAWTEventListener( new AWTEventListener()
+        
+        activityListener = new AWTEventListener()
         {
             public void eventDispatched(AWTEvent e)
             {
                 shared.idleTimer.activityDetected();
             }
-        }, eventMask);
-
+        };
+        
+        Toolkit.getDefaultToolkit().addAWTEventListener( activityListener , eventMask);
         // FIXME:
         // client.startClockSynchronisation(w);
 
