@@ -78,6 +78,7 @@ import org.jivesoftware.smackx.jingle.mediaimpl.sshare.ScreenShareMediaManager;
 import org.jivesoftware.smackx.jingle.nat.ICETransportManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
+import cider.client.gui.CiderApplication;
 import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
@@ -841,8 +842,11 @@ public class Client
     public void push(Queue<TypingEvent> typingEvents, String dest)
     {
         if (this.currentDocumentID == null)
-            System.err
-                    .println("Should not be receiving typing events when current document id is null");
+        {
+            if(CiderApplication.debugApp)
+                System.err
+                        .println("Should not be receiving typing events when current document id is null");
+        }
         else
         {
             PriorityQueue<TypingEvent> remainingEvents;
