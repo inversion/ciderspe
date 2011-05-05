@@ -303,7 +303,7 @@ public class Client
 
         // Add listener for new user chats
         userChatListener = new ClientPrivateChatListener(this,
-                clientConfig.getChatroomName());
+                clientConfig.getChatroomName(), clientConfig.getBotUsername());
         chatmanager.addChatListener(userChatListener);
 
         // Initiate voice chat stuff

@@ -34,8 +34,7 @@ public class IdleTimer
                 isIdle = true;
                 client.sendIdlePresence();
                 System.out.println("IdleTimer: Idle...");
-            }
-                
+            }     
         }
     };
     

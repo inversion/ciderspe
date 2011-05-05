@@ -27,13 +27,14 @@ public class ChatTabs extends JTabbedPane
             return;
                
         TabFlashListener tabflash = new TabFlashListener( this, this.indexOfTab( name ) );
-        tabflash.start();
         usersToTabs.put( name, tabflash );
+        tabflash.start();
     }
 
     public void tabflashstop( String name )
     {
-        usersToTabs.get( name ).stopflash();
+        if( usersToTabs.containsKey( name ) )
+            usersToTabs.get( name ).stopflash();
     }
 
     public class TabFlashListener implements ActionListener

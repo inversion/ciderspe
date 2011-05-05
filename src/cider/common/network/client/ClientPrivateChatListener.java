@@ -48,12 +48,13 @@ public class ClientPrivateChatListener implements ChatManagerListener {
     protected HashMap<String,Chat> usersToChats = new HashMap<String,Chat>();
     private HashMap<String,JScrollPane> usersToTabs = new HashMap<String,JScrollPane>();
     private Client client;
-    private String chatroomName;
+    private String chatroomName, botName;
     
-    ClientPrivateChatListener( Client caller, String chatroomName )
+    ClientPrivateChatListener( Client caller, String chatroomName, String botName )
     {
         client = caller;
         this.chatroomName = chatroomName;
+        this.botName = botName;
     }
     
     @Override
@@ -62,7 +63,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
         // The "friendly" name of the participant without the domain etc.
         String name = StringUtils.parseName( chat.getParticipant() );
         
-        if( name.equals( chatroomName ) )
+        if( name.equals( chatroomName ) || name.equals( botName ) )
             return;
         
         // TODO: Pretty sure below commented out is redundant because initiateChat doesn't let you make duplicate chats.

@@ -1481,7 +1481,7 @@ public class MainWindow
     public void startApplication(JFrame loginWindow, boolean debugApp)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        idleTimer = new IdleTimer(client, !debugApp);        
+        idleTimer = new IdleTimer(client, true);        
         
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
