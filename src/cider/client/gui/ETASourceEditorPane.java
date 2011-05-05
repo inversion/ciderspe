@@ -327,6 +327,7 @@ public class ETASourceEditorPane extends JScrollPane
             @Override
             public void keyPressed(KeyEvent ke)
             {
+                client.shared.idleTimer.activityDetected();
                 switch (ke.getKeyCode())
                 {
                     case KeyEvent.VK_LEFT:

@@ -134,7 +134,6 @@ public class MainWindow
 
     boolean offlineMode = false;
     
-    private IdleTimer idleTimer;
     public static StatusBar statusBar;
 
     /**
@@ -159,6 +158,7 @@ public class MainWindow
         login = loginUI;
 
         client = c;
+        
         receivePanel = pnlReceive();
         shared.dirView.setClient(client);
         client.addParent(this);
@@ -246,8 +246,9 @@ public class MainWindow
         }
         catch (NullPointerException npe)
         {
-            npe.printStackTrace();
             // load default user photo if custom user doesn't exist
+            if( CiderApplication.debugApp )
+                System.out.println( "No profile image for " + profile.uname + ", using default.");
             urlImage = this.getClass().getResource("defaultuser.png");
             photo = new ImageIcon(urlImage);
         }
@@ -442,7 +443,7 @@ public class MainWindow
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                    myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
@@ -1481,7 +1482,7 @@ public class MainWindow
     public void startApplication(JFrame loginWindow, boolean debugApp)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
-        idleTimer = new IdleTimer(client, true);        
+        shared.idleTimer = new IdleTimer(client, true);        
         
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
@@ -1490,7 +1491,7 @@ public class MainWindow
         {
             public void eventDispatched(AWTEvent e)
             {
-                idleTimer.mouseMoved();
+                shared.idleTimer.activityDetected();
             }
         }, eventMask);
 
@@ -1541,12 +1542,12 @@ public class MainWindow
                 {
                     if (!offlineMode)
                     {
-                        myProfile.uploadProfile(client.botChat, startTime, idleTimer.getTotalIdleTime() );
+                        myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
                         if (DEBUG)
                             System.out.println("disconnecting");
                         client.disconnect();
                     }
-                    idleTimer.stop();
+                    shared.idleTimer.stop();
                 }
                 catch(Exception e)
                 {
