@@ -314,16 +314,17 @@ public class Client
         msg.setBody("");
         msg.setProperty("ciderAction", "are you online mr bot");
         botChat.sendMessage(msg);
+        botChatListener.clientThread = Thread.currentThread();
         try
         {
             Thread.sleep(5000);
-            return botIsOnline;
         }
         catch (InterruptedException e)
         {
-            e.printStackTrace();
-            return false;
+            if( CiderApplication.debugApp )
+                System.out.println( "Bot replied within time out, thread sleep interrupted." );
         }
+        return botIsOnline;
     }
 
     /**

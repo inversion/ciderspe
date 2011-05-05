@@ -26,7 +26,6 @@ package cider.common.network.client;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -49,7 +48,8 @@ import cider.common.processes.SiHistoryFiles;
 public class ClientMessageListener implements MessageListener, ActionListener
 {
     private Client client;
-
+    protected Thread clientThread;
+    
     public ClientMessageListener(Client client)
     {
         this.client = client;
@@ -70,7 +70,11 @@ public class ClientMessageListener implements MessageListener, ActionListener
             System.exit(1);
         }
         else if (ciderAction.equals("yes i am online"))
+        {
+            // Wake up the client thread
             client.botIsOnline = true;
+            clientThread.interrupt();
+        }
         else if (ciderAction.equals("usercolour"))
         {
             Integer r = (Integer) message.getProperty("r");
