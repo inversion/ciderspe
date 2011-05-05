@@ -221,8 +221,8 @@ public class BotMessageListener implements MessageListener
                 msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
         }
 
-//        if (stopDiversion)
-//            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
+        if (stopDiversion)
+            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
 
         try
         {

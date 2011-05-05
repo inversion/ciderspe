@@ -927,14 +927,16 @@ public class Client
             
             if (te.equals("end"))
                 stopDiversion = true;
-
-            Queue<TypingEvent> queue = queues.get(dest);
-            if (queue == null)
+            else
             {
-                queue = new LinkedList<TypingEvent>();
-                queues.put(dest, queue);
+                Queue<TypingEvent> queue = queues.get(dest);
+                if (queue == null)
+                {
+                    queue = new LinkedList<TypingEvent>();
+                    queues.put(dest, queue);
+                }
+                queue.add(new TypingEvent(te));
             }
-            queue.add(new TypingEvent(te));
         }
 
         for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())

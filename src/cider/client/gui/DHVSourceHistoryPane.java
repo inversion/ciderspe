@@ -88,7 +88,7 @@ public class DHVSourceHistoryPane extends JPanel
             {
                 try
                 {
-                    trb.downloadSelectedRegion(dhv.getClient());
+                    trb.downloadSelectedRegion(dhv.getClient(), downloadRegion);
                 }
                 catch (Exception e)
                 {

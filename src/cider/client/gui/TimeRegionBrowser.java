@@ -12,6 +12,7 @@ import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
+import javax.swing.JButton;
 import javax.swing.JPanel;
 
 import cider.common.network.client.Client;
@@ -275,7 +276,7 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         return this.highSelection;
     }
 
-    public void downloadSelectedRegion(Client client) throws Exception
+    public void downloadSelectedRegion(Client client, final JButton downloadButton) throws Exception
     {
         TimeBorder selectedBorder1 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionUpperLowerBound());
         TimeBorder selectedBorder2 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionLowerUpperBound());
@@ -295,6 +296,10 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
         this.tbl.addRegion(afterSelection);
 
         client.setDiversion(selectedRegion);
+        client.pullEventsFromBot(this.tbl.getDocumentProperties().path, selectedRegion.getStartTime(), selectedRegion.getEndTime(), true);
+        System.out.println("Starting histroy download");
+        downloadButton.setEnabled(false);
+        
         selectedRegion.addActionListener(new ActionListener()
         {
 
@@ -305,6 +310,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
                 {
                 case TimeRegion.FINISHED_UPDATE:
                 {
+                    System.out.println("Done history download");
+                    downloadButton.setEnabled(true);
                     updateBorderTimes();
                     updateUI();  
                 } break;
