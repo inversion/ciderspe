@@ -523,7 +523,6 @@ public class ETASourceEditorPane extends JScrollPane
                             {
                                 // System.out.println(server.lastUpdateTime());
                                 TypingEventMode mode = inputMode;
-                                TypingEvent deleteEvent = null;
                                 String chr;
                                 int length = 1, position = eta.getCaretPosition();
                                 
@@ -545,6 +544,10 @@ public class ETASourceEditorPane extends JScrollPane
                                 case '\u0008': // Backspace char
                                     mode = TypingEventMode.backspace;
                                     chr = " ";
+                                    
+                                    // Position - 1 cos we are deleting the character before the caret
+                                    position--;
+                                    
                                     // If there is a region selected change start position to the start of this region
                                     // And make it a delete event
                                     if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
@@ -553,7 +556,7 @@ public class ETASourceEditorPane extends JScrollPane
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
                                     }
-                                    else if (eta.getCaretPosition() < 0)
+                                    else if ( position < 0 )
                                         return;
                                     break;
                                 case '\t':
