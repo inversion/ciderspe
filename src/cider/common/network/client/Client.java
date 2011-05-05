@@ -844,21 +844,23 @@ public class Client
         if (this.currentDocumentID == null)
         {
             if(CiderApplication.debugApp)
-                System.err
-                        .println("Should not be receiving typing events when current document id is null");
+                System.out.println("Ignoring typing events when current document id is null");
         }
         else
         {
             PriorityQueue<TypingEvent> remainingEvents;
 
-                remainingEvents = new PriorityQueue<TypingEvent>(typingEvents.size(), new EventComparer());
-                for (TypingEvent typingEvent : typingEvents)
-                    if (this.typingEventDiversion != null && this.typingEventDiversion.end.time > typingEvent.time)
-                        this.typingEventDiversion.end.typingEvents
-                                .add(typingEvent);
-                    else
-                        remainingEvents.add(typingEvent);
-
+            remainingEvents = new PriorityQueue<TypingEvent>(typingEvents.size(), new EventComparer());
+            for (TypingEvent typingEvent : typingEvents)
+            {
+                if (this.typingEventDiversion != null && this.typingEventDiversion.end.time > typingEvent.time)
+                    this.typingEventDiversion.end.typingEvents
+                            .add(typingEvent);
+                else
+                    remainingEvents.add(typingEvent);
+                System.out.println("Push " + typingEvent + " to " + dest);
+            }
+            
             EditorTypingArea eta = shared.openTabs.get(dest)
                     .getEditorTypingArea();
             int position = eta.getCaretPosition();
@@ -931,7 +933,6 @@ public class Client
                 queues.put(dest, queue);
             }
             queue.add(new TypingEvent(te));
-            System.out.println("Push " + te + " to " + dest);
         }
 
         for (Entry<String, Queue<TypingEvent>> entry : queues.entrySet())
