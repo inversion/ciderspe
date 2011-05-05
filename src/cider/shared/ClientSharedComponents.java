@@ -33,6 +33,7 @@ import javax.swing.JTabbedPane;
 import cider.client.gui.ChatTabs;
 import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.ETASourceEditorPane;
+import cider.client.gui.IdleTimer;
 import cider.common.processes.Profile;
 
 /**
@@ -61,4 +62,7 @@ public class ClientSharedComponents
     
     // The client's profile
     public Profile profile;
+    
+    // Idle timer
+    public IdleTimer idleTimer;
 }

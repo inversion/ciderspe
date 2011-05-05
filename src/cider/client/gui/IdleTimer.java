@@ -1,7 +1,5 @@
 package cider.client.gui;
 
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -57,12 +55,12 @@ public class IdleTimer
         return totalIdleTime;
     }
 	
-    public void mouseMoved()
+    public void activityDetected()
     {
-	    totalIdleTime += idleTime;
-	    idleTime = 0;
 	    if( isIdle )
 	    {
+	        totalIdleTime += idleTime;
+	        idleTime = 0;
 	        client.sendHerePresence();
 	        System.out.println("IdleTimer: Back...");
 	        isIdle = false;
