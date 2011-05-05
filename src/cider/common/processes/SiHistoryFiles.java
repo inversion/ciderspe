@@ -23,10 +23,12 @@ import java.util.Map.Entry;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import cider.client.gui.CiderApplication;
+
 public class SiHistoryFiles
 {
     private static boolean working = true;
-    private static boolean showStackTrace = false;
+    private static boolean showStackTrace = CiderApplication.debugApp;
     public static final String localEventFolderPath = System.getenv("APPDATA")
             + "\\cider\\localhistory\\";
     private static final String opened = "Opened ";
@@ -105,14 +107,14 @@ public class SiHistoryFiles
                 out.close();
             }
             else
-                notWorking("save events");
+                notWorking("save history events");
         }
         catch (IOException e)
         {
             working = false;
             if(showStackTrace)
                 e.printStackTrace();
-            notWorking("save events");
+            notWorking("save history events");
             JOptionPane.showMessageDialog(new JPanel(),
                     ("Error: " + e.getMessage()));
             return;
@@ -122,7 +124,7 @@ public class SiHistoryFiles
             working = false;
             if(showStackTrace)
                 e.printStackTrace();
-            notWorking("save events");
+            notWorking("save history events");
             JOptionPane.showMessageDialog(new JPanel(),
                     "Error: There is no document open!");
             return;
@@ -132,7 +134,7 @@ public class SiHistoryFiles
             if(showStackTrace)
                 e.printStackTrace();
             working = false;
-            notWorking("save events");
+            notWorking("save history events");
         }
     }
 
@@ -159,14 +161,14 @@ public class SiHistoryFiles
                 out.close();
             }
             else
-                notWorking("mark document opening");
+                notWorking("mark document history opening");
         }
         catch (Exception e)
         {
             if(showStackTrace)
                 e.printStackTrace();
             working = false;
-            notWorking("mark document opening");
+            notWorking("mark document history opening");
         }
     }
 
@@ -184,14 +186,14 @@ public class SiHistoryFiles
                 out.close();
             }
             else
-                notWorking("mark document closing");
+                notWorking("mark document history closing");
         }
         catch (Exception e)
         {
             if(showStackTrace)
                 e.printStackTrace();
             working = false;
-            notWorking("mark document closing");
+            notWorking("mark document history closing");
         }
     }
 
@@ -209,42 +211,42 @@ public class SiHistoryFiles
                 String strLine;
                 int a = closed.length();
                 int b = opened.length();
-                long t = 0;
-                boolean border;
+                Long t;
                 while ((strLine = br.readLine()) != null)
                 {
-                    border = true;
-                    
-                    if (strLine.startsWith(closed))
-                        t = Long.parseLong(strLine.substring(a,
-                                strLine.indexOf(' ', a)), TypingEvent.radix);
-                    else if (strLine.startsWith(opened))
-                        t = Long.parseLong(strLine.substring(b,
-                                strLine.indexOf(' ', b)), TypingEvent.radix);
-                    else
-                        border = false;
-                    
-                    if(border)
-                    {
+                    t = readBorderTime(strLine, a, b);
+                    if(t != null)
                         times.add(t);
-                    }
                 }
     
                 in.close();
                 return times;
             }
             else
-                notWorking("get border times");
+                notWorking("get history border times");
         }
         catch (Exception e)
         {
             if(showStackTrace)
                 e.printStackTrace();
             working = false;
-            notWorking("get border times");
+            notWorking("get history border times");
         }
         
         return null;
+    }
+
+    private static Long readBorderTime(String strLine,
+            int a, int b)
+    {
+        if (strLine.startsWith(closed))
+            return Long.parseLong(strLine.substring(a,
+                    strLine.indexOf(' ', a)), TypingEvent.radix);
+        else if (strLine.startsWith(opened))
+            return Long.parseLong(strLine.substring(b,
+                    strLine.indexOf(' ', b)), TypingEvent.radix);
+        else
+            return null;
     }
     
 
@@ -259,13 +261,12 @@ public class SiHistoryFiles
                 DataInputStream in = new DataInputStream(fstream);
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
                 String strLine;
-                Queue<TypingEvent> homogenizedEventQueue = new LinkedList<TypingEvent>();
                 TimeBorder border;
                 TypingEvent te;
-                
+                int a = closed.length();
+                int b = opened.length();
                 Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
                 border = borderQueue.poll().getValue();
-                
                 
                 String prevLine = null;
                 
@@ -284,30 +285,26 @@ public class SiHistoryFiles
                         if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
                         {
                             te = new TypingEvent(strLine);
-                            System.out.println(te.time);
-                            if(te.time < border.time)
-                            {
-                                if(te.mode.equals(TypingEventMode.homogenized))
-                                    homogenizedEventQueue.add(te);
-                                else
-                                    border.typingEvents.add(te);
-                            }
+                            if(te.text.equals("\n"))
+                                System.out.println("newline");
                             else
-                            {
+                                System.out.printf(te.text + "\t" + strLine + "\n");
+                            
+                            border.typingEvents.add(te);
+                        }
+                        else
+                        {
+                            System.out.println("Border " + readBorderTime(strLine, a, b) + "\t" + strLine);
+                            if(borderQueue.size() > 0)
                                 border = borderQueue.poll().getValue();
-                                while(!homogenizedEventQueue.isEmpty())
-                                {
-                                    te = homogenizedEventQueue.poll();
-                                    border.typingEvents.add(te);
-                                    System.out.println(te.pack());
-                                }
-                            }
+                            else
+                                return;
                         }
                     }
                 }
             }
             else
-                notWorking("get events");
+                notWorking("get history events");
         }
         catch (Exception e)
         {
@@ -315,7 +312,7 @@ public class SiHistoryFiles
                 e.printStackTrace();
             
             working = false;
-            notWorking("get events");
+            notWorking("get history events");
         }
     }
 
