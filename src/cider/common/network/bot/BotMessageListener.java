@@ -114,17 +114,17 @@ public class BotMessageListener implements MessageListener
             
             if( (String) message.getProperty( "time" ) != null )
                 this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsSince( time ), false);
+                        .eventsSince( time ), false, false);
             else
                 this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsBetween(startTime, endTime), stopDiversion);
+                        .eventsBetween(startTime, endTime), stopDiversion, false);
         }
         else if ( ciderAction.equals( "pullSimplifiedEvents" ) )
         {
             String dest = (String) message.getProperty( "path" );
             long time = Long.parseLong( (String) message.getProperty( "time" ) );
             this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                    .simplified(time).events(), false);
+                    .simplified(time).events(), false, true);
         }
         else if (ciderAction.equals("You play 2 hours to die like this?"))
         {
@@ -194,7 +194,7 @@ public class BotMessageListener implements MessageListener
 //            }
 //        }
     }
-
+    
     /**
      * Send events to a client, splitting the queue into chunks
      * 
@@ -202,9 +202,10 @@ public class BotMessageListener implements MessageListener
      * @param path
      * @param queue
      * @param stopDiversion
+     * @param sendPlain Sends plain text back rather than events.
      */
     private void pushBack(Chat chat, String path, Queue<TypingEvent> queue,
-            boolean stopDiversion)
+            boolean stopDiversion, boolean sendPlain)
     {
         Message msg = null;
         if (queue.size() == 0)
@@ -226,37 +227,64 @@ public class BotMessageListener implements MessageListener
         }
         else
         {
-            int splitInterval = 50;
-            Object[] allEvents = queue.toArray();
-            ArrayList<TypingEvent[]> splitEvents = new ArrayList<TypingEvent[]>();
-            // Split the queue of typing events into blocks of 20 so it can be sent over the network
-            for( int split = 0; split < allEvents.length; split++ )
+            if( !sendPlain ) // If sending events back normally
             {
-                if( split % splitInterval == 0 )
-                    splitEvents.add( new TypingEvent[splitInterval] );
+                int splitInterval = 50;
+                Object[] allEvents = queue.toArray();
+                ArrayList<TypingEvent[]> splitEvents = new ArrayList<TypingEvent[]>();
+                // Split the queue of typing events into blocks of 50 so it can be sent over the network
+                for( int split = 0; split < allEvents.length; split++ )
+                {
+                    if( split % splitInterval == 0 )
+                        splitEvents.add( new TypingEvent[splitInterval] );
+                    
+                    splitEvents.get( splitEvents.size()-1 )[split % splitInterval] = (TypingEvent) allEvents[split];
+                }
                 
-                splitEvents.get( splitEvents.size()-1 )[split % splitInterval] = (TypingEvent) allEvents[split];
+                // Send all of the blocks of events we have in turn as separate messages
+                for( TypingEvent[] curSplit : splitEvents)
+                {
+                    msg = new Message();
+                    msg.setBody("");
+                    msg.setProperty( "ciderAction", "pushto" );
+                    msg.setProperty( "path0", path );
+                    
+                    int i = 0;
+                    // Encode so we can send newlines           
+                    for( TypingEvent te : curSplit )
+                    {
+                        if( te == null )
+                            break;
+                        msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
+                    }
+       
+                    if (stopDiversion)
+                        msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
+                    
+                    try
+                    {
+                        chat.sendMessage( msg );
+                    }
+                    catch (XMPPException e)
+                    {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                } 
             }
-            
-            // Send all of the blocks of events we have in turn as separate messages
-            for( TypingEvent[] curSplit : splitEvents)
+            else // If sending plain text back rather than events
             {
                 msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "pushto" );
-                msg.setProperty( "path0", path );
+                msg.setProperty( "ciderAction", "pushtoPlain" );
+                msg.setProperty( "path", path );
+//                msg.setProperty( "startTime", queue.peek().time );
                 
-                int i = 0;
-                // Encode so we can send newlines           
-                for( TypingEvent te : curSplit )
-                {
-                    if( te == null )
-                        break;
-                    msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
-                }
-   
-                if (stopDiversion)
-                    msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
+                StringBuffer contents = new StringBuffer();
+                for( TypingEvent te : queue )
+                    contents.append( te.text );
+                
+                msg.setProperty( "contents",  contents.toString() );
                 
                 try
                 {
@@ -268,6 +296,7 @@ public class BotMessageListener implements MessageListener
                     e.printStackTrace();
                 }
             }
+            
         }
     }
 

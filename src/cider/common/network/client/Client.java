@@ -96,6 +96,7 @@ import cider.common.processes.SiHistoryFiles;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
+import cider.common.processes.TypingEventMode;
 import cider.documentViewerComponents.EditorTypingArea;
 import cider.shared.ClientSharedComponents;
 
@@ -990,6 +991,23 @@ public class Client
         // EditorTypingArea.highlightMargin(); //FIXME update current line
         // colour when user changes profile colour
     }
+    
+    /**
+     * Process a 'plain' push to, which is simply a document in plain text.
+     * Convert it to a queue of homogenized events.
+     * 
+     * @param msg
+     */
+    private void processPushtoPlain( Message msg )
+    {
+        Queue<TypingEvent> events = new LinkedList<TypingEvent>();
+        String contents = (String) msg.getProperty( "contents" );
+        long time = System.currentTimeMillis() - contents.length();
+        
+        TypingEvent whole = new TypingEvent(time, TypingEventMode.homogenized, 0, contents.length(), contents, null, null);
+        events.addAll( whole.explode() );
+        push( events, (String) msg.getProperty( "path" ) );
+    }
 
     /**
      * 
@@ -1004,6 +1022,11 @@ public class Client
         if (ciderAction.equals("pushto"))
         {
             processPushto(msg);
+            return true;
+        }
+        else if( ciderAction.equals( "pushtoPlain" ) )
+        {
+            processPushtoPlain( msg );
             return true;
         }
         else if (ciderAction.equals("filelist"))
