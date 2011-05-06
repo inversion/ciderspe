@@ -79,6 +79,7 @@ import org.jivesoftware.smackx.jingle.nat.ICETransportManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.CiderApplication;
+import cider.client.gui.DirectoryViewComponent;
 import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
@@ -893,6 +894,7 @@ public class Client
     {
         String xml = new String(StringUtils.decodeBase64((String) msg
                 .getProperty("xml")));
+        shared.dirView = new DirectoryViewComponent();
         shared.dirView.constructTree(xml);
         this.setLiveFolder(shared.dirView.getLiveFolder());
         this.setUpdatesAutomatically(true);

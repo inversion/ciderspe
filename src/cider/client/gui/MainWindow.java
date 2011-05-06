@@ -1538,11 +1538,11 @@ public class MainWindow
                     if (!offlineMode)
                     {
                         myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
+                        shared.idleTimer.stop();
                         if (DEBUG)
                             System.out.println("disconnecting");
                         client.disconnect();
                     }
-                    shared.idleTimer.stop();
                 }
                 catch(Exception e)
                 {
