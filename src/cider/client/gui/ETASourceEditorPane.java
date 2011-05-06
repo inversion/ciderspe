@@ -388,6 +388,7 @@ public class ETASourceEditorPane extends JScrollPane
                         {
                             String text = null;
                             TypingEvent insertRemainder = null;
+                            
                             Clipboard clipboard = getToolkit().getSystemClipboard();
                             // Credit help to http://www.javapractices.com/topic/TopicAction.do?Id=82
                             Transferable contents = clipboard.getContents( null );
@@ -423,9 +424,7 @@ public class ETASourceEditorPane extends JScrollPane
                             else
                             { // Otherwise just insert text at caret using default mode
                                 mode = inputMode;
-                                position = eta.getCaretPosition() - 1;
-                                // If overwriting move position forward 1 to overwrite in front of caret
-                                position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
+                                position = eta.getCaretPosition();
                                 length = text.length();
                             }
                             
@@ -529,7 +528,6 @@ public class ETASourceEditorPane extends JScrollPane
                                 switch (ke.getKeyChar())
                                 {
                                 case '\u007F': // Delete character
-                                    
                                     mode = TypingEventMode.delete;
                                     chr = " ";
                                     // If there is a region selected change start position to the start of this region
@@ -538,16 +536,12 @@ public class ETASourceEditorPane extends JScrollPane
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
                                     }   
-                                    else if (eta.getCaretPosition() < -1 ) // TODO: Not sure if this ever happens
+                                    else if ( position < 0 ) // TODO: Not sure if this ever happens
                                         position = 0;
                                     break;
                                 case '\u0008': // Backspace char
                                     mode = TypingEventMode.backspace;
                                     chr = " ";
-                                    
-                                    
-                                    // Position - 1 cos we are deleting the character before the caret
-                                    position--;
                                     
                                     // If there is a region selected change start position to the start of this region
                                     // And make it a delete event
@@ -557,7 +551,7 @@ public class ETASourceEditorPane extends JScrollPane
                                         position = eta.getSelectedRegion().start;
                                         length = eta.getSelectedRegion().getLength();
                                     }
-                                    else if ( position < 0 )
+                                    else if ( position < 1 )
                                         return;
                                     break;
                                 case '\t':
@@ -565,13 +559,10 @@ public class ETASourceEditorPane extends JScrollPane
                                     length = 4;
                                     ETASourceEditorPane.this.eta
                                             .requestFocusInWindow();
-                                    // If overwriting move position forward 1 to overwrite in front of caret
-                                    position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
 
                                     client.shared.profile.incrementCharCount();
                                     break;
                                 default:
-                                    client.shared.profile.incrementCharCount();
                                     // If there's a region selected we need to overwrite
                                     if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
                                     {
@@ -580,13 +571,9 @@ public class ETASourceEditorPane extends JScrollPane
                                         length = eta.getSelectedRegion().getLength();
                                     }
                                     chr = String.valueOf(ke.getKeyChar());
-                                    // If overwriting move position forward 1 to overwrite in front of caret
-                                    position = ( inputMode == TypingEventMode.overwrite ) ? position + 1 : position;
+                                    client.shared.profile.incrementCharCount();
                                     break;
                                 }
-                                
-                                if( mode == TypingEventMode.insert )
-                                    position--;
 
                                 TypingEvent te = new TypingEvent(
                                         System.currentTimeMillis()
@@ -611,7 +598,6 @@ public class ETASourceEditorPane extends JScrollPane
                                     internal.add(particle);
                                     toFile.add(particle);
                                 }
-                                
                                 
                                 SiHistoryFiles.saveEvents(toFile, client.getCurrentDocumentID().path);
 

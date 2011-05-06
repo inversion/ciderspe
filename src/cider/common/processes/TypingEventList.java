@@ -51,7 +51,7 @@ public class TypingEventList
 
     /**
      * Adds a typing event to the end of the list if its position is greater
-     * than the list size, otherwise it is inserted to the list at position + 1.
+     * than the list size, otherwise it is inserted to the list at position specified
      * 
      * @param te
      * @author Lawrence
@@ -61,7 +61,7 @@ public class TypingEventList
         if (te.position >= tel.size())
             this.tel.add(te);
         else
-            this.tel.add(te.position + 1, te);
+            this.tel.add(te.position, te);
     }
 
     /**
@@ -74,11 +74,8 @@ public class TypingEventList
     {
         if( te.position >= tel.size() )
             this.tel.add(te);
-        else if( te.position == 0 ) // Fix for trying to overwrite -1 bug
-            this.tel.set(te.position, te);
         else
-            this.tel.set(te.position - 1, te);
-
+            this.tel.set(te.position, te);
         
         // If overwriting length > 1 delete the rest of the stuff to be overwritten
         if( te.length > 1 )
@@ -86,14 +83,14 @@ public class TypingEventList
     }
 
     /**
-     * Removes the nearest typing event at position i.
+     * Removes the typing event behind the caret
      * 
      * @param position
      * @author Lawrence and Miles
      */
     public void backspace(int position)
     {
-
+    	position--;
         if (position >= tel.size())
             position = tel.size() - 1;
         if (position < 0)
@@ -120,7 +117,11 @@ public class TypingEventList
         
         // Delete for length
         for( int i = 1; i <= length; i++ )
-            backspace( position );          
+        {
+        	if( position >= tel.size() )
+        		break;
+        	this.tel.remove( position );
+        }       
     }
 
     /**

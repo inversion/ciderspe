@@ -592,8 +592,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         int start = getCurrentLine().start + getCurrentLine().lineNum - 2;
         if( select )
         {
-            System.out.println("Selecting from " + (start) + " to " + caretPosition);
-            selectedRegion = str.region( start , caretPosition+1 );
+            System.out.println("Selecting from " + (start) + " to " + getCaretPosition());
+            selectedRegion = str.region( start , caretPosition );
         }
 
         this.caretPosition = start;
@@ -609,13 +609,13 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveEnd( boolean select )
     {
-        int start = getCurrentLine().start + getCurrentLine().lineNum - 2;
+    	int start = getCurrentLine().start + getCurrentLine().lineNum - 2;;
         int length = this.getCurrentLine().str.length();
         
         if( select )
         {
-            System.out.println("Selecting from " + caretPosition + " to " + (start+length+1));
-            selectedRegion = str.region( caretPosition , (start+length+1) );
+            System.out.println("Selecting from " + getCaretPosition() + " to " + (start+length));
+            selectedRegion = str.region( caretPosition, (start+length+1) );
         }   
         
         this.caretPosition = start + length;
@@ -723,8 +723,9 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void selectAll()
     {
+    	moveDocEnd( false );
         selectedRegion = this.str.region( 0 , this.str.length() );
-        moveDocEnd( false );
+        this.updateUI();
     }
 
     /**
