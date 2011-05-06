@@ -100,9 +100,6 @@ public class ClientChatroomPresenceListener implements PacketListener {
         {
             if( nickname.equals( botUsername ) )
             {
-                parent.disconnect();
-                Toolkit.getDefaultToolkit().removeAWTEventListener( parent.getParent().activityListener );
-                parent.getParent().shared.idleTimer.stop();
                 parent.getParent().login.logout();               
                 JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
                 return;

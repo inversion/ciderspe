@@ -894,10 +894,19 @@ public class Client
     {
         String xml = new String(StringUtils.decodeBase64((String) msg
                 .getProperty("xml")));
-        shared.dirView = new DirectoryViewComponent();
         shared.dirView.constructTree(xml);
         this.setLiveFolder(shared.dirView.getLiveFolder());
+        
+        // TODO: Redundant
         this.setUpdatesAutomatically(true);
+        
+        shared.dirView.refresh();
+        
+        // Below is possibly unnecessary
+        shared.dirView.repaint();
+        shared.dirView.updateUI();
+        parent.dirSourceEditorSelectionSplit.repaint();
+        parent.dirSourceEditorSelectionSplit.updateUI();
     }
 
     /**
