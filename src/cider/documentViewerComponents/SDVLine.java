@@ -44,7 +44,7 @@ public class SDVLine
     public TypingEventList str;
     public int y;
     public int lineNum;
-    public int start;
+    private int start;
     Color[] colors;
     SourceDocumentViewer sdv;
     private static Pattern doublePattern = Pattern.compile("-?\\d+(\\.\\d*)?");
@@ -71,6 +71,11 @@ public class SDVLine
         this.y = y;
         this.str = tel;
         this.colors = new Color[this.str.length()];
+    }
+    
+    public int getPositionAtStart()
+    {
+        return this.start + this.lineNum - 1;
     }
 
     /**
