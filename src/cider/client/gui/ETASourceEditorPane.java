@@ -545,6 +545,7 @@ public class ETASourceEditorPane extends JScrollPane
                                     mode = TypingEventMode.backspace;
                                     chr = " ";
                                     
+                                    
                                     // Position - 1 cos we are deleting the character before the caret
                                     position--;
                                     

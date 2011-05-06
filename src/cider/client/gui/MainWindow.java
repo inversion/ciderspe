@@ -105,7 +105,7 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = true;
     
     JFrame w;
     public String currentDir = System.getProperty("user.dir");

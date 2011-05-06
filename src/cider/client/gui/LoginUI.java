@@ -111,7 +111,7 @@ public class LoginUI
     
     public void displayLogin()
     {
-        // splashScreen();
+        //splashScreen();
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");

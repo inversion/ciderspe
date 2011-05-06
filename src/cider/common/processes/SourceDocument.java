@@ -240,11 +240,12 @@ public class SourceDocument implements ICodeLocation, Serializable
         
         System.out.print( "Insert into existing string at beginning: ");
         doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
+        te = new TypingEvent(1, TypingEventMode.insert, -1,
                 originalMessage.length(), originalMessage, "owner", null);
         doc.addEvents(te.explode());
         msg = "Thus, ";
-        te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert, 0,
+        // Use -1 cos we are inserting ahead of the caret position
+        te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert, -1,
                 msg.length(), msg, "owner", null);
         doc.addEvents(te.explode());
         resultingMessage = doc.toString();
@@ -269,11 +270,11 @@ public class SourceDocument implements ICodeLocation, Serializable
         
         System.out.print( "Full overwrite (same length): " );
         doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
+        te = new TypingEvent(1, TypingEventMode.insert, -1,
                 originalMessage.length(), originalMessage, "owner", null);
         doc.addEvents(te.explode());
         msg = "The furry brown fox jumped over the blue dog";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 0, msg.length(), msg, "owner", null);
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, -1, msg.length(), msg, "owner", null);
         doc.addEvents(te.explode());    
         resultingMessage = doc.toString();
         if (resultingMessage.equals( "The furry brown fox jumped over the blue dog"))
@@ -284,11 +285,11 @@ public class SourceDocument implements ICodeLocation, Serializable
         
         System.out.print( "Partial overwrite (same length): " );
         doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
+        te = new TypingEvent(1, TypingEventMode.insert, -1,
                 originalMessage.length(), originalMessage, "owner", null);
         doc.addEvents(te.explode());
         msg = "vaults";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length(), msg, "owner", null);
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 19, msg.length(), msg, "owner", null);
         doc.addEvents(te.explode());    
         resultingMessage = doc.toString();
         if (resultingMessage.equals( "The quick brown fox vaults over the lazy dog"))
@@ -303,7 +304,7 @@ public class SourceDocument implements ICodeLocation, Serializable
                 originalMessage.length(), originalMessage, "owner", null);
         doc.addEvents(te.explode());
         msg = "vaults";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length()+5, msg, "owner", null);
+        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 19, msg.length()+5, msg, "owner", null);
         doc.addEvents(te.explode());    
         resultingMessage = doc.toString();
         if (resultingMessage.equals( "The quick brown fox vaults the lazy dog"))

@@ -62,7 +62,6 @@ public class TypingEventList
             this.tel.add(te);
         else
             this.tel.add(te.position + 1, te);
-        
     }
 
     /**
