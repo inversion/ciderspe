@@ -622,6 +622,8 @@ public class LoginUI
 
     public void logout()
     {
+        Toolkit.getDefaultToolkit().removeAWTEventListener( this.program.activityListener );
+        this.program.shared.idleTimer.stop();
         this.program.client.disconnect();
         this.program.killWindow();
         this.ciderApplication.restarted();

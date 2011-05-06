@@ -126,7 +126,7 @@ public class MainWindow
     public AWTEventListener activityListener;
 
     Client client;
-    private JSplitPane dirSourceEditorSeletionSplit;
+    public JSplitPane dirSourceEditorSelectionSplit;
     private JSplitPane editorChatSplit;
     private String username;
     private ArrayList<String> savedFiles = new ArrayList<String>();
@@ -1450,17 +1450,17 @@ public class MainWindow
         EditorDebugSplit.setDividerLocation(800);
 
         JPanel panel = new JPanel(new BorderLayout());
-        dirSourceEditorSeletionSplit = new JSplitPane(
+        dirSourceEditorSelectionSplit = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, shared.dirView, EditorDebugSplit);
         // dirSourceEditorSeletionSplit = new
         // JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView,
         // this.sourceEditorSection());
 
-        dirSourceEditorSeletionSplit.setOneTouchExpandable(true);
-        dirSourceEditorSeletionSplit.setBorder(emptyBorder);
+        dirSourceEditorSelectionSplit.setOneTouchExpandable(true);
+        dirSourceEditorSelectionSplit.setBorder(emptyBorder);
 
         editorChatSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                dirSourceEditorSeletionSplit, chat);
+                dirSourceEditorSelectionSplit, chat);
         editorChatSplit.setOneTouchExpandable(true);
         this.editorChatSplit.setResizeWeight(1.0);
 
@@ -1520,7 +1520,7 @@ public class MainWindow
         w.add(p);
 
         w.pack();
-        this.dirSourceEditorSeletionSplit.setDividerLocation(0.25);
+        this.dirSourceEditorSelectionSplit.setDividerLocation(0.25);
         this.editorChatSplit.setDividerLocation(0.75);
         int left = loginWindow.getX();
         int top = loginWindow.getY();
@@ -1538,11 +1538,12 @@ public class MainWindow
                     if (!offlineMode)
                     {
                         myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
-                        if (DEBUG)
-                            System.out.println("disconnecting");
-                        client.disconnect();
+                        login.logout();
+//                        shared.idleTimer.stop();
+//                        if (DEBUG)
+//                            System.out.println("disconnecting");
+//                        client.disconnect();
                     }
-                    shared.idleTimer.stop();
                 }
                 catch(Exception e)
                 {
