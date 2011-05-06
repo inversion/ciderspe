@@ -174,7 +174,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 
                         // If the caret is placed just after a newline
                         // that line might not actually have any text in it
-                        if (!caretFound && p == this.caretPosition - ln + 1)
+                        if (!caretFound && p == this.getCaretPosition() - ln)
                         {
                             if (this.caretVisible)
                             {
@@ -193,9 +193,9 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         {
                             if (!caretFound)
                             {
-                                if(p == this.caretPosition - ln - 1)
+                                if(p == this.getCaretPosition() - ln - 2)
                                     this.currentLine = line;
-                                else if(p == this.caretPosition - ln)
+                                else if(p == this.getCaretPosition() - 1 - ln)
                                 {
                                     if (this.caretVisible)
                                     {
@@ -593,7 +593,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         if( select )
         {
             System.out.println("Selecting from " + (start) + " to " + getCaretPosition());
-            selectedRegion = str.region( start , caretPosition );
+            selectedRegion = str.region( start , this.getCaretPosition() - 1  );
         }
 
         this.caretPosition = start;
@@ -615,7 +615,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         if( select )
         {
             System.out.println("Selecting from " + getCaretPosition() + " to " + (start+length));
-            selectedRegion = str.region( caretPosition, (start+length+1) );
+            selectedRegion = str.region( this.getCaretPosition() - 1 , (start+length+1) );
         }   
         
         this.caretPosition = start + length;
@@ -871,7 +871,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 int end = line.start + ln - 1 + col;
                 end = this.constrain(end);
 
-                int start = this.caretPosition;
+                int start = this.getCaretPosition() - 1 ;
 
                 if (start > end)
                     this.selectedRegion = this.str.region(end, start + 1);
@@ -918,7 +918,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected int currentPositionLocked(int offset, String user)
     {
-        int pos = this.caretPosition + offset;
+        int pos = this.getCaretPosition() - 1 + offset;
         return pos >= 0 && pos < this.str.length() ? this.str.locked(pos, user)
                 : 0;
     }
@@ -931,7 +931,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     protected void moveCaret(int spaces)
     {
         this.caretPosition += spaces;
-        this.caretPosition = constrain(this.caretPosition);
+        this.caretPosition = constrain(this.getCaretPosition() - 1);
         this.selectedRegion = null;
         this.holdCaretVisibility(true);
         this.updateUI();
