@@ -493,31 +493,35 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveUp(boolean select)
     {
-        // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
-        int lineNum = this.getCurrentLineNumber() - 2;
-        if (lineNum < 0)
-            return;
-        
-        SDVLine line = lines.get(lineNum);
-        int start = line.getPositionAtStart();
-        int length = line.str.length();
-        if (currentColNum >= length)
-            currentColNum = length - 1;
-       
-        if( select )
+        if(this.currentColNum == 0)
+            this.moveLeft(select);
+        else
         {
-            if( selectedRegion == null )
-                selectedRegion = str.region( start + currentColNum, getCaretPosition() );
-            else if( start + currentColNum < selectedRegion.start )
-                selectedRegion = str.region( start + currentColNum, selectedRegion.end );
-            else
-                selectedRegion = str.region( selectedRegion.start, start + currentColNum );
+            int lineNum = this.getCurrentLineNumber() - 2;
+            if (lineNum < 0)
+                return;
+            
+            SDVLine line = lines.get(lineNum);
+            int start = line.getPositionAtStart();
+            int length = line.str.length();
+            if (currentColNum > length)
+                currentColNum = length;
+           
+            if( select )
+            {
+                if( selectedRegion == null )
+                    selectedRegion = str.region( start + currentColNum, getCaretPosition() );
+                else if( start + currentColNum < selectedRegion.start )
+                    selectedRegion = str.region( start + currentColNum, selectedRegion.end );
+                else
+                    selectedRegion = str.region( selectedRegion.start, start + currentColNum );
+            }
+            
+            setCaretPosition( start + currentColNum);
+    
+            this.holdCaretVisibility(true);
+            this.updateUI();
         }
-        
-        setCaretPosition( start + currentColNum);
-
-        this.holdCaretVisibility(true);
-        this.updateUI();
     }
     
     /**
@@ -525,22 +529,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveDown( boolean select )
     {
-//        if (this.getCurrentLine().str.newline())
-//            this.moveRight( select );
-//        else
-//        {
-//            int lineNum = this.getCurrentLine().lineNum + 1;
-//            if (lineNum > this.lines.size())
-//                lineNum = this.lines.size();
-//            SDVLine line = this.lines.get(lineNum - 1);
-//            int start = line.start + line.lineNum - 2;
-//            int length = line.str.length();
-//            if (this.currentColNum >= length)
-//                this.currentColNum = length;
-//            this.caretPosition = start + this.currentColNum;
-//            this.updateUI();
-            
-            // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
+        if(this.currentColNum == 0)
+            this.moveRight(select);
+        else
+        {
             int lineNum = this.getCurrentLineNumber();
             if (lineNum >= lines.size())
                 return;
@@ -548,8 +540,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             SDVLine line = lines.get(lineNum);
             int start = line.getPositionAtStart();
             int length = line.str.length();
-            if (currentColNum >= length)
-                currentColNum = length - 1;
+            if (currentColNum > length)
+                currentColNum = length;
            
             if( select )
             {
@@ -561,14 +553,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                     selectedRegion = str.region( start + currentColNum, selectedRegion.start );
             }
             
-            System.out.println("\t" + currentColNum);
-            
-            // TODO: Plus 1 to compensate for newline not included in typing event list
             setCaretPosition( start + currentColNum);
-            this.currentLine = line; 
             this.holdCaretVisibility(true);
             this.updateUI();
-//        }
+        }
     }
 
     /**
@@ -752,7 +740,6 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     {
         try
         {
-            System.out.println(this.getCurrentLine().lineNum);
             return this.getCurrentLine().getLineNumber();
         }
         catch (NumberFormatException nfe)
