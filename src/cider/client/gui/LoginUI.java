@@ -118,7 +118,8 @@ public class LoginUI
         login.setResizable(false);
         try
         {
-            UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+        	com.jtattoo.plaf.noire.NoireLookAndFeel.setTheme("Default", "", "CIDEr");
+        	UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
