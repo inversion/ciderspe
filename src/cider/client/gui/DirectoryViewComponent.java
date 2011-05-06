@@ -41,6 +41,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -97,6 +98,11 @@ public class DirectoryViewComponent extends JPanel
         this.add(filesHeader, BorderLayout.NORTH);
         this.add(scrollpane, BorderLayout.CENTER);
         this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
+    }
+    
+    public void refresh()
+    {
+        ( (DefaultTreeModel) tree.getModel() ).reload();    
     }
 
     public void setClient(Client client)
