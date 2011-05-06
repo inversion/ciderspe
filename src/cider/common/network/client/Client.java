@@ -1148,6 +1148,7 @@ public class Client
         {
             Message msg = new Message();
             msg.setBody("");
+            msg.setProperty( "ciderAction", "createDoc" );
             msg.setProperty("name", name);
             msg.setProperty("path", path);
             msg.setProperty("contents", contents);

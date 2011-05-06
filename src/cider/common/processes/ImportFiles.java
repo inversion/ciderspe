@@ -41,6 +41,7 @@ public class ImportFiles
      * Used for testing only
      * @param args
      */
+
     public static void main( String[] args )
     {
         ImportFiles program = null;
@@ -87,6 +88,7 @@ public class ImportFiles
     
     /**
      * Import source files from the client's file system.
+     * Currently only imports files ending in .java.
      * 
      * @param path If path is a file, a single file will be returned in the list, if it's a directory it will be recursed.
      * 

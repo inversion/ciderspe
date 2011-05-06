@@ -51,6 +51,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -59,6 +60,9 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -87,14 +91,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+import javax.swing.filechooser.FileFilter;
 
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 
 import cider.common.network.client.Client;
 import cider.common.processes.DocumentProperties;
+import cider.common.processes.ImportFiles;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeBorderList;
@@ -105,7 +112,7 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-    private static boolean DEBUG = false;
+    private static boolean DEBUG = true;
     
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
@@ -131,7 +138,6 @@ public class MainWindow
     public static boolean LockingEnabled = true;
 
     private DebugWindow debugwindow;
-    private OutputStream baos;
 
     boolean offlineMode = false;
     
@@ -165,7 +171,6 @@ public class MainWindow
         client.addParent(this);
         profileSetup();
 
-        this.baos = new ByteArrayOutputStream();
         //PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
         // System.setOut(ps);
         //System.setErr(ps);
@@ -417,7 +422,7 @@ public class MainWindow
                 }
                 else if (action.equals("Import"))
                 {
-                    openFile();
+                    importFile();
                 }
                 else if (action.equals("New"))
                 {
@@ -630,44 +635,41 @@ public class MainWindow
 
     }
 
-    public void openFile()
+    public void importFile()
     {
         JFileChooser fc = new JFileChooser();
+        fc.setAcceptAllFileFilterUsed( false );
+        FileFilter filter = new FileNameExtensionFilter( "Java file", "java" );
+        fc.addChoosableFileFilter( filter );
         int rVal = fc.showOpenDialog(null);
         if (rVal == JFileChooser.APPROVE_OPTION)
         {
-            String temp;
-            currentDir = fc.getSelectedFile().getAbsolutePath();
-            currentFileName = fc.getSelectedFile().getName();
+            String file = fc.getSelectedFile().getAbsolutePath();
+            ImportFiles imp = null;
+            try {
+				imp = new ImportFiles( file );
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+	        HashMap<String, String> files = imp.getFiles();
+	        Iterator<Entry<String, String>> itr = files.entrySet().iterator();
 
-            // this.liveFolder = new LiveFolder("Bot", "root");
-            // SourceDocument t1 =
-            // this.liveFolder.makeDocument("t1.SourceDocument");
-            // client.openTabFor(currentDir);
-            try
-            {
-                // FileInputStream fis = new FileInputStream(currentDir +
-                // currentFileName);
-                // BufferedInputStream bis = new BufferedInputStream(fis);
-                BufferedReader br = new BufferedReader(new FileReader(
-                        currentDir));
-                currentFileContents = "";
-                while ((temp = br.readLine()) != null)
-                {
-                    currentFileContents = currentFileContents + temp + "\n";
-                }
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(new JPanel(),
-                        "Error: " + e.getMessage());
-                return;
-            }
-
+	        while (itr.hasNext())
+	        {
+	            Entry<String, String> i = itr.next();
+	            File fullPath = new File(i.getKey());
+	            client.createDocument(fullPath.getName(), fullPath.getParent(),
+	                    i.getValue());
+	        }
+           
             // tabbedPane.addTab(currentFileName, new SourceEditor(
             // currentFileContents, currentDir));
-            shared.tabbedPane.setSelectedIndex(++currentTab);
+//            shared.tabbedPane.setSelectedIndex(++currentTab);
         }
     }
 
@@ -794,6 +796,7 @@ public class MainWindow
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         // System.out.println(currentDir);
+        OutputStream baos = new ByteArrayOutputStream();
         int results = javac.run(System.in, System.out, baos, currentDir);
         
         if (results == 0)
@@ -804,24 +807,9 @@ public class MainWindow
         {
             this.debugwindow.println("Compilation failed");
         }
-        updateOutput();
+        this.debugwindow.println(baos.toString());
     }
 
-    public void updateOutput()
-    {
-        this.debugwindow.println(this.baos.toString());
-        
-        try 
-        {
-        	this.baos.flush(); 
-        	if (DEBUG)
-        		System.out.println("FLUSH");
-        }
-        catch (IOException e) 
-        {
-        	e.printStackTrace(); 
-        }
-    }
 
     void runFile()
     {

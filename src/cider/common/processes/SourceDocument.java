@@ -244,6 +244,7 @@ public class SourceDocument implements ICodeLocation, Serializable
                 originalMessage.length(), originalMessage, "owner", null);
         doc.addEvents(te.explode());
         msg = "Thus, ";
+        // Use -1 cos we are inserting ahead of the caret position
         te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert, 0,
                 msg.length(), msg, "owner", null);
         doc.addEvents(te.explode());
