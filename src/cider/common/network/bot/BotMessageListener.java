@@ -195,42 +195,79 @@ public class BotMessageListener implements MessageListener
 //        }
     }
 
+    /**
+     * Send events to a client, splitting the queue into chunks
+     * 
+     * @param chat
+     * @param path
+     * @param queue
+     * @param stopDiversion
+     */
     private void pushBack(Chat chat, String path, Queue<TypingEvent> queue,
             boolean stopDiversion)
     {
-        Message msg = new Message();
-        msg.setBody("");
-        int i = 1;
-        
+        Message msg = null;
         if (queue.size() == 0)
         {
+            msg = new Message();
+            msg.setBody("");
             msg.setProperty( "ciderAction", "isblank" );
             msg.setProperty( "path", path );
+            try
+            {
+                chat.sendMessage( msg );
+            }
+            catch (XMPPException e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return;
         }
         else
         {
-            msg.setProperty( "ciderAction", "pushto" );
-            msg.setProperty( "path0", path );
-            // Encode so we can send newlines
-            msg.setProperty( "te0", StringUtils.encodeBase64( queue.poll().pack() ) );
+            int splitInterval = 50;
+            Object[] allEvents = queue.toArray();
+            ArrayList<TypingEvent[]> splitEvents = new ArrayList<TypingEvent[]>();
+            // Split the queue of typing events into blocks of 20 so it can be sent over the network
+            for( int split = 0; split < allEvents.length; split++ )
+            {
+                if( split % splitInterval == 0 )
+                    splitEvents.add( new TypingEvent[splitInterval] );
+                
+                splitEvents.get( splitEvents.size()-1 )[split % splitInterval] = (TypingEvent) allEvents[split];
+            }
             
-//            for( ; !queue.isEmpty(); i++ )
-//                msg.setProperty( "te" + i, StringUtils.encodeBase64( queue.poll().pack() ) );
-            // TODO: Below was possibly causing the problem with garbled text
-            for (TypingEvent te : queue)
-                msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
-        }
-
-        if (stopDiversion)
-            msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
-
-        try
-        {
-            chat.sendMessage(msg);
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
+            // Send all of the blocks of events we have in turn as separate messages
+            for( TypingEvent[] curSplit : splitEvents)
+            {
+                msg = new Message();
+                msg.setBody("");
+                msg.setProperty( "ciderAction", "pushto" );
+                msg.setProperty( "path0", path );
+                
+                int i = 0;
+                // Encode so we can send newlines           
+                for( TypingEvent te : curSplit )
+                {
+                    if( te == null )
+                        break;
+                    msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
+                }
+   
+                if (stopDiversion)
+                    msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
+                
+                try
+                {
+                    chat.sendMessage( msg );
+                }
+                catch (XMPPException e)
+                {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
