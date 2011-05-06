@@ -31,7 +31,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -49,7 +48,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import cider.common.network.client.Client;
 import cider.common.processes.LiveFolder;
@@ -195,6 +193,7 @@ public class DirectoryViewComponent extends JPanel
             for (int i = 0; i < subFolder.size(); i++)
             {
                 Element el = (Element) subFolder.get(i);
+                
                 List<Element> folder = getChildrenByTagName(el, "Folder");
                 String folderName = folder.get(0).getChildNodes().item(0)
                         .getNodeValue().trim();
@@ -215,6 +214,7 @@ public class DirectoryViewComponent extends JPanel
     {
         List<Element> docs = getChildrenByTagName(docEle, "Doc");
         if (docs != null && docs.size() > 0)
+        	
         {
             for (int i = 0; i < docs.size(); i++)
             {
