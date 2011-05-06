@@ -39,7 +39,7 @@ public class StatusBar extends JPanel {
         lblUsername = new JLabel(" Logged in as: ");
         userBox.add(lblUsername);
         
-		lblCurrentPos = new JLabel("Line: TODO | Col: TODO");
+		lblCurrentPos = new JLabel("Line: - | Col: - ");
 		lblCurrentPos.setHorizontalAlignment(SwingConstants.CENTER);
 		
         Box inputBox = Box.createHorizontalBox();
