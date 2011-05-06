@@ -310,7 +310,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected int xToColumnNumber(int x)
     {
-    	int col = (int) ((x - leftMargin) / (double) characterSpacing);
+    	int col = (int) ((x - leftMargin + characterSpacing / 2) / (double) characterSpacing);
     	return col;
     }
 
@@ -838,7 +838,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 int colNumber = this.xToColumnNumber(me.getX());
                 if (colNumber > length)
                     colNumber = length;
-                this.caretPosition = start + colNumber - 1;
+                this.caretPosition = start + colNumber;
             }
         }
 
@@ -866,17 +866,17 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 if( line == null )
                     return;
                 
-                if (col > line.str.length() - 1)
-                    col = line.str.length() - 1;
-                int end = line.getPositionAtStart() + col - 2;
+                if (col > line.str.length())
+                    col = line.str.length();
+                int end = line.getPositionAtStart() + col - 1;
                 end = this.constrain(end);
 
-                int start = this.getCaretPosition() - 1 ;
+                int start = this.getCaretPosition();
 
                 if (start > end)
-                    this.selectedRegion = this.str.region(end, start + 1);
+                    this.selectedRegion = this.str.region(end + 1, start);
                 else
-                    this.selectedRegion = this.str.region(start + 1, end + 1);
+                    this.selectedRegion = this.str.region(start, end + 1);
                 this.updateUI();
             }
         }
