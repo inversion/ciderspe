@@ -416,7 +416,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected int getCaretPosition()
     {
-        return this.caretPosition + 1;
+        return this.caretPosition;
     }
     
 
@@ -430,9 +430,9 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     protected void setCaretPosition(int position)
     {
         if( position == 0 )
-            this.caretPosition = -1;
+            this.caretPosition = 0;
         else
-            this.caretPosition = constrain(position-1);
+            this.caretPosition = constrain(position);
         this.updateUI();
     }
 
@@ -589,7 +589,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveHome( boolean select )
     {
-        int start = getCurrentLine().start + getCurrentLine().lineNum - 2;
+        int start = getCurrentLine().start + getCurrentLine().lineNum - 1;
         if( select )
         {
             System.out.println("Selecting from " + (start) + " to " + getCaretPosition());
@@ -618,7 +618,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             selectedRegion = str.region( this.getCaretPosition() - 1 , (start+length+1) );
         }   
         
-        this.caretPosition = start + length;
+        this.caretPosition = start + length + 1;
 
         this.updateUI();
     }
@@ -681,7 +681,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         if (this.currentColNum >= length)
             this.currentColNum = length;
         
-        this.caretPosition = start + this.currentColNum;
+        this.caretPosition = start + this.currentColNum + 1;
         this.updateUI();
     }
     
@@ -712,7 +712,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         if (this.currentColNum >= lineLength)
             this.currentColNum = lineLength;
         
-        this.caretPosition = start + this.currentColNum;
+        this.caretPosition = start + this.currentColNum + 1;
         this.updateUI();
     }
     
@@ -838,7 +838,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 int colNumber = this.xToColumnNumber(me.getX());
                 if (colNumber > length)
                     colNumber = length;
-                this.caretPosition = start + colNumber;
+                this.caretPosition = start + colNumber + 1;
             }
         }
 
@@ -931,7 +931,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     protected void moveCaret(int spaces)
     {
         this.caretPosition += spaces;
-        this.caretPosition = constrain(this.getCaretPosition() - 1);
+        this.caretPosition = constrain(this.getCaretPosition());
         this.selectedRegion = null;
         this.holdCaretVisibility(true);
         this.updateUI();
