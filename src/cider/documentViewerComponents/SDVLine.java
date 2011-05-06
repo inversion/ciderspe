@@ -317,4 +317,9 @@ public class SDVLine
     {
         return doublePattern.matcher(string).matches();
     }
+
+    public int getLineNumber()
+    {
+        return this.lineNum;
+    }
 }

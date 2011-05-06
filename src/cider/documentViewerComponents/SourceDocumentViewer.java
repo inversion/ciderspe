@@ -143,10 +143,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             // g.fillRect(0, 0, this.getWidth(), this.getHeight());
             int p = 0;
             int ln = 0;
+            int numLines = this.lines.size();
             boolean caretFound = false;
             try
             {
-                if (this.lines.size() == 0)
+                if (numLines == 0)
                 {
                     this.paintCaret(g, -1, lineSpacing);
                 }
@@ -176,13 +177,12 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                         // that line might not actually have any text in it
                         if (!caretFound && p == this.getCaretPosition() - ln)
                         {
+                            this.currentLine = line;
+                            this.currentColNum = 0;
+                            caretFound = true;
+                            
                             if (this.caretVisible)
-                            {
-                                this.currentLine = line;
-                                this.currentColNum = 0;
-                                caretFound = true;
                                 this.paintCaret(g, -1, line.y);
-                            }
                             if (this.hasFocus())
                                 line.highlightMargin(g);
                         }
@@ -198,11 +198,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                                 else if(p == this.getCaretPosition() - 1 - ln)
                                 {
                                     if (this.caretVisible)
-                                    {
                                         this.paintCaret(g, i, line.y);
-                                        currentColNum = i + 1;
-                                        caretFound = true;
-                                    }
+
+                                    currentColNum = i + 1;
+                                    caretFound = true;
                                     if (this.hasFocus())
                                         line.highlightMargin(g);
                                 }
@@ -495,7 +494,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     protected void moveUp(boolean select)
     {
         // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
-        int lineNum = getCurrentLine().lineNum - 2;
+        int lineNum = this.getCurrentLineNumber() - 2;
         if (lineNum < 0)
             return;
         
@@ -542,15 +541,15 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
 //            this.updateUI();
             
             // TODO: Very confusing the way lines start at 0 in the arraylist but lineNums are 1 indexed
-            int lineNum = getCurrentLine().lineNum;
+            int lineNum = this.getCurrentLineNumber();
             if (lineNum >= lines.size())
                 return;
             
             SDVLine line = lines.get(lineNum);
             int start = line.getPositionAtStart();
             int length = line.str.length();
-            if (currentColNum > length)
-                currentColNum = length;
+            if (currentColNum >= length)
+                currentColNum = length - 1;
            
             if( select )
             {
@@ -562,9 +561,11 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                     selectedRegion = str.region( start + currentColNum, selectedRegion.start );
             }
             
+            System.out.println("\t" + currentColNum);
+            
             // TODO: Plus 1 to compensate for newline not included in typing event list
             setCaretPosition( start + currentColNum);
-
+            this.currentLine = line; 
             this.holdCaretVisibility(true);
             this.updateUI();
 //        }
@@ -751,7 +752,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
     {
         try
         {
-            return this.getCurrentLine().lineNum;
+            System.out.println(this.getCurrentLine().lineNum);
+            return this.getCurrentLine().getLineNumber();
         }
         catch (NumberFormatException nfe)
         {
