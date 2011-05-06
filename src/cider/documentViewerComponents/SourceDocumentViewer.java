@@ -500,10 +500,10 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             return;
         
         SDVLine line = lines.get(lineNum);
-        int start = line.start;
+        int start = line.getPositionAtStart();
         int length = line.str.length();
-        if (currentColNum > length)
-            currentColNum = length;
+        if (currentColNum >= length)
+            currentColNum = length - 1;
        
         if( select )
         {
@@ -515,7 +515,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 selectedRegion = str.region( selectedRegion.start, start + currentColNum );
         }
         
-        setCaretPosition( start + currentColNum );
+        setCaretPosition( start + currentColNum);
 
         this.holdCaretVisibility(true);
         this.updateUI();
@@ -547,7 +547,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 return;
             
             SDVLine line = lines.get(lineNum);
-            int start = line.start;
+            int start = line.getPositionAtStart();
             int length = line.str.length();
             if (currentColNum > length)
                 currentColNum = length;
@@ -563,7 +563,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
             }
             
             // TODO: Plus 1 to compensate for newline not included in typing event list
-            setCaretPosition( start + currentColNum + 1);
+            setCaretPosition( start + currentColNum);
 
             this.holdCaretVisibility(true);
             this.updateUI();
@@ -589,7 +589,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveHome( boolean select )
     {
-        int start = getCurrentLine().start + getCurrentLine().lineNum - 1;
+        int start = this.currentLine.getPositionAtStart();
         if( select )
         {
             System.out.println("Selecting from " + (start) + " to " + getCaretPosition());
@@ -609,16 +609,16 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      */
     protected void moveEnd( boolean select )
     {
-    	int start = getCurrentLine().start + getCurrentLine().lineNum - 2;;
+    	int start = this.currentLine.getPositionAtStart();
         int length = this.getCurrentLine().str.length();
         
         if( select )
         {
             System.out.println("Selecting from " + getCaretPosition() + " to " + (start+length));
-            selectedRegion = str.region( this.getCaretPosition() - 1 , (start+length+1) );
+            selectedRegion = str.region( this.getCaretPosition() , (start+length) );
         }   
         
-        this.caretPosition = start + length + 1;
+        this.caretPosition = start + length;
 
         this.updateUI();
     }
@@ -674,14 +674,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         
         // TODO: Unexplained minuses
         SDVLine line = lines.get( lineNum - 1 );
-        int start = line.start + line.lineNum - 2;
+        int start = line.getPositionAtStart();
         int length = line.str.length();
         
         // If trying to move beyond end of line
         if (this.currentColNum >= length)
             this.currentColNum = length;
         
-        this.caretPosition = start + this.currentColNum + 1;
+        this.caretPosition = start + this.currentColNum;
         this.updateUI();
     }
     
@@ -705,14 +705,14 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         
         // TODO: Unexplained minuses
         SDVLine line = lines.get( lineNum - 1 );
-        int start = line.start + line.lineNum - 2;
+        int start = line.getPositionAtStart();
         int lineLength = line.str.length();
         
         // If trying to move beyond end of line
         if (this.currentColNum >= lineLength)
-            this.currentColNum = lineLength;
+            this.currentColNum = lineLength - 1;
         
-        this.caretPosition = start + this.currentColNum + 1;
+        this.caretPosition = start + this.currentColNum - 1;
         this.updateUI();
     }
     
@@ -805,7 +805,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         if (this.lines.size() > 0)
         {
             SDVLine line = this.lines.get(ln - 1);
-            int start = line.start + ln - 2;
+            int start = line.getPositionAtStart();
             int length = line.str.length();
 
             if (me.getX() < leftMargin && length > 1)
@@ -824,7 +824,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 if (tem != null)
                 {
                     TypingEvent te = new TypingEvent(System.currentTimeMillis()
-                            + parent.getClockOffset(), tem, start, length, "",
+                            + parent.getClockOffset(), tem, start - 1, length, "",
                             parent.getUsername(), null);
 
                     for (ActionListener al : this.als)
@@ -838,7 +838,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 int colNumber = this.xToColumnNumber(me.getX());
                 if (colNumber > length)
                     colNumber = length;
-                this.caretPosition = start + colNumber + 1;
+                this.caretPosition = start + colNumber - 1;
             }
         }
 
@@ -868,7 +868,7 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
                 
                 if (col > line.str.length() - 1)
                     col = line.str.length() - 1;
-                int end = line.start + ln - 1 + col;
+                int end = line.getPositionAtStart() + col - 2;
                 end = this.constrain(end);
 
                 int start = this.getCaretPosition() - 1 ;
