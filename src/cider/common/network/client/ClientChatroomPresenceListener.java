@@ -35,6 +35,8 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
 
+import cider.client.gui.MainWindow;
+
 /**
  * 
  * Listen for Presence packets of users in the chatroom.
@@ -100,8 +102,9 @@ public class ClientChatroomPresenceListener implements PacketListener {
         {
             if( nickname.equals( botUsername ) )
             {
-                parent.getParent().login.logout();               
-                JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will now log out.");
+            	MainWindow.TimedExit();              
+                JOptionPane.showMessageDialog(new JPanel(), "Bot has gone offline, CIDER will log out in 15 seconds or when you press the button.");
+                parent.getParent().login.logout(); 
                 return;
             }
             
