@@ -31,6 +31,17 @@ public class ChatTabs extends JTabbedPane
         tabflash.start();
     }
 
+    public void removeTab( String name )
+    {
+        if( !usersToTabs.containsKey( name ) )
+            return;
+        tabflashstop( name );
+        this.remove( this.indexOfTab( name ) );
+        this.repaint();
+        this.updateUI();
+        usersToTabs.remove( name );
+    }
+    
     public void tabflashstop( String name )
     {
         if( usersToTabs.containsKey( name ) )
