@@ -43,11 +43,6 @@ import org.jivesoftware.smack.packet.Message;
 
 public class Profile implements Serializable
 {
-    
-    
-    /**
-     * 
-     */
     private static final long serialVersionUID = -4978676304815568223L;
 
     private static boolean DEBUG = true;
@@ -59,11 +54,11 @@ public class Profile implements Serializable
     public String lastOnline;
     public Color userColour;
     public int userFontSize;
-
-    
+    public int loadedIdleStartTime;
 
     public Profile(String un)
     {
+    	loadedIdleStartTime = 0;
         uname = un;
         typedChars = 0;
         timeSpent = 0;
@@ -104,7 +99,7 @@ public class Profile implements Serializable
      */
     public void updateIdleTime( int time )
     {
-        idleTime += time;
+        idleTime = time + loadedIdleStartTime;
     }
 
     public void updateLastOnline()
@@ -138,7 +133,7 @@ public class Profile implements Serializable
      * Upload this profile to the bot to be created or updated.
      * 
      * @param botChat The chat session with the bot.
-     * @param startTime The start time of this session, used to update the time spent in the profile.
+     * @param startTime The time in millis when the profile was last updated.
      * @param idleTime The amount of time spent idle in this session.
      * 
      * @author Andrew, Jon
@@ -170,10 +165,14 @@ public class Profile implements Serializable
         }
     }
 
-    /*
+    /**
      * Source: http://goo.gl/e4p3x
      * 
      * Time string from milliseconds time.
+     * 
+     * @param t The time in milliseconds to be converted
+     * 
+     * @return String of time in readable format
      */
     public static String getTimeString( long t )
     {
