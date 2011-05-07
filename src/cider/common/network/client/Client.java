@@ -79,7 +79,7 @@ import org.jivesoftware.smackx.jingle.nat.ICETransportManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.CiderApplication;
-import cider.client.gui.DirectoryViewComponent;
+import cider.client.gui.CloseButton;
 import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
@@ -497,34 +497,21 @@ public class Client
         JScrollPane messageReceiveBoxScroll = new JScrollPane(messageReceiveBox);
         messageReceiveBoxScroll.setName(user);
 
+        ///* START OF CLOSE TAB BUTTON EDIT ----------------------------------------
+        CloseButton tabCloseButton;
+        if (user.equals("Group Chat")) tabCloseButton = new CloseButton(user, false);
+        else tabCloseButton = new CloseButton(user, true);
         
-        
-        
-        /* START OF CLOSE TAB BUTTON EDIT ----------------------------------------
-        JButton tabCloseButton = new JButton();
-        tabCloseButton.setPreferredSize(new Dimension(12, 12));
-        tabCloseButton.setToolTipText("Close Tab");
-        tabCloseButton.setFocusable(false);
-        tabCloseButton.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-        tabCloseButton.setBackground(new Color(255,30,30));
-        tabCloseButton.setActionCommand(user);
         ActionListener al;
         al = new ActionListener() {
           public void actionPerformed(ActionEvent ae) {
             JButton btn = (JButton) ae.getSource();
             String s1 = btn.getActionCommand();
-            for (int i = 0; i < shared.receiveTabs.getTabCount(); i++) {
-              JPanel pnl = (JPanel) shared.receiveTabs.getTabComponentAt(i);
-              btn = (JButton) pnl.getComponent(1);
-              String s2 = btn.getActionCommand();
-              if (s1.equals(s2)) {
-                shared.receiveTabs.remove(i);
-                break;
-              }
-            }
+            shared.receiveTabs.remove(shared.receiveTabs.indexOfTab(s1));
           }
         };
         tabCloseButton.addActionListener(al);
+        
         JPanel pnl = new JPanel();
         pnl.setLayout(new FlowLayout(FlowLayout.CENTER,2,2));
         pnl.setOpaque(false);
@@ -534,10 +521,7 @@ public class Client
         pnl.add(tabCloseButton);
         shared.receiveTabs.add(messageReceiveBoxScroll);
         shared.receiveTabs.setTabComponentAt(shared.receiveTabs.getTabCount() - 1, pnl);
-        END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
-        
-        shared.receiveTabs.add(messageReceiveBoxScroll);
-        
+        //END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
         
         // If creating a tab for the chatroom, register the chatroom message
         // receive box
@@ -667,8 +651,42 @@ public class Client
             EditorTypingArea eta = new EditorTypingArea(doc);
             ETASourceEditorPane sourceEditor = new ETASourceEditorPane(eta,
                     this, strPath);
-            sourceEditor.setTabHandle(shared.tabbedPane.add(strPath,
-                    sourceEditor));
+            
+            sourceEditor.setName(strPath);
+            
+            
+            //START OF CLOSE TABS
+            CloseButton tabCloseButton = new CloseButton(strPath, true);
+            
+            ActionListener al;
+            al = new ActionListener() {
+              public void actionPerformed(ActionEvent ae) {
+                JButton btn = (JButton) ae.getSource();
+                String s1 = btn.getActionCommand();
+                
+                System.out.println("Close " + s1);
+                
+                //shared.openTabs.remove(s1);
+                shared.tabbedPane.remove(shared.tabbedPane.indexOfTab(s1));
+              }
+            };
+            tabCloseButton.addActionListener(al);
+            
+            JPanel pnl = new JPanel();
+            pnl.setLayout(new FlowLayout(FlowLayout.CENTER,2,2));
+            pnl.setOpaque(false);
+            JLabel lblUser = new JLabel(strPath);
+            lblUser.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 6));
+            pnl.add(lblUser);
+            pnl.add(tabCloseButton);
+
+            //END
+            
+            
+            
+            sourceEditor.setTabHandle(shared.tabbedPane.add(sourceEditor));
+            shared.tabbedPane.setTabComponentAt(shared.tabbedPane.getTabCount() - 1, pnl);
+            
             shared.openTabs.put(strPath, sourceEditor);
             this.pullEventsFromBot(strPath,
                     System.currentTimeMillis() + this.getClockOffset(), true);
