@@ -218,18 +218,6 @@ public class MainWindow
         if( profile == null )
             return false;
         System.out.println("Showing profile " + profile.toString());
-        // if (username.equals(myProfile.uname))
-        // {
-        // System.out.println(myProfile.timeSpent);
-        // myProfile.updateTimeSpent(startTime);
-        // System.out.println(myProfile.timeSpent);
-        // startTime = System.currentTimeMillis();
-        // }
-
-        // int count =
-        // this.client.getCurrentDocument().playOutEvents(Long.MAX_VALUE).countCharactersFor(username);
-        // myProfile.adjustCharCount(count);
-
         JFrame profileFrame = new JFrame("View Profile");
         Container content = profileFrame.getContentPane();
 
@@ -376,10 +364,9 @@ public class MainWindow
                 }
                 else if (action.equals("My Profile"))
                 {
-                    boolean exists = showProfile(myProfile);
-                    // FIXME: Never displays
-                    if( exists == false )
-                        JOptionPane.showMessageDialog( null , "Your own profile is not stored locally yet, if you quit and rejoin it will be updated." );
+                    myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
+                    resetStartTime();
+                	showProfile(myProfile);
                 }
                 else if (action.equals("Reset My Profile"))
                 {
@@ -404,16 +391,6 @@ public class MainWindow
                 {
                     showAbout();
                 }
-                else if (action.equals("Change Username"))
-                {
-                    String s = (String) JOptionPane.showInputDialog(
-                            new JPanel(), "Enter new username:",
-                            "New username", JOptionPane.PLAIN_MESSAGE);
-                    if (DEBUG)
-                        System.out.println("*************************\n"
-                            + "USERNAME CHANGED TO: \"" + s + "\"\n"
-                            + "*************************\n");
-                }
                 else if (action.equals("Change Profile Colour"))
                 {
                     changeColour();
@@ -429,6 +406,10 @@ public class MainWindow
                 else if (action.equals("New"))
                 {
                     newFile();
+                }
+                else if (action.equals("Change Profile Picture"))
+                {
+                	selectPicture();
                 }
                 else if (action.equals("Export"))
                 {
@@ -446,12 +427,13 @@ public class MainWindow
                 else if (action.equals("DEV: Pretend to quit"))
                 {
                     myProfile.updateTimeSpent(startTime);
-                    startTime = System.currentTimeMillis();
+                    resetStartTime();
                     myProfile.updateLastOnline();
                 }
                 else if (action.equals("DEV: Push profile to server"))
                 {
-                    myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
+                    myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime()/10 );
+                    resetStartTime();
                 }
                 else if (action.equals("DEV: Get profile from server"))
                 {
@@ -515,6 +497,24 @@ public class MainWindow
             }
         };
         return AL;
+    }
+    
+    /**
+     * Using this, users can select a picture for their profile.
+     */
+    protected void selectPicture() 
+    {
+		JFileChooser fc = new JFileChooser();
+		//TODO::::::::
+	}
+
+	/**
+     * To be used whenever the profile is updated. This sets the startTime variable to be when the profile
+     * was last updated.
+     */
+    public void resetStartTime()
+    {
+    	startTime = System.currentTimeMillis();
     }
 
     private void startSourceHistory()
@@ -936,7 +936,7 @@ public class MainWindow
             myProfile = new Profile(username);
             myProfile.setColour(150, 150, 150);
             announceColourChange(150, 150, 150);
-            startTime = System.currentTimeMillis();
+            resetStartTime();
         }
         else
             return;
@@ -1098,8 +1098,9 @@ public class MainWindow
 
         addMenuItem(menu, "My Profile", -1, aL);
         addMenuItem(menu, "Change Profile Colour", -1, aL);
-        addMenuItem(menu, "Change Font Size", -1, aL);
-        addMenuItem(menu, "Change Username", -1, aL);
+        addMenuItem(menu, "Change Profile Picture", -1, aL);        
+        addMenuItem(menu, "Change Font Size NYI FIXME", -1, aL);
+        //addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
 
         // menu 6
@@ -1502,6 +1503,11 @@ public class MainWindow
         {
             public void eventDispatched(AWTEvent e)
             {
+                if (shared.idleTimer.userIsIdle())
+                {
+                	myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime());
+                    resetStartTime();
+                }
                 shared.idleTimer.activityDetected();
             }
         };

@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cider.common.network.client.Client;
+import cider.common.processes.Profile;
 
 /**
  * Idle timer for MainWindow GUI. 
@@ -41,7 +42,7 @@ public class IdleTimer
         idleTime = 0;
         this.client = client;
         if(enabled)
-            timer.scheduleAtFixedRate( increment, 0, 1000 );
+            timer.scheduleAtFixedRate( increment, 0, 10000 );
     }
     
     public void stop()
@@ -54,16 +55,24 @@ public class IdleTimer
     {
         return totalIdleTime;
     }
+    
+    public boolean userIsIdle()
+    {
+    	if (isIdle)
+    		return true;
+    	else
+    		return false;
+    }
 	
     public void activityDetected()
     {
 	    if( isIdle )
 	    {
-	        totalIdleTime += idleTime;
-	        idleTime = 0;
 	        client.sendHerePresence();
 	        System.out.println("IdleTimer: Back...");
 	        isIdle = false;
+	        totalIdleTime += idleTime;
+	        idleTime = 0;
 	    }
     }
 
