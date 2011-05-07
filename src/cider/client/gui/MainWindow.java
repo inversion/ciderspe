@@ -32,8 +32,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ActionEvent;
@@ -1157,6 +1159,9 @@ public class MainWindow
 
         public void paint(Graphics g)
         {
+        	Graphics2D g2d = (Graphics2D) g;
+    		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    		
             Color bg;
 
             if (selected)
@@ -1169,26 +1174,30 @@ public class MainWindow
             }
 
             // fill background
-            g.setColor(bg);
-            g.fillRect(0, 0, getWidth(), getHeight());
+            g2d.setColor(bg);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
 
             // draw coloured rectangle and name
-            g.setColor(Color.WHITE);
-            g.fillRect(6, 6, 13, 13);
-            g.setColor(client.colours.get(name)); // get unique user color here
-            g.fillRect(7, 7, 11, 11);
+            g2d.setColor(Color.WHITE);
+            g2d.fillRoundRect(6, 6, 13, 13, 6, 6);
+            //g.fillRect(6, 6, 13, 13);
+            g2d.setColor(client.colours.get(name)); // get unique user color here
+            g2d.fillRoundRect(7, 7, 11, 11, 6, 6);
 
             String idleString = "";
             if (Client.usersIdle.contains(name)) {
+                g2d.setColor(Color.WHITE);
+                g.fillOval(12, 12, 9, 9);
+                g.setColor(new Color(220, 50, 50));
+                g.fillOval(13, 13, 7, 7);
                 g.setColor(Color.WHITE);
-                g.fillRect(13, 13, 8, 8);
-                g.setColor(Color.MAGENTA);
-                g.fillRect(14, 14, 6, 6);
+                g.drawLine(16, 13, 16, 17);
+                g.drawLine(16, 17, 18, 16);
                 idleString = " (idle)";
             }
 
             g.setColor(Color.WHITE);
-            g.drawString(name + idleString, 25, 17);
+            g.drawString(name + idleString, 26, 17);
         }
     }
 
