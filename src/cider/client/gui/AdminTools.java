@@ -26,12 +26,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.JOptionPane;
+import javax.swing.JWindow;
 import javax.swing.UIManager;
 
 public class AdminTools
 {
+	// Class creates window
     public String currentDir = "src\\cider\\client\\gui\\";
     static JFrame admintool; 
+    private JWindow creating;
 
 
     // Admin Tools fields
@@ -59,6 +63,14 @@ public class AdminTools
         admintool.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         admintool.setTitle("CIDEr - Admin Tools");
         admintool.setResizable(false);
+        
+        creating = new JWindow();
+        creating.setLocationRelativeTo(AdminTools.admintool);
+        creating.toFront();
+        JPanel panel = new JPanel();
+        creating.add(panel);
+        creating.pack();
+        
         try
         {
             UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
@@ -276,6 +288,7 @@ public class AdminTools
     }
     
     public ActionListener newAction()
+    // Listens for button presses
     {
         ActionListener AL = new ActionListener()
         {            
@@ -297,11 +310,19 @@ public class AdminTools
     
     void checkProfFields()
     {
-    	CreateProfile(txtName.getText(), new String(txtPass.getPassword()));
+    	// Tests Profile fields aren't blank and if true then creates file
+    	if ((txtName.getText().length() > 0) && (new String(txtPass.getPassword()).length() > 0))
+    	{
+    		CreateProfile(txtName.getText(), new String(txtPass.getPassword()));
+    	} else {
+    		errmsg = "One or more of the Profile fields are blank";
+    		JOptionPane.showMessageDialog(creating, errmsg);
+    	}
     }
     
     void CreateProfile(String txtName, String txtPass)
     {
+    	// Creates Profile.txt file
     	try
     	{
     		FileWriter fstream3 = new FileWriter(currentDir + "Profile.txt");
@@ -325,13 +346,24 @@ public class AdminTools
     	
     void checkConfigFields()
     {
-    	CreateConfig(txtHost.getText(),
-                txtServiceName.getText(), txtPort.getText(),
-                txtChatName.getText(), txtBotName.getText(),
-                new String(txtBotPass.getPassword()),
-                txtCheckName.getText(), new String(txtCheckPass.getPassword()),
-                txtSourceDir.getText(), txtProfileDir.getText(),
-                txtChatHistDir.getText());
+    	// Checks Config fields aren't blank and if goes to create Config file
+    	if ((txtHost.getText().length() > 0) && (txtServiceName.getText().length() > 0)
+    	   	&& (txtPort.getText().length() > 0) && (txtChatName.getText().length() > 0) 
+    	  	&& (txtBotName.getText().length() > 0)  && (new String(txtBotPass.getPassword()).length() > 0)
+    	  	&& (txtCheckName.getText().length() > 0) && (new String(txtCheckPass.getPassword()).length() > 0)
+    		&& (txtSourceDir.getText().length() > 0) && (txtProfileDir.getText().length() > 0) && (txtChatHistDir.getText().length() > 0))
+    	{
+    		CreateConfig(txtHost.getText(),
+    	        txtServiceName.getText(), txtPort.getText(),
+    		    txtChatName.getText(), txtBotName.getText(),
+    		    new String(txtBotPass.getPassword()),
+    		    txtCheckName.getText(), new String(txtCheckPass.getPassword()),
+    		    txtSourceDir.getText(), txtProfileDir.getText(),
+    		    txtChatHistDir.getText());
+    	} else {
+    		errmsg = "One or more of the Configuration fields are blank";
+    		JOptionPane.showMessageDialog(creating, errmsg);
+    	}
     }
     
     void CreateConfig(String txtHost, String txtServiceName,
@@ -339,9 +371,10 @@ public class AdminTools
             String txtBotPass, String txtCheckName, String txtCheckPass,
             String txtSourceDir, String txtProfileDir, String txtChatHistDir)
     {
+    	// Creates Bot.conf and Client.conf files
         try
         {
-            FileWriter fstream = new FileWriter(currentDir + "BotTEST.conf");
+            FileWriter fstream = new FileWriter(currentDir + "Bot.conf");
             BufferedWriter out = new BufferedWriter(fstream);
             out.write("HOST=" + txtHost);
             out.newLine();
@@ -371,7 +404,7 @@ public class AdminTools
             out.newLine();
             out.write("CHAT_HISTORY_DIR=" + txtChatHistDir);
             out.close();
-            FileWriter fstream2 = new FileWriter(currentDir + "ClientTEST.conf");
+            FileWriter fstream2 = new FileWriter(currentDir + "Client.conf");
             BufferedWriter out2 = new BufferedWriter(fstream2);
             out2.write("BOT_USERNAME=" + txtBotName);
             out2.newLine();
@@ -392,6 +425,7 @@ public class AdminTools
 
     public static void main(String[] args)
     {
+    	// Calls window creation and attempts to display it
         AdminTools ui = new AdminTools();
 
         try

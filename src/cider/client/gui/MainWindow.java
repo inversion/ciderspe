@@ -63,6 +63,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -875,6 +877,21 @@ public class MainWindow
         return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
     }
 
+    public static void TimedExit()
+    {
+     	Timer timer;
+        timer = new Timer();
+      	timer.schedule(new ProgExit(), 15000);
+    }
+      
+    static class ProgExit extends TimerTask 
+    {
+    	public void run()
+    	{
+    		System.exit(0);
+    	}
+    }
+    
     private void ChangeLocking()
     {
         if (LockingEnabled == true)
