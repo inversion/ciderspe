@@ -152,6 +152,7 @@ public class MainWindow
      */
     public long startTime = System.currentTimeMillis();
     public Profile myProfile;
+    private String profilePictureDir;
 
     MainWindow(String username, String password, String host, int port,
             String serviceName, Client c, LoginUI loginUI,
@@ -232,13 +233,22 @@ public class MainWindow
         hbox.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         URL urlImage;
+        Image img;
         ImageIcon photo;
 
         try
         {
             // load custom user photo here
-            urlImage = this.getClass().getResource(profile.uname + ".png");
-            photo = new ImageIcon(urlImage);
+        	if (profile.uname.equals(this.username) && profilePictureDir != null)
+        	{
+        		img = Toolkit.getDefaultToolkit().getImage(profilePictureDir);
+        		photo = new ImageIcon(img);
+        	}
+        	else
+        	{
+        		urlImage = this.getClass().getResource(profile.uname + ".jpg");
+        		photo = new ImageIcon(urlImage);
+        	}
         }
         catch (NullPointerException npe)
         {
@@ -501,16 +511,32 @@ public class MainWindow
     
     /**
      * Using this, users can select a picture for their profile.
+     * 
+     * @author Jon
      */
     protected void selectPicture() 
     {
 		JFileChooser fc = new JFileChooser();
-		//TODO::::::::
-	}
+		ImagePreview p = new ImagePreview();
+		
+		fc.setAccessory(p);
+		fc.addPropertyChangeListener(p);
+		fc.setAcceptAllFileFilterUsed( false );
+        FileFilter filter = new FileNameExtensionFilter( "Image file - .jpg, .png, .bmp, .gif", "jpg", "jpeg", ".png", ".bmp", ".gif" );
+		fc.addChoosableFileFilter(filter);
+		
+		int rVal = fc.showOpenDialog(null);
+        if (rVal == JFileChooser.APPROVE_OPTION)
+        {
+			profilePictureDir = fc.getSelectedFile().getAbsolutePath();
+        }
+    }
 
 	/**
      * To be used whenever the profile is updated. This sets the startTime variable to be when the profile
      * was last updated.
+     * 
+     * @author Jon
      */
     public void resetStartTime()
     {
@@ -680,10 +706,7 @@ public class MainWindow
         try
         {
             JFileChooser fc = new JFileChooser();
-            File f = new File(client.getCurrentDocument().shortName() + ".java" /*
-                                                                                 * +
-                                                                                 * ".java"
-                                                                                 */);
+            File f = new File(client.getCurrentDocument().shortName() + ".java");
             fc.setSelectedFile(f);
 
             if (currentFileName.equals("Unsaved Document 1")
