@@ -465,10 +465,6 @@ public class Client
             return;
         }
 
-        /*
-         * When you create a chat session with someone it gets bounced back and
-         * picked up by the userChatListener, which creates the tab etc.
-         */
         chatmanager.createChat(user + "@" + serviceName, null);
 
         if (DEBUG)
@@ -483,7 +479,7 @@ public class Client
      * @return The new tab created, labelled with the username it corresponds
      *         to.
      */
-    public JScrollPane createChatTab(String user)
+    public JScrollPane createChatTab(final String user)
     {
         // Create the new message box and new tab
         JTextArea messageReceiveBox = new JTextArea();
@@ -501,13 +497,12 @@ public class Client
         CloseButton tabCloseButton;
         if (user.equals("Group Chat")) tabCloseButton = new CloseButton(user, false);
         else tabCloseButton = new CloseButton(user, true);
-        
+        tabCloseButton.setName( user );
         ActionListener al;
-        al = new ActionListener() {
+        al = new ActionListener( ) {
           public void actionPerformed(ActionEvent ae) {
             JButton btn = (JButton) ae.getSource();
-            String s1 = btn.getActionCommand();
-            shared.receiveTabs.remove(shared.receiveTabs.indexOfTab(s1));
+            closeChat( btn.getName() );
           }
         };
         tabCloseButton.addActionListener(al);
@@ -520,6 +515,7 @@ public class Client
         pnl.add(lblUser);
         pnl.add(tabCloseButton);
         shared.receiveTabs.add(messageReceiveBoxScroll);
+        shared.receiveTabs.tabflash( user );
         shared.receiveTabs.setTabComponentAt(shared.receiveTabs.getTabCount() - 1, pnl);
         //END OF CLOSE TAB BUTTON EDIT ----------------------------------------- */
         
@@ -666,8 +662,10 @@ public class Client
                 
                 System.out.println("Close " + s1);
                 
-                //shared.openTabs.remove(s1);
-                shared.tabbedPane.remove(shared.tabbedPane.indexOfTab(s1));
+                shared.openTabs.get( s1 ).removeAll();
+                shared.openTabs.remove(s1);
+                //shared.tabbedPane.setSelectedIndex( --parent.currentTab );
+                shared.tabbedPane.remove( shared.tabbedPane.indexOfTab(s1) );
               }
             };
             tabCloseButton.addActionListener(al);

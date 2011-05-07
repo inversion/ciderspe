@@ -46,7 +46,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
     private static final boolean DEBUG = true;
     
     protected HashMap<String,Chat> usersToChats = new HashMap<String,Chat>();
-    private HashMap<String,JScrollPane> usersToTabs = new HashMap<String,JScrollPane>();
+    protected HashMap<String,JScrollPane> usersToTabs = new HashMap<String,JScrollPane>();
     private Client client;
     private String chatroomName, botName;
     
@@ -92,6 +92,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
             
             client.tabsToChats.put( newTab, chat );
             usersToTabs.put( name, newTab );
+            usersToChats.put( name, chat );
         }
         
         // Listen for new messages on this chat
@@ -117,7 +118,7 @@ public class ClientPrivateChatListener implements ChatManagerListener {
         
         JScrollPane tab = usersToTabs.get( name );
         client.tabsToChats.remove( tab );
-        client.shared.receiveTabs.remove( tab );
+        client.shared.receiveTabs.removeTab( name );
         client.usersToAreas.remove( name );
     }
 
