@@ -42,7 +42,7 @@ public class IdleTimer
         idleTime = 0;
         this.client = client;
         if(enabled)
-            timer.scheduleAtFixedRate( increment, 0, 10000 );
+            timer.scheduleAtFixedRate( increment, 0, 1000 );
     }
     
     public void stop()

@@ -21,10 +21,11 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
 	private int w, h;
 	private Color bg;
 	private final int size = 150;
+	private File f;
 	
 	public ImagePreview() 
 	{
-		setPreferredSize(new Dimension(155, -1));
+		setPreferredSize(new Dimension(200, 200));
 		bg = getBackground();
 	}
 	public void propertyChange(PropertyChangeEvent evt) 
@@ -32,24 +33,46 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
 		String name = evt.getPropertyName();
 		if (name.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY))
 		{
-			File f = (File)evt.getNewValue();
+			f = (File)evt.getNewValue();
 			String path;
 			if (f == null)
 				return;
 			else
 				path = f.getAbsolutePath();
+			System.out.println(path);
 			if ((path != null) && (
-					name.toLowerCase().endsWith(".jpg") ||
-					name.toLowerCase().endsWith(".jpeg")||
-					name.toLowerCase().endsWith(".gif") ||
-					name.toLowerCase().endsWith(".png") ||
-					name.toLowerCase().endsWith(".bmp") ))
+					path.toLowerCase().endsWith(".jpg") ||
+					path.toLowerCase().endsWith(".jpeg")||
+					path.toLowerCase().endsWith(".gif") ||
+					path.toLowerCase().endsWith(".png") ||
+					path.toLowerCase().endsWith(".bmp") ))
 			{
 				icon = new ImageIcon(path);
 				img = icon.getImage();
 				scaleImage();
+				loadImage();
 				repaint();
 			}					
+		}
+	}
+	
+	public void loadImage() 
+	{
+		if (f == null) 
+		{
+			icon = null;
+			return;
+		}
+
+		ImageIcon tmpIcon = new ImageIcon(f.getPath());
+
+		if (tmpIcon != null) {
+			if (tmpIcon.getIconWidth() > 200) {
+				icon = new ImageIcon(tmpIcon.getImage().getScaledInstance(
+						200, -1, Image.SCALE_FAST));
+			} else {
+				icon = tmpIcon;
+			}
 		}
 	}
 	
@@ -83,7 +106,7 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
 	public void paintComponent (Graphics g)
 	{
 		g.setColor(bg);
-		g.fillRect(0, 0, size+5, getHeight());
+		g.fillRect(0, 0, size+200, getHeight());
 		g.drawImage(img, getWidth()/ 2-w / 2 + 5, getHeight() / 2 - h / 2, this);
 		
 	}
