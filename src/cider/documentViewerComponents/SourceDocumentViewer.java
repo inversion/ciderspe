@@ -785,7 +785,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
      * @param columnNumber
      * @param yPixelCoordinate
      */
-    private void paintCaret(Graphics g, int columnNumber, int yPixelCoordinate)
+    @SuppressWarnings("static-access")
+	private void paintCaret(Graphics g, int columnNumber, int yPixelCoordinate)
     {
         g.setColor(EditorTypingArea.parent.colours.get(EditorTypingArea.parent
                 .getUsername())/* Color.BLUE */);
@@ -812,7 +813,8 @@ public class SourceDocumentViewer extends JPanel implements MouseListener,
         MainWindow.statusBar.setLineNo((yPixelCoordinate / lineSpacing));
     }
 
-    @Override
+    @SuppressWarnings("static-access")
+	@Override
     /**
      * calls paint methods on the ETALines
      */
