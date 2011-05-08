@@ -102,6 +102,12 @@ public class BotMessageListener implements MessageListener
         sendFileList(null);
     }
 
+    /**
+     * Parses the body of the XMPP message that has been sent to the bot by the client.
+     * @param chat The XMPP private chat
+     * @param message The XMPP message that has been transmitted over the chat
+     * @author Andrew, Jon
+     */
     @Override
     public void processMessage(Chat chat, Message message)
     {
@@ -202,41 +208,6 @@ public class BotMessageListener implements MessageListener
                 e.printStackTrace();
             }
         }
-        // else if ( subject.equals( "timeRequest" ) )
-        // {
-        // // 2: Upon receipt by server, server stamps server-time and returns
-        // try
-        // {
-        // String sentTime = body.split("\\(")[1];
-        // sentTime = sentTime.split("\\)")[0];
-        // chat.sendMessage("timeReply(" + sentTime + ","
-        // + System.currentTimeMillis() + ")");
-        // }
-        // catch (XMPPException e)
-        // {
-        //
-        // e.printStackTrace();
-        // }
-        // }
-
-        // probably not useful anymore \/ // TODO: Remove
-        // else if (body.startsWith("pushto("))
-        // {
-        // System.err.println("SHOULDNT GET HERE");
-        // body = new String("(" + StringUtils.decodeBase64(body.substring(7)));
-        // String[] instructions = body.split("\\) \\n");
-        // for (String instruction : instructions)
-        // {
-        // String[] preAndAfter = instruction.split("\\) ");
-        // String[] pre = preAndAfter[0].split("\\(");
-        // String dest = pre[1];
-        // dest = dest.replace("root\\", "");
-        // Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-        // typingEvents.add(new TypingEvent(preAndAfter[1]));
-        // System.out.println("Push " + preAndAfter[1] + " to " + dest);
-        // this.bot.getRootFolder().path(dest).push(typingEvents);
-        // }
-        // }
     }
 
     /**
@@ -465,16 +436,37 @@ public class BotMessageListener implements MessageListener
             {
                 // Send message indicating no profile was found
                 Message msg = new Message();
+                bot.profiles.put(username, new Profile(username));
+                Profile profile = bot.profiles.get(username);
+                msg.setBody("");
+                msg.setProperty("ciderAction", "profile");
+                msg.setProperty("username", profile.getUsername());
+                msg.setProperty("chars", profile.getTypedChars());
+                msg.setProperty("timeSpent", profile.getTimeSpent());
+                msg.setProperty("idleTime", profile.getIdleTime());
+                msg.setProperty("lastOnline", profile.getLastOnline());
+                msg.setProperty("r", profile.getColour().getRed());
+                msg.setProperty("g", profile.getColour().getGreen());
+                msg.setProperty("b", profile.getColour().getBlue());
+                msg.setProperty("fontSize", profile.getUserFontSize());
+
+                // If we want the profile to pop up at the other end
+                if (message.getProperty("show") != null)
+                    msg.setProperty("show", "true");
+
+                chat.sendMessage(msg);
+                System.out.println("BotMessageListener: Profile CREATED, sent.");
+                /*
                 msg.setBody("");
                 msg.setProperty("ciderAction", "notfound");
                 msg.setProperty("username", username);
                 // If we want the warning box to pop up at the other end
                 if (message.getProperty("show") != null)
-                    msg.setProperty("show", "true");
+                    msg.setProperty("show", "false");
 
                 chat.sendMessage(msg);
                 System.out.println("BotMessageListener: Profile not found for "
-                        + username);
+                        + username);*/
             }
         }
         catch (XMPPException e)
@@ -509,10 +501,8 @@ public class BotMessageListener implements MessageListener
     /**
      * Update the profile in the bot's memory with the one sent by a client.
      * 
-     * @param message
-     *            The message containing the new profile information.
-     * @param chat
-     *            The chat the message was received on.
+     * @param message The message containing the new profile information.
+     * @param chat The chat the message was received on.
      * 
      * @author Andrew
      */

@@ -111,174 +111,6 @@ import cider.shared.ClientSharedComponents;
 
 public class MainWindow
 {
-    public class Error
-    {
-        public void errorMessage(String message, String title)
-        {
-            JOptionPane.showMessageDialog(w, message, title,
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    @SuppressWarnings("serial")
-    class MyListCellRenderer extends JLabel implements ListCellRenderer
-    {
-        boolean selected = false;
-        int index;
-        String name;
-
-        public Component getListCellRendererComponent(JList paramlist,
-                Object value, int index, boolean isSelected,
-                boolean cellHasFocus)
-        {
-            selected = isSelected;
-            this.index = index;
-            name = value.toString();
-
-            return this;
-        }
-
-        @SuppressWarnings("static-access")
-        public void paint(Graphics g)
-        {
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-
-            Color bg;
-
-            if (selected)
-            {
-                bg = Color.GRAY;
-            }
-            else
-            {
-                bg = Color.DARK_GRAY;
-            }
-
-            // fill background
-            g2d.setColor(bg);
-            g2d.fillRect(0, 0, getWidth(), getHeight());
-
-            // draw coloured rectangle and name
-            g2d.setColor(Color.WHITE);
-            g2d.fillRoundRect(6, 6, 13, 13, 6, 6);
-            // g.fillRect(6, 6, 13, 13);
-            g2d.setColor(client.colours.get(name)); // get unique user color
-                                                    // here
-            g2d.fillRoundRect(7, 7, 11, 11, 6, 6);
-
-            String idleString = "";
-            if (Client.usersIdle.contains(name))
-            {
-                g2d.setColor(Color.WHITE);
-                g.fillOval(12, 12, 9, 9);
-                g.setColor(new Color(220, 50, 50));
-                g.fillOval(13, 13, 7, 7);
-                g.setColor(Color.WHITE);
-                g.drawLine(16, 13, 16, 17);
-                g.drawLine(16, 17, 18, 16);
-                idleString = " (idle)";
-            }
-
-            g.setColor(Color.WHITE);
-            g.drawString(name + idleString, 26, 17);
-        }
-    }
-
-    static class ProgExit extends TimerTask
-    {
-        public void run()
-        {
-            System.exit(0);
-        }
-    }
-
-    private static boolean DEBUG = true;
-
-    /**
-     * Adds an item to the dropdown menu specified in the parameters.
-     * 
-     * @param menu
-     *            The menu that the dropdown item is being added to.
-     * @param name
-     *            The String that will appear on the new menu item.
-     * @param keyEvent
-     *            The keystroke that will act as a shortcut for this menu item.
-     *            -1 for no keystroke.
-     * @param a
-     *            The ActionListener that listens to the menu items' clicks.
-     */
-    public static void addMenuItem(JMenu menu, String name, int keyEvent,
-            ActionListener a)
-    {
-        JMenuItem menuItem = new JMenuItem(name);
-        menuItem.addActionListener(a);
-        if (keyEvent != -1)
-            menuItem.setAccelerator(KeyStroke.getKeyStroke(keyEvent,
-                    ActionEvent.CTRL_MASK));
-        menu.add(menuItem);
-    }
-
-    /**
-     * 
-     * @return True if operating system is Mac, False if not.
-     */
-    public static boolean isMac()
-    {
-        String os = System.getProperty("os.name").toLowerCase();
-        // Mac
-        return (os.indexOf("mac") >= 0);
-    }
-
-    /**
-     * 
-     * @return True if operating system is Unix, False if not.
-     */
-    public static boolean isUnix()
-    {
-
-        String os = System.getProperty("os.name").toLowerCase();
-        // linux or unix
-        return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
-    }
-
-    /**
-     * 
-     * @return True if operating system is Windows, False if not.
-     */
-    public static boolean isWindows()
-    {
-        String os = System.getProperty("os.name").toLowerCase();
-        // windows
-        return (os.indexOf("win") >= 0);
-    }
-
-    /**
-     * The MainWindow offline entry point - online features are not available in
-     * this GUI debugging version.
-     * 
-     * @param args
-     */
-    public static void main(String[] args)
-    {
-        DEBUG = true;
-        MainWindow app = new MainWindow();
-        app.offlineMode = true;
-        app.startApplication(new JFrame(), true);
-        app.w.setTitle("MainWindow offline entry point");
-    }
-
-    /**
-     * Exits the program after 15000ms.
-     */
-    public static void TimedExit()
-    {
-        Timer timer;
-        timer = new Timer();
-        timer.schedule(new ProgExit(), 15000);
-    }
-
     JFrame w;
     public String currentDir = System.getProperty("user.dir");
     public String currentFileName = "Unsaved Document 1";
@@ -1747,5 +1579,172 @@ public class MainWindow
             e.printStackTrace();
         }
 
+    }
+    public class Error
+    {
+        public void errorMessage(String message, String title)
+        {
+            JOptionPane.showMessageDialog(w, message, title,
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    @SuppressWarnings("serial")
+    class MyListCellRenderer extends JLabel implements ListCellRenderer
+    {
+        boolean selected = false;
+        int index;
+        String name;
+
+        public Component getListCellRendererComponent(JList paramlist,
+                Object value, int index, boolean isSelected,
+                boolean cellHasFocus)
+        {
+            selected = isSelected;
+            this.index = index;
+            name = value.toString();
+
+            return this;
+        }
+
+        @SuppressWarnings("static-access")
+        public void paint(Graphics g)
+        {
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+
+            Color bg;
+
+            if (selected)
+            {
+                bg = Color.GRAY;
+            }
+            else
+            {
+                bg = Color.DARK_GRAY;
+            }
+
+            // fill background
+            g2d.setColor(bg);
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+
+            // draw coloured rectangle and name
+            g2d.setColor(Color.WHITE);
+            g2d.fillRoundRect(6, 6, 13, 13, 6, 6);
+            // g.fillRect(6, 6, 13, 13);
+            g2d.setColor(client.colours.get(name)); // get unique user color
+                                                    // here
+            g2d.fillRoundRect(7, 7, 11, 11, 6, 6);
+
+            String idleString = "";
+            if (Client.usersIdle.contains(name))
+            {
+                g2d.setColor(Color.WHITE);
+                g.fillOval(12, 12, 9, 9);
+                g.setColor(new Color(220, 50, 50));
+                g.fillOval(13, 13, 7, 7);
+                g.setColor(Color.WHITE);
+                g.drawLine(16, 13, 16, 17);
+                g.drawLine(16, 17, 18, 16);
+                idleString = " (idle)";
+            }
+
+            g.setColor(Color.WHITE);
+            g.drawString(name + idleString, 26, 17);
+        }
+    }
+
+    static class ProgExit extends TimerTask
+    {
+        public void run()
+        {
+            System.exit(0);
+        }
+    }
+
+    private static boolean DEBUG = true;
+
+    /**
+     * Adds an item to the dropdown menu specified in the parameters.
+     * 
+     * @param menu
+     *            The menu that the dropdown item is being added to.
+     * @param name
+     *            The String that will appear on the new menu item.
+     * @param keyEvent
+     *            The keystroke that will act as a shortcut for this menu item.
+     *            -1 for no keystroke.
+     * @param a
+     *            The ActionListener that listens to the menu items' clicks.
+     */
+    public static void addMenuItem(JMenu menu, String name, int keyEvent,
+            ActionListener a)
+    {
+        JMenuItem menuItem = new JMenuItem(name);
+        menuItem.addActionListener(a);
+        if (keyEvent != -1)
+            menuItem.setAccelerator(KeyStroke.getKeyStroke(keyEvent,
+                    ActionEvent.CTRL_MASK));
+        menu.add(menuItem);
+    }
+
+    /**
+     * 
+     * @return True if operating system is Mac, False if not.
+     */
+    public static boolean isMac()
+    {
+        String os = System.getProperty("os.name").toLowerCase();
+        // Mac
+        return (os.indexOf("mac") >= 0);
+    }
+
+    /**
+     * 
+     * @return True if operating system is Unix, False if not.
+     */
+    public static boolean isUnix()
+    {
+
+        String os = System.getProperty("os.name").toLowerCase();
+        // linux or unix
+        return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
+    }
+
+    /**
+     * 
+     * @return True if operating system is Windows, False if not.
+     */
+    public static boolean isWindows()
+    {
+        String os = System.getProperty("os.name").toLowerCase();
+        // windows
+        return (os.indexOf("win") >= 0);
+    }
+
+    /**
+     * The MainWindow offline entry point - online features are not available in
+     * this GUI debugging version.
+     * 
+     * @param args
+     */
+    public static void main(String[] args)
+    {
+        DEBUG = true;
+        MainWindow app = new MainWindow();
+        app.offlineMode = true;
+        app.startApplication(new JFrame(), true);
+        app.w.setTitle("MainWindow offline entry point");
+    }
+
+    /**
+     * Exits the program after 15000ms.
+     */
+    public static void TimedExit()
+    {
+        Timer timer;
+        timer = new Timer();
+        timer.schedule(new ProgExit(), 15000);
     }
 }

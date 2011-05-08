@@ -274,8 +274,6 @@ public class ETASourceEditorPane extends JScrollPane
                     if (ke.isControlDown())
                     {
                         String text = null;
-                        TypingEvent insertRemainder = null;
-
                         Clipboard clipboard = getToolkit().getSystemClipboard();
                         // Credit help to
                         // http://www.javapractices.com/topic/TopicAction.do?Id=82
