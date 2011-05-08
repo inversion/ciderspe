@@ -26,10 +26,8 @@ package cider.client.gui;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
@@ -74,15 +72,12 @@ public class LoginUI
 {
 	private int Retrieved = 0;
 	private int NotPort;
-    public String currentDir = "src\\cider\\client\\gui\\"; // this is from
-                                                            // MainWindow.java
+    public String currentDir = "src\\cider\\client\\gui\\";
 
-    static JFrame login; // TODO changed from private to static?
+    static JFrame login;
     private JWindow connecting;
 
-    // Default values for login box
     public static final String DEFAULT_HOST = "xmpp.org.uk";
-    // TODO: Should be numeric really
     public static final String DEFAULT_PORT = "5222";
     public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
     
@@ -104,11 +99,19 @@ public class LoginUI
     
     CiderApplication ciderApplication;
 
+    /**
+     * Initialises the LoginUI
+     * 
+     * @param ciderApplication The object that is calling the LoginUI constructor
+     */
     public LoginUI(CiderApplication ciderApplication)
     {
         this.ciderApplication = ciderApplication;
     }
     
+    /**
+     * The method that initialises the GUI element of the LoginUI, and handles events.
+     */
     public void displayLogin()
     {
         //splashScreen();
@@ -270,7 +273,9 @@ public class LoginUI
         makeLocalHistoryFolder();
     }
     
-    
+    /**
+     * Creates a folder dedicated to holding the chat history
+     */
     private static void makeLocalHistoryFolder()
     {
         File f;
@@ -279,31 +284,6 @@ public class LoginUI
             f.mkdirs(); 
     }
     
-
-    private void splashScreen()
-    {
-        // TODO: Can't we just put a nice image into the connecting box and eliminate the need for this? (Andrew)
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        JFrame f = new JFrame();
-        f.setBounds((dim.width - 800) / 2, (dim.height - 600) / 2, 800, 600);
-        f.setUndecorated(true);
-        f.setVisible(true);
-
-        Container layout = f.getContentPane();
-        layout.setLayout(new GridLayout(5, 1));
-
-        try
-        {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException e)
-        {
-            
-            e.printStackTrace();
-        }
-        f.dispose();
-    }
-
     /**
      * Checks for login.txt file and fills in the details if found
      * 
@@ -388,10 +368,11 @@ public class LoginUI
         }
     }
     
+    /**
+     * Executed when the user requests a login.
+     */
     void checkLogin()
     {
-        // TODO: Can we have some commenting on what methods actually do please
-        // GUI people
         if (chkRemember.isSelected() == true)
         {
             saveLoginDetails(txtUsername.getText(),
@@ -445,13 +426,21 @@ public class LoginUI
         return AL;
     }
 
+    /**
+     * Saves the login details for later use in an encrypted file. To be called after login and when the 
+     * "remember my details" checkbox is checked.
+     * 
+     * @param txtUsername The username to be saved
+     * @param txtPassword The password to be saved
+     * @param txtServiceName The service name to be saved
+     * @param txtHost The hostname to be saved
+     * @param txtPort The port number to be saved
+     */
     void saveLoginDetails(String txtUsername, String txtPassword,
             String txtServiceName, String txtHost, String txtPort)
     {
-        // TODO password encryption / encrypt everything
         System.out.println("Saving login details for '" + txtUsername
                 + "' in directory: " + currentDir);
-
         try
         {
             FileWriter fstream = new FileWriter(currentDir + "login.txt");
@@ -480,6 +469,11 @@ public class LoginUI
         g.drawString("Connecting...", 5, 50);
     }
 
+    /**
+     * A thread that is run in parallel with the connection thread. Handles the connecting 
+     * animated box.
+     * 
+     */
     Thread connectBox()
     {
 
@@ -543,6 +537,11 @@ public class LoginUI
 
     }
 
+    /**
+     * Thread that is run in parallel with the thread that handles the loading animation.
+     * Handles the connection to the XMPP server.
+     * 
+     */
     Thread connectMainWindow()
     {
         // On connect, close login and connect JFrames, run MainWindow
@@ -557,7 +556,6 @@ public class LoginUI
             final ClientSharedComponents sharedComponents = new ClientSharedComponents();
             sharedComponents.profile = new Profile( txtUsername.getText() );
 
-            // TODO: Recommended to zero bytes of password after use
             // TODO: Check that fields aren't null/validation stuff
             client = new Client(txtUsername.getText(), new String(
                     txtPassword.getPassword()), txtHost.getText(),
@@ -566,7 +564,6 @@ public class LoginUI
 
             Runnable runner = new Runnable()
             {
-
                 @Override
                 public void run()
                 {
@@ -584,10 +581,7 @@ public class LoginUI
                         else
                         {
                             program = new MainWindow(txtUsername.getText(),
-                                    new String(txtPassword.getPassword()),
-                                    txtHost.getText(), Integer.parseInt(txtPort
-                                            .getText()),
-                                    txtServiceName.getText(), client,
+                                    client,
                                     LoginUI.this, sharedComponents);
 
                             connecting.setVisible(false);
@@ -621,6 +615,12 @@ public class LoginUI
         return null;
     }
 
+    /**
+     * When called, this method logs the user out of the XMPP session, leaves the chatroom,
+     * and displays the LoginUI GUI.
+     * 
+     * @author Jon
+     */
     public void logout()
     {
         Toolkit.getDefaultToolkit().removeAWTEventListener( this.program.activityListener );
