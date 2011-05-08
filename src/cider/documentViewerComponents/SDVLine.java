@@ -147,7 +147,7 @@ public class SDVLine
                     if (str.endsWith("*/") == true)
                         sdv.setCommentFound(false);
                 }
-            if (sdv.Highlighting == 1)
+            if (SourceDocumentViewer.Highlighting == 1)
             {
                 userwash(colors, lineNum, i, i + length);
             }
