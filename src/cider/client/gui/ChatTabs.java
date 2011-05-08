@@ -22,12 +22,19 @@ public class ChatTabs extends JTabbedPane
     
     public void tabflash( String name )
     {
+        TabFlashListener tabflash;
         // Don't flash the tab if it's the currently selected one
         if( this.getSelectedIndex() == this.indexOfTab( name ) )
             return;
-               
-        TabFlashListener tabflash = new TabFlashListener( this, this.indexOfTab( name ) );
-        usersToTabs.put( name, tabflash );
+        
+        if( !usersToTabs.containsKey( name ) )
+        {
+            tabflash = new TabFlashListener( this, this.indexOfTab( name ) );
+            usersToTabs.put( name, tabflash );
+        }
+        else
+            tabflash = usersToTabs.get( name );
+        
         tabflash.start();
     }
 

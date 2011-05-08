@@ -25,10 +25,8 @@ package cider.common.network.client;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -42,12 +40,11 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -57,8 +54,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ProgressMonitor;
-import javax.swing.SwingConstants;
-import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.jivesoftware.smack.Chat;
 import org.jivesoftware.smack.ChatManager;
@@ -68,14 +63,6 @@ import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Presence;
 import org.jivesoftware.smack.util.StringUtils;
-import org.jivesoftware.smackx.jingle.JingleManager;
-import org.jivesoftware.smackx.jingle.JingleSession;
-import org.jivesoftware.smackx.jingle.JingleSessionRequest;
-import org.jivesoftware.smackx.jingle.listeners.JingleSessionRequestListener;
-import org.jivesoftware.smackx.jingle.media.JingleMediaManager;
-import org.jivesoftware.smackx.jingle.mediaimpl.jspeex.SpeexMediaManager;
-import org.jivesoftware.smackx.jingle.mediaimpl.sshare.ScreenShareMediaManager;
-import org.jivesoftware.smackx.jingle.nat.ICETransportManager;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.client.gui.CiderApplication;
@@ -84,9 +71,6 @@ import cider.client.gui.ETASourceEditorPane;
 import cider.client.gui.LoginUI;
 import cider.client.gui.MainWindow;
 import cider.common.network.ConfigurationReader;
-import cider.common.network.DebugPacketFilter;
-import cider.common.network.DebugPacketInterceptor;
-import cider.common.network.DebugPacketListener;
 import cider.common.processes.DocumentProperties;
 import cider.common.processes.EventComparer;
 import cider.common.processes.ImportFiles;
@@ -149,9 +133,9 @@ public class Client
     protected HashMap<String, JTextArea> usersToAreas = new HashMap<String, JTextArea>();
 
     // Jingle (voice chat) stuff
-    private JingleManager jm;
-    private JingleSession incoming = null;
-    private JingleSession outgoing = null;
+//    private JingleManager jm;
+//    private JingleSession incoming = null;
+//    private JingleSession outgoing = null;
 
     // The current user's profile
     public Profile profile;
@@ -161,9 +145,6 @@ public class Client
     public static ArrayList<String> usersIdle = new ArrayList<String>();
 
     public DocumentProperties currentDocumentProperties;
-
-    // FIXME: UNUSED VARIABLE
-    // private ArrayList<ActionListener> als = new ArrayList<ActionListener>();
 
     protected HashMap<JScrollPane, Object> tabsToChats = new HashMap<JScrollPane, Object>();
 
@@ -216,41 +197,41 @@ public class Client
      * 
      * @author Andrew
      */
-    private void initJingle()
-    {
-        ICETransportManager icetm0 = new ICETransportManager(connection,
-                clientConfig.getStunServer(), clientConfig.getStunPort());
-        List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>();
-        // mediaManagers.add(new JmfMediaManager(icetm0));
-        mediaManagers.add(new SpeexMediaManager(icetm0));
-        mediaManagers.add(new ScreenShareMediaManager(icetm0));
-        jm = new JingleManager(connection, mediaManagers);
-        jm.addCreationListener(icetm0);
-
-        jm.addJingleSessionRequestListener(new JingleSessionRequestListener()
-        {
-            public void sessionRequested(JingleSessionRequest request)
-            {
-
-                // if (incoming != null)
-                // return;
-
-                try
-                {
-                    // Accept the call
-                    incoming = request.accept();
-
-                    // Start the call
-                    incoming.startIncoming();
-                }
-                catch (XMPPException e)
-                {
-                    e.printStackTrace();
-                }
-
-            }
-        });
-    }
+//    private void initJingle()
+//    {
+//        ICETransportManager icetm0 = new ICETransportManager(connection,
+//                clientConfig.getStunServer(), clientConfig.getStunPort());
+//        List<JingleMediaManager> mediaManagers = new ArrayList<JingleMediaManager>();
+//        // mediaManagers.add(new JmfMediaManager(icetm0));
+//        mediaManagers.add(new SpeexMediaManager(icetm0));
+//        mediaManagers.add(new ScreenShareMediaManager(icetm0));
+//        jm = new JingleManager(connection, mediaManagers);
+//        jm.addCreationListener(icetm0);
+//
+//        jm.addJingleSessionRequestListener(new JingleSessionRequestListener()
+//        {
+//            public void sessionRequested(JingleSessionRequest request)
+//            {
+//
+//                // if (incoming != null)
+//                // return;
+//
+//                try
+//                {
+//                    // Accept the call
+//                    incoming = request.accept();
+//
+//                    // Start the call
+//                    incoming.startIncoming();
+//                }
+//                catch (XMPPException e)
+//                {
+//                    e.printStackTrace();
+//                }
+//
+//            }
+//        });
+//    }
 
     /**
      * Tries to connect to the XMPP server, throwing an exception if it fails in
@@ -528,7 +509,6 @@ public class Client
         }
 
         return messageReceiveBoxScroll;
-        // TODO: Else switch to the already open private conversation?
     }
 
     /**
