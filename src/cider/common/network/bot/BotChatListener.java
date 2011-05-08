@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.bot;
 
@@ -35,8 +35,6 @@ import org.jivesoftware.smack.util.StringUtils;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
 import cider.common.network.client.Client;
-
-
 
 /**
  * 
@@ -57,7 +55,7 @@ public class BotChatListener implements ChatManagerListener
 
     BotChatListener(Bot source)
     {
-        this.chatroom = source.chatroom;
+        chatroom = source.chatroom;
         this.source = source;
         chats = new HashMap<String, Chat>();
     }
@@ -80,12 +78,12 @@ public class BotChatListener implements ChatManagerListener
             {
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "quit" );
-                chat.sendMessage( msg );
+                msg.setProperty("ciderAction", "quit");
+                chat.sendMessage(msg);
             }
             catch (XMPPException e)
             {
-                
+
                 e.printStackTrace();
             }
         }
@@ -94,7 +92,7 @@ public class BotChatListener implements ChatManagerListener
             System.out.println(chat.getParticipant() + " initiated chat...");
 
         chats.put(StringUtils.parseName(chat.getParticipant()), chat);
-        chat.addMessageListener(new BotMessageListener( this.source ));
+        chat.addMessageListener(new BotMessageListener(source));
 
         // Invite this user to the chatroom
         chatroom.invite(chat.getParticipant(), " ");

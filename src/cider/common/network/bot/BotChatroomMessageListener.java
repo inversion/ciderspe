@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.bot;
 
@@ -60,28 +60,29 @@ public class BotChatroomMessageListener implements PacketListener
     {
         Message message = (Message) packet;
 
-        String ciderAction = (String) message.getProperty( "ciderAction");
-        if( ciderAction == null )
+        String ciderAction = (String) message.getProperty("ciderAction");
+        if (ciderAction == null)
         {
-            String username = StringUtils.parseResource( message.getFrom() );
+            String username = StringUtils.parseResource(message.getFrom());
             Date date = new Date();
-            String dateStr = Bot.dateFormat.format( date );
+            String dateStr = Bot.dateFormat.format(date);
             String msg = message.getBody();
-            bot.history.add( "[" + dateStr + "] " + username + ": " + msg );
-            System.out.println("Adding " + "[" + dateStr + "] " + username + ": " + msg);
+            bot.history.add("[" + dateStr + "] " + username + ": " + msg);
+            System.out.println("Adding " + "[" + dateStr + "] " + username
+                    + ": " + msg);
         }
         else if (ciderAction.equals("pushto"))
-            pushto( message );
-        else if ( ciderAction.equals("colourchange") )
+            pushto(message);
+        else if (ciderAction.equals("colourchange"))
         {
             Integer r = (Integer) message.getProperty("r");
             Integer g = (Integer) message.getProperty("g");
             Integer b = (Integer) message.getProperty("b");
-            String username = StringUtils.parseResource( packet.getFrom() );
+            String username = StringUtils.parseResource(packet.getFrom());
 
             System.out.println("Colour change received from " + username + ": "
                     + r + ", " + g + ", " + b);
-            
+
             if (bot.colours.containsKey(username))
             {
                 bot.colours.remove(username);
@@ -89,14 +90,14 @@ public class BotChatroomMessageListener implements PacketListener
             bot.colours.put(username, new Color(r, g, b));
         }
     }
-    
-    private void pushto( Message msg )
+
+    private void pushto(Message msg)
     {
         String dest = null;
         int eventNum;
         Hashtable<String, SourceDocument> changedDocs = new Hashtable<String, SourceDocument>();
         // Loop until we've processed all events in the message
-        for( eventNum = 0; msg.getProperty("te" + eventNum) != null; eventNum++ )
+        for (eventNum = 0; msg.getProperty("te" + eventNum) != null; eventNum++)
         {
             // If destination for this event isn't null change it
             if (msg.getProperty("path" + eventNum) != null)
@@ -104,35 +105,36 @@ public class BotChatroomMessageListener implements PacketListener
                 dest = (String) msg.getProperty("path" + eventNum);
                 dest = dest.replace("root\\", "");
             }
-            String te = new String( StringUtils.decodeBase64( (String) msg.getProperty( "te" + eventNum ) ) );
-            
+            String te = new String(StringUtils.decodeBase64((String) msg
+                    .getProperty("te" + eventNum)));
+
             // If all events have been processed
-            if( te == null )
+            if (te == null)
                 break;
 
             Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
             typingEvents.add(new TypingEvent(te));
             // System.out.println("Push " + preAndAfter[1] + " to " + dest);
-            SourceDocument doc = this.bot.getRootFolder().path(dest);
+            SourceDocument doc = bot.getRootFolder().path(dest);
             doc.push(typingEvents);
             changedDocs.put(dest, doc);
         }
-        
-//        if (eventNum > 0)
-//            System.out.println("Bot received " + eventNum
-//                    + " events at the same time");
+
+        // if (eventNum > 0)
+        // System.out.println("Bot received " + eventNum
+        // + " events at the same time");
 
         for (Entry<String, SourceDocument> entry : changedDocs.entrySet())
         {
-            //FIXME: UNUSED VARIABLE!
+            // FIXME: UNUSED VARIABLE!
             @SuppressWarnings("unused")
             Hashtable<String, Integer> characterCountsForUsersEditingThisDocument = entry
                     .getValue().playOutEvents(Long.MAX_VALUE)
                     .countCharactersAll();
 
         }
-        
+
         // Update list of documents to be committed to the disk
-        bot.updatedDocs.putAll( changedDocs );
+        bot.updatedDocs.putAll(changedDocs);
     }
 }

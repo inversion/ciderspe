@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.client;
 
@@ -67,13 +67,13 @@ public class ClientChatroomInviteListener implements InvitationListener
             if (DEBUG)
                 System.out.println("Invited to chatroom " + room + " by "
                         + inviter + "...");
-            chatroom.join(this.nickname, password);
+            chatroom.join(nickname, password);
         }
         catch (XMPPException e)
         {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(new JPanel(),
-                    "Error: " + e.getMessage());
+            JOptionPane.showMessageDialog(new JPanel(), "Error: "
+                    + e.getMessage());
             parent.getLogin().logout();
         }
     }

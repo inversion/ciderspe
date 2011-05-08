@@ -62,9 +62,26 @@ public class DirectoryViewComponent extends JPanel
      */
     private static final long serialVersionUID = 1L;
 
+    public static List<Element> getChildrenByTagName(Element parent, String name)
+    {
+        List<Element> nodeList = new ArrayList<Element>();
+        for (Node child = parent.getFirstChild(); child != null; child = child
+                .getNextSibling())
+        {
+            if (child.getNodeType() == Node.ELEMENT_NODE
+                    && name.equals(child.getNodeName()))
+            {
+                nodeList.add((Element) child);
+            }
+        }
+
+        return nodeList;
+    }
+
     private DefaultMutableTreeNode top;
     private Client client;
     private JTree tree;
+
     private LiveFolder rootFolder = new LiveFolder("root", "Bot");
 
     public DirectoryViewComponent()
@@ -84,30 +101,22 @@ public class DirectoryViewComponent extends JPanel
         // new JLabel("chat, oh hai");
 
         this.setLayout(new BorderLayout());
-        
+
         JPanel filesHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
         Box box = Box.createHorizontalBox();
-        
+
         URL u = this.getClass().getResource("iconfiles.png");
         ImageIcon image = new ImageIcon(u);
         JLabel lblImage = new JLabel(image);
         box.add(lblImage);
         box.add(new JLabel(" File Explorer"));
         filesHeader.add(box);
-        
+
         this.add(filesHeader, BorderLayout.NORTH);
         this.add(scrollpane, BorderLayout.CENTER);
-        this.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.BLACK));
-    }
-    
-    public void refresh()
-    {
-        ( (DefaultTreeModel) tree.getModel() ).reload();    
-    }
-
-    public void setClient(Client client)
-    {
-        this.client = client;
+        this
+                .setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0,
+                        Color.BLACK));
     }
 
     /**
@@ -118,8 +127,8 @@ public class DirectoryViewComponent extends JPanel
      */
     public void constructTree(String xml)
     {
-        this.top.removeAllChildren();
-        this.rootFolder.removeAllChildren();
+        top.removeAllChildren();
+        rootFolder.removeAllChildren();
 
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try
@@ -140,13 +149,13 @@ public class DirectoryViewComponent extends JPanel
 
                 Element docEle = xmlDoc.getDocumentElement();
 
-                this.subFolders(docEle, this.top, this.rootFolder);
-                this.parseDocs(docEle, this.top, this.rootFolder);
+                this.subFolders(docEle, top, rootFolder);
+                this.parseDocs(docEle, top, rootFolder);
 
                 if (DEBUG)
                 {
                     System.out.println("Reconstructed Tree: ");
-                    System.out.println(this.rootFolder.xml(""));
+                    System.out.println(rootFolder.xml(""));
                 }
 
             }
@@ -165,95 +174,9 @@ public class DirectoryViewComponent extends JPanel
             pce.printStackTrace();
         }
 
-        this.tree.addTreeSelectionListener(new DirectoryViewSelectionListener(
-                this.tree, this.client));
+        tree.addTreeSelectionListener(new DirectoryViewSelectionListener(tree,
+                client));
     }
-
-    public LiveFolder getLiveFolder()
-    {
-        return this.rootFolder;
-    }
-
-    public static List<Element> getChildrenByTagName(Element parent, String name)
-    {
-        List<Element> nodeList = new ArrayList<Element>();
-        for (Node child = parent.getFirstChild(); child != null; child = child
-                .getNextSibling())
-        {
-            if (child.getNodeType() == Node.ELEMENT_NODE
-                    && name.equals(child.getNodeName()))
-            {
-                nodeList.add((Element) child);
-            }
-        }
-
-        return nodeList;
-    }
-
-    private void subFolders(Element docEle, DefaultMutableTreeNode parent,
-            LiveFolder parentFolder)
-    {
-        List<Element> subFolder = getChildrenByTagName(docEle, "Sub");
-        if (subFolder != null && subFolder.size() > 0)
-        {
-            for (int i = 0; i < subFolder.size(); i++)
-            {
-                Element el = (Element) subFolder.get(i);
-                
-                List<Element> folder = getChildrenByTagName(el, "Folder");
-                String folderName = folder.get(0).getChildNodes().item(0)
-                        .getNodeValue().trim();
-                // NodeList
-                DefaultMutableTreeNode newFolder = new DefaultMutableTreeNode(
-                        folderName);
-                parent.add(newFolder);
-                LiveFolder liveFolder = parentFolder.makeFolder(folderName);
-                this.subFolders(el, newFolder, liveFolder);
-                this.parseDocs(el, newFolder, liveFolder);
-
-            }
-        }
-    }
-
-    private void parseDocs(Element docEle, DefaultMutableTreeNode folder,
-            LiveFolder parentFolder)
-    {
-        List<Element> docs = getChildrenByTagName(docEle, "Doc");
-        if (docs != null && docs.size() > 0)
-        	
-        {
-            for (int i = 0; i < docs.size(); i++)
-            {
-                Element el = (Element) docs.get(i);
-                Element el2 = (Element) getChildrenByTagName(el, "Name").get(0);
-                String docName = el2.getChildNodes().item(0).getNodeValue().trim();
-                folder.add(new DefaultMutableTreeNode(docName));
-                el2 = (Element) getChildrenByTagName(el, "CreationTime").get(0);
-                String creationTime = el2.getChildNodes().item(0).getNodeValue().trim();
-                parentFolder.makeDocument(docName, Long.parseLong(creationTime));
-            }
-        }
-    }
-
-    // TODO: Moved deprecated stuff to end
-
-    /*
-     * // Flip the keys and values of a hash and return a new one private
-     * Hashtable flipHash( Hashtable h ) { Object[] keys = h.keySet().toArray();
-     * Hashtable newHash = new Hashtable( keys.length );
-     * 
-     * for( int i = 0; i < keys.length; i++ ) newHash.put( h.get( keys[i] ),
-     * keys[i] );
-     * 
-     * return newHash; }
-     */
-
-    /*
-     * public static void main(String[] args) { JFrame w = new JFrame();
-     * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
-     * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
-     * Dimension(400, 800)); w.setVisible(true); }
-     */
 
     /**
      * Creates some objects to simulate files and folders etc
@@ -261,6 +184,7 @@ public class DirectoryViewComponent extends JPanel
      * @deprecated
      * @param top
      */
+    @Deprecated
     public void createNodes(DefaultMutableTreeNode top)
     {
 
@@ -288,5 +212,88 @@ public class DirectoryViewComponent extends JPanel
 
         book = new DefaultMutableTreeNode("File 2");
         category.add(book);
+    }
+
+    public LiveFolder getLiveFolder()
+    {
+        return rootFolder;
+    }
+
+    private void parseDocs(Element docEle, DefaultMutableTreeNode folder,
+            LiveFolder parentFolder)
+    {
+        List<Element> docs = getChildrenByTagName(docEle, "Doc");
+        if (docs != null && docs.size() > 0)
+
+        {
+            for (int i = 0; i < docs.size(); i++)
+            {
+                Element el = docs.get(i);
+                Element el2 = getChildrenByTagName(el, "Name").get(0);
+                String docName = el2.getChildNodes().item(0).getNodeValue()
+                        .trim();
+                folder.add(new DefaultMutableTreeNode(docName));
+                el2 = getChildrenByTagName(el, "CreationTime").get(0);
+                String creationTime = el2.getChildNodes().item(0)
+                        .getNodeValue().trim();
+                parentFolder
+                        .makeDocument(docName, Long.parseLong(creationTime));
+            }
+        }
+    }
+
+    public void refresh()
+    {
+        ((DefaultTreeModel) tree.getModel()).reload();
+    }
+
+    public void setClient(Client client)
+    {
+        this.client = client;
+    }
+
+    // TODO: Moved deprecated stuff to end
+
+    /*
+     * // Flip the keys and values of a hash and return a new one private
+     * Hashtable flipHash( Hashtable h ) { Object[] keys = h.keySet().toArray();
+     * Hashtable newHash = new Hashtable( keys.length );
+     * 
+     * for( int i = 0; i < keys.length; i++ ) newHash.put( h.get( keys[i] ),
+     * keys[i] );
+     * 
+     * return newHash; }
+     */
+
+    /*
+     * public static void main(String[] args) { JFrame w = new JFrame();
+     * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
+     * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
+     * Dimension(400, 800)); w.setVisible(true); }
+     */
+
+    private void subFolders(Element docEle, DefaultMutableTreeNode parent,
+            LiveFolder parentFolder)
+    {
+        List<Element> subFolder = getChildrenByTagName(docEle, "Sub");
+        if (subFolder != null && subFolder.size() > 0)
+        {
+            for (int i = 0; i < subFolder.size(); i++)
+            {
+                Element el = subFolder.get(i);
+
+                List<Element> folder = getChildrenByTagName(el, "Folder");
+                String folderName = folder.get(0).getChildNodes().item(0)
+                        .getNodeValue().trim();
+                // NodeList
+                DefaultMutableTreeNode newFolder = new DefaultMutableTreeNode(
+                        folderName);
+                parent.add(newFolder);
+                LiveFolder liveFolder = parentFolder.makeFolder(folderName);
+                this.subFolders(el, newFolder, liveFolder);
+                this.parseDocs(el, newFolder, liveFolder);
+
+            }
+        }
     }
 }

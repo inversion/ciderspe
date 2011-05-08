@@ -42,7 +42,8 @@ public class TimeBorder
 {
     public final long time;
     public String path;
-    public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>(1000, new EventComparer());
+    public PriorityQueue<TypingEvent> typingEvents = new PriorityQueue<TypingEvent>(
+            1000, new EventComparer());
     public boolean fullSet = false;
     public DocumentProperties documentProperties;
 
@@ -51,8 +52,9 @@ public class TimeBorder
         this.time = time;
         this.documentProperties = documentProperties;
     }
-    
-    public TimeBorder(DocumentProperties documentProperties, long time, boolean fullSet)
+
+    public TimeBorder(DocumentProperties documentProperties, long time,
+            boolean fullSet)
     {
         this.time = time;
         this.documentProperties = documentProperties;
@@ -63,7 +65,7 @@ public class TimeBorder
             PriorityQueue<TypingEvent> typingEvents)
     {
         this.time = time;
-        this.documentProperties = documentID;
+        documentProperties = documentID;
         this.typingEvents = typingEvents;
     }
 
@@ -73,7 +75,7 @@ public class TimeBorder
         if (TimeBorder.class.equals(obj.getClass()))
         {
             TimeBorder timeBorder = (TimeBorder) obj;
-            return this.time == timeBorder.time;
+            return time == timeBorder.time;
         }
         else if (Long.class.equals(obj.getClass()))
         {

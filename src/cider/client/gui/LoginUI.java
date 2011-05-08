@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.client.gui;
 
@@ -67,62 +67,269 @@ import cider.common.processes.Profile;
 import cider.common.processes.SiHistoryFiles;
 import cider.shared.ClientSharedComponents;
 
-
 public class LoginUI
 {
-	private int Retrieved = 0;
-	private int NotPort;
+    /**
+     * Creates a folder dedicated to holding the chat history
+     */
+    private static void makeLocalHistoryFolder()
+    {
+        File f;
+        f = new File(SiHistoryFiles.localEventFolderPath);
+        if (!f.exists())
+            f.mkdirs();
+    }
+
+    private int Retrieved = 0;
+    private int NotPort;
+
     public String currentDir = "src\\cider\\client\\gui\\";
-
     static JFrame login;
-    private JWindow connecting;
 
+    private JWindow connecting;
     public static final String DEFAULT_HOST = "xmpp.org.uk";
     public static final String DEFAULT_PORT = "5222";
-    public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
-    
 
+    public static final String DEFAULT_SERVICE_NAME = "xmpp.org.uk";
     // Login box fields
     JTextField txtUsername;
     JPasswordField txtPassword;
     JTextField txtServiceName;
     JTextField txtHost;
+
     JTextField txtPort;
 
     MainWindow program;
 
     JCheckBox chkRemember;
-
     String errmsg;
     private Thread mainWindowThread;
+
     private Thread connectBoxThread;
-    
+
     CiderApplication ciderApplication;
 
     /**
      * Initialises the LoginUI
      * 
-     * @param ciderApplication The object that is calling the LoginUI constructor
+     * @param ciderApplication
+     *            The object that is calling the LoginUI constructor
      */
     public LoginUI(CiderApplication ciderApplication)
     {
         this.ciderApplication = ciderApplication;
     }
-    
+
     /**
-     * The method that initialises the GUI element of the LoginUI, and handles events.
+     * Executed when the user requests a login.
+     */
+    void checkLogin()
+    {
+        if (chkRemember.isSelected() == true)
+        {
+            saveLoginDetails(txtUsername.getText(), new String(txtPassword
+                    .getPassword()), txtServiceName.getText(), txtHost
+                    .getText(), txtPort.getText());
+        }
+        else
+        {
+            String fileName = currentDir + "login.txt";
+            File file = new File(fileName);
+
+            try
+            {
+                file.delete();
+            }
+            catch (IllegalArgumentException err)
+            {
+                System.out.println("Deletion failed: " + fileName);
+                err.printStackTrace();
+            }
+        }
+        mainWindowThread = connectMainWindow();
+        if (mainWindowThread != null)
+        {
+            connectBoxThread = connectBox();
+
+            // Run connect box and main window thread in parallel
+            connectBoxThread.start();
+            mainWindowThread.start();
+        }
+
+        else
+        {
+            if (NotPort == 0)
+                displayLogin();
+            // program.killWindow();
+        }
+    }
+
+    /**
+     * A thread that is run in parallel with the connection thread. Handles the
+     * connecting animated box.
+     * 
+     */
+    Thread connectBox()
+    {
+
+        Runnable runnable = new Runnable()
+        {
+
+            @Override
+            public void run()
+            {
+                // Create New JFrame
+                connecting = new JWindow();
+                connecting.setLocationRelativeTo(LoginUI.login);
+                // connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                // connecting.setTitle("CIDEr - Connecting");
+                // connecting.setResizable(false);
+                connecting.toFront();
+
+                login.setVisible(false);
+
+                JPanel panel = new JPanel();
+                /*
+                 * panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20,
+                 * 20)); Box box = Box.createHorizontalBox();
+                 * 
+                 * // Status Text JLabel lblStatus = new
+                 * JLabel("Connecting to the server..."); box.add(lblStatus);
+                 */
+
+                URL u = this.getClass().getResource("splash.gif");
+                ImageIcon image = new ImageIcon(u);
+                JLabel lblImage = new JLabel(image);
+
+                // Connecting Image
+                /*
+                 * URL u1 = this.getClass().getResource("connectingimage.gif");
+                 * ImageIcon image1 = new ImageIcon(u1); JLabel lblImage1 = new
+                 * JLabel(image1);
+                 * lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
+                 * lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0,
+                 * 15));
+                 */
+                // box.add(lblImage1);
+
+                // Finalise JFrame
+                // panel.add(box);
+                panel.add(lblImage);
+                // panel.add(lblImage1);
+                connecting.add(panel);
+                connecting.pack();
+                // int x = (int) (login.getX() + login.getWidth() / 2);
+                // int y = (int) (login.getY() + login.getHeight() / 2);
+                Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+                connecting.setLocation((dim.width - lblImage.getWidth()) / 2,
+                        (dim.height - lblImage.getHeight()) / 2);
+                // connecting.setLocation(x - connecting.getWidth() / 2, y -
+                // connecting.getHeight() / 3);
+                connecting.setVisible(true);
+                connecting.repaint();
+                // connecting.setUndecorated(true);
+            }
+
+        };
+
+        return new Thread(runnable);
+
+    }
+
+    /**
+     * Thread that is run in parallel with the thread that handles the loading
+     * animation. Handles the connection to the XMPP server.
+     * 
+     */
+    Thread connectMainWindow()
+    {
+        // On connect, close login and connect JFrames, run MainWindow
+
+        // System.out.println(passwordEncrypt.encrypt(new
+        // String(txtPassword.getPassword())));
+        NotPort = 0;
+        final Client client;
+        try
+        {
+
+            final ClientSharedComponents sharedComponents = new ClientSharedComponents();
+            sharedComponents.profile = new Profile(txtUsername.getText());
+
+            // TODO: Check that fields aren't null/validation stuff
+            client = new Client(txtUsername.getText(), new String(txtPassword
+                    .getPassword()), txtHost.getText(), Integer
+                    .parseInt(txtPort.getText()), txtServiceName.getText(),
+                    this, sharedComponents);
+
+            Runnable runner = new Runnable()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        if (!client.attemptConnection())
+                        {
+                            errmsg = "Bot is not online or connection to bot timed out.";
+                            JOptionPane.showMessageDialog(connecting, errmsg);
+                            connecting.setVisible(false);
+                            connecting.dispose();
+                            ciderApplication.restarted();
+                            ciderApplication = null;
+                        }
+                        else
+                        {
+                            program = new MainWindow(txtUsername.getText(),
+                                    client, LoginUI.this, sharedComponents);
+
+                            connecting.setVisible(false);
+                            connecting.dispose();
+                            program.startApplication(login,
+                                    CiderApplication.debugApp);
+                        }
+                    }
+                    catch (XMPPException e)
+                    {
+                        e.printStackTrace();
+                        errmsg = "Incorrect Username or Password";
+                        JOptionPane.showMessageDialog(connecting, errmsg);
+                        connecting.setVisible(false);
+                        connecting.dispose();
+                        ciderApplication.restarted();
+                        ciderApplication = null;
+                    }
+                }
+
+            };
+
+            return new Thread(runner);
+        }
+        catch (NumberFormatException e)
+        {
+            errmsg = "Invalid port number";
+            JOptionPane.showMessageDialog(connecting, errmsg);
+            e.printStackTrace();
+            NotPort = 1;
+        }
+        return null;
+    }
+
+    /**
+     * The method that initialises the GUI element of the LoginUI, and handles
+     * events.
      */
     public void displayLogin()
     {
-        //splashScreen();
+        // splashScreen();
         login = new JFrame();
         login.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         login.setTitle("CIDEr - Login");
         login.setResizable(false);
         try
         {
-        	com.jtattoo.plaf.noire.NoireLookAndFeel.setTheme("Default", "", "CIDEr");
-        	UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
+            com.jtattoo.plaf.noire.NoireLookAndFeel.setTheme("Default", "",
+                    "CIDEr");
+            UIManager.setLookAndFeel("com.jtattoo.plaf.noire.NoireLookAndFeel");
         }
         catch (Exception e)
         {
@@ -174,11 +381,12 @@ public class LoginUI
         txtPort.setText(DEFAULT_PORT);
 
         // Add enter key listeners for all fields.
-        JTextField[] fields = {txtUsername, txtServiceName, txtHost, txtPort};
-        
-        for( JTextField field : fields )
+        JTextField[] fields = { txtUsername, txtServiceName, txtHost, txtPort };
+
+        for (JTextField field : fields)
             field.addKeyListener(new KeyAdapter()
             {
+                @Override
                 public void keyPressed(KeyEvent e)
                 {
                     if (e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -190,6 +398,7 @@ public class LoginUI
 
         txtPassword.addKeyListener(new KeyAdapter()
         {
+            @Override
             public void keyPressed(KeyEvent e)
             {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER)
@@ -253,7 +462,7 @@ public class LoginUI
         fetchLogin();
         if (Retrieved == 0)
         {
-        	GetLogin();
+            GetLogin();
         }
 
         // Submit Button
@@ -269,21 +478,10 @@ public class LoginUI
         login.pack();
         login.setLocationByPlatform(true);
         login.setVisible(true);
-        
+
         makeLocalHistoryFolder();
     }
-    
-    /**
-     * Creates a folder dedicated to holding the chat history
-     */
-    private static void makeLocalHistoryFolder()
-    {
-        File f;
-        f = new File(SiHistoryFiles.localEventFolderPath);
-        if (!f.exists())
-            f.mkdirs(); 
-    }
-    
+
     /**
      * Checks for login.txt file and fills in the details if found
      * 
@@ -332,7 +530,7 @@ public class LoginUI
 
     void GetLogin()
     {
-    	try
+        try
         {
             FileReader fstream = new FileReader(currentDir + "BotTEST.conf");
             BufferedReader in = new BufferedReader(fstream);
@@ -344,7 +542,7 @@ public class LoginUI
             while ((line = in.readLine()) != null)
             {
                 StringTokenizer token = new StringTokenizer(line, "=");
-                while ((token.hasMoreTokens()) && (i<6))
+                while ((token.hasMoreTokens()) && (i < 6))
                 {
                     text[i] = (token.nextToken());
                     i++;
@@ -367,50 +565,22 @@ public class LoginUI
             e.printStackTrace();
         }
     }
-    
+
     /**
-     * Executed when the user requests a login.
+     * When called, this method logs the user out of the XMPP session, leaves
+     * the chatroom, and displays the LoginUI GUI.
+     * 
+     * @author Jon
      */
-    void checkLogin()
+    public void logout()
     {
-        if (chkRemember.isSelected() == true)
-        {
-            saveLoginDetails(txtUsername.getText(),
-                    new String(txtPassword.getPassword()),
-                    txtServiceName.getText(), txtHost.getText(),
-                    txtPort.getText());
-        }
-        else
-        {
-            String fileName = currentDir + "login.txt";
-            File file = new File(fileName);
-
-            try
-            {
-                file.delete();
-            }
-            catch (IllegalArgumentException err)
-            {
-                System.out.println("Deletion failed: " + fileName);
-                err.printStackTrace();
-            }
-        }
-        this.mainWindowThread = connectMainWindow();
-        if (this.mainWindowThread != null)
-        {
-            this.connectBoxThread = connectBox();
-
-            // Run connect box and main window thread in parallel
-            this.connectBoxThread.start();
-            this.mainWindowThread.start();
-        }
-
-        else 
-        {
-        	if (NotPort == 0)
-        		displayLogin();
-            // program.killWindow();
-        }
+        Toolkit.getDefaultToolkit().removeAWTEventListener(
+                program.activityListener);
+        program.shared.idleTimer.stop();
+        program.client.disconnect();
+        program.killWindow();
+        ciderApplication.restarted();
+        ciderApplication = null;
     }
 
     public ActionListener newAction()
@@ -427,14 +597,19 @@ public class LoginUI
     }
 
     /**
-     * Saves the login details for later use in an encrypted file. To be called after login and when the 
-     * "remember my details" checkbox is checked.
+     * Saves the login details for later use in an encrypted file. To be called
+     * after login and when the "remember my details" checkbox is checked.
      * 
-     * @param txtUsername The username to be saved
-     * @param txtPassword The password to be saved
-     * @param txtServiceName The service name to be saved
-     * @param txtHost The hostname to be saved
-     * @param txtPort The port number to be saved
+     * @param txtUsername
+     *            The username to be saved
+     * @param txtPassword
+     *            The password to be saved
+     * @param txtServiceName
+     *            The service name to be saved
+     * @param txtHost
+     *            The hostname to be saved
+     * @param txtPort
+     *            The port number to be saved
      */
     void saveLoginDetails(String txtUsername, String txtPassword,
             String txtServiceName, String txtHost, String txtPort)
@@ -467,168 +642,6 @@ public class LoginUI
         g.setPaintMode();
         g.setColor(Color.BLACK);
         g.drawString("Connecting...", 5, 50);
-    }
-
-    /**
-     * A thread that is run in parallel with the connection thread. Handles the connecting 
-     * animated box.
-     * 
-     */
-    Thread connectBox()
-    {
-
-        Runnable runnable = new Runnable()
-        {
-
-            @Override
-            public void run()
-            {
-                // Create New JFrame
-                connecting = new JWindow();
-                connecting.setLocationRelativeTo(LoginUI.login);
-                //connecting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                //connecting.setTitle("CIDEr - Connecting");
-                //connecting.setResizable(false);
-                connecting.toFront();
-
-                login.setVisible(false);
-
-                JPanel panel = new JPanel();
-                /*
-                 * panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-                Box box = Box.createHorizontalBox();
-                
-                // Status Text
-                JLabel lblStatus = new JLabel("Connecting to the server...");
-                box.add(lblStatus);
-                */          
-                                
-                URL u = this.getClass().getResource("splash.gif");
-                ImageIcon image = new ImageIcon(u);
-                JLabel lblImage = new JLabel(image);
-                
-                // Connecting Image
-                /*URL u1 = this.getClass().getResource("connectingimage.gif");
-                ImageIcon image1 = new ImageIcon(u1);
-                JLabel lblImage1 = new JLabel(image1);
-                lblImage.setAlignmentX(Component.CENTER_ALIGNMENT);
-                lblImage.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));*/
-                //box.add(lblImage1);            
-
-                // Finalise JFrame
-                //panel.add(box);
-                panel.add(lblImage);
-               //panel.add(lblImage1);
-                connecting.add(panel);
-                connecting.pack();
-                //int x = (int) (login.getX() + login.getWidth() / 2);
-                //int y = (int) (login.getY() + login.getHeight() / 2);
-                Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-                connecting.setLocation((dim.width - lblImage.getWidth()) / 2, (dim.height - lblImage.getHeight()) / 2);
-                //connecting.setLocation(x - connecting.getWidth() / 2, y - connecting.getHeight() / 3);
-                connecting.setVisible(true);
-                connecting.repaint();
-                // connecting.setUndecorated(true);
-            }
-
-        };
-
-        return new Thread(runnable);
-
-    }
-
-    /**
-     * Thread that is run in parallel with the thread that handles the loading animation.
-     * Handles the connection to the XMPP server.
-     * 
-     */
-    Thread connectMainWindow()
-    {
-        // On connect, close login and connect JFrames, run MainWindow
-
-        // System.out.println(passwordEncrypt.encrypt(new
-        // String(txtPassword.getPassword())));
-    	NotPort = 0;
-        final Client client;
-        try
-        {
-
-            final ClientSharedComponents sharedComponents = new ClientSharedComponents();
-            sharedComponents.profile = new Profile( txtUsername.getText() );
-
-            // TODO: Check that fields aren't null/validation stuff
-            client = new Client(txtUsername.getText(), new String(
-                    txtPassword.getPassword()), txtHost.getText(),
-                    Integer.parseInt(txtPort.getText()),
-                    txtServiceName.getText(), this, sharedComponents);
-
-            Runnable runner = new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    try
-                    {
-                        if (!client.attemptConnection())
-                        {
-                            errmsg = "Bot is not online or connection to bot timed out.";
-                            JOptionPane.showMessageDialog(connecting, errmsg);
-                            connecting.setVisible(false);
-                            connecting.dispose();
-                            ciderApplication.restarted();
-                            ciderApplication = null;
-                        }
-                        else
-                        {
-                            program = new MainWindow(txtUsername.getText(),
-                                    client,
-                                    LoginUI.this, sharedComponents);
-
-                            connecting.setVisible(false);
-                            connecting.dispose();
-                            program.startApplication(login, CiderApplication.debugApp);
-                        }
-                    }
-                    catch (XMPPException e)
-                    {
-                        e.printStackTrace();
-                        errmsg = "Incorrect Username or Password";
-                        JOptionPane.showMessageDialog(connecting, errmsg);
-                        connecting.setVisible(false);
-                        connecting.dispose();
-                        ciderApplication.restarted();
-                        ciderApplication = null;
-                    }
-                }
-
-            };
-
-            return new Thread(runner);
-        }
-        catch (NumberFormatException e)
-        {
-            errmsg = "Invalid port number";
-            JOptionPane.showMessageDialog(connecting, errmsg);
-            e.printStackTrace();
-            NotPort = 1;
-        }
-        return null;
-    }
-
-    /**
-     * When called, this method logs the user out of the XMPP session, leaves the chatroom,
-     * and displays the LoginUI GUI.
-     * 
-     * @author Jon
-     */
-    public void logout()
-    {
-        Toolkit.getDefaultToolkit().removeAWTEventListener( this.program.activityListener );
-        this.program.shared.idleTimer.stop();
-        this.program.client.disconnect();
-        this.program.killWindow();
-        this.ciderApplication.restarted();
-        ciderApplication = null;
     }
 
 }

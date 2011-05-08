@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -44,29 +44,29 @@ public class LockingRegion implements Comparable<LockingRegion>
         this.end = end;
     }
 
+    @Override
+    @Deprecated
+    public int compareTo(LockingRegion lr)
+    {
+        if (start < lr.start)
+            return -1;
+        else if (start > lr.start)
+            return 1;
+        else
+            return 0;
+    }
+
     @Deprecated
     public boolean coversOver(String self, int position)
     {
-        return position >= this.start && position <= this.end;// &&
+        return position >= start && position <= end;// &&
         // !this.owner.equals(self);
     }
 
     @Deprecated
     public void move(int amount)
     {
-        this.start += amount;
-        this.end += amount;
-    }
-
-    @Override
-    @Deprecated
-    public int compareTo(LockingRegion lr)
-    {
-        if (this.start < lr.start)
-            return -1;
-        else if (this.start > lr.start)
-            return 1;
-        else
-            return 0;
+        start += amount;
+        end += amount;
     }
 }

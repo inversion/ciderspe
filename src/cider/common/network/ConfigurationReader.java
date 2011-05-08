@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network;
 
@@ -38,145 +38,146 @@ import cider.client.gui.LoginUI;
  * Reads a configuration file and stores its values
  * 
  * @author Andrew
- *
+ * 
  */
 
 public class ConfigurationReader
-{    
-    private HashMap<String,String> config = new HashMap<String,String>();
+{
+    private HashMap<String, String> config = new HashMap<String, String>();
     private LoginUI login = null;
-    
-    public String getHost()
+
+    public ConfigurationReader(String fileName, LoginUI l)
     {
-        return config.get( "HOST" );
-    }
-    
-    public String getServiceName()
-    {
-        return config.get( "SERVICE_NAME" );
-    }
-    
-    public int getPort()
-    {
-        return Integer.parseInt( config.get( "PORT" ) );
-    }
-    
-    public String getBotUsername()
-    {
-        return config.get( "BOT_USERNAME" );
-    }
-    
-    public String getBotPassword()
-    {
-        return config.get( "BOT_PASSWORD" );
-    }
-    
-    public String getChatroomName()
-    {
-        return config.get( "CHATROOM_NAME" );
-    }
-    
-    public String getCheckerUsername()
-    {
-        return config.get( "CHECKER_USERNAME" );
-    }
-    
-    public String getCheckerPassword()
-    {
-        return config.get( "CHECKER_PASSWORD" );
-    }
-    
-    public String getStunServer()
-    {
-        return config.get( "STUN_SERVER" );
-    }
-    
-    public int getStunPort()
-    {
-        return Integer.parseInt( config.get( "STUN_PORT" ) );
-    }
-    
-    public File getSourceDir()
-    {
-        File dir = new File( config.get( "SOURCE_DIR" ) );
-        
-        // If not already absolute path, resolve against working directory
-        return dir.getAbsoluteFile();    
-    }
-    
-    public File getProfileDir()
-    {
-        File dir = new File( config.get( "PROFILE_DIR" ) );
-        
-        // If not already absolute path, resolve against working directory
-        return dir.getAbsoluteFile();    
-    }
-    
-    public File getChatHistoryDir()
-    {
-        File dir = new File( config.get( "CHAT_HISTORY_DIR" ) );
-        
-        // If not already absolute path, resolve against working directory
-        return dir.getAbsoluteFile();    
-    }
-    
-    public ConfigurationReader( String fileName, LoginUI l )
-    {
-    	login = l;
+        login = l;
         BufferedReader br = null;
         String line;
-        
+
         try
         {
-            br = new BufferedReader( new FileReader( fileName ) );
+            br = new BufferedReader(new FileReader(fileName));
         }
         catch (FileNotFoundException e)
         {
-            JOptionPane.showMessageDialog(new JPanel(), "Error: Failed to read config file: " + fileName);
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: Failed to read config file: " + fileName);
             e.printStackTrace();
             if (login == null)
-            	System.exit(1);
+                System.exit(1);
             else
-            	login.logout();
+                login.logout();
         }
-        
+
         try
         {
-            while( (line = br.readLine()) != null )
+            while ((line = br.readLine()) != null)
             {
                 line = line.trim();
-                
-                if( line.startsWith( "//" ) || line.length() == 0 )
+
+                if (line.startsWith("//") || line.length() == 0)
                     continue;
-                
-                int pos = line.indexOf( "=" );
-                if( pos == -1 )
-                    throw new Exception( "Invalid syntax in: " + line );
-                
-                String key = line.substring( 0, pos );
-                String val = line.substring( pos + 1 );
-                
-                if( key.length() == 0 || val.length() == 0 )
-                    throw new Exception( "Invalid syntax in: " + line );
-                
-                if( config.containsKey( key ) )
-                    throw new Exception( "Trying to set field "  + key + "twice" );
-                
-                config.put( key, val );
+
+                int pos = line.indexOf("=");
+                if (pos == -1)
+                    throw new Exception("Invalid syntax in: " + line);
+
+                String key = line.substring(0, pos);
+                String val = line.substring(pos + 1);
+
+                if (key.length() == 0 || val.length() == 0)
+                    throw new Exception("Invalid syntax in: " + line);
+
+                if (config.containsKey(key))
+                    throw new Exception("Trying to set field " + key + "twice");
+
+                config.put(key, val);
             }
             br.close();
         }
         catch (Exception e)
         {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(new JPanel(), "Error reading configuration: " + e.getMessage() );
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error reading configuration: " + e.getMessage());
             if (login == null)
-            	System.exit(1);
+                System.exit(1);
             else
-            	login.logout();
+                login.logout();
         }
-           
+
     }
-    
-    
+
+    public String getBotPassword()
+    {
+        return config.get("BOT_PASSWORD");
+    }
+
+    public String getBotUsername()
+    {
+        return config.get("BOT_USERNAME");
+    }
+
+    public File getChatHistoryDir()
+    {
+        File dir = new File(config.get("CHAT_HISTORY_DIR"));
+
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();
+    }
+
+    public String getChatroomName()
+    {
+        return config.get("CHATROOM_NAME");
+    }
+
+    public String getCheckerPassword()
+    {
+        return config.get("CHECKER_PASSWORD");
+    }
+
+    public String getCheckerUsername()
+    {
+        return config.get("CHECKER_USERNAME");
+    }
+
+    public String getHost()
+    {
+        return config.get("HOST");
+    }
+
+    public int getPort()
+    {
+        return Integer.parseInt(config.get("PORT"));
+    }
+
+    public File getProfileDir()
+    {
+        File dir = new File(config.get("PROFILE_DIR"));
+
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();
+    }
+
+    public String getServiceName()
+    {
+        return config.get("SERVICE_NAME");
+    }
+
+    public File getSourceDir()
+    {
+        File dir = new File(config.get("SOURCE_DIR"));
+
+        // If not already absolute path, resolve against working directory
+        return dir.getAbsoluteFile();
+    }
+
+    public int getStunPort()
+    {
+        return Integer.parseInt(config.get("STUN_PORT"));
+    }
+
+    public String getStunServer()
+    {
+        return config.get("STUN_SERVER");
+    }
+
 }

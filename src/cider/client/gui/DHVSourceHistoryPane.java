@@ -58,101 +58,10 @@ public class DHVSourceHistoryPane extends JPanel
     private JSlider scaleSlider;
     private static final double slideScale = 100000.0;
 
-    public DHVSourceHistoryPane(int borderBrowserWidth)
-    {
-        super(new BorderLayout());
-        this.westPanel = new JPanel(new BorderLayout());
-        this.add(this.westPanel, BorderLayout.WEST);
-        this.downloadRegion = new JButton("Download Region");
-        this.downloadRegion.setEnabled(false);
-        this.westPanel.add(this.downloadRegion, BorderLayout.SOUTH);
-        this.scaleSlider = new JSlider(0, 200, (int) (TimeRegionBrowser.defaultScale * slideScale));
-        this.scaleSlider.setPreferredSize(new Dimension(borderBrowserWidth, 16));
-        this.westPanel.add(this.scaleSlider, BorderLayout.NORTH);
-        
-        this.scaleSlider.addChangeListener(new ChangeListener()
-        {
-            @Override
-            public void stateChanged(ChangeEvent ce)
-            {
-                trb.setScale(scaleSlider.getValue() / slideScale);
-                westPanel.updateUI();
-            }
-        });
-        
-        this.downloadRegion.addActionListener(new ActionListener()
-        {
-
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                try
-                {
-                    trb.downloadSelectedRegion(dhv.getClient(), downloadRegion);
-                }
-                catch (Exception e)
-                {
-                    
-                    e.printStackTrace();
-                }
-            }
-
-        });
-    }
-
-    public void setDocumentHistoryViewer(final DocumentHistoryViewer dhv)
-    {
-        this.dhv = dhv;
-
-        if (this.documentScrollPane != null)
-            this.remove(this.documentScrollPane);
-
-        this.documentScrollPane = new JScrollPane(dhv);
-        this.add(this.documentScrollPane, BorderLayout.CENTER);
-    }
-
-    public void setTimeRegionBrowser(final TimeRegionBrowser trb)
-    {
-        this.trb = trb;
-        if (this.regionBrowserScrollPane != null)
-            this.westPanel.remove(this.regionBrowserScrollPane);
-
-        this.regionBrowserScrollPane = new JScrollPane(trb);
-        this.regionBrowserScrollPane
-                .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        this.westPanel.add(this.regionBrowserScrollPane, BorderLayout.WEST);
-
-        trb.addActionListener(new ActionListener()
-        {
-
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                switch (e.getID())
-                {
-                case TimeRegionBrowser.EYE_MOVED:
-                {
-                    TimeRegion currentRegion = trb.getCurrentRegion();
-                    dhv.useEventsFrom(currentRegion);
-                    long t = (Long) e.getSource();
-                    dhv.updateText(t);
-                    break;
-                }
-                case TimeRegionBrowser.SELECTION:
-                {
-                    downloadRegion.setEnabled(trb.getSelectionLength() > 0
-                            && !trb.selectionLiesWithinFullRegion());
-                    break;
-                }
-                }
-            }
-
-        });
-    }
-
     public static void main(String[] args)
     {
-        DocumentProperties docProperties = new DocumentProperties("Test Document", "testpath");
+        DocumentProperties docProperties = new DocumentProperties(
+                "Test Document", "testpath");
 
         DocumentHistoryViewer dhv = new DocumentHistoryViewer(
                 new SourceDocument(docProperties.name), null);
@@ -186,5 +95,98 @@ public class DHVSourceHistoryPane extends JPanel
         w.add(app);
         w.pack();
         w.setVisible(true);
+    }
+
+    public DHVSourceHistoryPane(int borderBrowserWidth)
+    {
+        super(new BorderLayout());
+        westPanel = new JPanel(new BorderLayout());
+        this.add(westPanel, BorderLayout.WEST);
+        downloadRegion = new JButton("Download Region");
+        downloadRegion.setEnabled(false);
+        westPanel.add(downloadRegion, BorderLayout.SOUTH);
+        scaleSlider = new JSlider(0, 200,
+                (int) (TimeRegionBrowser.defaultScale * slideScale));
+        scaleSlider.setPreferredSize(new Dimension(borderBrowserWidth, 16));
+        westPanel.add(scaleSlider, BorderLayout.NORTH);
+
+        scaleSlider.addChangeListener(new ChangeListener()
+        {
+            @Override
+            public void stateChanged(ChangeEvent ce)
+            {
+                trb.setScale(scaleSlider.getValue() / slideScale);
+                westPanel.updateUI();
+            }
+        });
+
+        downloadRegion.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                try
+                {
+                    trb.downloadSelectedRegion(dhv.getClient(), downloadRegion);
+                }
+                catch (Exception e)
+                {
+
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+    public void setDocumentHistoryViewer(final DocumentHistoryViewer dhv)
+    {
+        this.dhv = dhv;
+
+        if (documentScrollPane != null)
+            this.remove(documentScrollPane);
+
+        documentScrollPane = new JScrollPane(dhv);
+        this.add(documentScrollPane, BorderLayout.CENTER);
+    }
+
+    public void setTimeRegionBrowser(final TimeRegionBrowser trb)
+    {
+        this.trb = trb;
+        if (regionBrowserScrollPane != null)
+            westPanel.remove(regionBrowserScrollPane);
+
+        regionBrowserScrollPane = new JScrollPane(trb);
+        regionBrowserScrollPane
+                .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        westPanel.add(regionBrowserScrollPane, BorderLayout.WEST);
+
+        trb.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                switch (e.getID())
+                {
+                case TimeRegionBrowser.EYE_MOVED:
+                {
+                    TimeRegion currentRegion = trb.getCurrentRegion();
+                    dhv.useEventsFrom(currentRegion);
+                    long t = (Long) e.getSource();
+                    dhv.updateText(t);
+                    break;
+                }
+                case TimeRegionBrowser.SELECTION:
+                {
+                    downloadRegion.setEnabled(trb.getSelectionLength() > 0
+                            && !trb.selectionLiesWithinFullRegion());
+                    break;
+                }
+                }
+            }
+
+        });
     }
 }

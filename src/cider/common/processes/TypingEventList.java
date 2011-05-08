@@ -42,119 +42,21 @@ import cider.documentViewerComponents.TypingRegion;
  */
 public class TypingEventList
 {
-    private ArrayList<TypingEvent> tel = new ArrayList<TypingEvent>();
-
-    public TypingEventList()
-    {
-
-    }
-
     /**
-     * Adds a typing event to the end of the list if its position is greater
-     * than the list size, otherwise it is inserted to the list at position specified
+     * Convenience method to find out if a string is a member of another set of
+     * strings.
      * 
-     * @param te
-     * @author Lawrence
-     */
-    public void insert(TypingEvent te)
-    {
-        if (te.position >= tel.size())
-            this.tel.add(te);
-        else
-            this.tel.add(te.position, te);
-    }
-
-    /**
-     * Adds a typing event to the end of the list if its position is greater
-     * than the list size, otherwise it overwrites the event at that position.
-     * 
-     * @param te
-     */
-    public void overwrite(TypingEvent te)
-    {
-        if( te.position >= tel.size() )
-            this.tel.add(te);
-        else
-            this.tel.set(te.position, te);
-        
-        // If overwriting length > 1 delete the rest of the stuff to be overwritten
-        if( te.length > 1 )
-            delete( te.position + 1, te.length - 1 );
-    }
-
-    /**
-     * Removes the typing event behind the caret
-     * 
-     * @param position
-     * @author Lawrence and Miles
-     */
-    public void backspace(int position)
-    {
-    	position--;
-        if (position >= tel.size())
-            position = tel.size() - 1;
-        if (position < 0)
-            return;
-        
-        this.tel.remove(position);
-    }
-    
-    /**
-     * Delete behaviour, reusing backspace method
-     * 
-     * @param position The position to delete at.
-     * @param length The length to delete for, usually 1.
-     * 
-     * @author Andrew
-     */
-    public void delete( int position, int length )
-    {
-        if( position == tel.size() )
-            return;
-        
-        if( position == -1 )
-            position = 0;
-        
-        // Delete for length
-        for( int i = 1; i <= length; i++ )
-        {
-        	if( position >= tel.size() )
-        		break;
-        	this.tel.remove( position );
-        }       
-    }
-
-    /**
-     * Checks whether an event exists at position i.
-     * 
-     * @param i
-     * @return
-     */
-    public boolean exists(int i)
-    {
-        return i > 0 && i < this.tel.size();
-    }
-
-    /**
-     * Gets a typing event at position i.
-     * 
-     * @param i
+     * @param string
+     * @param strings
      * @author Lawrence
      * @return
      */
-    public TypingEvent get(int i)
+    static boolean belongsTo(String string, String[] strings)
     {
-        return this.tel.get(i);
-    }
-
-    /**
-     * Removes all the typing events in this list.
-     * 
-     * @author Lawrence
-     */
-    public void clear()
-    {
-        this.tel.clear();
+        for (String str : strings)
+            if (str.equals(string))
+                return true;
+        return false;
     }
 
     public static void main(String[] args)
@@ -191,176 +93,38 @@ public class TypingEventList
         System.out.println("reached end");
     }
 
-    @Override
-    public String toString()
+    private ArrayList<TypingEvent> tel = new ArrayList<TypingEvent>();
+
+    public TypingEventList()
     {
-        String string = "";
-        for (TypingEvent te : this.tel)
-            string += te.text;
-        return string;
+
     }
 
     /**
-     * Splits this TypingEventList into smaller TypingEventLists
-     * 
-     * @param string
-     *            the text on which to make the splits
-     * @return
-     */
-    public LinkedList<TypingEventList> split(String string)
-    {
-        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
-        TypingEventList current = new TypingEventList();
-        for (TypingEvent te : this.tel)
-            if (te.text.equals(string))
-            {
-                ll.add(current);
-                current = new TypingEventList();
-            }
-            else
-                current.tel.add(te);
-        ll.add(current);
-        return ll;
-    }
-
-    /**
-     * Convenience method to find out if a string is a member of another set of
-     * strings.
-     * 
-     * @param string
-     * @param strings
-     * @author Lawrence
-     * @return
-     */
-    static boolean belongsTo(String string, String[] strings)
-    {
-        for (String str : strings)
-            if (str.equals(string))
-                return true;
-        return false;
-    }
-
-    /**
-     * Splits the typingEventList into smaller TypingEventLists using a set of
-     * strings to identify which events to split on.
-     * 
-     * @param dividers
-     * @return
-     */
-    public LinkedList<TypingEventList> splitWords(String[] dividers)
-    {
-        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
-        TypingEventList current;
-        current = new TypingEventList();
-        for (TypingEvent te : this.tel)
-            if (belongsTo(te.text, dividers))
-            {
-                ll.add(current);
-                current = new TypingEventList();
-            }
-            else
-                current.tel.add(te);
-        ll.add(current);
-        return ll;
-    }
-
-    /**
-     * Finds out to what degree this position is locked.
+     * Removes the typing event behind the caret
      * 
      * @param position
-     * @param user
-     * @return 0 if this position is not locked, 1 if it's locked by this user
-     *         and 2 if it's locked by somebody else.
-     * 
-     * @author Lawrence
+     * @author Lawrence and Miles
      */
-    public int locked(int position, String user)
+    public void backspace(int position)
     {
-        TypingEvent te = this.tel.get(position);
-        return te.lockingGroup == null ? 0 : (te.lockingGroup.equals(user) ? 1
-                : 2);
+        position--;
+        if (position >= tel.size())
+            position = tel.size() - 1;
+        if (position < 0)
+            return;
+
+        tel.remove(position);
     }
 
     /**
-     * The sise of the typing event list.
-     * 
-     * @return
-     * @author Lawrence
-     */
-    public int length()
-    {
-        return this.tel.size();
-    }
-
-    /**
-     * @return true if this TypingEventList is empty or contains nothing but a
-     *         newline.
+     * Removes all the typing events in this list.
      * 
      * @author Lawrence
      */
-    public boolean newline()
+    public void clear()
     {
-        return this.tel.size() == 0 || this.tel.size() == 1
-                && this.tel.get(0).equals("\n");
-    }
-
-    /**
-     * 
-     * @return all of the typing events
-     * 
-     * @author Lawrence
-     */
-    public Collection<? extends TypingEvent> events()
-    {
-        return this.tel;
-    }
-
-    /**
-     * Each typing event will have a time that is only 1 greater than the
-     * previous time. The greatest time in the list will be end.
-     * 
-     * @param end
-     *            the last time
-     * @author Lawrence
-     */
-    public void homogenize(long end)
-    {
-        int size = this.tel.size();
-        long start = end - size;
-        long t = start;
-        for (int i = 0; i < size; i++)
-            this.tel.set(i, new TypingEvent(this.tel.get(i), t++, i,
-                    TypingEventMode.homogenized));
-    }
-
-
-    /**
-     * @param te
-     * @return the last index of te
-     */
-    public int getLastPositionOf(TypingEvent te)
-    {
-        return this.tel.lastIndexOf(te);
-    }
-
-    /**
-     * Adds up all the characters belonging to this user
-     * 
-     * @param user
-     * @return
-     * @author Lawrence
-     */
-    public int countCharactersFor(String user)
-    {
-        int count = 0;
-        for (TypingEvent te : this.tel)
-        {
-            if (te.owner.equals(user) && !te.text.equals("\n"))
-            {
-                count++;
-            }
-        }
-        return count;
+        tel.clear();
     }
 
     /**
@@ -374,7 +138,7 @@ public class TypingEventList
     public Hashtable<String, Integer> countCharactersAll()
     {
         Hashtable<String, Integer> results = new Hashtable<String, Integer>();
-        for (TypingEvent te : this.tel)
+        for (TypingEvent te : tel)
         {
             if (!te.text.equals("\n"))
             {
@@ -392,6 +156,188 @@ public class TypingEventList
     }
 
     /**
+     * Adds up all the characters belonging to this user
+     * 
+     * @param user
+     * @return
+     * @author Lawrence
+     */
+    public int countCharactersFor(String user)
+    {
+        int count = 0;
+        for (TypingEvent te : tel)
+        {
+            if (te.owner.equals(user) && !te.text.equals("\n"))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Delete behaviour, reusing backspace method
+     * 
+     * @param position
+     *            The position to delete at.
+     * @param length
+     *            The length to delete for, usually 1.
+     * 
+     * @author Andrew
+     */
+    public void delete(int position, int length)
+    {
+        if (position == tel.size())
+            return;
+
+        if (position == -1)
+            position = 0;
+
+        // Delete for length
+        for (int i = 1; i <= length; i++)
+        {
+            if (position >= tel.size())
+                break;
+            tel.remove(position);
+        }
+    }
+
+    /**
+     * 
+     * @return all of the typing events
+     * 
+     * @author Lawrence
+     */
+    public Collection<? extends TypingEvent> events()
+    {
+        return tel;
+    }
+
+    /**
+     * Checks whether an event exists at position i.
+     * 
+     * @param i
+     * @return
+     */
+    public boolean exists(int i)
+    {
+        return i > 0 && i < tel.size();
+    }
+
+    /**
+     * Gets a typing event at position i.
+     * 
+     * @param i
+     * @author Lawrence
+     * @return
+     */
+    public TypingEvent get(int i)
+    {
+        return tel.get(i);
+    }
+
+    /**
+     * @param te
+     * @return the last index of te
+     */
+    public int getLastPositionOf(TypingEvent te)
+    {
+        return tel.lastIndexOf(te);
+    }
+
+    /**
+     * Each typing event will have a time that is only 1 greater than the
+     * previous time. The greatest time in the list will be end.
+     * 
+     * @param end
+     *            the last time
+     * @author Lawrence
+     */
+    public void homogenize(long end)
+    {
+        int size = tel.size();
+        long start = end - size;
+        long t = start;
+        for (int i = 0; i < size; i++)
+            tel.set(i, new TypingEvent(tel.get(i), t++, i,
+                    TypingEventMode.homogenized));
+    }
+
+    /**
+     * Adds a typing event to the end of the list if its position is greater
+     * than the list size, otherwise it is inserted to the list at position
+     * specified
+     * 
+     * @param te
+     * @author Lawrence
+     */
+    public void insert(TypingEvent te)
+    {
+        if (te.position >= tel.size())
+            tel.add(te);
+        else
+            tel.add(te.position, te);
+    }
+
+    /**
+     * The sise of the typing event list.
+     * 
+     * @return
+     * @author Lawrence
+     */
+    public int length()
+    {
+        return tel.size();
+    }
+
+    /**
+     * Finds out to what degree this position is locked.
+     * 
+     * @param position
+     * @param user
+     * @return 0 if this position is not locked, 1 if it's locked by this user
+     *         and 2 if it's locked by somebody else.
+     * 
+     * @author Lawrence
+     */
+    public int locked(int position, String user)
+    {
+        TypingEvent te = tel.get(position);
+        return te.lockingGroup == null ? 0 : (te.lockingGroup.equals(user) ? 1
+                : 2);
+    }
+
+    /**
+     * @return true if this TypingEventList is empty or contains nothing but a
+     *         newline.
+     * 
+     * @author Lawrence
+     */
+    public boolean newline()
+    {
+        return tel.size() == 0 || tel.size() == 1 && tel.get(0).equals("\n");
+    }
+
+    /**
+     * Adds a typing event to the end of the list if its position is greater
+     * than the list size, otherwise it overwrites the event at that position.
+     * 
+     * @param te
+     */
+    public void overwrite(TypingEvent te)
+    {
+        if (te.position >= tel.size())
+            tel.add(te);
+        else
+            tel.set(te.position, te);
+
+        // If overwriting length > 1 delete the rest of the stuff to be
+        // overwritten
+        if (te.length > 1)
+            delete(te.position + 1, te.length - 1);
+    }
+
+    /**
      * 
      * @param start
      * @param end
@@ -401,8 +347,64 @@ public class TypingEventList
      */
     public TypingRegion region(int start, int end)
     {
-        TypingRegion region = new TypingRegion(start, end, this.tel.subList(
-                start, end));
+        TypingRegion region = new TypingRegion(start, end, tel.subList(start,
+                end));
         return region;
+    }
+
+    /**
+     * Splits this TypingEventList into smaller TypingEventLists
+     * 
+     * @param string
+     *            the text on which to make the splits
+     * @return
+     */
+    public LinkedList<TypingEventList> split(String string)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current = new TypingEventList();
+        for (TypingEvent te : tel)
+            if (te.text.equals(string))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
+    /**
+     * Splits the typingEventList into smaller TypingEventLists using a set of
+     * strings to identify which events to split on.
+     * 
+     * @param dividers
+     * @return
+     */
+    public LinkedList<TypingEventList> splitWords(String[] dividers)
+    {
+        LinkedList<TypingEventList> ll = new LinkedList<TypingEventList>();
+        TypingEventList current;
+        current = new TypingEventList();
+        for (TypingEvent te : tel)
+            if (belongsTo(te.text, dividers))
+            {
+                ll.add(current);
+                current = new TypingEventList();
+            }
+            else
+                current.tel.add(te);
+        ll.add(current);
+        return ll;
+    }
+
+    @Override
+    public String toString()
+    {
+        String string = "";
+        for (TypingEvent te : tel)
+            string += te.text;
+        return string;
     }
 }

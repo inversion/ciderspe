@@ -41,12 +41,47 @@ import cider.common.processes.TypingEventList;
  */
 public class SDVLine
 {
+    /**
+     * convenience method to find out whether a string is representing a double
+     * 
+     * @param string
+     * @return
+     * @author Lawrence
+     */
+    public static boolean isDouble(String string)
+    {
+        return doublePattern.matcher(string).matches();
+    }
+
+    /**
+     * Replaces in an area of a color array
+     * 
+     * @param target
+     *            color array
+     * @param color
+     *            to paint
+     * @param start
+     *            index
+     * @param end
+     *            index
+     * @author Lawrence
+     */
+    public static void wash(Color[] target, Color color, int start, int end)
+    {
+        start = start < 0 ? 0 : start;
+        end = end < target.length ? end : target.length;
+        for (int i = start; i < end; i++)
+            target[i] = color;
+    }
+
     public TypingEventList str;
     public int y;
     public int lineNum;
     private int start;
     Color[] colors;
+
     SourceDocumentViewer sdv;
+
     private static Pattern doublePattern = Pattern.compile("-?\\d+(\\.\\d*)?");
 
     /**
@@ -69,13 +104,8 @@ public class SDVLine
         this.start = start;
         this.lineNum = lineNum;
         this.y = y;
-        this.str = tel;
-        this.colors = new Color[this.str.length()];
-    }
-    
-    public int getPositionAtStart()
-    {
-        return this.start + this.lineNum - 1;
+        str = tel;
+        colors = new Color[str.length()];
     }
 
     /**
@@ -84,8 +114,8 @@ public class SDVLine
      */
     public void characterColors()
     {
-        LinkedList<TypingEventList> words = this.str.splitWords(new String[] {
-                " ", "(", ")", ";", "\t", ":", "#", "{", "}" });
+        LinkedList<TypingEventList> words = str.splitWords(new String[] { " ",
+                "(", ")", ";", "\t", ":", "#", "{", "}" });
         int i = 0;
         String str;
         int length;
@@ -96,118 +126,57 @@ public class SDVLine
             str = str.toLowerCase();
             length = str.length();
             if (EditorTypingArea.Highlighting == 0)
-                if ((this.sdv.isCommentFound() == false)
-                        || ((this.lineNum < this.sdv.getCommentStartLoc())
-                                && (this.sdv.getCommentStartLoc() != -1) && (this.sdv
+                if ((sdv.isCommentFound() == false)
+                        || ((lineNum < sdv.getCommentStartLoc())
+                                && (sdv.getCommentStartLoc() != -1) && (sdv
                                 .isCommentFound() == true)))
                 {
                     if (str.startsWith("/*") == true)
                     {
-                        this.sdv.setCommentFound(true);
-                        this.sdv.setCommentStartLoc(this.lineNum);
-                        wash(this.colors, Color.RED, i, i + length);
+                        sdv.setCommentFound(true);
+                        sdv.setCommentStartLoc(lineNum);
+                        wash(colors, Color.RED, i, i + length);
                     }
                     if (ETASourceEditorPane.keywords.contains(str))
                     {
-                        wash(this.colors, Color.BLUE, i, i + length);
-                        this.sdv.getKeyWord().add(i);
-                        this.sdv.getKeyWord().add(i + length);
+                        wash(colors, Color.BLUE, i, i + length);
+                        sdv.getKeyWord().add(i);
+                        sdv.getKeyWord().add(i + length);
                     }
                     if (isDouble(str))
                         customColor = new Color(0, 100, 0);
-                    wash(this.colors, customColor, i, i + length);
+                    wash(colors, customColor, i, i + length);
                     if (str.startsWith("//") == true)
                     {
-                        wash(this.colors, Color.RED, i, i + length);
-                        this.sdv.setCommentedLine(true);
+                        wash(colors, Color.RED, i, i + length);
+                        sdv.setCommentedLine(true);
                     }
-                    if (this.sdv.isCommentedLine() == true)
-                        wash(this.colors, Color.RED, i, i + length);
+                    if (sdv.isCommentedLine() == true)
+                        wash(colors, Color.RED, i, i + length);
                 }
                 else
                 {
-                    wash(this.colors, Color.RED, i, i + length);
+                    wash(colors, Color.RED, i, i + length);
                     if (str.endsWith("*/") == true)
-                        this.sdv.setCommentFound(false);
+                        sdv.setCommentFound(false);
                 }
-            if (this.sdv.Highlighting == 1)
+            if (sdv.Highlighting == 1)
             {
-                userwash(this.colors, this.lineNum, i, i + length);
+                userwash(colors, lineNum, i, i + length);
             }
             i += length + 1;
 
         }
     }
 
-    /**
-     * Draws around the current line number that the user is currently on
-     * 
-     * @param g
-     * @param caretVisible
-     */
-    public void highlightMargin(Graphics g)
+    public int getLineNumber()
     {
-        g.setColor(Client.colours.get(EditorTypingArea.parent.getUsername()));
-        g.fillRoundRect(3, this.y - EditorTypingArea.lineSpacing + 2,
-                EditorTypingArea.leftMargin - 8,
-                EditorTypingArea.lineSpacing + 2, 3, 3); // TODO:
-        // here
-        // Alex
-        g.setColor(Color.LIGHT_GRAY);
-        g.drawRoundRect(3, this.y - EditorTypingArea.lineSpacing + 2,
-                EditorTypingArea.leftMargin - 8,
-                EditorTypingArea.lineSpacing + 2, 3, 3);
-        paintMargin(g);
+        return lineNum;
     }
 
-    /**
-     * paints the line number to the left of this line
-     * 
-     * @param g
-     * @author Lawrence
-     */
-    public void paintMargin(Graphics g)
+    public int getPositionAtStart()
     {
-        g.setColor(Color.GRAY);
-        g.drawString("" + this.lineNum, 5, this.y);
-    }
-
-    /**
-     * paints a character of this line, loop through i to draw the whole string
-     * 
-     * @param g
-     * @param i
-     *            the character number of this line to be painted
-     * @author Lawrence
-     */
-    public void paintCharacter(Graphics g, int i)
-    {
-        int x = (i * EditorTypingArea.characterSpacing)
-                + EditorTypingArea.leftMargin;
-        int y = this.y;
-
-        this.sdv.setIsKey(false);
-
-        g.setColor(this.colors[i] != null ? this.colors[i] : this.sdv
-                .getDefaultColor());
-
-        for (int j = 0; j < this.sdv.getKeyWord().size(); j = j + 2)
-        {
-            if ((i >= this.sdv.getKeyWord().get(j))
-                    && (i <= this.sdv.getKeyWord().get(j + 1)))
-                this.sdv.setIsKey(true);
-        }
-        if (this.sdv.isKey() == true)
-        {
-            g.setFont(EditorTypingArea.fontbold);
-            g.drawString("" + str.get(i).text, x, y);
-            g.setFont(EditorTypingArea.font);
-        }
-        else
-        {
-            g.setFont(EditorTypingArea.font);
-            g.drawString("" + str.get(i).text, x, y);
-        }
+        return start + lineNum - 1;
     }
 
     /**
@@ -226,10 +195,33 @@ public class SDVLine
         int x = (i * EditorTypingArea.characterSpacing)
                 + EditorTypingArea.leftMargin;
         int y = this.y + 5;
-        g.fillRect(x, y - EditorTypingArea.lineSpacing,
-                EditorTypingArea.characterSpacing, EditorTypingArea.lineSpacing); // TODO
+        g
+                .fillRect(x, y - EditorTypingArea.lineSpacing,
+                        EditorTypingArea.characterSpacing,
+                        EditorTypingArea.lineSpacing); // TODO
         // here
         // Alex
+    }
+
+    /**
+     * Draws around the current line number that the user is currently on
+     * 
+     * @param g
+     * @param caretVisible
+     */
+    public void highlightMargin(Graphics g)
+    {
+        g.setColor(Client.colours.get(EditorTypingArea.parent.getUsername()));
+        g.fillRoundRect(3, y - EditorTypingArea.lineSpacing + 2,
+                EditorTypingArea.leftMargin - 8,
+                EditorTypingArea.lineSpacing + 2, 3, 3); // TODO:
+        // here
+        // Alex
+        g.setColor(Color.LIGHT_GRAY);
+        g.drawRoundRect(3, y - EditorTypingArea.lineSpacing + 2,
+                EditorTypingArea.leftMargin - 8,
+                EditorTypingArea.lineSpacing + 2, 3, 3);
+        paintMargin(g);
     }
 
     /**
@@ -242,28 +234,68 @@ public class SDVLine
      */
     public String locked(int i)
     {
-        return this.str.get(i).lockingGroup;
+        return str.get(i).lockingGroup;
     }
 
     /**
-     * Replaces in an area of a color array
+     * paints a character of this line, loop through i to draw the whole string
      * 
-     * @param target
-     *            color array
-     * @param color
-     *            to paint
-     * @param start
-     *            index
-     * @param end
-     *            index
+     * @param g
+     * @param i
+     *            the character number of this line to be painted
      * @author Lawrence
      */
-    public static void wash(Color[] target, Color color, int start, int end)
+    public void paintCharacter(Graphics g, int i)
     {
-        start = start < 0 ? 0 : start;
-        end = end < target.length ? end : target.length;
-        for (int i = start; i < end; i++)
-            target[i] = color;
+        int x = (i * EditorTypingArea.characterSpacing)
+                + EditorTypingArea.leftMargin;
+        int y = this.y;
+
+        sdv.setIsKey(false);
+
+        g.setColor(colors[i] != null ? colors[i] : sdv.getDefaultColor());
+
+        for (int j = 0; j < sdv.getKeyWord().size(); j = j + 2)
+        {
+            if ((i >= sdv.getKeyWord().get(j))
+                    && (i <= sdv.getKeyWord().get(j + 1)))
+                sdv.setIsKey(true);
+        }
+        if (sdv.isKey() == true)
+        {
+            g.setFont(EditorTypingArea.fontbold);
+            g.drawString("" + str.get(i).text, x, y);
+            g.setFont(EditorTypingArea.font);
+        }
+        else
+        {
+            g.setFont(EditorTypingArea.font);
+            g.drawString("" + str.get(i).text, x, y);
+        }
+    }
+
+    /**
+     * paints the line number to the left of this line
+     * 
+     * @param g
+     * @author Lawrence
+     */
+    public void paintMargin(Graphics g)
+    {
+        g.setColor(Color.GRAY);
+        g.drawString("" + lineNum, 5, y);
+    }
+
+    /**
+     * 
+     * @param i
+     * @return true is the text at i has been selected
+     * @author Lawrence
+     */
+    public boolean selected(int i)
+    {
+        TypingRegion selectedText = sdv.getSelectedRegion();
+        return selectedText != null && selectedText.list.contains(str.get(i));
     }
 
     /**
@@ -291,35 +323,5 @@ public class SDVLine
             usercolor = Client.colours.get(uname);
             target[i] = usercolor;
         }
-    }
-
-    /**
-     * 
-     * @param i
-     * @return true is the text at i has been selected
-     * @author Lawrence
-     */
-    public boolean selected(int i)
-    {
-        TypingRegion selectedText = this.sdv.getSelectedRegion();
-        return selectedText != null
-                && selectedText.list.contains(this.str.get(i));
-    }
-
-    /**
-     * convenience method to find out whether a string is representing a double
-     * 
-     * @param string
-     * @return
-     * @author Lawrence
-     */
-    public static boolean isDouble(String string)
-    {
-        return doublePattern.matcher(string).matches();
-    }
-
-    public int getLineNumber()
-    {
-        return this.lineNum;
     }
 }

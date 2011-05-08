@@ -55,22 +55,22 @@ public class TypingRegion
     }
 
     /**
-     * 
-     * @param position
-     * @return true if the position is between the start and end inclusive
-     */
-    public boolean inside(int position)
-    {
-        return position >= this.start && position <= this.end;
-    }
-
-    /**
      * gets the difference between the start and end values
      * 
      * @return
      */
     public int getLength()
     {
-        return this.end - start;
+        return end - start;
+    }
+
+    /**
+     * 
+     * @param position
+     * @return true if the position is between the start and end inclusive
+     */
+    public boolean inside(int position)
+    {
+        return position >= start && position <= end;
     }
 }

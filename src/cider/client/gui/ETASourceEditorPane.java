@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.client.gui;
 
@@ -69,18 +69,58 @@ import cider.documentViewerComponents.EditorTypingArea;
 @SuppressWarnings("serial")
 public class ETASourceEditorPane extends JScrollPane
 {
+    /**
+     * A workaround to a bug in the JTabbedPane component:
+     * 
+     * @author M�rten Gustafsson
+     * 
+     */
+    public class TabSelectionFocusGainListener implements ComponentListener
+    {
+
+        public TabSelectionFocusGainListener()
+        {
+            super();
+        }
+
+        public void componentHidden(ComponentEvent e)
+        {
+        }
+
+        public void componentMoved(ComponentEvent e)
+        {
+        }
+
+        public void componentResized(ComponentEvent e)
+        {
+        }
+
+        public void componentShown(ComponentEvent e)
+        {
+            Component component = e.getComponent();
+            Container parent = component.getParent();
+            if (parent instanceof JTabbedPane)
+            {
+                JTabbedPane tabbed = (JTabbedPane) parent;
+                if (tabbed.getSelectedComponent() == component)
+                    component.requestFocusInWindow();
+            }
+        }
+    }
+
     // Keywords for syntax highlighting
     public static HashSet<String> keywords = new HashSet<String>();
-
     protected EditorTypingArea eta;
     private Component tabHandle = null;
     private Client client;
+
     private String path;
-    
+
     // Mode of input, default to insert at caret
     private TypingEventMode inputMode = TypingEventMode.insert;
 
-    public ETASourceEditorPane(final EditorTypingArea eta, Client client, String path)
+    public ETASourceEditorPane(final EditorTypingArea eta, Client client,
+            String path)
     {
         super(eta);
         this.eta = eta;
@@ -105,80 +145,14 @@ public class ETASourceEditorPane extends JScrollPane
                 + client.getClockOffset());
     }
 
-    private MouseWheelListener newMouseWheelListener()
+    public EditorTypingArea getEditorTypingArea()
     {
-        MouseWheelListener mwl = new MouseWheelListener()
-        {
-
-            @Override
-            public void mouseWheelMoved(MouseWheelEvent mwe)
-            {
-
-                Rectangle rect = eta.getVisibleRect();
-                rect.y += EditorTypingArea.lineSpacing
-                        * (mwe.getWheelRotation() > 0 ? 1 : -1);
-                eta.scrollRectToVisible(rect);
-            }
-
-        };
-        return mwl;
+        return eta;
     }
-    
-    private WindowListener newWindowListener()
+
+    public Component getTabHandle()
     {
-        return new WindowListener()
-        {
-
-            @Override
-            public void windowActivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void windowClosed(WindowEvent arg0)
-            {
-                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
-                        + client.getClockOffset());
-            }
-
-            @Override
-            public void windowClosing(WindowEvent arg0)
-            {
-                SiHistoryFiles.markDocumentClosing(path,  System.currentTimeMillis()
-                        + client.getClockOffset());
-            }
-
-            @Override
-            public void windowDeactivated(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void windowDeiconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void windowIconified(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-
-            @Override
-            public void windowOpened(WindowEvent arg0)
-            {
-                // TODO Auto-generated method stub
-                
-            }
-            
-        };
+        return tabHandle;
     }
 
     private ActionListener lockingActionListener()
@@ -203,77 +177,357 @@ public class ETASourceEditorPane extends JScrollPane
         };
     }
 
-    /**
-     * A workaround to a bug in the JTabbedPane component:
-     * 
-     * @author M�rten Gustafsson
-     * 
-     */
-    public class TabSelectionFocusGainListener implements ComponentListener
-    {
-
-        public TabSelectionFocusGainListener()
-        {
-            super();
-        }
-
-        public void componentResized(ComponentEvent e)
-        {
-        }
-
-        public void componentMoved(ComponentEvent e)
-        {
-        }
-
-        public void componentShown(ComponentEvent e)
-        {
-            Component component = e.getComponent();
-            Container parent = component.getParent();
-            if (parent instanceof JTabbedPane)
-            {
-                JTabbedPane tabbed = (JTabbedPane) parent;
-                if (tabbed.getSelectedComponent() == component)
-                    component.requestFocusInWindow();
-            }
-        }
-
-        public void componentHidden(ComponentEvent e)
-        {
-        }
-    }
-
     // ////// End of workaround ////////
 
-    /**
-     * FIXME: UNUSED METHOD!
-     */
-    @SuppressWarnings("unused")
-    private ComponentListener newTabSelectionFocusGainListener()
+    public KeyListener newKeyListener()
     {
-        // TODO Auto-generated method stub
-        return null;
-    }
+        KeyListener k = new KeyListener()
+        {
+            private void applyToSelection(TypingEventMode mode)
+            {
+                // Don't do anything if there's no selected region
+                if (eta.getSelectedRegion() == null
+                        || eta.getSelectedRegion().getLength() == 0)
+                    return;
 
-    @Override
-    public void requestFocus()
-    {
-        System.out.println("Requested focus");
-        super.requestFocus();
-    }
+                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                TypingEvent te = new TypingEvent(System.currentTimeMillis()
+                        + client.getClockOffset(), mode, eta
+                        .getSelectedRegion().start, eta.getSelectedRegion()
+                        .getLength(), "", client.getUsername(), client
+                        .getUsername());
 
-    public EditorTypingArea getEditorTypingArea()
-    {
-        return this.eta;
-    }
+                outgoingEvents.add(te);
+                internal.add(te);
+                System.out.println("push to server: " + te);
+                eta.getSourceDocument().push(internal);
+                client.broadcastTypingEvents(outgoingEvents, path);
+                eta.updateUI();
 
-    public void setTabHandle(Component tabHandle)
-    {
-        this.tabHandle = tabHandle;
-    }
+                eta.updateText();
+                eta.scrollRectToVisible(new Rectangle(0,
+                        eta.getCurrentLine().y, eta.getWidth(),
+                        EditorTypingArea.lineSpacing));
+            }
 
-    public Component getTabHandle()
-    {
-        return this.tabHandle;
+            @Override
+            public void keyPressed(KeyEvent ke)
+            {
+                client.shared.idleTimer.activityDetected();
+                switch (ke.getKeyCode())
+                {
+                case KeyEvent.VK_LEFT:
+                    eta.moveLeft(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    eta.moveRight(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_UP:
+                    eta.moveUp(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_DOWN:
+                    eta.moveDown(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_HOME:
+                    if (ke.isControlDown())
+                        eta.moveDocHome(ke.isShiftDown());
+                    else
+                        eta.moveHome(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_END:
+                    if (ke.isControlDown())
+                        eta.moveDocEnd(ke.isShiftDown());
+                    else
+                        eta.moveEnd(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_PAGE_UP:
+                    eta.movePageUp(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_PAGE_DOWN:
+                    eta.movePageDown(ke.isShiftDown());
+                    break;
+                case KeyEvent.VK_4:
+                    if (ke.isControlDown())
+                        this.applyToSelection(TypingEventMode.lockRegion);
+                    break;
+                case KeyEvent.VK_R:
+                    if (ke.isControlDown())
+                        this.applyToSelection(TypingEventMode.unlockRegion);
+                    break;
+                case KeyEvent.VK_A:
+                    if (ke.isControlDown())
+                        eta.selectAll();
+                    break;
+                case KeyEvent.VK_C:
+                    if (ke.isControlDown())
+                        eta.copy();
+                    break;
+                case KeyEvent.VK_X:
+                    if (ke.isControlDown())
+                    {
+                        eta.copy();
+                        applyToSelection(TypingEventMode.delete);
+                    }
+                    break;
+                case KeyEvent.VK_V:
+                    if (ke.isControlDown())
+                    {
+                        String text = null;
+                        TypingEvent insertRemainder = null;
+
+                        Clipboard clipboard = getToolkit().getSystemClipboard();
+                        // Credit help to
+                        // http://www.javapractices.com/topic/TopicAction.do?Id=82
+                        Transferable contents = clipboard.getContents(null);
+                        boolean isText = (contents != null)
+                                && contents
+                                        .isDataFlavorSupported(DataFlavor.stringFlavor);
+
+                        if (isText)
+                            try
+                            {
+                                text = (String) contents
+                                        .getTransferData(DataFlavor.stringFlavor);
+                            }
+                            catch (UnsupportedFlavorException e)
+                            {
+                                e.printStackTrace();
+                            }
+                            catch (IOException e)
+                            {
+                                e.printStackTrace();
+                            }
+
+                        if (text == null)
+                            break;
+
+                        TypingEventMode mode;
+                        int position, length;
+
+                        // If there's a region selected we need to overwrite
+                        if (eta.getSelectedRegion() != null
+                                && eta.getSelectedRegion().getLength() > 0)
+                        {
+                            mode = TypingEventMode.overwrite;
+                            position = eta.getSelectedRegion().start;
+                            length = eta.getSelectedRegion().getLength();
+                        }
+                        else
+                        { // Otherwise just insert text at caret using default
+                          // mode
+                            mode = inputMode;
+                            position = eta.getCaretPosition();
+                            length = text.length();
+                        }
+
+                        // TODO: Doesn't handle locking regions
+                        TypingEvent te = new TypingEvent(System
+                                .currentTimeMillis()
+                                + client.getClockOffset(), mode, position,
+                                length, text, client.getUsername(), null);
+
+                        Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                        Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                        outgoingEvents.add(te);
+                        internal.add(te);
+                        System.out.println("push to server: " + te);
+                        eta.getSourceDocument().push(internal);
+                        client.broadcastTypingEvents(outgoingEvents, path);
+
+                        eta.updateUI();
+
+                        eta.updateText();
+                        eta.scrollRectToVisible(new Rectangle(0, eta
+                                .getCurrentLine().y, eta.getWidth(),
+                                EditorTypingArea.lineSpacing));
+
+                        eta.moveCaret(length);
+                    }
+                    break;
+                case KeyEvent.VK_INSERT: // Switch default input mode between
+                                         // insert and overtype
+                    inputMode = (inputMode == TypingEventMode.insert) ? TypingEventMode.overwrite
+                            : TypingEventMode.insert;
+
+                    // Provide GUI indication of input mode (possibly block
+                    // caret and status bar indicator)
+                    MainWindow.statusBar.setInputMode(inputMode.toString()
+                            .toUpperCase());
+
+                    System.out.println("Input mode changed to "
+                            + inputMode.toString());
+                    break;
+                }
+
+            }
+
+            @Override
+            public void keyReleased(KeyEvent ke)
+            {
+
+            }
+
+            @Override
+            public void keyTyped(KeyEvent ke)
+            {
+                if (ke.isControlDown())
+                    return;
+                else
+                {
+                    int r = eta.currentPositionLocked(0, client.getUsername());
+                    if (ke.isControlDown())
+                        System.out.println("Control is down!");
+                    else if (r == 2)
+                        System.out.println("Current position locked!");
+                    else
+                    {
+                        switch (ke.getKeyCode())
+                        {
+                        default:
+                        {
+                            try
+                            {
+                                // System.out.println(server.lastUpdateTime());
+                                TypingEventMode mode = inputMode;
+                                String chr;
+                                int length = 1, position = eta
+                                        .getCaretPosition();
+
+                                switch (ke.getKeyChar())
+                                {
+                                case '\u007F': // Delete character
+                                    mode = TypingEventMode.delete;
+                                    chr = " ";
+                                    // If there is a region selected change
+                                    // start position to the start of this
+                                    // region
+                                    if (eta.getSelectedRegion() != null
+                                            && eta.getSelectedRegion()
+                                                    .getLength() > 0)
+                                    {
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion()
+                                                .getLength();
+                                    }
+                                    else if (position < 0) // TODO: Not sure if
+                                                           // this ever happens
+                                        position = 0;
+                                    break;
+                                case '\u0008': // Backspace char
+                                    mode = TypingEventMode.backspace;
+                                    chr = " ";
+
+                                    // If there is a region selected change
+                                    // start position to the start of this
+                                    // region
+                                    // And make it a delete event
+                                    if (eta.getSelectedRegion() != null
+                                            && eta.getSelectedRegion()
+                                                    .getLength() > 0)
+                                    {
+                                        mode = TypingEventMode.delete;
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion()
+                                                .getLength();
+                                    }
+                                    else if (position < 1)
+                                        return;
+                                    break;
+                                case '\t':
+                                    chr = "    ";
+                                    length = 4;
+                                    eta.requestFocusInWindow();
+
+                                    client.shared.profile.incrementCharCount();
+                                    break;
+                                default:
+                                    // If there's a region selected we need to
+                                    // overwrite
+                                    if (eta.getSelectedRegion() != null
+                                            && eta.getSelectedRegion()
+                                                    .getLength() > 0)
+                                    {
+                                        mode = TypingEventMode.overwrite;
+                                        position = eta.getSelectedRegion().start;
+                                        length = eta.getSelectedRegion()
+                                                .getLength();
+                                    }
+                                    chr = String.valueOf(ke.getKeyChar());
+                                    client.shared.profile.incrementCharCount();
+                                    break;
+                                }
+
+                                TypingEvent te = new TypingEvent(System
+                                        .currentTimeMillis()
+                                        + client.getClockOffset(), mode,
+                                        position, length, chr, client
+                                                .getUsername(), r == 1 ? client
+                                                .getUsername() : null);
+                                ArrayList<TypingEvent> particles = te.explode();
+
+                                for (TypingEvent particle : particles)
+                                    System.out.println("push to server: "
+                                            + particle);
+
+                                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
+                                PriorityQueue<TypingEvent> toFile = new PriorityQueue<TypingEvent>(
+                                        particles.size(), new EventComparer());
+
+                                for (TypingEvent particle : particles)
+                                {
+                                    outgoingEvents.add(particle);
+                                    internal.add(particle);
+                                    toFile.add(particle);
+                                }
+
+                                SiHistoryFiles.saveEvents(toFile, client
+                                        .getCurrentDocumentID().path);
+
+                                eta.getSourceDocument().push(internal);
+                                client.broadcastTypingEvents(outgoingEvents,
+                                        path);
+
+                                eta.updateText();
+
+                                if (!eta.isEmpty())
+                                    eta.scrollRectToVisible(new Rectangle(0,
+                                            eta.getCurrentLine().y, eta
+                                                    .getWidth(),
+                                            EditorTypingArea.lineSpacing));
+                                else if (CiderApplication.debugApp)
+                                    System.out
+                                            .println("Cannot scroll rect to visible because this is an empty document (current line would be null)");
+
+                                switch (mode)
+                                {
+                                case insert:
+                                    eta.moveCaret(particles.size());
+                                    break;
+                                case overwrite:
+                                    eta.moveCaret(particles.size());
+                                    break;
+                                case backspace:
+                                    eta.moveLeft(false);
+                                    break;
+                                case delete:
+                                    break;
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                System.err
+                                        .println("There was a problem involving keyTyped");
+                                e.printStackTrace();
+                            }
+                        }
+                        }
+                    }
+                }
+            }
+        };
+        return k;
     }
 
     private MouseListener newMouseListener()
@@ -305,7 +559,7 @@ public class ETASourceEditorPane extends JScrollPane
             @Override
             public void mousePressed(MouseEvent arg0)
             {
-                ETASourceEditorPane.this.eta.requestFocusInWindow();
+                eta.requestFocusInWindow();
             }
 
             @Override
@@ -320,329 +574,103 @@ public class ETASourceEditorPane extends JScrollPane
         return m;
     }
 
-    public KeyListener newKeyListener()
+    private MouseWheelListener newMouseWheelListener()
     {
-        KeyListener k = new KeyListener()
+        MouseWheelListener mwl = new MouseWheelListener()
         {
-            @Override
-            public void keyPressed(KeyEvent ke)
-            {
-                client.shared.idleTimer.activityDetected();
-                switch (ke.getKeyCode())
-                {
-                    case KeyEvent.VK_LEFT:
-                        eta.moveLeft( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        eta.moveRight( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_UP:
-                        eta.moveUp( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_DOWN:
-                        eta.moveDown( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_HOME:
-                        if (ke.isControlDown())
-                            eta.moveDocHome( ke.isShiftDown() );
-                        else
-                            eta.moveHome( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_END:
-                        if( ke.isControlDown() )
-                            eta.moveDocEnd( ke.isShiftDown() );
-                        else
-                            eta.moveEnd( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_PAGE_UP:
-                        eta.movePageUp( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_PAGE_DOWN:
-                        eta.movePageDown( ke.isShiftDown() );
-                        break;
-                    case KeyEvent.VK_4:
-                        if (ke.isControlDown())
-                            this.applyToSelection(TypingEventMode.lockRegion);
-                        break;
-                    case KeyEvent.VK_R:
-                        if (ke.isControlDown())
-                            this.applyToSelection(TypingEventMode.unlockRegion);
-                        break;
-                    case KeyEvent.VK_A:
-                        if( ke.isControlDown() )
-                            eta.selectAll();
-                        break;
-                    case KeyEvent.VK_C:
-                        if( ke.isControlDown() )
-                            eta.copy();
-                        break;
-                    case KeyEvent.VK_X:
-                        if( ke.isControlDown() )
-                        {
-                            eta.copy();
-                            applyToSelection( TypingEventMode.delete );
-                        }
-                        break;
-                    case KeyEvent.VK_V:
-                        if( ke.isControlDown() )
-                        {
-                            String text = null;
-                            TypingEvent insertRemainder = null;
-                            
-                            Clipboard clipboard = getToolkit().getSystemClipboard();
-                            // Credit help to http://www.javapractices.com/topic/TopicAction.do?Id=82
-                            Transferable contents = clipboard.getContents( null );
-                            boolean isText = (contents != null) && contents.isDataFlavorSupported( DataFlavor.stringFlavor );
-                            
-                            if( isText )
-                                try
-                                {
-                                    text = (String)contents.getTransferData( DataFlavor.stringFlavor );
-                                }
-                                catch (UnsupportedFlavorException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                                catch (IOException e)
-                                {
-                                    e.printStackTrace();
-                                }
-                            
-                            if( text == null )
-                                break;
-                            
-                            TypingEventMode mode;
-                            int position, length;
-                            
-                            // If there's a region selected we need to overwrite
-                            if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
-                            {
-                                mode = TypingEventMode.overwrite;
-                                position = eta.getSelectedRegion().start;
-                                length = eta.getSelectedRegion().getLength();
-                            }
-                            else
-                            { // Otherwise just insert text at caret using default mode
-                                mode = inputMode;
-                                position = eta.getCaretPosition();
-                                length = text.length();
-                            }
-                            
-                            // TODO: Doesn't handle locking regions
-                            TypingEvent te = new TypingEvent(
-                                    System.currentTimeMillis()
-                                            + client.getClockOffset(),
-                                    mode, position,
-                                    length, text,
-                                    client.getUsername(),
-                                    null);
-                            
-                            Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                            Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
-                            outgoingEvents.add(te);
-                            internal.add(te);
-                            System.out.println("push to server: " + te);
-                            eta.getSourceDocument().push(internal);
-                            client.broadcastTypingEvents(outgoingEvents, path);
-                            
-                            eta.updateUI();
-                            
-                            eta.updateText();
-                            eta.scrollRectToVisible(new Rectangle(0, eta
-                                    .getCurrentLine().y, eta.getWidth(),
-                                    EditorTypingArea.lineSpacing));
-                            
-                            eta.moveCaret( length );
-                        }
-                        break;
-                    case KeyEvent.VK_INSERT: // Switch default input mode between insert and overtype
-                        inputMode = (inputMode == TypingEventMode.insert) ? TypingEventMode.overwrite : TypingEventMode.insert;
-                        
-                        // Provide GUI indication of input mode (possibly block caret and status bar indicator)
-                        MainWindow.statusBar.setInputMode(inputMode.toString().toUpperCase());
-                        
-                        System.out.println( "Input mode changed to " + inputMode.toString() );
-                        break;
-                }
-                
-            }
-            
-            private void applyToSelection(TypingEventMode mode)
-            {
-                // Don't do anything if there's no selected region
-                if( eta.getSelectedRegion() == null || eta.getSelectedRegion().getLength() == 0 )
-                    return;
-                
-                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
-                TypingEvent te = new TypingEvent(System.currentTimeMillis()
-                        + client.getClockOffset(), mode,
-                        eta.getSelectedRegion().start, eta.getSelectedRegion()
-                                .getLength(), "", client.getUsername(),
-                        client.getUsername());
-
-                outgoingEvents.add(te);
-                internal.add(te);
-                System.out.println("push to server: " + te);
-                eta.getSourceDocument().push(internal);
-                client.broadcastTypingEvents(outgoingEvents, path);
-                eta.updateUI();
-                
-                eta.updateText();
-                eta.scrollRectToVisible(new Rectangle(0, eta
-                        .getCurrentLine().y, eta.getWidth(),
-                        EditorTypingArea.lineSpacing));
-            }
 
             @Override
-            public void keyReleased(KeyEvent ke)
+            public void mouseWheelMoved(MouseWheelEvent mwe)
             {
 
+                Rectangle rect = eta.getVisibleRect();
+                rect.y += EditorTypingArea.lineSpacing
+                        * (mwe.getWheelRotation() > 0 ? 1 : -1);
+                eta.scrollRectToVisible(rect);
             }
 
-            @Override
-            public void keyTyped(KeyEvent ke)
-            {
-                if (ke.isControlDown())
-                    return;
-                else
-                {
-                    int r = eta.currentPositionLocked(0, client.getUsername());
-                if (ke.isControlDown())
-                    System.out.println("Control is down!");
-                else if (r == 2)
-                        System.out.println("Current position locked!");
-                    else
-                    {
-                        switch (ke.getKeyCode())
-                        {
-                        default:
-                        {
-                            try
-                            {
-                                // System.out.println(server.lastUpdateTime());
-                                TypingEventMode mode = inputMode;
-                                String chr;
-                                int length = 1, position = eta.getCaretPosition();
-                                
-                                switch (ke.getKeyChar())
-                                {
-                                case '\u007F': // Delete character
-                                    mode = TypingEventMode.delete;
-                                    chr = " ";
-                                    // If there is a region selected change start position to the start of this region
-                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
-                                    {
-                                        position = eta.getSelectedRegion().start;
-                                        length = eta.getSelectedRegion().getLength();
-                                    }   
-                                    else if ( position < 0 ) // TODO: Not sure if this ever happens
-                                        position = 0;
-                                    break;
-                                case '\u0008': // Backspace char
-                                    mode = TypingEventMode.backspace;
-                                    chr = " ";
-                                    
-                                    // If there is a region selected change start position to the start of this region
-                                    // And make it a delete event
-                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
-                                    {
-                                        mode = TypingEventMode.delete;
-                                        position = eta.getSelectedRegion().start;
-                                        length = eta.getSelectedRegion().getLength();
-                                    }
-                                    else if ( position < 1 )
-                                        return;
-                                    break;
-                                case '\t':
-                                    chr = "    ";
-                                    length = 4;
-                                    ETASourceEditorPane.this.eta
-                                            .requestFocusInWindow();
-
-                                    client.shared.profile.incrementCharCount();
-                                    break;
-                                default:
-                                    // If there's a region selected we need to overwrite
-                                    if( eta.getSelectedRegion() != null && eta.getSelectedRegion().getLength() > 0 )
-                                    {
-                                        mode = TypingEventMode.overwrite;
-                                        position = eta.getSelectedRegion().start;
-                                        length = eta.getSelectedRegion().getLength();
-                                    }
-                                    chr = String.valueOf(ke.getKeyChar());
-                                    client.shared.profile.incrementCharCount();
-                                    break;
-                                }
-
-                                TypingEvent te = new TypingEvent(
-                                        System.currentTimeMillis()
-                                                + client.getClockOffset(),
-                                        mode, position,
-                                        length, chr,
-                                        client.getUsername(),
-                                        r == 1 ? client.getUsername() : null);
-                                ArrayList<TypingEvent> particles = te.explode();                                    
-                                
-                                for (TypingEvent particle : particles)
-                                    System.out.println("push to server: "
-                                            + particle);
-
-                                Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                                Queue<TypingEvent> internal = new LinkedList<TypingEvent>();
-                                PriorityQueue<TypingEvent> toFile = new PriorityQueue<TypingEvent>(particles.size(), new EventComparer());
-
-                                for (TypingEvent particle : particles)
-                                {
-                                    outgoingEvents.add(particle);
-                                    internal.add(particle);
-                                    toFile.add(particle);
-                                }
-                                
-                                SiHistoryFiles.saveEvents(toFile, client.getCurrentDocumentID().path);
-
-                                eta.getSourceDocument().push(internal);
-                                client.broadcastTypingEvents(outgoingEvents,
-                                        path);
-                                
-                                eta.updateText();
-                                
-                                if(!eta.isEmpty())
-                                    eta.scrollRectToVisible(new Rectangle(0, eta
-                                            .getCurrentLine().y, eta.getWidth(),
-                                            EditorTypingArea.lineSpacing));
-                                else
-                                    if(CiderApplication.debugApp)
-                                        System.out.println(
-                                                "Cannot scroll rect to visible because this is an empty document (current line would be null)");
-
-
-                                switch (mode)
-                                {
-                                case insert:
-                                    eta.moveCaret(particles.size());
-                                    break;
-                                case overwrite:
-                                    eta.moveCaret(particles.size());
-                                    break;
-                                case backspace:
-                                    eta.moveLeft( false );
-                                    break;
-                                case delete:
-                                    break;
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                System.err.println("There was a problem involving keyTyped");
-                                e.printStackTrace();
-                            }
-                        }
-                        }
-                    }
-                }
-            }
         };
-        return k;
+        return mwl;
+    }
+
+    /**
+     * FIXME: UNUSED METHOD!
+     */
+    @SuppressWarnings("unused")
+    private ComponentListener newTabSelectionFocusGainListener()
+    {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private WindowListener newWindowListener()
+    {
+        return new WindowListener()
+        {
+
+            @Override
+            public void windowActivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowClosed(WindowEvent arg0)
+            {
+                SiHistoryFiles.markDocumentClosing(path, System
+                        .currentTimeMillis()
+                        + client.getClockOffset());
+            }
+
+            @Override
+            public void windowClosing(WindowEvent arg0)
+            {
+                SiHistoryFiles.markDocumentClosing(path, System
+                        .currentTimeMillis()
+                        + client.getClockOffset());
+            }
+
+            @Override
+            public void windowDeactivated(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowDeiconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowIconified(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+            @Override
+            public void windowOpened(WindowEvent arg0)
+            {
+                // TODO Auto-generated method stub
+
+            }
+
+        };
+    }
+
+    @Override
+    public void requestFocus()
+    {
+        System.out.println("Requested focus");
+        super.requestFocus();
+    }
+
+    public void setTabHandle(Component tabHandle)
+    {
+        this.tabHandle = tabHandle;
     }
 }

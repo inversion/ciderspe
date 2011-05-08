@@ -19,19 +19,21 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network;
 
 import org.jivesoftware.smack.PacketInterceptor;
 import org.jivesoftware.smack.packet.Packet;
 
-public class DebugPacketInterceptor implements PacketInterceptor {
+public class DebugPacketInterceptor implements PacketInterceptor
+{
 
     @Override
-    public void interceptPacket(Packet packet) {
+    public void interceptPacket(Packet packet)
+    {
         // TODO Auto-generated method stub
-        System.out.println( "SENT: " + packet.toXML());
+        System.out.println("SENT: " + packet.toXML());
     }
 
 }

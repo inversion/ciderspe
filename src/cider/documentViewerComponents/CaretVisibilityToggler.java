@@ -41,22 +41,22 @@ public class CaretVisibilityToggler extends TimerTask
         this.eta = eta;
     }
 
+    @Override
+    public void run()
+    {
+        if (skipNextToggle)
+            skipNextToggle = false;
+        else
+            eta.toggleCaretVisibility();
+    }
+
     /**
      * The next run will have no effect. This can be useful is you want to keep
      * the caret visible while you type
      */
     public void skipNextToggle()
     {
-        this.skipNextToggle = true;
-    }
-
-    @Override
-    public void run()
-    {
-        if (this.skipNextToggle)
-            this.skipNextToggle = false;
-        else
-            this.eta.toggleCaretVisibility();
+        skipNextToggle = true;
     }
 
 }

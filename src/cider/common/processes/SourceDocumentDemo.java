@@ -45,36 +45,111 @@ import cider.documentViewerComponents.EditorTypingArea;
  */
 public class SourceDocumentDemo
 {
-    private PseudoServer server = new PseudoServer();
-
-    public static void main(String[] args)
+    public class PseudoClient implements ICodeLocation
     {
-        SourceDocumentDemo app = new SourceDocumentDemo();
-        app.openInstance(1);
-        app.openInstance(2);
-        app.openInstance(3);
-    }
+        SourceDocument sourceDocument;
+        long lastUpdateTime;
+        SDDemoPanel panel;
+        private Timer timer = new Timer();
+        private long delay = 0;
+        private long period = 100;
+        int id;
 
-    public void openInstance(int id)
-    {
-        JFrame w = new JFrame();
-        w.setSize(640, 480);
-        w.setLocationByPlatform(true);
-        int offset = (id - 1) * 100;
-        w.setLocation(w.getX() + offset, w.getY() + offset);
-        SourceDocument sourceDocument = new SourceDocument(
-                "test.SourceDocument");
-        EditorTypingArea eta = new EditorTypingArea(sourceDocument);
-        eta.setWaiting(false);
-        SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), this.server,
-                this.server.timer, id, eta);
-        w.add(panel);
-        w.pack();
-        w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        w.setVisible(true);
-        PseudoClient client = new PseudoClient(panel, id, sourceDocument);
-        this.server.addClient(client);
-        panel.setClient(client);
+        public PseudoClient(final SDDemoPanel panel, final int id,
+                SourceDocument sourceDocument)
+        {
+            this.sourceDocument = sourceDocument;
+            this.panel = panel;
+            timer.scheduleAtFixedRate(new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    /*
+                     * try { panel.updateText(sourceDocument.toString()); }//
+                     * System.out.println(id + " : " + sourceDocument); catch
+                     * (Exception e) { e.printStackTrace(); System.exit(1); }
+                     */
+
+                }
+            }, delay, period);
+            this.id = id;
+
+            this.panel.eta.addActionListener(new ActionListener()
+            {
+
+                @Override
+                public void actionPerformed(ActionEvent e)
+                {
+                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
+                    TypingEvent te = (TypingEvent) e.getSource();
+                    outgoingEvents.add(te);
+                    System.out.println("push to server: " + te);
+                    server.push(outgoingEvents);
+                }
+
+            });
+        }
+
+        @Override
+        public void clearAll()
+        {
+            sourceDocument.clearAll();
+        }
+
+        @Override
+        public Queue<TypingEvent> events()
+        {
+            return sourceDocument.events();
+        }
+
+        @Override
+        public Queue<TypingEvent> eventsSince(long time)
+        {
+            return sourceDocument.eventsSince(time);
+        }
+
+        @Override
+        public long lastUpdateTime()
+        {
+            return sourceDocument.lastUpdateTime();
+        }
+
+        @Override
+        public void push(Queue<TypingEvent> typingEvents)
+        {
+            if (typingEvents.size() > 0)
+            {
+                TypingEvent[] events = new TypingEvent[typingEvents.size()];
+                typingEvents.toArray(events);
+                sourceDocument.push(typingEvents);
+
+                try
+                {
+                    panel.eta.updateText();
+                    // panel.updateText(sourceDocument.toString());
+                }// System.out.println(id + " : " + sourceDocument);
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+                /*
+                 * for (TypingEvent te : events) {
+                 * 
+                 * 
+                 * switch (te.mode) { case insert: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
+                 * case overwrite: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
+                 * case backspace: if (te.position >=
+                 * panel.eta.getCaretPosition()) panel.eta.moveLeft(); break; }
+                 * 
+                 * }
+                 */
+            }
+        }
+
     }
 
     public class PseudoServer implements ICodeLocation
@@ -90,8 +165,9 @@ public class SourceDocumentDemo
 
         public PseudoServer()
         {
-            this.timer.scheduleAtFixedRate(new TimerTask()
+            timer.scheduleAtFixedRate(new TimerTask()
             {
+                @Override
                 public void run()
                 {
                     try
@@ -118,30 +194,30 @@ public class SourceDocumentDemo
                         System.exit(1);
                     }
                 }
-            }, this.delay, this.period);
+            }, delay, period);
         }
 
         public void addClient(ICodeLocation client)
         {
-            this.clients.add(client);
+            clients.add(client);
         }
 
         @Override
-        public void push(Queue<TypingEvent> typingEvents)
+        public void clearAll()
         {
-            this.sourceDocument.push(typingEvents);
+            sourceDocument.clearAll();
         }
 
         @Override
         public Queue<TypingEvent> events()
         {
-            return this.sourceDocument.events();
+            return sourceDocument.events();
         }
 
         @Override
         public Queue<TypingEvent> eventsSince(long time)
         {
-            return this.sourceDocument.eventsSince(time);
+            return sourceDocument.eventsSince(time);
         }
 
         @Override
@@ -151,116 +227,10 @@ public class SourceDocumentDemo
         }
 
         @Override
-        public void clearAll()
-        {
-            this.sourceDocument.clearAll();
-        }
-    }
-
-    public class PseudoClient implements ICodeLocation
-    {
-        SourceDocument sourceDocument;
-        long lastUpdateTime;
-        SDDemoPanel panel;
-        private Timer timer = new Timer();
-        private long delay = 0;
-        private long period = 100;
-        int id;
-
-        public PseudoClient(final SDDemoPanel panel, final int id,
-                SourceDocument sourceDocument)
-        {
-            this.sourceDocument = sourceDocument;
-            this.panel = panel;
-            this.timer.scheduleAtFixedRate(new TimerTask()
-            {
-                public void run()
-                {
-                    /*
-                     * try { panel.updateText(sourceDocument.toString()); }//
-                     * System.out.println(id + " : " + sourceDocument); catch
-                     * (Exception e) { e.printStackTrace(); System.exit(1); }
-                     */
-
-                }
-            }, this.delay, this.period);
-            this.id = id;
-
-            this.panel.eta.addActionListener(new ActionListener()
-            {
-
-                @Override
-                public void actionPerformed(ActionEvent e)
-                {
-                    Queue<TypingEvent> outgoingEvents = new LinkedList<TypingEvent>();
-                    TypingEvent te = (TypingEvent) e.getSource();
-                    outgoingEvents.add(te);
-                    System.out.println("push to server: " + te);
-                    server.push(outgoingEvents);
-                }
-
-            });
-        }
-
-        @Override
         public void push(Queue<TypingEvent> typingEvents)
         {
-            if (typingEvents.size() > 0)
-            {
-                TypingEvent[] events = new TypingEvent[typingEvents.size()];
-                typingEvents.toArray(events);
-                this.sourceDocument.push(typingEvents);
-
-                try
-                {
-                    this.panel.eta.updateText();
-                    // panel.updateText(sourceDocument.toString());
-                }// System.out.println(id + " : " + sourceDocument);
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                    System.exit(1);
-                }
-                /*
-                 * for (TypingEvent te : events) {
-                 * 
-                 * 
-                 * switch (te.mode) { case insert: if (te.position >=
-                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
-                 * case overwrite: if (te.position >=
-                 * panel.eta.getCaretPosition()) panel.eta.moveRight(); break;
-                 * case backspace: if (te.position >=
-                 * panel.eta.getCaretPosition()) panel.eta.moveLeft(); break; }
-                 * 
-                 * }
-                 */
-            }
+            sourceDocument.push(typingEvents);
         }
-
-        @Override
-        public Queue<TypingEvent> events()
-        {
-            return this.sourceDocument.events();
-        }
-
-        @Override
-        public Queue<TypingEvent> eventsSince(long time)
-        {
-            return this.sourceDocument.eventsSince(time);
-        }
-
-        @Override
-        public long lastUpdateTime()
-        {
-            return this.sourceDocument.lastUpdateTime();
-        }
-
-        @Override
-        public void clearAll()
-        {
-            this.sourceDocument.clearAll();
-        }
-
     }
 
     public class SDDemoPanel extends JPanel
@@ -290,16 +260,16 @@ public class SourceDocumentDemo
                     switch (ke.getKeyCode())
                     {
                     case KeyEvent.VK_LEFT:
-                        eta.moveLeft( false );
+                        eta.moveLeft(false);
                         break;
                     case KeyEvent.VK_RIGHT:
-                        eta.moveRight( false );
+                        eta.moveRight(false);
                         break;
                     case KeyEvent.VK_UP:
-                        eta.moveUp( false );
+                        eta.moveUp(false);
                         break;
                     case KeyEvent.VK_DOWN:
-                        eta.moveDown( false );
+                        eta.moveDown(false);
                         break;
                     }
                 }
@@ -360,13 +330,13 @@ public class SourceDocumentDemo
                         switch (mode)
                         {
                         case insert:
-                            eta.moveRight( false );
+                            eta.moveRight(false);
                             break;
                         case overwrite:
-                            eta.moveRight( false );
+                            eta.moveRight(false);
                             break;
                         case backspace:
-                            eta.moveLeft( false );
+                            eta.moveLeft(false);
                             break;
                         }
                     }
@@ -384,5 +354,37 @@ public class SourceDocumentDemo
         {
             this.client = client;
         }
+    }
+
+    public static void main(String[] args)
+    {
+        SourceDocumentDemo app = new SourceDocumentDemo();
+        app.openInstance(1);
+        app.openInstance(2);
+        app.openInstance(3);
+    }
+
+    private PseudoServer server = new PseudoServer();
+
+    public void openInstance(int id)
+    {
+        JFrame w = new JFrame();
+        w.setSize(640, 480);
+        w.setLocationByPlatform(true);
+        int offset = (id - 1) * 100;
+        w.setLocation(w.getX() + offset, w.getY() + offset);
+        SourceDocument sourceDocument = new SourceDocument(
+                "test.SourceDocument");
+        EditorTypingArea eta = new EditorTypingArea(sourceDocument);
+        eta.setWaiting(false);
+        SDDemoPanel panel = new SDDemoPanel(w, w.getSize(), server,
+                server.timer, id, eta);
+        w.add(panel);
+        w.pack();
+        w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        w.setVisible(true);
+        PseudoClient client = new PseudoClient(panel, id, sourceDocument);
+        server.addClient(client);
+        panel.setClient(client);
     }
 }
