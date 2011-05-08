@@ -285,7 +285,6 @@ public class LoginUI
             final ClientSharedComponents sharedComponents = new ClientSharedComponents();
             sharedComponents.profile = new Profile(txtUsername.getText());
 
-            // TODO: Check that fields aren't null/validation stuff
             client = new Client(txtUsername.getText(), new String(txtPassword
                     .getPassword()), txtHost.getText(), Integer
                     .parseInt(txtPort.getText()), txtServiceName.getText(),
