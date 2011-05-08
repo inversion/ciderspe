@@ -410,10 +410,6 @@ public class MainWindow
                 {
                     changeColour();
                 }
-                else if (action.equals("Close File"))
-                {
-                    closeFile(action);
-                }
                 else if (action.equals("Import"))
                 {
                     importFile();
@@ -1037,43 +1033,6 @@ public class MainWindow
         frame.setVisible(true);
     }
 
-    //FIXME: UNUSED METHOD!
-    private void tabClicked(MouseEvent e) 
-    { 
-        if (DEBUG)
-            System.out.println("A CLICK...");
-        
-        if (e.getButton() !=  MouseEvent.BUTTON1 && e.getClickCount() == 1) 
-        { // if is right-click
-            if (DEBUG)
-                System.out.println("RIGHT CLICK!");
-            
-            // create popup with Close menuitem 
-            JPopupMenu popupMenu = new JPopupMenu();
-            JMenuItem closeBtn = new JMenuItem("Close");
-            closeBtn.addActionListener(new ActionListener() 
-            { 
-                public void
-                actionPerformed(ActionEvent e)
-                { 
-                    SwingUtilities.invokeLater(new
-                            Runnable()
-                    { 
-                        public void run() 
-                        { 
-                            closeFile("Close File");
-                        } 
-                    });
-                }
-            });
-
-            popupMenu.add(closeBtn);
-
-            // display popup near location of mouse click
-            popupMenu.show(e.getComponent(), e.getX(), e.getY() - 10); 
-        }
-    }
-
     public JMenuBar mainMenuBar()
     {
         JMenuBar menuBar = new JMenuBar();
@@ -1088,7 +1047,6 @@ public class MainWindow
         addMenuItem(menu, "New", KeyEvent.VK_N, aL);
         addMenuItem(menu, "Import", KeyEvent.VK_O, aL);
         addMenuItem(menu, "Export", KeyEvent.VK_S, aL);
-        addMenuItem(menu, "Close File", KeyEvent.VK_F4, aL);
         addMenuItem(menu, "Logout", KeyEvent.VK_L, aL);
         addMenuItem(menu, "Quit", KeyEvent.VK_Q, aL);
 
