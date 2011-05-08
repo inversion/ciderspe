@@ -83,7 +83,6 @@ public class LoginUI
             f.mkdirs();
     }
 
-    private int Retrieved = 0;
     private int NotPort;
 
     /**
@@ -339,7 +338,8 @@ public class LoginUI
         {
             errmsg = "Invalid port number";
             JOptionPane.showMessageDialog(connecting, errmsg);
-            e.printStackTrace();
+            if (CiderApplication.debugApp)
+            	e.printStackTrace();
             NotPort = 1;
         }
         return null;
@@ -491,10 +491,6 @@ public class LoginUI
         box.add(chkRemember);
 
         fetchLogin();
-        if (Retrieved == 0)
-        {
-            GetLogin();
-        }
 
         // Submit Button
         JButton btnSubmit = new JButton("Submit");
@@ -539,51 +535,12 @@ public class LoginUI
                 }
             }
             in.close();
-            Retrieved = 1;
             txtUsername.setText(text[0]);
             txtPassword.setText(text[1]);
             txtServiceName.setText(text[2]);
             txtHost.setText(text[3]);
             txtPort.setText(text[4]);
             chkRemember.setSelected(true);
-        }
-        catch (FileNotFoundException e)
-        {
-            // System.out.println("File not found");
-            e.printStackTrace();
-        }
-        catch (IOException e)
-        {
-            // System.out.println("File not found");
-            e.printStackTrace();
-        }
-    }
-
-    void GetLogin()
-    {
-        try
-        {
-            FileReader fstream = new FileReader(currentDir + "BotTEST.conf");
-            BufferedReader in = new BufferedReader(fstream);
-
-            String line;
-            int i = 0;
-            String[] text = new String[6];
-
-            while ((line = in.readLine()) != null)
-            {
-                StringTokenizer token = new StringTokenizer(line, "=");
-                while ((token.hasMoreTokens()) && (i < 6))
-                {
-                    text[i] = (token.nextToken());
-                    i++;
-                }
-            }
-            in.close();
-
-            txtServiceName.setText(text[1]);
-            txtHost.setText(text[3]);
-            txtPort.setText(text[5]);
         }
         catch (FileNotFoundException e)
         {
@@ -653,7 +610,8 @@ public class LoginUI
                 + "' in directory: " + currentDir);
         try
         {
-            FileWriter fstream = new FileWriter(currentDir + "login.txt");
+        	File f = new File("login.txt");
+            FileWriter fstream = new FileWriter(f);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(passwordEncrypt.encrypt(txtUsername) + ","
                     + passwordEncrypt.encrypt(txtPassword) + ","
@@ -664,7 +622,8 @@ public class LoginUI
         }
         catch (IOException e)
         {
-            System.err.println("Error: " + e.getMessage());
+            JOptionPane.showMessageDialog(new JPanel(), 
+            		"Fatal Error: File creation error: maybe you are not running with administrator privilieges.");
             e.printStackTrace();
             System.exit(0);
         }

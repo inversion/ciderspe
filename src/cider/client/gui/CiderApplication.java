@@ -39,10 +39,10 @@ public class CiderApplication
      */
     public static void main(String[] args)
     {
-        debugApp = true;
+        debugApp = false;
         for (String arg : args)
             if (arg.equals("debugapp=true"))
-                debugApp = false;
+                debugApp = true;
 
         CiderApplication app = new CiderApplication();
         app.ui = new LoginUI(app);

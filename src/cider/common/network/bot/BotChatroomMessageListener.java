@@ -107,10 +107,6 @@ public class BotChatroomMessageListener implements PacketListener
             String te = new String(StringUtils.decodeBase64((String) msg
                     .getProperty("te" + eventNum)));
 
-            // If all events have been processed
-            if (te == null)
-                break;
-
             Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
             typingEvents.add(new TypingEvent(te));
             // System.out.println("Push " + preAndAfter[1] + " to " + dest);
