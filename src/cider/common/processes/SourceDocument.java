@@ -26,7 +26,6 @@ package cider.common.processes;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
