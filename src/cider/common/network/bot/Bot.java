@@ -291,7 +291,7 @@ public class Bot
                     FileInputStream fis = new FileInputStream(file);
                     ObjectInputStream input = new ObjectInputStream(fis);
                     Profile profile = (Profile) input.readObject();
-                    profiles.put( profile.uname, profile );
+                    profiles.put( profile.getUsername(), profile );
                     input.close();
                     fis.close();
                 }

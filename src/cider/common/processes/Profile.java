@@ -47,15 +47,20 @@ public class Profile implements Serializable
 
     private static boolean DEBUG = true;
     
-    public String uname;
-    public int typedChars;
-    public long timeSpent;
-    public int idleTime;
-    public String lastOnline;
-    public Color userColour;
-    public int userFontSize;
-    public int loadedIdleStartTime;
+    private String uname;
+    private int typedChars;
+    private long timeSpent;
+    private int idleTime;
+    private String lastOnline;
+    private Color userColour;
+    private int userFontSize;
+    private int loadedIdleStartTime;
 
+    /**
+     * Constructor for the Profile class. All values are set to the default.
+     * @param un The client's username.
+     * @author Jon
+     */
     public Profile(String un)
     {
     	loadedIdleStartTime = 0;
@@ -68,26 +73,39 @@ public class Profile implements Serializable
         userFontSize = 14;
     }
 
+    /**
+     * Increments the number of characters typed by 1
+     * @author Jon
+     */
     public void incrementCharCount()
     {
         typedChars++;
         return;
     }
 
+    /**
+     * Adjusts the number of characters typed by the amount specified in the parameter
+     * @param adjustment The number to be added to the total of characters typed
+     * @author Jon
+     */
     public void adjustCharCount(int adjustment)
     {
         typedChars += adjustment;
         return;
     }
 
+    /**
+     * Updates the time that the user has spent on CIDEr.
+     * @param start The time in milliseconds that repesents the last time the profile was updated.
+     */
     public void updateTimeSpent(Long start)
     {
         long end, spent;
         end = System.currentTimeMillis();
         spent = end - start;
 
-        System.out.println("Profile: UPDATING TIME " + spent + timeSpent);
-        timeSpent += spent;
+        System.out.println("Profile: UPDATING TIME " + spent + getTimeSpent());
+        setTimeSpent(getTimeSpent() + spent);
     }
     
     /**
@@ -102,6 +120,9 @@ public class Profile implements Serializable
         idleTime = time + loadedIdleStartTime;
     }
 
+    /**
+     * Update the date that the user was last online.
+     */
     public void updateLastOnline()
     {
         Date d = new Date();
@@ -109,20 +130,141 @@ public class Profile implements Serializable
         lastOnline = df.format(d);
     }
 
+    /**
+     * @return The String which holds all of the information in the profile. Useful for client-bot communication.
+     * 
+     */
     public String toString()
     {
         return uname + "  " + "chars: " + typedChars + "  timespent: "
-                + timeSpent + "  idletime: " + idleTime + "  lastonline: " + lastOnline + "  colour: "
+                + getTimeSpent() + "  idletime: " + idleTime + "  lastonline: " + lastOnline + "  colour: "
                 + userColour.getRed() + " " + userColour.getGreen() + " "
                 + userColour.getBlue() + " fontSize: " + userFontSize;
     }
 
+    /**
+     * Sets the Colour of the user's Profile.
+     * @param R Red component of the colour.
+     * @param G Green component of the colour.
+     * @param B Blue component of the colour.
+     */
     public void setColour(int R, int G, int B)
     {
         userColour = new Color(R, G, B);
         System.out.println("Colour updated to: " + R + " " + G + " " + B);
     }
+
+    /**
+     * Sets the number of character that the user has typed.
+     * @param chars The number of characterts the user has typed.
+     */
+	public void setTypedChars(Integer chars) 
+	{
+		typedChars = chars;
+	}
+	
+	/**
+	 * Sets the user's username.
+	 * @param user The user's username.
+	 */
+	public void setUsername(String user)
+	{
+		uname = user;
+	}
+
+	/**
+	 * Sets the time the user has spent in the CIDEr client.
+	 * @param timeSpent2 The time the user has spent in the CIDEr client.
+	 */
+	public void setTimeSpent(Long timeSpent2) 
+	{
+		timeSpent = timeSpent2;
+	}
+	
+	/**
+	 * Sets the amount of time that the user has been idle in the CIDEr client.
+	 * @param idleTime2 The amount of time that the user has been idle in the CIDEr client.
+	 */
+	public void setIdleTime(Integer idleTime2) 
+	{
+		idleTime = idleTime2;
+	}
+
+	/**
+	 * Sets the date that the user was last seen in the CIDEr client.
+	 * @param lastOnline2 The date that the user was last seen in the CIDEr client.
+	 */
+	public void setLastOnline(String lastOnline2) 
+	{
+		lastOnline = lastOnline2;
+	}
     
+    /**
+     * 
+     * @return The profile's colour
+     */
+    public Color getColour()
+    {
+    	return userColour;
+    }
+    /**
+     * 
+     * @return The profile's username
+     */
+    public String getUsername()
+    {
+    	return uname;
+    }
+    
+    /**
+     * 
+     * @return The String showing the date the user was last online
+     */
+    public String getLastOnline()
+    {
+    	return lastOnline;
+    }
+    
+    /**
+     * 
+     * @return The user's font size in pt.
+     */
+    public int getUserFontSize()
+    {
+    	return userFontSize;
+    }
+    
+    /**
+     * 
+     * @return The time in milliseconds that the user has spent in CIDEr.
+     */
+    public long getTimeSpent()
+    {
+    	return timeSpent;
+    }
+    
+    /**
+     * 
+     * @return The number of characters the user has typed in CIDEr.
+     */
+	public int getTypedChars()
+	{
+		return typedChars;
+	}
+	
+	/**
+	 * 
+	 * @return The length of time in seconds that the user has been idle.
+	 */
+	public int getIdleTime()
+	{
+		return idleTime;
+	}
+    
+	/**
+	 * Sets the user's font size.
+	 * @param s The font size in pt.
+	 */
     public void setFontSize(int s)
     {
         userFontSize = s;
@@ -150,7 +292,7 @@ public class Profile implements Serializable
             message.setBody("");
             message.setProperty( "ciderAction", "userprofile" );
             message.setProperty( "chars", typedChars );
-            message.setProperty( "timeSpent", timeSpent );
+            message.setProperty( "timeSpent", getTimeSpent() );
             message.setProperty( "idleTime", this.idleTime );
             message.setProperty( "lastOnline", lastOnline );
             message.setProperty( "r", userColour.getRed() );
@@ -195,7 +337,7 @@ public class Profile implements Serializable
     public String idlePercentString()
     {
         DecimalFormat df = new DecimalFormat("#.#");
-        int spent = (int) (timeSpent/1000);
+        int spent = (int) (getTimeSpent()/1000);
         Float percentage = new Float( ((float)idleTime/(float)spent) * 100 );
         return df.format( percentage );
     }
@@ -229,4 +371,5 @@ public class Profile implements Serializable
             e.printStackTrace();
         }
     }
+
 }

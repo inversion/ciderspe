@@ -33,7 +33,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
@@ -45,21 +44,17 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -156,16 +151,21 @@ public class MainWindow
     public Profile myProfile;
     private String profilePictureDir;
 
-    MainWindow(String username, String password, String host, int port,
-            String serviceName, Client c, LoginUI loginUI,
-            ClientSharedComponents shared) throws XMPPException
+    /**
+     * The constructor that assigns a new MainWindow its main components. 
+     * Sets up a new profile for the user.
+     * @param username The username of the user.
+     * @param c The Client object that is being used by the client.
+     * @param loginUI The LoginUI object that this method is called from.
+     * @param shared The shared component between client and bot
+     * @throws XMPPException
+     */
+    MainWindow(String username, Client c, LoginUI loginUI, 
+    		ClientSharedComponents shared) throws XMPPException
     {
         // Register GUI components shared with client
         this.shared = shared;
         myProfile = shared.profile;
-
-        // TODO: Should more stuff be in the constructor rather than the
-        // mainArea method? The variables look a bit of a mess
         this.username = username;
         login = loginUI;
 
@@ -176,16 +176,16 @@ public class MainWindow
         client.addParent(this);
         profileSetup();
 
-        //PrintStream ps = new PrintStream(new BufferedOutputStream(this.baos));
-        // System.setOut(ps);
-        //System.setErr(ps);
         if(CiderApplication.debugApp)
         {
             System.out.println("Standard output stream working");
             System.err.println("Error output stream working");
         }
     }
-
+    
+    /**
+     * Sets up a new ClientSharedComponent
+     */
     MainWindow()
     {
         this.shared = new ClientSharedComponents();
@@ -199,13 +199,14 @@ public class MainWindow
      * 
      * @author Jon, Andrew
      */
-    private void profileSetup()
+    @SuppressWarnings("static-access")
+	private void profileSetup()
     {
         Profile.requestProfile(username, false, client.botChat);
 
         if (client.colours.containsKey(username))
             client.colours.remove(username);
-        client.colours.put(username, myProfile.userColour);
+        client.colours.put(username, myProfile.getColour());
 
         retrieveAllUserColours();
     }
@@ -241,14 +242,14 @@ public class MainWindow
         try
         {
             // load custom user photo here
-        	if (profile.uname.equals(this.username) && profilePictureDir != null)
+        	if (profile.getUsername().equals(this.username) && profilePictureDir != null)
         	{
         		img = Toolkit.getDefaultToolkit().getImage(profilePictureDir);
         		photo = new ImageIcon(img);
         	}
         	else
         	{
-        		urlImage = this.getClass().getResource(profile.uname + ".jpg");
+        		urlImage = this.getClass().getResource(profile.getUsername() + ".jpg");
         		photo = new ImageIcon(urlImage);
         	}
         }
@@ -256,7 +257,7 @@ public class MainWindow
         {
             // load default user photo if custom user doesn't exist
             if( CiderApplication.debugApp )
-                System.out.println( "No profile image for " + profile.uname + ", using default.");
+                System.out.println( "No profile image for " + profile.getUsername() + ", using default.");
             urlImage = this.getClass().getResource("defaultuser.png");
             photo = new ImageIcon(urlImage);
         }
@@ -268,16 +269,16 @@ public class MainWindow
         userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
         hbox.add(userPhoto);
 
-        JLabel userName = new JLabel("<html><u>Username: " + profile.uname
+        JLabel userName = new JLabel("<html><u>Username: " + profile.getUsername()
                 + "</u></html>");
         Font curFont = userName.getFont();
         userName.setFont(new Font(curFont.getFontName(), curFont.getStyle(),
                 curFont.getSize() + 2));
 
-        JLabel userChars = new JLabel("Characters Typed: " + profile.typedChars);
-        JLabel userTime = new JLabel("Total Time: " + Profile.getTimeString( profile.timeSpent ) );
-        JLabel idleTime = new JLabel("Idle Time: " + Profile.getTimeString( profile.idleTime * 1000 ) + " (" + profile.idlePercentString() + "%)" );
-        JLabel userLastOnline = new JLabel("Last Seen: " + profile.lastOnline);
+        JLabel userChars = new JLabel("Characters Typed: " + profile.getTypedChars());
+        JLabel userTime = new JLabel("Total Time: " + Profile.getTimeString( profile.getTimeSpent() ) );
+        JLabel idleTime = new JLabel("Idle Time: " + Profile.getTimeString( profile.getIdleTime() * 1000 ) + " (" + profile.idlePercentString() + "%)" );
+        JLabel userLastOnline = new JLabel("Last Seen: " + profile.getLastOnline());
         //JLabel userFontSize = new JLabel("Font Size: " + profile.userFontSize);
 
         // vertical box with user statistics in
@@ -303,7 +304,14 @@ public class MainWindow
         return true;
     }
 
-    private void retrieveAllUserColours()
+    /**
+     * Retrieves a list of the most up-to-date profile colours from the Bot.
+     * Colours are stored in a HashMap in client.colours
+     * 
+     * @author Jon
+     */
+    @SuppressWarnings("static-access")
+	private void retrieveAllUserColours()
     {
         for (int i = 0; i < shared.userListModel.getSize(); i++)
         {
@@ -326,6 +334,13 @@ public class MainWindow
         }
     }
 
+    /**
+     * Adds an item to the dropdown menu specified in the parameters.
+     * @param menu The menu that the dropdown item is being added to.
+     * @param name The String that will appear on the new menu item.
+     * @param keyEvent The keystroke that will act as a shortcut for this menu item. -1 for no keystroke.
+     * @param a The ActionListener that listens to the menu items' clicks.
+     */
     public static void addMenuItem(JMenu menu, String name, int keyEvent,
             ActionListener a)
     {
@@ -359,12 +374,17 @@ public class MainWindow
         }
     }
 
+    /**
+     * The ActionListener that listens to the clicks on the dropdown menus.
+     * @return The ActionListener.
+     */
     public ActionListener newAction()
     {
         ActionListener AL = new ActionListener()
         {
 
-            @Override
+            @SuppressWarnings("static-access")
+			@Override
             public void actionPerformed(ActionEvent e)
             {
                 String action = e.getActionCommand();
@@ -424,7 +444,7 @@ public class MainWindow
                 }
                 else if (action.equals("Export"))
                 {
-                    exportFile(action);
+                    exportFile();
                 }
                 /**
                  * Developer menu options
@@ -544,6 +564,9 @@ public class MainWindow
     	startTime = System.currentTimeMillis();
     }
 
+    /**
+     * Starts the Source History.
+     */
     private void startSourceHistory()
     {
         // DHVSourceHistoryPane shp = new DHVSourceHistoryPane();
@@ -622,14 +645,19 @@ public class MainWindow
 
     }
 
-
+    /**
+     * Allows the user to change their profile's colour.
+     * If the colour is changed, it is announced to the XMPP chatroom by the ActionListener.
+     * @author Jon
+     */
     private void changeColour()
     {
         final JColorChooser colorChooser = new JColorChooser(
-                myProfile.userColour);
+                myProfile.getColour());
         ActionListener okListener = new ActionListener()
         {
-            public void actionPerformed(ActionEvent action)
+            @SuppressWarnings("static-access")
+			public void actionPerformed(ActionEvent action)
             {
                 int R = colorChooser.getColor().getRed();
                 int G = colorChooser.getColor().getGreen();
@@ -638,7 +666,7 @@ public class MainWindow
                 announceColourChange(R, G, B);
                 if (client.colours.containsKey(username))
                     client.colours.remove(username);
-                client.colours.put(username, myProfile.userColour);
+                client.colours.put(username, myProfile.getColour());
             }
         };
 
@@ -664,6 +692,9 @@ public class MainWindow
 
     }
 
+    /**
+     * Imports a .java file that the user selects and converts it into a SourceDocument.
+     */
     public void importFile()
     {
         JFileChooser fc = new JFileChooser();
@@ -675,13 +706,16 @@ public class MainWindow
         {
             String file = fc.getSelectedFile().getAbsolutePath();
             ImportFiles imp = null;
-            try {
+            try 
+            {
 				imp = new ImportFiles( file );
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
+			} 
+            catch (FileNotFoundException e) 
+			{
 				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
+			} 
+            catch (IOException e) 
+			{
 				e.printStackTrace();
 			}
 			
@@ -702,7 +736,10 @@ public class MainWindow
         }
     }
 
-    public void exportFile(String action)
+    /**
+     * Converts a SourceDocument into a text file that is saved where the user specifies.
+     */
+    public void exportFile()
     {
         try
         {
@@ -745,17 +782,11 @@ public class MainWindow
         shared.tabbedPane.setTitleAt(currentTab, currentFileName);
     }
 
-    @Deprecated
-    public void closeFile(String action)
-    {
-        // saveFile(action);
-        // // closes tab regardless of save or cancel
-        // tabbedPane.remove(tabbedPane.getSelectedIndex());
-        // tabbedPane.setSelectedIndex(--currentTab);
-    }
-
-
-	public void newFile()
+    /**
+     * Creates a new SoruceDocument on the Bot and opens it
+     * @author Ashley
+     */
+    public void newFile()
     {
         String s = (String) JOptionPane.showInputDialog(new JPanel(),
                 "Enter a filepath (/ as separator):", "New File", JOptionPane.PLAIN_MESSAGE);
@@ -779,22 +810,18 @@ public class MainWindow
     	
     	client.createDocument(name, path, "");
         
-    	try {
+    	try 
+    	{
 			Thread.sleep(1500);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
+		} 
+    	catch (InterruptedException e) 
+		{
 			e.printStackTrace();
 		}
-    	
-    	//open new file
         client.openTab(path + "\\" + name);
     }
 
-    // http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
-    /*
-     * skank way of testing for now, saves file then attempts to run the created
-     * .java file- Alex
-     */
+    // Credit: http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
     void compileFile()
     {
         JFileChooser fc = new JFileChooser();
@@ -822,22 +849,7 @@ public class MainWindow
             e1.printStackTrace();
         }
 
-        /*
-         * String sourceFile = currentDir; JavaCompiler compiler =
-         * ToolProvider.getSystemJavaCompiler(); StandardJavaFileManager
-         * fileManager = compiler.getStandardFileManager(null, null, null);
-         * List<File> sourceFileList = new ArrayList<File>();
-         * sourceFileList.add(new File(sourceFile)); Iterable<? extends
-         * JavaFileObject> compilationUnits =
-         * fileManager.getJavaFileObjectsFromFiles(sourceFileList);
-         * CompilationTask task = compiler.getTask(null, fileManager, null,
-         * null, null, compilationUnits); boolean result = task.call(); if
-         * (result) { System.out.println("Compilation was successful"); } else {
-         * System.out.println("Compilation failed"); } //fileManager.close();
-         */
-
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-        // System.out.println(currentDir);
         OutputStream baos = new ByteArrayOutputStream();
         int results = javac.run(System.in, System.out, baos, currentDir);
         
@@ -853,6 +865,10 @@ public class MainWindow
     }
 
 
+    /**
+     * Runs a file using the command javac
+     * FIXME
+     */
     void runFile()
     {
         try
@@ -874,6 +890,7 @@ public class MainWindow
         }
     }
 
+    //FIXME!
     public String[] getCommands()
     {
         if (isWindows())
@@ -895,6 +912,10 @@ public class MainWindow
         }
     }
 
+    /**
+     * 
+     * @return True if operating system is Windows, False if not.
+     */
     public static boolean isWindows()
     {
         String os = System.getProperty("os.name").toLowerCase();
@@ -902,6 +923,10 @@ public class MainWindow
         return (os.indexOf("win") >= 0);
     }
 
+    /**
+     * 
+     * @return True if operating system is Mac, False if not.
+     */
     public static boolean isMac()
     {
         String os = System.getProperty("os.name").toLowerCase();
@@ -909,6 +934,10 @@ public class MainWindow
         return (os.indexOf("mac") >= 0);
     }
 
+    /**
+     * 
+     * @return True if operating system is Unix, False if not.
+     */
     public static boolean isUnix()
     {
 
@@ -917,13 +946,16 @@ public class MainWindow
         return (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0);
     }
 
+    /**
+     * Exits the program after 15000ms.
+     */
     public static void TimedExit()
     {
      	Timer timer;
         timer = new Timer();
       	timer.schedule(new ProgExit(), 15000);
     }
-      
+    
     static class ProgExit extends TimerTask 
     {
     	public void run()
@@ -932,6 +964,9 @@ public class MainWindow
     	}
     }
     
+    /**
+     * Toggles line-locking.
+     */
     private void ChangeLocking()
     {
         if (LockingEnabled == true)
@@ -985,12 +1020,9 @@ public class MainWindow
     /**
      * Announce you have changed your colour to all connected parties.
      * 
-     * @param r
-     *            Red
-     * @param g
-     *            Green
-     * @param b
-     *            Blue
+     * @param r Red component
+     * @param g Green component
+     * @param b Blue component
      * 
      * @author Andrew, Jon
      */
@@ -1018,6 +1050,9 @@ public class MainWindow
         }
     }
 
+    /**
+     * Opens an "About CIDEr" window.
+     */
     private void showAbout()
     {
         JFrame frame = new JFrame("About CIDEr");
@@ -1049,6 +1084,10 @@ public class MainWindow
         frame.setVisible(true);
     }
 
+    /**
+     * Sets up the Toolbar running along the top of the screen.
+     * @return The fully populated toolbar.
+     */
     public JMenuBar mainMenuBar()
     {
         JMenuBar menuBar = new JMenuBar();
@@ -1158,7 +1197,8 @@ public class MainWindow
             return this;
         }
 
-        public void paint(Graphics g)
+        @SuppressWarnings("static-access")
+		public void paint(Graphics g)
         {
         	Graphics2D g2d = (Graphics2D) g;
     		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -1202,16 +1242,13 @@ public class MainWindow
         }
     }
 
+    /**
+     * A Panel containing the userlist
+     * @return The JPanel containing the Userlist and its ActionListeners.
+     */
     public JPanel pnlUsers()
     {
-        /* panel for the list of online users */
         JPanel panel = new JPanel(new BorderLayout());
-
-        /**
-         * FIXME: this variable is never used!
-         */
-        @SuppressWarnings("unused")
-        Border emptyBorder = BorderFactory.createEmptyBorder(0,0,0,0);
 
         if (!this.offlineMode)
         {
@@ -1221,15 +1258,7 @@ public class MainWindow
             shared.userList.setCellRenderer(new MyListCellRenderer());
             shared.userList.setFixedCellWidth(25);
             shared.userList.setFixedCellHeight(25);
-
-            /*
-             * for (int i=0; i < userList.getModel().getSize(); i++) { Object
-             * item = userList.getModel().getElementAt(i);
-             * userList.setForeground(Color.red); //TODO looking at using
-             * different colours for each user }
-             */
-
-            /* this can be used to initiate a private chat- Alex */
+            
             MouseListener mouseListener = new MouseAdapter()
             {
                 public void mouseClicked(MouseEvent e)
@@ -1329,23 +1358,13 @@ public class MainWindow
         return panel;
     }
 
+    /**
+     * Initialises the JPanel that holds the group chat and userlist
+     * @return The JPanel that holds the group chat and userlist
+     */
     public JPanel pnlReceive()
     {
-        /*
-         * this should only create the panel- initiateAChat) should create the
-         * chat's both group and private to fill the tabbed pane- Alex
-         */
-        /* panel for the chat conversation */
         JPanel panel = new JPanel(new BorderLayout());
-
-        // messageReceiveBox.addActionListener(); TODO
-        /*
-         * Format of output:[bold]username[/bold] timestamp: message
-         */
-
-        // messageReceiveBoxScroll.setBorder(emptyBorder);
-
-        // receiveTabs = new JTabbedPane();
 
         JPanel usersHeader = new JPanel(new FlowLayout(FlowLayout.LEFT));
         Box box = Box.createHorizontalBox();
@@ -1389,6 +1408,10 @@ public class MainWindow
         EditorTypingArea.Highlighting = i;
     }
 
+    /**
+     * 
+     * @return The JPanel containing the area where the user provides input to the group chat.
+     */
     public JPanel pnlSend()
     {
         JPanel panel = new JPanel(new BorderLayout());
@@ -1440,6 +1463,10 @@ public class MainWindow
         return panel;
     }
 
+    /**
+     * Sends a chat message to the chatroom
+     * @param message The String that is being sent to the XMPP chatroom.
+     */
     protected void sendChatMessage(String message)
     {
         if (!message.equals("") && !message.equals("\n"))
@@ -1466,7 +1493,6 @@ public class MainWindow
         chat.setDividerLocation(800);
         /* End of Chat panel stuffs */
 
-        JLabel test = new JLabel("i have no idea how to call the java compiler");
         this.debugwindow = new DebugWindow();
         this.debugwindow.setAutoscrolls(true);
 
@@ -1522,12 +1548,9 @@ public class MainWindow
         };
         
         Toolkit.getDefaultToolkit().addAWTEventListener( activityListener , eventMask);
-        // FIXME:
-        // client.startClockSynchronisation(w);
 
         if (!this.offlineMode)
         {
-            // Comment this out if clock synchronisation is being used
             client.getFileListFromBot();
         }
         w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -1548,10 +1571,9 @@ public class MainWindow
         statusBar.setInputMode("INSERT");
         p.add(statusBar, BorderLayout.SOUTH);
         
-        
         w.add(p);
-
         w.pack();
+        
         this.dirSourceEditorSelectionSplit.setDividerLocation(0.25);
         this.editorChatSplit.setDividerLocation(0.75);
         int left = loginWindow.getX();
@@ -1571,10 +1593,6 @@ public class MainWindow
                     {
                         myProfile.uploadProfile(client.botChat, startTime, shared.idleTimer.getTotalIdleTime() );
                         login.logout();
-//                        shared.idleTimer.stop();
-//                        if (DEBUG)
-//                            System.out.println("disconnecting");
-//                        client.disconnect();
                     }
                 }
                 catch(Exception e)
@@ -1634,11 +1652,19 @@ public class MainWindow
         }
     }
 
+    /**
+     * Disposes of the MainWindow GUI.
+     * @author Jon
+     */
     public void killWindow()
     {
         w.dispose();
     }
 
+    /**
+     * The MainWindow offline entry point - online features are not available in this GUI debugging version.
+     * @param args
+     */
     public static void main(String[] args)
     {
         DEBUG = true;

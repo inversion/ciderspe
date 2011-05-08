@@ -142,7 +142,7 @@ public class BotMessageListener implements MessageListener
             	 if ( bot.profiles.containsKey( username ) )
             	 {
             		 Profile profile = bot.profiles.get( username );
-            		 sizetosend =  profile.userFontSize;
+            		 sizetosend =  profile.getUserFontSize();
             	 }
             	 else
             	 {
@@ -371,10 +371,10 @@ public class BotMessageListener implements MessageListener
         
         // Update the profile at the Bot's end with this new information
         Profile profile = bot.profiles.get( username );  
-        profile.typedChars = chars;
-        profile.timeSpent = timeSpent;
-        profile.idleTime = idleTime;
-        profile.lastOnline = lastOnline;
+        profile.setTypedChars(chars);
+        profile.setTimeSpent(timeSpent);
+        profile.setIdleTime(idleTime);
+        profile.setLastOnline(lastOnline);
         profile.setColour( r, g, b );
         profile.setFontSize(s);
         System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );
@@ -424,15 +424,15 @@ public class BotMessageListener implements MessageListener
                 Message msg = new Message();
                 msg.setBody("");
                 msg.setProperty( "ciderAction", "profile" );
-                msg.setProperty( "username", profile.uname );
-                msg.setProperty( "chars", profile.typedChars );
-                msg.setProperty( "timeSpent", profile.timeSpent );
-                msg.setProperty( "idleTime", profile.idleTime );
-                msg.setProperty( "lastOnline", profile.lastOnline );
-                msg.setProperty( "r", profile.userColour.getRed() );
-                msg.setProperty( "g", profile.userColour.getGreen() );
-                msg.setProperty( "b", profile.userColour.getBlue() );
-                msg.setProperty("fontSize", profile.userFontSize);
+                msg.setProperty( "username", profile.getUsername() );
+                msg.setProperty( "chars", profile.getTypedChars() );
+                msg.setProperty( "timeSpent", profile.getTimeSpent() );
+                msg.setProperty( "idleTime", profile.getIdleTime() );
+                msg.setProperty( "lastOnline", profile.getLastOnline() );
+                msg.setProperty( "r", profile.getColour().getRed() );
+                msg.setProperty( "g", profile.getColour().getGreen() );
+                msg.setProperty( "b", profile.getColour().getBlue() );
+                msg.setProperty("fontSize", profile.getUserFontSize() );
                 
                 // If we want the profile to pop up at the other end
                 if( message.getProperty( "show" ) != null )
