@@ -260,6 +260,9 @@ public class MainWindow
             urlImage = this.getClass().getResource("defaultuser.png");
             photo = new ImageIcon(urlImage);
         }
+        img = photo.getImage();
+        img = img.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        photo = new ImageIcon(img);
 
         JLabel userPhoto = new JLabel(photo);
         userPhoto.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 20));
@@ -520,12 +523,12 @@ public class MainWindow
     {
 		JFileChooser fc = new JFileChooser();
 		ImagePreview p = new ImagePreview();
-		
+
+        FileFilter filter = new FileNameExtensionFilter( "Image file - .jpg, .png, .bmp, .gif", "jpg", "jpeg", ".png", ".bmp", ".gif" );
+		fc.addChoosableFileFilter(filter);
 		fc.setAccessory(p);
 		fc.addPropertyChangeListener(p);
 		fc.setAcceptAllFileFilterUsed( false );
-        FileFilter filter = new FileNameExtensionFilter( "Image file - .jpg, .png, .bmp, .gif", "jpg", "jpeg", ".png", ".bmp", ".gif" );
-		fc.addChoosableFileFilter(filter);
 		
 		int rVal = fc.showOpenDialog(null);
         if (rVal == JFileChooser.APPROVE_OPTION)
