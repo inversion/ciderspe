@@ -5,16 +5,12 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.NavigableMap;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
@@ -34,17 +30,41 @@ public class SiHistoryFiles
     private static final String opened = "Opened ";
     private static final String closed = "Closed ";
 
-    private static void notWorking(String message)
+    public static void clearAllHistory()
     {
-        System.err.println("Cannot " + message + " because history files are not working - ( showStackTrace = " + showStackTrace + ") continuing...");
+        if (working)
+        {
+            try
+            {
+                File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
+                deleteSubFiles(file);
+            }
+            catch (Exception e)
+            {
+                if (showStackTrace)
+                    e.printStackTrace();
+                working = false;
+                notWorking("clear all history");
+            }
+        }
+        else
+        {
+            notWorking("clear all history");
+        }
     }
-    
-    private static Set<String> times(Collection<TypingEvent> typingEvents)
+
+    private static void deleteSubFiles(File file)
     {
-        Set<String> results = new LinkedHashSet<String>();
-        for (TypingEvent te : typingEvents)
-            results.add("" + te.time);
-        return results;
+        for (File f : file.listFiles())
+        {
+            if (f.isDirectory())
+                deleteSubFiles(f);
+            else
+            {
+                System.out.println(f.exists());
+                System.out.println(f.delete());
+            }
+        }
     }
 
     private static Set<String> eventTimesExistsInFile(String documentPath,
@@ -87,127 +107,18 @@ public class SiHistoryFiles
         return results;
     }
 
-    public static void saveEvents(PriorityQueue<TypingEvent> typingEvents,
-            String documentPath)
-    {
-        try
-        {
-            if(working)
-            {
-                File f = openFileForWriting(documentPath);
-                Set<String> matches = eventTimesExistsInFile(documentPath,
-                        times(typingEvents));
-                FileWriter fstream = new FileWriter(f, true);
-                BufferedWriter out = new BufferedWriter(fstream);
-    
-                for (TypingEvent typingEvent : typingEvents)
-                    if (!matches.contains(Long.toString(typingEvent.time, TypingEvent.radix)))
-                        out.write(typingEvent.pack() + "\n");
-    
-                out.close();
-            }
-            else
-                notWorking("save history events");
-        }
-        catch (IOException e)
-        {
-            working = false;
-            if(showStackTrace)
-                e.printStackTrace();
-            notWorking("save history events");
-            JOptionPane.showMessageDialog(new JPanel(),
-                    ("Error: " + e.getMessage()));
-            return;
-        }
-        catch (NullPointerException e)
-        {
-            working = false;
-            if(showStackTrace)
-                e.printStackTrace();
-            notWorking("save history events");
-            JOptionPane.showMessageDialog(new JPanel(),
-                    "Error: There is no document open!");
-            return;
-        }
-        catch(Exception e)
-        {
-            if(showStackTrace)
-                e.printStackTrace();
-            working = false;
-            notWorking("save history events");
-        }
-    }
-
-    private static File openFileForWriting(String documentPath)
-            throws IOException
-    {
-        File f = new File(localEventFolderPath + documentPath);
-        new File(f.getParent()).mkdirs();
-        f.createNewFile();
-        return f;
-    }
-
-    public static void markDocumentOpening(String path, long time)
-    {
-        File f;
-        try
-        {
-            if(working)
-            {
-                f = openFileForWriting(path);
-                FileWriter fstream = new FileWriter(f, true);
-                BufferedWriter out = new BufferedWriter(fstream);
-                out.write("Opened " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
-                out.close();
-            }
-            else
-                notWorking("mark document history opening");
-        }
-        catch (Exception e)
-        {
-            if(showStackTrace)
-                e.printStackTrace();
-            working = false;
-            notWorking("mark document history opening");
-        }
-    }
-
-    public static void markDocumentClosing(String path, long time)
-    {
-        File f;
-        try
-        {
-            if(working)
-            {
-                f = openFileForWriting(path);
-                FileWriter fstream = new FileWriter(f, true);
-                BufferedWriter out = new BufferedWriter(fstream);
-                out.write("Closed " + Long.toString(time, TypingEvent.radix) + " " + path + "\n");
-                out.close();
-            }
-            else
-                notWorking("mark document history closing");
-        }
-        catch (Exception e)
-        {
-            if(showStackTrace)
-                e.printStackTrace();
-            working = false;
-            notWorking("mark document history closing");
-        }
-    }
-
     public static ArrayList<Long> getBorderTimes(String path)
     {
         try
         {
-            if(working)
+            if (working)
             {
                 ArrayList<Long> times = new ArrayList<Long>();
                 FileInputStream fstream;
                 fstream = new FileInputStream(localEventFolderPath + path);
                 DataInputStream in = new DataInputStream(fstream);
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(in));
                 String strLine;
                 int a = closed.length();
                 int b = opened.length();
@@ -215,10 +126,10 @@ public class SiHistoryFiles
                 while ((strLine = br.readLine()) != null)
                 {
                     t = readBorderTime(strLine, a, b);
-                    if(t != null)
+                    if (t != null)
                         times.add(t);
                 }
-    
+
                 in.close();
                 return times;
             }
@@ -227,39 +138,26 @@ public class SiHistoryFiles
         }
         catch (Exception e)
         {
-            if(showStackTrace)
+            if (showStackTrace)
                 e.printStackTrace();
             working = false;
             notWorking("get history border times");
         }
-        
+
         return null;
     }
-
-    private static Long readBorderTime(String strLine,
-            int a, int b)
-    {
-        if (strLine.startsWith(closed))
-            return Long.parseLong(strLine.substring(a,
-                    strLine.indexOf(' ', a)), TypingEvent.radix);
-        else if (strLine.startsWith(opened))
-            return Long.parseLong(strLine.substring(b,
-                    strLine.indexOf(' ', b)), TypingEvent.radix);
-        else
-            return null;
-    }
-    
 
     public static void getEvents(String path, TimeBorderList tbl)
     {
         try
         {
-            if(working)
+            if (working)
             {
                 FileInputStream fstream;
                 fstream = new FileInputStream(localEventFolderPath + path);
                 DataInputStream in = new DataInputStream(fstream);
-                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(in));
                 String strLine;
                 TimeBorder border;
                 TypingEvent te;
@@ -268,35 +166,39 @@ public class SiHistoryFiles
                 Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
                 borderQueue.poll();
                 border = borderQueue.poll().getValue();
-                
+
                 String prevLine = null;
-                
+
                 while ((strLine = br.readLine()) != null)
                 {
-                    if(prevLine != null)
+                    if (prevLine != null)
                     {
                         strLine = prevLine + strLine;
                         prevLine = null;
                     }
-                    
-                    if(strLine.endsWith("~"))
+
+                    if (strLine.endsWith("~"))
                         prevLine = strLine + "\n";
                     else
                     {
-                        if(!strLine.startsWith(opened) && !strLine.startsWith(closed))
+                        if (!strLine.startsWith(opened)
+                                && !strLine.startsWith(closed))
                         {
                             te = new TypingEvent(strLine);
-                            if(te.text.equals("\n"))
+                            if (te.text.equals("\n"))
                                 System.out.println("newline");
                             else
-                                System.out.printf(te.text + "\t" + strLine + "\n");
-                            
+                                System.out.printf(te.text + "\t" + strLine
+                                        + "\n");
+
                             border.typingEvents.add(te);
                         }
                         else
                         {
-                            System.out.println("Border " + readBorderTime(strLine, a, b) + "\t" + strLine);
-                            if(borderQueue.size() > 0)
+                            System.out.println("Border "
+                                    + readBorderTime(strLine, a, b) + "\t"
+                                    + strLine);
+                            if (borderQueue.size() > 0)
                                 border = borderQueue.poll().getValue();
                             else
                                 return;
@@ -309,48 +211,155 @@ public class SiHistoryFiles
         }
         catch (Exception e)
         {
-            if(showStackTrace)
+            if (showStackTrace)
                 e.printStackTrace();
-            
+
             working = false;
             notWorking("get history events");
         }
     }
 
-    public static void clearAllHistory()
+    public static void markDocumentClosing(String path, long time)
     {
-        if(working)
+        File f;
+        try
         {
-            try
+            if (working)
             {
-                File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
-                deleteSubFiles(file);
+                f = openFileForWriting(path);
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+                out.write("Closed " + Long.toString(time, TypingEvent.radix)
+                        + " " + path + "\n");
+                out.close();
             }
-            catch(Exception e)
-            {
-                if(showStackTrace)
-                    e.printStackTrace();
-                working = false;
-                notWorking("clear all history");
-            }
+            else
+                notWorking("mark document history closing");
         }
-        else
+        catch (Exception e)
         {
-            notWorking("clear all history");
+            if (showStackTrace)
+                e.printStackTrace();
+            working = false;
+            notWorking("mark document history closing");
         }
     }
-    
-    private static void deleteSubFiles(File file)
+
+    public static void markDocumentOpening(String path, long time)
     {
-        for(File f : file.listFiles())
+        File f;
+        try
         {
-            if(f.isDirectory())
-                deleteSubFiles(f);
-            else
+            if (working)
             {
-                System.out.println(f.exists());
-                System.out.println(f.delete());
+                f = openFileForWriting(path);
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+                out.write("Opened " + Long.toString(time, TypingEvent.radix)
+                        + " " + path + "\n");
+                out.close();
             }
+            else
+                notWorking("mark document history opening");
         }
+        catch (Exception e)
+        {
+            if (showStackTrace)
+                e.printStackTrace();
+            working = false;
+            notWorking("mark document history opening");
+        }
+    }
+
+    private static void notWorking(String message)
+    {
+        System.err
+                .println("Cannot "
+                        + message
+                        + " because history files are not working - ( showStackTrace = "
+                        + showStackTrace + ") continuing...");
+    }
+
+    private static File openFileForWriting(String documentPath)
+            throws IOException
+    {
+        File f = new File(localEventFolderPath + documentPath);
+        new File(f.getParent()).mkdirs();
+        f.createNewFile();
+        return f;
+    }
+
+    private static Long readBorderTime(String strLine, int a, int b)
+    {
+        if (strLine.startsWith(closed))
+            return Long.parseLong(
+                    strLine.substring(a, strLine.indexOf(' ', a)),
+                    TypingEvent.radix);
+        else if (strLine.startsWith(opened))
+            return Long.parseLong(
+                    strLine.substring(b, strLine.indexOf(' ', b)),
+                    TypingEvent.radix);
+        else
+            return null;
+    }
+
+    public static void saveEvents(PriorityQueue<TypingEvent> typingEvents,
+            String documentPath)
+    {
+        try
+        {
+            if (working)
+            {
+                File f = openFileForWriting(documentPath);
+                Set<String> matches = eventTimesExistsInFile(documentPath,
+                        times(typingEvents));
+                FileWriter fstream = new FileWriter(f, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+
+                for (TypingEvent typingEvent : typingEvents)
+                    if (!matches.contains(Long.toString(typingEvent.time,
+                            TypingEvent.radix)))
+                        out.write(typingEvent.pack() + "\n");
+
+                out.close();
+            }
+            else
+                notWorking("save history events");
+        }
+        catch (IOException e)
+        {
+            working = false;
+            if (showStackTrace)
+                e.printStackTrace();
+            notWorking("save history events");
+            JOptionPane.showMessageDialog(new JPanel(), ("Error: " + e
+                    .getMessage()));
+            return;
+        }
+        catch (NullPointerException e)
+        {
+            working = false;
+            if (showStackTrace)
+                e.printStackTrace();
+            notWorking("save history events");
+            JOptionPane.showMessageDialog(new JPanel(),
+                    "Error: There is no document open!");
+            return;
+        }
+        catch (Exception e)
+        {
+            if (showStackTrace)
+                e.printStackTrace();
+            working = false;
+            notWorking("save history events");
+        }
+    }
+
+    private static Set<String> times(Collection<TypingEvent> typingEvents)
+    {
+        Set<String> results = new LinkedHashSet<String>();
+        for (TypingEvent te : typingEvents)
+            results.add("" + te.time);
+        return results;
     }
 }

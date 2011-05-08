@@ -1,3 +1,26 @@
+/**
+ *  CIDER - Collaborative Integrated Development EnviRonment
+    Copyright (C) 2011  Andrew Moss
+                        Lawrence Watkiss
+                        Jonathan Bannister
+                        Alex Sheppard
+                        Miles Taylor
+                        Ashley Woodman
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package cider.client.gui;
 
 import java.awt.Color;
@@ -23,6 +46,10 @@ import cider.common.processes.TimeRegion;
 public class TimeRegionBrowser extends JPanel implements MouseListener,
         MouseMotionListener
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5706626095252241675L;
     private TimeBorderList tbl;
     private PriorityQueue<Long> borderTimes;
     private double scale;
@@ -38,167 +65,112 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     private int minHeight;
     public static final double defaultScale = 0.001;
     private static final Color darkColor = new Color(48, 48, 48);
-    private static final Color highlightColor = new Color(240, 175, 0);//new Color(128, 128, 255);
-    private static final Color selectionColor = new Color(highlightColor.getRed(),
-            highlightColor.getGreen(), highlightColor.getBlue(
-                    ) / 2, highlightColor.getAlpha() / 3);
+    private static final Color highlightColor = new Color(240, 175, 0);// new
+                                                                       // Color(128,
+                                                                       // 128,
+                                                                       // 255);
+    private static final Color selectionColor = new Color(highlightColor
+            .getRed(), highlightColor.getGreen(), highlightColor.getBlue() / 2,
+            highlightColor.getAlpha() / 3);
     public static final int EYE_MOVED = 0;
     public static final int SELECTION = 1;
 
     public TimeRegionBrowser(TimeBorderList tbl, int width, int height)
     {
-        this.eyePosition = System.currentTimeMillis();
+        eyePosition = System.currentTimeMillis();
         this.tbl = tbl;
-        this.borderTimes = tbl.borderTimes();
+        borderTimes = tbl.borderTimes();
         this.setPreferredSize(new Dimension(width, height));
         this.addMouseListener(this);
         this.addMouseMotionListener(this);
-        this.minHeight = height;
+        minHeight = height;
     }
 
-    public void updateBorderTimes()
+    public void addActionListener(ActionListener al)
     {
-        this.borderTimes = this.tbl.borderTimes();
+        actionListeners.add(al);
     }
 
-    public void setScale(double scale)
+    public void downloadSelectedRegion(Client client,
+            final JButton downloadButton) throws Exception
     {
-        this.scale = scale;
-        this.latestTime = this.tbl.getEndTime();
-        Dimension size = new Dimension(this.getWidth(), this.timeToYPixel(this.latestTime));
-        this.setMinimumSize(size);
-        this.setMaximumSize(size);
-        this.setSize(size);
-        this.setPreferredSize(size);
+        TimeBorder selectedBorder1 = new TimeBorder(
+                tbl.getDocumentProperties(), this.getSelectionUpperLowerBound());
+        TimeBorder selectedBorder2 = new TimeBorder(
+                tbl.getDocumentProperties(), this.getSelectionLowerUpperBound());
+        TimeRegion outerRegion = this.getRegionContainingSelectedArea();
+
+        // regions during and after selection
+        TimeRegion selectedRegion = new TimeRegion(selectedBorder1,
+                selectedBorder2);
+        TimeRegion afterSelection = new TimeRegion(selectedBorder2,
+                outerRegion.end);
+
+        // adjust borders
+        tbl.replaceEndBorder(outerRegion, selectedBorder1);
+        tbl.addTimeBorder(selectedBorder1);
+        tbl.addTimeBorder(selectedBorder2);
+
+        // add new regions
+        tbl.addRegion(selectedRegion);
+        tbl.addRegion(afterSelection);
+
+        client.setDiversion(selectedRegion);
+        client.pullEventsFromBot(tbl.getDocumentProperties().path,
+                selectedRegion.getStartTime(), selectedRegion.getEndTime(),
+                true);
+        System.out.println("Starting histroy download");
+        downloadButton.setEnabled(false);
+
+        selectedRegion.addActionListener(new ActionListener()
+        {
+
+            @Override
+            public void actionPerformed(ActionEvent ae)
+            {
+                switch (ae.getID())
+                {
+                case TimeRegion.FINISHED_UPDATE:
+                {
+                    System.out.println("Done history download");
+                    downloadButton.setEnabled(true);
+                    updateBorderTimes();
+                    updateUI();
+                }
+                    break;
+                }
+            }
+        });
+    }
+
+    public TimeRegion getCurrentRegion()
+    {
+        return tbl.regionThatCovers(eyePosition);
+    }
+
+    private TimeRegion getRegionContainingSelectedArea()
+    {
+        return tbl.regionThatCovers(startSelection);
     }
 
     public double getScale()
     {
-        return this.scale;
+        return scale;
     }
 
-    @Override
-    public void paintComponent(Graphics g)
-    {        
-        int x = 16;
-        int y = 0;
-        int prevY = 0;
-        int width = this.getWidth() - 32;
-        TimeBorder timeBorder;
-        int endY = this.timeToYPixel(this.latestTime);
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, this.getWidth(), Math.max(endY, minHeight));
-        g.setColor(Color.WHITE);
-        g.drawRect(x - 1, 1, width + 1, endY - 1);
-
-        for (long t : this.borderTimes)
-        {
-            timeBorder = this.tbl.getBorder(t);
-            y = this.timeToYPixel(t);
-            g.setColor(Color.WHITE);
-            g.drawLine(x, y, x + width - 1, y);
-
-            if (timeBorder.fullSet)
-                g.setColor(highlightColor);
-            else
-                g.setColor(darkColor);
-
-            g.fillRect(x, prevY + 1, width, y - prevY - 1);
-            prevY = y;
-        }
-
-        g.setColor(Color.WHITE);
-        g.fillRect(x, y + 1, width, endY - y);
-        this.paintEye(g, x + width);
-        
-        int start = this.timeToYPixel(this.startSelection);
-        int end = this.timeToYPixel(this.endSelection);
-        g.setColor(selectionColor);
-        g.fillRect(x, start, width, end - start);
-    }
-    
-    public int timeToYPixel(long t)
+    public long getSelectionLength()
     {
-        if(this.tbl.hasNoBorders())
-            return 0;
-        else
-            return (int) ((t - this.tbl.getFirstTime()) * this.scale);
-    }
-    
-    public long yPixelToTime(int pix)
-    {
-        if(this.tbl.hasNoBorders())
-            return 0;
-        else
-            return (long) ((pix / this.scale) + this.tbl.getFirstTime());
-    }
-    
-    public void paintEye(Graphics g, int x)
-    {
-        g.setColor(Color.WHITE);
-        g.drawOval(x + 1, this.timeToYPixel(this.eyePosition) - 4, 14, 8);
-        g.fillOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
-        g.drawOval(x + 5, this.timeToYPixel(this.eyePosition) - 3, 6, 6);
+        return highSelection - lowSelection;
     }
 
-    @Override
-    public void mouseDragged(MouseEvent me)
+    public long getSelectionLowerUpperBound()
     {
-        if (this.movingEye)
-            this.updateEyePosition(me);
-        else if(this.selecting != 0)
-        {
-            long position = this.yPixelToTime(me.getY());
-            
-            this.endSelection = position;
-           
-            TimeRegion currentRegion = this.getRegionContainingSelectedArea();
-            long earliest = currentRegion.getStartTime();
-            long latest = currentRegion.getEndTime();
-            
-            if(this.endSelection <= earliest)
-                this.endSelection = earliest + 1;
-            if(this.endSelection > latest)
-                this.endSelection = latest;
-            
-            this.lowSelection = this.startSelection;
-            this.highSelection = this.endSelection;
-            
-            if(this.lowSelection > this.highSelection)
-            {
-                this.highSelection = this.lowSelection;
-                this.lowSelection = this.endSelection;
-            }
-            
-            this.repaint();
-            
-            for (ActionListener al : this.actionListeners)
-                al.actionPerformed(new ActionEvent(this.eyePosition, SELECTION,
-                        "Selection Changed"));
-        }
-        
-        this.repaint();
+        return highSelection;
     }
 
-    public void updateEyePosition(MouseEvent me)
+    public long getSelectionUpperLowerBound()
     {
-        this.eyePosition = this.yPixelToTime(me.getY());
-        if (this.eyePosition < 0)
-            this.eyePosition = 0;
-        if (this.eyePosition > this.latestTime)
-            this.eyePosition = this.latestTime;
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        for (ActionListener al : this.actionListeners)
-            al.actionPerformed(new ActionEvent(this.eyePosition, EYE_MOVED,
-                    "Eye Moved"));
-    }
-
-    @Override
-    public void mouseMoved(MouseEvent arg0)
-    {
-        // TODO Auto-generated method stub
-
+        return lowSelection;
     }
 
     @Override
@@ -206,6 +178,45 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     {
         // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent me)
+    {
+        if (movingEye)
+            this.updateEyePosition(me);
+        else if (selecting != 0)
+        {
+            long position = this.yPixelToTime(me.getY());
+
+            endSelection = position;
+
+            TimeRegion currentRegion = this.getRegionContainingSelectedArea();
+            long earliest = currentRegion.getStartTime();
+            long latest = currentRegion.getEndTime();
+
+            if (endSelection <= earliest)
+                endSelection = earliest + 1;
+            if (endSelection > latest)
+                endSelection = latest;
+
+            lowSelection = startSelection;
+            highSelection = endSelection;
+
+            if (lowSelection > highSelection)
+            {
+                highSelection = lowSelection;
+                lowSelection = endSelection;
+            }
+
+            this.repaint();
+
+            for (ActionListener al : actionListeners)
+                al.actionPerformed(new ActionEvent(eyePosition, SELECTION,
+                        "Selection Changed"));
+        }
+
+        this.repaint();
     }
 
     @Override
@@ -223,21 +234,28 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     }
 
     @Override
+    public void mouseMoved(MouseEvent arg0)
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
     public void mousePressed(MouseEvent me)
     {
         if (me.getX() > this.getWidth() - 16)
         {
-            this.movingEye = true;
+            movingEye = true;
             this.updateEyePosition(me);
             this.repaint();
         }
         else
         {
-            if(this.selecting == 0)
+            if (selecting == 0)
             {
-                this.selecting = -1;
-                this.startSelection = this.yPixelToTime(me.getY());
-                this.endSelection = this.startSelection;
+                selecting = -1;
+                startSelection = this.yPixelToTime(me.getY());
+                endSelection = startSelection;
                 this.repaint();
             }
         }
@@ -246,87 +264,108 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     @Override
     public void mouseReleased(MouseEvent arg0)
     {
-        this.movingEye = false;
-        this.selecting = 0;
+        movingEye = false;
+        selecting = 0;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
 
-    public void addActionListener(ActionListener al)
+    @Override
+    public void paintComponent(Graphics g)
     {
-        this.actionListeners.add(al);
-    }
+        int x = 16;
+        int y = 0;
+        int prevY = 0;
+        int width = this.getWidth() - 32;
+        TimeBorder timeBorder;
+        int endY = this.timeToYPixel(latestTime);
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, this.getWidth(), Math.max(endY, minHeight));
+        g.setColor(Color.WHITE);
+        g.drawRect(x - 1, 1, width + 1, endY - 1);
 
-    public TimeRegion getCurrentRegion()
-    {
-        return this.tbl.regionThatCovers(this.eyePosition);
-    }
-    
-    public long getSelectionLength()
-    {
-        return this.highSelection - this.lowSelection;
-    }
-    
-    public long getSelectionUpperLowerBound()
-    {
-        return this.lowSelection;
-    }
-    
-    public long getSelectionLowerUpperBound()
-    {
-        return this.highSelection;
-    }
-
-    public void downloadSelectedRegion(Client client, final JButton downloadButton) throws Exception
-    {
-        TimeBorder selectedBorder1 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionUpperLowerBound());
-        TimeBorder selectedBorder2 = new TimeBorder(this.tbl.getDocumentProperties(), this.getSelectionLowerUpperBound());
-        TimeRegion outerRegion = this.getRegionContainingSelectedArea();
-        
-        //regions during and after selection
-        TimeRegion selectedRegion = new TimeRegion(selectedBorder1, selectedBorder2);
-        TimeRegion afterSelection = new TimeRegion(selectedBorder2, outerRegion.end);
-        
-        //adjust borders
-        this.tbl.replaceEndBorder(outerRegion, selectedBorder1);
-        this.tbl.addTimeBorder(selectedBorder1);
-        this.tbl.addTimeBorder(selectedBorder2);
-        
-        //add new regions
-        this.tbl.addRegion(selectedRegion);
-        this.tbl.addRegion(afterSelection);
-
-        client.setDiversion(selectedRegion);
-        client.pullEventsFromBot(this.tbl.getDocumentProperties().path, selectedRegion.getStartTime(), selectedRegion.getEndTime(), true);
-        System.out.println("Starting histroy download");
-        downloadButton.setEnabled(false);
-        
-        selectedRegion.addActionListener(new ActionListener()
+        for (long t : borderTimes)
         {
+            timeBorder = tbl.getBorder(t);
+            y = this.timeToYPixel(t);
+            g.setColor(Color.WHITE);
+            g.drawLine(x, y, x + width - 1, y);
 
-            @Override
-            public void actionPerformed(ActionEvent ae)
-            {
-                switch(ae.getID())
-                {
-                case TimeRegion.FINISHED_UPDATE:
-                {
-                    System.out.println("Done history download");
-                    downloadButton.setEnabled(true);
-                    updateBorderTimes();
-                    updateUI();  
-                } break;
-                }
-            }
-        });
+            if (timeBorder.fullSet)
+                g.setColor(highlightColor);
+            else
+                g.setColor(darkColor);
+
+            g.fillRect(x, prevY + 1, width, y - prevY - 1);
+            prevY = y;
+        }
+
+        g.setColor(Color.WHITE);
+        g.fillRect(x, y + 1, width, endY - y);
+        this.paintEye(g, x + width);
+
+        int start = this.timeToYPixel(startSelection);
+        int end = this.timeToYPixel(endSelection);
+        g.setColor(selectionColor);
+        g.fillRect(x, start, width, end - start);
     }
 
-    private TimeRegion getRegionContainingSelectedArea()
+    public void paintEye(Graphics g, int x)
     {
-        return this.tbl.regionThatCovers(this.startSelection);
+        g.setColor(Color.WHITE);
+        g.drawOval(x + 1, this.timeToYPixel(eyePosition) - 4, 14, 8);
+        g.fillOval(x + 5, this.timeToYPixel(eyePosition) - 3, 6, 6);
+        g.drawOval(x + 5, this.timeToYPixel(eyePosition) - 3, 6, 6);
     }
 
     public boolean selectionLiesWithinFullRegion()
     {
         return this.getRegionContainingSelectedArea().end.fullSet;
+    }
+
+    public void setScale(double scale)
+    {
+        this.scale = scale;
+        latestTime = tbl.getEndTime();
+        Dimension size = new Dimension(this.getWidth(), this
+                .timeToYPixel(latestTime));
+        this.setMinimumSize(size);
+        this.setMaximumSize(size);
+        this.setSize(size);
+        this.setPreferredSize(size);
+    }
+
+    public int timeToYPixel(long t)
+    {
+        if (tbl.hasNoBorders())
+            return 0;
+        else
+            return (int) ((t - tbl.getFirstTime()) * scale);
+    }
+
+    public void updateBorderTimes()
+    {
+        borderTimes = tbl.borderTimes();
+    }
+
+    public void updateEyePosition(MouseEvent me)
+    {
+        eyePosition = this.yPixelToTime(me.getY());
+        if (eyePosition < 0)
+            eyePosition = 0;
+        if (eyePosition > latestTime)
+            eyePosition = latestTime;
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        for (ActionListener al : actionListeners)
+            al.actionPerformed(new ActionEvent(eyePosition, EYE_MOVED,
+                    "Eye Moved"));
+    }
+
+    public long yPixelToTime(int pix)
+    {
+        if (tbl.hasNoBorders())
+            return 0;
+        else
+            return (long) ((pix / scale) + tbl.getFirstTime());
     }
 }

@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.shared;
 
@@ -59,10 +59,10 @@ public class ClientSharedComponents
 
     // Tabs for chat sessions
     public ChatTabs receiveTabs = new ChatTabs();
-    
+
     // The client's profile
     public Profile profile;
-    
+
     // Idle timer
     public IdleTimer idleTimer;
 }

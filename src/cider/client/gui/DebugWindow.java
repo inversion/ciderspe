@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.client.gui;
 
@@ -38,23 +38,23 @@ public class DebugWindow extends JPanel
     public DebugWindow()
     {
         this.setLayout(new BorderLayout());
-        this.textArea.setEditable(false);
-        //this.scrolltxt.setBounds(3, 3, 300, 200);
-        this.add(this.scrollTextArea);
+        textArea.setEditable(false);
+        // this.scrolltxt.setBounds(3, 3, 300, 200);
+        this.add(scrollTextArea);
     }
 
     public String getText()
     {
-        return this.textArea.getText();
-    }
-
-    public void setText(String text)
-    {
-        this.textArea.setText(text);
+        return textArea.getText();
     }
 
     public void println(String text)
     {
-        this.textArea.setText(this.textArea.getText() + text + "\n");
+        textArea.setText(textArea.getText() + text + "\n");
+    }
+
+    public void setText(String text)
+    {
+        textArea.setText(text);
     }
 }

@@ -48,16 +48,16 @@ public class DocumentProperties
     {
         this.name = name;
         this.path = path;
-        this.creationTime = System.currentTimeMillis();
+        creationTime = System.currentTimeMillis();
     }
-    
+
     @Override
     public boolean equals(Object obj)
     {
-        if(obj.getClass().equals(this.getClass()))
+        if (obj.getClass().equals(this.getClass()))
         {
-            DocumentProperties docID = (DocumentProperties)obj;
-            return docID.path.equals(this.path);
+            DocumentProperties docID = (DocumentProperties) obj;
+            return docID.path.equals(path);
         }
         else
             return super.equals(obj);

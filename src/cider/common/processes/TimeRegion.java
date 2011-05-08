@@ -48,12 +48,58 @@ public class TimeRegion
 
     public TimeRegion(TimeBorder start, TimeBorder end) throws Exception
     {
-        if (this.start != null && this.start.documentProperties != this.end.documentProperties)
+        if (this.start != null
+                && this.start.documentProperties != this.end.documentProperties)
             throw new Exception("time borders must belong to the same document");
 
         this.start = start;
         this.end = end;
-        this.documentProperties = end.documentProperties;
+        documentProperties = end.documentProperties;
+    }
+
+    public void addActionListener(ActionListener actionListener)
+    {
+        actionListeners.add(actionListener);
+    }
+
+    /**
+     * This method is called by the Client to indicate that no more typing
+     * events will be received. It triggers the action listeners.
+     * 
+     * @author Lawrence
+     */
+    public void finishedUpdate()
+    {
+        end.fullSet = true;
+
+        for (ActionListener al : actionListeners)
+            al.actionPerformed(new ActionEvent(this, 0, "finished update"));
+    }
+
+    public long getEndTime()
+    {
+        return end.time;
+    }
+
+    public long getStartTime()
+    {
+        return start == null ? 0 : start.time;
+    }
+
+    /**
+     * The difference between the start and end time
+     * 
+     * @return
+     */
+    public long getTimespan()
+    {
+        return end.time - start.time;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "" + end.time;
     }
 
     /**
@@ -65,73 +111,28 @@ public class TimeRegion
      */
     public void updateWhereRequired(Client client)
     {
-        if (!this.end.fullSet)
+        if (!end.fullSet)
         {
             client.setDiversion(this);
 
-            if (this.start != null)
+            if (start != null)
             {
-                if (this.start.fullSet)
+                if (start.fullSet)
                 {
                     SourceDocument startDoc = new SourceDocument(
-                            this.documentProperties.name, this.documentProperties.path,
-                            this.start.typingEvents);
-                    startDoc.simplify(this.end.time);
-                    this.end.typingEvents.addAll(startDoc.events());
+                            documentProperties.name, documentProperties.path,
+                            start.typingEvents);
+                    startDoc.simplify(end.time);
+                    end.typingEvents.addAll(startDoc.events());
                 }
                 else
                 {
-                    client.pullEventsFromBot(this.documentProperties.path,
-                            this.start.time, true);
+                    client.pullEventsFromBot(documentProperties.path,
+                            start.time, true);
                 }
             }
-            client.pullEventsFromBot(this.documentProperties.path, this.getStartTime(),
-                    this.getEndTime(), true);
+            client.pullEventsFromBot(documentProperties.path, this
+                    .getStartTime(), this.getEndTime(), true);
         }
-    }
-
-    /**
-     * The difference between the start and end time
-     * 
-     * @return
-     */
-    public long getTimespan()
-    {
-        return this.end.time - this.start.time;
-    }
-
-    /**
-     * This method is called by the Client to indicate that no more typing
-     * events will be received. It triggers the action listeners.
-     * 
-     * @author Lawrence
-     */
-    public void finishedUpdate()
-    {
-        this.end.fullSet = true;
-        
-        for (ActionListener al : this.actionListeners)
-            al.actionPerformed(new ActionEvent(this, 0, "finished update"));
-    }
-
-    public void addActionListener(ActionListener actionListener)
-    {
-        this.actionListeners.add(actionListener);
-    }
-    
-    public long getStartTime()
-    {
-        return this.start == null ? 0 : this.start.time;
-    }
-    
-    public long getEndTime()
-    {
-        return this.end.time;
-    }
-    
-    @Override
-    public String toString()
-    {
-        return "" + this.end.time;
     }
 }

@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.client;
 
@@ -49,19 +49,30 @@ public class ClientMessageListener implements MessageListener, ActionListener
 {
     private Client client;
     protected Thread clientThread;
-    
+
     public ClientMessageListener(Client client)
     {
         this.client = client;
     }
 
+    @Override
+    public void actionPerformed(ActionEvent ae)
+    {
+        /*
+         * try { this.client.pullEventsFromBot(this.client.getLastUpdate()); }
+         * catch (Exception e) { e.printStackTrace();
+         * JOptionPane.showMessageDialog(null, "Cannot pull events: " +
+         * e.getMessage()); System.exit(1); }
+         */
+    }
+
     @SuppressWarnings("static-access")
-	@Override
+    @Override
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        String ciderAction = (String) message.getProperty( "ciderAction" );
-        if ( ciderAction.equals( "quit" ) )
+        String ciderAction = (String) message.getProperty("ciderAction");
+        if (ciderAction.equals("quit"))
         {
             JOptionPane
                     .showMessageDialog(
@@ -83,56 +94,59 @@ public class ClientMessageListener implements MessageListener, ActionListener
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
-        else if( ciderAction.equals( "notfound" ))
+        else if (ciderAction.equals("notfound"))
         {
-            if(message.getProperty( "show" ) != null )
-                JOptionPane.showMessageDialog( null, "No profile was found on the server for " + message.getProperty( "username" ) );
-            
-            if(client.getUsername().equals(message.getProperty( "username")))
+            if (message.getProperty("show") != null)
+                JOptionPane.showMessageDialog(null,
+                        "No profile was found on the server for "
+                                + message.getProperty("username"));
+
+            if (client.getUsername().equals(message.getProperty("username")))
             {
                 SiHistoryFiles.clearAllHistory();
             }
         }
-        else if( ciderAction.equals( "profile" ) )
+        else if (ciderAction.equals("profile"))
         {
-            String username = (String) message.getProperty( "username" );
-            Integer chars = (Integer) message.getProperty( "chars" );
-            Long timeSpent = (Long) message.getProperty( "timeSpent" );
-            Integer idleTime = (Integer) message.getProperty( "idleTime" );
-            String lastOnline = (String) message.getProperty( "lastOnline" );
+            String username = (String) message.getProperty("username");
+            Integer chars = (Integer) message.getProperty("chars");
+            Long timeSpent = (Long) message.getProperty("timeSpent");
+            Integer idleTime = (Integer) message.getProperty("idleTime");
+            String lastOnline = (String) message.getProperty("lastOnline");
             Integer r = (Integer) message.getProperty("r");
             Integer g = (Integer) message.getProperty("g");
             Integer b = (Integer) message.getProperty("b");
-            
+
             // If setting our own profile's values
-            if( username.equals( client.getUsername() ) )
+            if (username.equals(client.getUsername()))
             {
-                System.out.println( "ClientMessageListener: Updating own profile..." );
+                System.out
+                        .println("ClientMessageListener: Updating own profile...");
                 client.profile.setUsername(username);
                 client.profile.setTypedChars(chars);
                 client.profile.setTimeSpent(timeSpent);
                 client.profile.setIdleTime(idleTime);
                 client.profile.setLastOnline(lastOnline);
-                client.profile.setColour( r, g, b );
+                client.profile.setColour(r, g, b);
                 client.colours.put(username, client.profile.getColour());
                 client.shared.userList.repaint();
-                
+
                 // If we want the profile to pop up
-                if( message.getProperty( "show" ) != null )
-                    client.getParent().showProfile( client.profile );
+                if (message.getProperty("show") != null)
+                    client.getParent().showProfile(client.profile);
             }
             else
             {
-                Profile profile = new Profile( username );
+                Profile profile = new Profile(username);
                 profile.setTypedChars(chars);
                 profile.setTimeSpent(timeSpent);
                 profile.setIdleTime(idleTime);
                 profile.setLastOnline(lastOnline);
-                profile.setColour( r, g, b );
-                
+                profile.setColour(r, g, b);
+
                 // If we want the profile to pop up
-                if( message.getProperty( "show" ) != null )
-                    client.getParent().showProfile( profile );
+                if (message.getProperty("show") != null)
+                    client.getParent().showProfile(profile);
             }
         }
         else if (body.length() > 0 && body.startsWith("timeReply("))
@@ -142,30 +156,19 @@ public class ClientMessageListener implements MessageListener, ActionListener
             String[] args = str.split(",");
             long sentTime = Long.parseLong(args[0]);
             long currentTime = System.currentTimeMillis()
-                    + this.client.getClockOffset();
+                    + client.getClockOffset();
             long halfLatency = (currentTime - sentTime) / 2;
             long delta = currentTime - Long.parseLong(args[1]) + halfLatency;
 
-            if (this.client.getClockOffset() == 0)
-                this.client.setTimeDelta(delta);
+            if (client.getClockOffset() == 0)
+                client.setTimeDelta(delta);
 
-            this.client.addTimeDeltaSample(delta);
+            client.addTimeDeltaSample(delta);
         }
         else
         {
-            this.client.processDocumentMessages( message );
+            client.processDocumentMessages(message);
         }
-            
-    }
 
-    @Override
-    public void actionPerformed(ActionEvent ae)
-    {
-        /*
-         * try { this.client.pullEventsFromBot(this.client.getLastUpdate()); }
-         * catch (Exception e) { e.printStackTrace();
-         * JOptionPane.showMessageDialog(null, "Cannot pull events: " +
-         * e.getMessage()); System.exit(1); }
-         */
     }
 }

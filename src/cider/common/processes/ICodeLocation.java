@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.processes;
 
@@ -28,12 +28,11 @@ import java.util.Queue;
 public interface ICodeLocation
 {
     /**
-     * Takes typing events out of the queue and puts them in this code location
+     * Clears all events from this location
      * 
      * @author Lawrence
-     * @param typingEvents
      */
-    public void push(Queue<TypingEvent> typingEvents);
+    public void clearAll();
 
     /**
      * Returns all of the events at this code location
@@ -61,9 +60,10 @@ public interface ICodeLocation
     public long lastUpdateTime();
 
     /**
-     * Clears all events from this location
+     * Takes typing events out of the queue and puts them in this code location
      * 
      * @author Lawrence
+     * @param typingEvents
      */
-    public void clearAll();
+    public void push(Queue<TypingEvent> typingEvents);
 }

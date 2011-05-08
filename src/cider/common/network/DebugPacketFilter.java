@@ -19,17 +19,19 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network;
 
 import org.jivesoftware.smack.filter.PacketFilter;
 import org.jivesoftware.smack.packet.Packet;
 
-public class DebugPacketFilter implements PacketFilter {
+public class DebugPacketFilter implements PacketFilter
+{
 
     @Override
-    public boolean accept(Packet packet) {
+    public boolean accept(Packet packet)
+    {
         // TODO Auto-generated method stub
         return true;
     }

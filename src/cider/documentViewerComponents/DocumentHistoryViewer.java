@@ -23,9 +23,6 @@
 
 package cider.documentViewerComponents;
 
-import java.awt.Color;
-import java.awt.Graphics;
-
 import cider.common.network.client.Client;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TimeRegion;
@@ -39,22 +36,26 @@ import cider.common.processes.TimeRegion;
  */
 public class DocumentHistoryViewer extends SourceDocumentViewer
 {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -2188105133858776818L;
     Client client;
-    
+
     public DocumentHistoryViewer(SourceDocument sourceDocument, Client client)
     {
         super(sourceDocument);
         this.client = client;
     }
 
-    public void useEventsFrom(TimeRegion currentRegion)
-    {
-        this.doc.clearAll();
-        this.doc.addEvents(currentRegion.end.typingEvents);
-    }
-
     public Client getClient()
     {
-        return this.client;
+        return client;
+    }
+
+    public void useEventsFrom(TimeRegion currentRegion)
+    {
+        doc.clearAll();
+        doc.addEvents(currentRegion.end.typingEvents);
     }
 }

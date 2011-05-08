@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.client;
 
@@ -30,45 +30,49 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.util.StringUtils;
 
-
-
 /**
  * 
  * Handle incoming messages on user chats.
  * 
  * @author Andrew
- *
+ * 
  */
 
-public class ClientPrivateChatMessageListener implements MessageListener {
+public class ClientPrivateChatMessageListener implements MessageListener
+{
 
     private static final boolean DEBUG = true;
-    
+
     private Client client;
-    
-    public ClientPrivateChatMessageListener( Client caller ) 
+
+    public ClientPrivateChatMessageListener(Client caller)
     {
-        this.client = caller;
+        client = caller;
     }
 
     @Override
-    public void processMessage(Chat chat, Message message) 
+    public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
-        if( body == null )
+        if (body == null)
             return;
-        
-        if( DEBUG )
-            System.out.println("ClientPrivateChatMessageListener: Received message on private chat from " + chat.getParticipant() + ", " + body);
-        
-        if( message.getSubject() != null )
-            client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), message.getSubject(), body );
+
+        if (DEBUG)
+            System.out
+                    .println("ClientPrivateChatMessageListener: Received message on private chat from "
+                            + chat.getParticipant() + ", " + body);
+
+        if (message.getSubject() != null)
+            client.updatePrivateChatLog(StringUtils.parseName(chat
+                    .getParticipant()), message.getSubject(), body);
         else
         {
             Date date = new Date();
-            client.updatePrivateChatLog( StringUtils.parseName( chat.getParticipant() ), Client.dateFormat.format(date), body );
+            client.updatePrivateChatLog(StringUtils.parseName(chat
+                    .getParticipant()), Client.dateFormat.format(date), body);
         }
-        
-        client.shared.receiveTabs.tabflash( StringUtils.parseName( chat.getParticipant() ) );
+
+        client.shared.receiveTabs.tabflash(StringUtils.parseName(chat
+                .getParticipant()));
     }
 }

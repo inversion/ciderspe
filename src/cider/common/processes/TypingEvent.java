@@ -77,27 +77,36 @@ public class TypingEvent implements Serializable
     }
 
     /**
-     * This typing event will be the same except for the time, position and
-     * mode.
+     * This typing event is specified by a string that was created by the pack
+     * method
      * 
-     * @param typingEvent
-     * @param time
-     * @param position
-     * @param mode
-     * 
+     * @param str
      * @author Lawrence
      */
-    public TypingEvent(TypingEvent typingEvent, long time, int position,
-            TypingEventMode mode)
+    public TypingEvent(String str)
     {
-        this.time = time;
-        this.position = position;
-        this.mode = mode;
-        this.lockingGroup = typingEvent.lockingGroup;
-        this.length = typingEvent.length;
-        this.text = typingEvent.text;
-        this.owner = typingEvent.owner;
-
+        String[] split = str.split("~");
+        // it's possible the user will want
+        // to use ~ so we need some way of
+        // telling the difference.
+        try
+        {
+            mode = TypingEventMode.values()[Integer.parseInt(split[0])];
+            text = split[1];
+            position = Integer.parseInt(split[2], radix);
+            length = Integer.parseInt(split[3]);
+            time = Long.parseLong(split[4], radix);
+            owner = split[5];
+            if (split.length == 7)
+                lockingGroup = split[6];
+            else
+                lockingGroup = null;
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            throw new Error("Failed to parse " + str + ". " + e.getMessage());
+        }
     }
 
     /**
@@ -114,58 +123,48 @@ public class TypingEvent implements Serializable
     {
         this.time = time;
         this.position = position;
-        this.mode = typingEvent.mode;
-        this.lockingGroup = typingEvent.lockingGroup;
+        mode = typingEvent.mode;
+        lockingGroup = typingEvent.lockingGroup;
         this.text = text;
-        this.length = text.length();
-        this.owner = typingEvent.owner;
+        length = text.length();
+        owner = typingEvent.owner;
     }
 
     /**
-     * This typing event is specified by a string that was created by the pack
-     * method
+     * This typing event will be the same except for the time, position and
+     * mode.
      * 
-     * @param str
+     * @param typingEvent
+     * @param time
+     * @param position
+     * @param mode
+     * 
      * @author Lawrence
      */
-    public TypingEvent(String str)
+    public TypingEvent(TypingEvent typingEvent, long time, int position,
+            TypingEventMode mode)
     {
-        String[] split = str.split("~");
-        // it's possible the user will want
-        // to use ~ so we need some way of
-        // telling the difference.
-        try
-        {
-            this.mode = TypingEventMode.values()[Integer.parseInt(split[0])];
-            this.text = split[1];
-            this.position = Integer.parseInt(split[2], radix);
-            this.length = Integer.parseInt(split[3]);
-            this.time = Long.parseLong(split[4], radix);
-            this.owner = split[5];
-            if (split.length == 7)
-                this.lockingGroup = split[6];
-            else
-                this.lockingGroup = null;
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw new Error("Failed to parse " + str + ". " + e.getMessage());
-        }
+        this.time = time;
+        this.position = position;
+        this.mode = mode;
+        lockingGroup = typingEvent.lockingGroup;
+        length = typingEvent.length;
+        text = typingEvent.text;
+        owner = typingEvent.owner;
+
     }
-    
+
     /**
-     * creates a string which represents this typing event and can be unpacked
-     * by the contructor which takes a string as its artgument.
-     * 
-     * @return
+     * @param tes
+     * @return true if this typing event exists in the array tes TODO: look into
+     *         finding a more efficient alternative.
      */
-    public String pack()
+    public boolean existsIn(TypingEvent[] tes)
     {
-        return this.mode.ordinal() + "~" + this.text + "~"
-                + Integer.toString(this.position, radix) + "~" + this.length + "~"
-                + Long.toString(this.time, radix) + "~" + this.owner
-                + (this.lockingGroup == null ? "" : "~" + this.lockingGroup);
+        for (TypingEvent te : tes)
+            if (time == te.time)
+                return true;
+        return false;
     }
 
     /**
@@ -181,15 +180,15 @@ public class TypingEvent implements Serializable
     public ArrayList<TypingEvent> explode()
     {
         ArrayList<TypingEvent> particles = new ArrayList<TypingEvent>();
-        if (this.mode == TypingEventMode.overwrite && this.text.length() > 1)
+        if (mode == TypingEventMode.overwrite && text.length() > 1)
         {
             /*
              * If doing an overwrite with more than 1 character to input, split
              * it up
              */
-            char[] chrs = this.text.toCharArray();
-            long t = this.time;
-            int pos = this.position;
+            char[] chrs = text.toCharArray();
+            long t = time;
+            int pos = position;
             int length = this.length;
 
             for (int charIndex = 0; charIndex < chrs.length; charIndex++)
@@ -200,18 +199,19 @@ public class TypingEvent implements Serializable
                      * If this is the last event to be added, tack the length of
                      * remaining deletions needed on the end, if there are any
                      */
-                    particles.add(new TypingEvent(t, this.mode, pos, length, ""
-                            + chrs[charIndex], this.owner, this.lockingGroup));
+                    particles.add(new TypingEvent(t, mode, pos, length, ""
+                            + chrs[charIndex], owner, lockingGroup));
                 }
                 else
                 {
                     if (length < 1) // If we've exhausted the length we want to
-                                    // overwrite, insert the remaining
-                                    // characters
-                        particles.add(new TypingEvent(t++,
-                                TypingEventMode.insert, (pos++) - 1, 1, ""
-                                        + chrs[charIndex], this.owner,
-                                this.lockingGroup));
+                        // overwrite, insert the remaining
+                        // characters
+                        particles
+                                .add(new TypingEvent(t++,
+                                        TypingEventMode.insert, (pos++) - 1, 1,
+                                        "" + chrs[charIndex], owner,
+                                        lockingGroup));
                     else
                         particles.add(new TypingEvent(this, t++, pos++, ""
                                 + chrs[charIndex]));
@@ -219,21 +219,35 @@ public class TypingEvent implements Serializable
                 length--;
             }
         }
-        else if (this.mode == TypingEventMode.lockRegion
-                || this.mode == TypingEventMode.unlockRegion
-                || this.mode == TypingEventMode.delete
-                || this.mode == TypingEventMode.overwrite)
+        else if (mode == TypingEventMode.lockRegion
+                || mode == TypingEventMode.unlockRegion
+                || mode == TypingEventMode.delete
+                || mode == TypingEventMode.overwrite)
             particles.add(this);
         else
         {
-            char[] chrs = this.text.toCharArray();
-            long t = this.time;
-            int i = this.position;
+            char[] chrs = text.toCharArray();
+            long t = time;
+            int i = position;
 
             for (char chr : chrs)
                 particles.add(new TypingEvent(this, t++, i++, "" + chr));
         }
         return particles;
+    }
+
+    /**
+     * creates a string which represents this typing event and can be unpacked
+     * by the contructor which takes a string as its artgument.
+     * 
+     * @return
+     */
+    public String pack()
+    {
+        return mode.ordinal() + "~" + text + "~"
+                + Integer.toString(position, radix) + "~" + length + "~"
+                + Long.toString(time, radix) + "~" + owner
+                + (lockingGroup == null ? "" : "~" + lockingGroup);
     }
 
     /**
@@ -252,20 +266,7 @@ public class TypingEvent implements Serializable
      */
     public String toString()
     {
-        return this.time + "\t" + this.mode.toString() + "\t" + this.position
-                + "\t" + this.length + "\t" + this.text + "\t" + this.lockingGroup;
-    }
-
-    /**
-     * @param tes
-     * @return true if this typing event exists in the array tes TODO: look into
-     *         finding a more efficient alternative.
-     */
-    public boolean existsIn(TypingEvent[] tes)
-    {
-        for (TypingEvent te : tes)
-            if (this.time == te.time)
-                return true;
-        return false;
+        return time + "\t" + mode.toString() + "\t" + position + "\t" + length
+                + "\t" + text + "\t" + lockingGroup;
     }
 }

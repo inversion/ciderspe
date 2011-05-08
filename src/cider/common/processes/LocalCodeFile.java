@@ -39,19 +39,9 @@ import java.util.Queue;
  * @author Lawrence
  * @deprecated
  */
+@Deprecated
 public class LocalCodeFile implements ICodeLocation
 {
-    private File file;
-    private BufferedReader in;
-    private BufferedWriter out;
-    private String oldFileContentString = null;
-    private TypingEvent oldFileContent;
-
-    public LocalCodeFile(File file)
-    {
-        this.file = file;
-    }
-
     public static void main(String[] args)
     {
         System.out.println(testfile());
@@ -84,21 +74,34 @@ public class LocalCodeFile implements ICodeLocation
         return lcf.read();
     }
 
-    @Override
-    public void push(Queue<TypingEvent> typingEvents)
+    private File file;
+    private BufferedReader in;
+    private BufferedWriter out;
+
+    private String oldFileContentString = null;
+
+    private TypingEvent oldFileContent;
+
+    public LocalCodeFile(File file)
     {
-        try
+        this.file = file;
+    }
+
+    @Override
+    public void clearAll()
+    {
+        if (file.exists())
         {
-            this.out = new BufferedWriter(new FileWriter(this.file));
-            SourceDocument sd = new SourceDocument(this.file.getName());
-            sd.addEvent(this.oldFileContent);
-            sd.push(typingEvents);
-            this.out.write(sd.toString());
-            this.out.close();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
+            file.delete();
+            try
+            {
+                file.createNewFile();
+            }
+            catch (IOException e)
+            {
+
+                e.printStackTrace();
+            }
         }
     }
 
@@ -108,37 +111,18 @@ public class LocalCodeFile implements ICodeLocation
         long currentTime = 0;
         // this.oldFileContent.add(new TypingEvent(currentTime,
         // TypingEventMode.deleteAll, 0, ""));
-        this.oldFileContent = new TypingEvent(currentTime + 1,
-                TypingEventMode.overwrite, 0, 0,
-                this.oldFileContentString = this.read(), "owner", null);
+        oldFileContent = new TypingEvent(currentTime + 1,
+                TypingEventMode.overwrite, 0, 0, oldFileContentString = this
+                        .read(), "owner", null);
         Queue<TypingEvent> result = new LinkedList<TypingEvent>();
-        result.add(this.oldFileContent);
+        result.add(oldFileContent);
         return result;
-    }
-
-    public String read()
-    {
-        try
-        {
-            String str;
-            this.in = new BufferedReader(new FileReader(this.file));
-            String contents = "";
-            while ((str = this.in.readLine()) != null)
-                contents += str + "\n";
-            this.in.close();
-            return contents;
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     @Override
     public Queue<TypingEvent> eventsSince(long time)
     {
-        if (this.file.lastModified() >= time)
+        if (file.lastModified() >= time)
             return this.events();
         else
             return new LinkedList<TypingEvent>();
@@ -147,24 +131,43 @@ public class LocalCodeFile implements ICodeLocation
     @Override
     public long lastUpdateTime()
     {
-        return this.file.lastModified();
+        return file.lastModified();
     }
 
     @Override
-    public void clearAll()
+    public void push(Queue<TypingEvent> typingEvents)
     {
-        if (this.file.exists())
+        try
         {
-            this.file.delete();
-            try
-            {
-                this.file.createNewFile();
-            }
-            catch (IOException e)
-            {
+            out = new BufferedWriter(new FileWriter(file));
+            SourceDocument sd = new SourceDocument(file.getName());
+            sd.addEvent(oldFileContent);
+            sd.push(typingEvents);
+            out.write(sd.toString());
+            out.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
-                e.printStackTrace();
-            }
+    public String read()
+    {
+        try
+        {
+            String str;
+            in = new BufferedReader(new FileReader(file));
+            String contents = "";
+            while ((str = in.readLine()) != null)
+                contents += str + "\n";
+            in.close();
+            return contents;
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            return null;
         }
     }
 }

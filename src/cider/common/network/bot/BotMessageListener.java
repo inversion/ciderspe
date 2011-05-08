@@ -56,73 +56,118 @@ public class BotMessageListener implements MessageListener
 
     private Bot bot;
 
-    public BotMessageListener( Bot bot )
+    public BotMessageListener(Bot bot)
     {
         this.bot = bot;
+    }
+
+    /**
+     * Create a SourceDocument in the relevant LiveFolder given information sent
+     * from a client.
+     * 
+     * @param chat
+     *            The chat the user is on (to get the owner name).
+     * @param message
+     *            The message containing a source document.
+     * 
+     * @author Andrew
+     */
+    private void createDocument(Chat chat, Message msg)
+    {
+        String name = (String) msg.getProperty("name");
+        String path = (String) msg.getProperty("path");
+        String contents = (String) msg.getProperty("contents");
+        String owner = StringUtils.parseName(chat.getParticipant());
+
+        SourceDocument doc = new SourceDocument(name);
+
+        if (DEBUG)
+            System.out.println("BotMessageListener: Creating document "
+                    + doc.name + " in " + path);
+
+        if (contents != null)
+        {
+            // Generate typing events for current file contents
+            TypingEvent te = new TypingEvent(System.currentTimeMillis(),
+                    TypingEventMode.insert, 0, contents.length(), contents,
+                    owner, null);
+            ArrayList<TypingEvent> events = te.explode();
+            doc.addEvents(events);
+        }
+
+        // Add the new document to the folder
+        LiveFolder.findFolder(path, bot.getRootFolder()).addDocument(doc);
+
+        // Send the updated file list to all the clients
+        sendFileList(null);
     }
 
     @Override
     public void processMessage(Chat chat, Message message)
     {
-        String ciderAction = (String) message.getProperty( "ciderAction" );
-        
+        String ciderAction = (String) message.getProperty("ciderAction");
+
         if (ciderAction.equals("are you online mr bot"))
-            sendOnlineReply( chat );
-        else if ( ciderAction.equals( "createDoc" ) )
+            sendOnlineReply(chat);
+        else if (ciderAction.equals("createDoc"))
             createDocument(chat, message);
-        else if ( ciderAction.equals("getfilelist") )
-            sendFileList( chat.getParticipant() );
-        else if ( ciderAction.equals("requestusercolour") )
+        else if (ciderAction.equals("getfilelist"))
+            sendFileList(chat.getParticipant());
+        else if (ciderAction.equals("requestusercolour"))
         {
-            Color yaycolour = bot.colours.get( message.getProperty( "user" ) );
+            Color yaycolour = bot.colours.get(message.getProperty("user"));
             try
             {
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "usercolour" );
+                msg.setProperty("ciderAction", "usercolour");
                 msg.setProperty("r", yaycolour.getRed());
                 msg.setProperty("g", yaycolour.getGreen());
                 msg.setProperty("b", yaycolour.getBlue());
-                chat.sendMessage( msg );
+                chat.sendMessage(msg);
             }
             catch (XMPPException e)
             {
                 e.printStackTrace();
             }
         }
-        else if ( ciderAction.equals( "userprofile" ) )
-            updateProfile( chat, message );
-        else if ( ciderAction.equals("requestprofile") )
-            sendProfile( chat, message );
+        else if (ciderAction.equals("userprofile"))
+            updateProfile(chat, message);
+        else if (ciderAction.equals("requestprofile"))
+            sendProfile(chat, message);
         // This part is still important for when a file is opened
-        else if ( ciderAction.equals( "pullEvents" ) )
+        else if (ciderAction.equals("pullEvents"))
         {
-            String dest = (String) message.getProperty( "path" );
+            String dest = (String) message.getProperty("path");
             long time = 0, startTime = 0, endTime = 0;
-            
+
             // If they haven't asked for a start and end time
-            if( (String) message.getProperty( "time" ) != null )
-                time = Long.parseLong( (String) message.getProperty( "time" ) );
+            if ((String) message.getProperty("time") != null)
+                time = Long.parseLong((String) message.getProperty("time"));
             else
             {
-                startTime = Long.parseLong( (String) message.getProperty( "startTime" ) );
-                endTime = Long.parseLong( (String) message.getProperty( "endTime" ) );
+                startTime = Long.parseLong((String) message
+                        .getProperty("startTime"));
+                endTime = Long.parseLong((String) message
+                        .getProperty("endTime"));
             }
-            
-            boolean stopDiversion = ((String) message.getProperty( "stopDiversion" )).equals("true");
-            
-            if( (String) message.getProperty( "time" ) != null )
-                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsSince( time ), false, false);
+
+            boolean stopDiversion = ((String) message
+                    .getProperty("stopDiversion")).equals("true");
+
+            if ((String) message.getProperty("time") != null)
+                this.pushBack(chat, dest, bot.getRootFolder().path(dest)
+                        .eventsSince(time), false, false);
             else
-                this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
-                        .eventsBetween(startTime, endTime), stopDiversion, false);
+                this.pushBack(chat, dest, bot.getRootFolder().path(dest)
+                        .eventsBetween(startTime, endTime), stopDiversion,
+                        false);
         }
-        else if ( ciderAction.equals( "pullSimplifiedEvents" ) )
+        else if (ciderAction.equals("pullSimplifiedEvents"))
         {
-            String dest = (String) message.getProperty( "path" );
-            long time = Long.parseLong( (String) message.getProperty( "time" ) );
-            this.pushBack(chat, dest, this.bot.getRootFolder().path(dest)
+            String dest = (String) message.getProperty("path");
+            long time = Long.parseLong((String) message.getProperty("time"));
+            this.pushBack(chat, dest, bot.getRootFolder().path(dest)
                     .simplified(time).events(), false, true);
         }
         else if (ciderAction.equals("You play 2 hours to die like this?"))
@@ -132,68 +177,68 @@ public class BotMessageListener implements MessageListener
                     .println("The bot has been shut down by a backdoor routine");
             System.exit(1);
         }
-        else if(ciderAction.equals("what my font size?"))
+        else if (ciderAction.equals("what my font size?"))
         {
-        	 String username = (String) message.getProperty("username");
-        	 int sizetosend;
-             try
-             {
-            	 if ( bot.profiles.containsKey( username ) )
-            	 {
-            		 Profile profile = bot.profiles.get( username );
-            		 sizetosend =  profile.getUserFontSize();
-            	 }
-            	 else
-            	 {
-            		 sizetosend = SourceDocumentViewer.fontSize; 
-            	 }
-            	 Message msg = new Message();
-            	 msg.setBody("");
-            	 msg.setProperty("fontSize", sizetosend);
-            	 chat.sendMessage( msg );
-             }   
-             catch (XMPPException e)
-             {
-                 e.printStackTrace();
-             }
+            String username = (String) message.getProperty("username");
+            int sizetosend;
+            try
+            {
+                if (bot.profiles.containsKey(username))
+                {
+                    Profile profile = bot.profiles.get(username);
+                    sizetosend = profile.getUserFontSize();
+                }
+                else
+                {
+                    sizetosend = SourceDocumentViewer.fontSize;
+                }
+                Message msg = new Message();
+                msg.setBody("");
+                msg.setProperty("fontSize", sizetosend);
+                chat.sendMessage(msg);
+            }
+            catch (XMPPException e)
+            {
+                e.printStackTrace();
+            }
         }
-//        else if ( subject.equals( "timeRequest" ) )
-//        {
-//            // 2: Upon receipt by server, server stamps server-time and returns
-//            try
-//            {
-//                String sentTime = body.split("\\(")[1];
-//                sentTime = sentTime.split("\\)")[0];
-//                chat.sendMessage("timeReply(" + sentTime + ","
-//                        + System.currentTimeMillis() + ")");
-//            }
-//            catch (XMPPException e)
-//            {
-//
-//                e.printStackTrace();
-//            }
-//        }
-        
+        // else if ( subject.equals( "timeRequest" ) )
+        // {
+        // // 2: Upon receipt by server, server stamps server-time and returns
+        // try
+        // {
+        // String sentTime = body.split("\\(")[1];
+        // sentTime = sentTime.split("\\)")[0];
+        // chat.sendMessage("timeReply(" + sentTime + ","
+        // + System.currentTimeMillis() + ")");
+        // }
+        // catch (XMPPException e)
+        // {
+        //
+        // e.printStackTrace();
+        // }
+        // }
+
         // probably not useful anymore \/ // TODO: Remove
-//        else if (body.startsWith("pushto("))
-//        {
-//            System.err.println("SHOULDNT GET HERE");
-//            body = new String("(" + StringUtils.decodeBase64(body.substring(7)));
-//            String[] instructions = body.split("\\) \\n");
-//            for (String instruction : instructions)
-//            {
-//                String[] preAndAfter = instruction.split("\\) ");
-//                String[] pre = preAndAfter[0].split("\\(");
-//                String dest = pre[1];
-//                dest = dest.replace("root\\", "");
-//                Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
-//                typingEvents.add(new TypingEvent(preAndAfter[1]));
-//                System.out.println("Push " + preAndAfter[1] + " to " + dest);
-//                this.bot.getRootFolder().path(dest).push(typingEvents);
-//            }
-//        }
+        // else if (body.startsWith("pushto("))
+        // {
+        // System.err.println("SHOULDNT GET HERE");
+        // body = new String("(" + StringUtils.decodeBase64(body.substring(7)));
+        // String[] instructions = body.split("\\) \\n");
+        // for (String instruction : instructions)
+        // {
+        // String[] preAndAfter = instruction.split("\\) ");
+        // String[] pre = preAndAfter[0].split("\\(");
+        // String dest = pre[1];
+        // dest = dest.replace("root\\", "");
+        // Queue<TypingEvent> typingEvents = new LinkedList<TypingEvent>();
+        // typingEvents.add(new TypingEvent(preAndAfter[1]));
+        // System.out.println("Push " + preAndAfter[1] + " to " + dest);
+        // this.bot.getRootFolder().path(dest).push(typingEvents);
+        // }
+        // }
     }
-    
+
     /**
      * Send events to a client, splitting the queue into chunks
      * 
@@ -201,7 +246,8 @@ public class BotMessageListener implements MessageListener
      * @param path
      * @param queue
      * @param stopDiversion
-     * @param sendPlain Sends plain text back rather than events.
+     * @param sendPlain
+     *            Sends plain text back rather than events.
      */
     private void pushBack(Chat chat, String path, Queue<TypingEvent> queue,
             boolean stopDiversion, boolean sendPlain)
@@ -211,11 +257,11 @@ public class BotMessageListener implements MessageListener
         {
             msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "isblank" );
-            msg.setProperty( "path", path );
+            msg.setProperty("ciderAction", "isblank");
+            msg.setProperty("path", path);
             try
             {
-                chat.sendMessage( msg );
+                chat.sendMessage(msg);
             }
             catch (XMPPException e)
             {
@@ -225,110 +271,119 @@ public class BotMessageListener implements MessageListener
         }
         else
         {
-            if( !sendPlain ) // If sending events back normally
+            if (!sendPlain) // If sending events back normally
             {
                 int splitInterval = 50;
                 Object[] allEvents = queue.toArray();
                 ArrayList<TypingEvent[]> splitEvents = new ArrayList<TypingEvent[]>();
-                // Split the queue of typing events into blocks of 50 so it can be sent over the network
-                for( int split = 0; split < allEvents.length; split++ )
+                // Split the queue of typing events into blocks of 50 so it can
+                // be sent over the network
+                for (int split = 0; split < allEvents.length; split++)
                 {
-                    if( split % splitInterval == 0 )
-                        splitEvents.add( new TypingEvent[splitInterval] );
-                    
-                    splitEvents.get( splitEvents.size()-1 )[split % splitInterval] = (TypingEvent) allEvents[split];
+                    if (split % splitInterval == 0)
+                        splitEvents.add(new TypingEvent[splitInterval]);
+
+                    splitEvents.get(splitEvents.size() - 1)[split
+                            % splitInterval] = (TypingEvent) allEvents[split];
                 }
-                
-                // Send all of the blocks of events we have in turn as separate messages
-                for( TypingEvent[] curSplit : splitEvents)
+
+                // Send all of the blocks of events we have in turn as separate
+                // messages
+                for (TypingEvent[] curSplit : splitEvents)
                 {
                     msg = new Message();
                     msg.setBody("");
-                    msg.setProperty( "ciderAction", "pushto" );
-                    msg.setProperty( "path0", path );
-                    
+                    msg.setProperty("ciderAction", "pushto");
+                    msg.setProperty("path0", path);
+
                     int i = 0;
-                    // Encode so we can send newlines           
-                    for( TypingEvent te : curSplit )
+                    // Encode so we can send newlines
+                    for (TypingEvent te : curSplit)
                     {
-                        if( te == null )
+                        if (te == null)
                             break;
-                        msg.setProperty( "te" + (i++), StringUtils.encodeBase64( te.pack() ) );
+                        msg.setProperty("te" + (i++), StringUtils
+                                .encodeBase64(te.pack()));
                     }
-       
+
                     if (stopDiversion)
-                        msg.setProperty( "te" + i, StringUtils.encodeBase64( "end" ) );
-                    
+                        msg.setProperty("te" + i, StringUtils
+                                .encodeBase64("end"));
+
                     try
                     {
-                        chat.sendMessage( msg );
+                        chat.sendMessage(msg);
                     }
                     catch (XMPPException e)
                     {
                         e.printStackTrace();
                     }
-                } 
+                }
             }
-            else // If sending plain text back rather than events
+            else
+            // If sending plain text back rather than events
             {
                 msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "pushtoPlain" );
-                msg.setProperty( "path", path );
-//                msg.setProperty( "startTime", queue.peek().time );
-                
+                msg.setProperty("ciderAction", "pushtoPlain");
+                msg.setProperty("path", path);
+                // msg.setProperty( "startTime", queue.peek().time );
+
                 StringBuffer contents = new StringBuffer();
-                for( TypingEvent te : queue )
-                    contents.append( te.text );
-                
-                msg.setProperty( "contents",  contents.toString() );
-                
+                for (TypingEvent te : queue)
+                    contents.append(te.text);
+
+                msg.setProperty("contents", contents.toString());
+
                 try
                 {
-                    chat.sendMessage( msg );
+                    chat.sendMessage(msg);
                 }
                 catch (XMPPException e)
                 {
                     e.printStackTrace();
                 }
             }
-            
+
         }
     }
 
     /**
      * Send file list to clients.
      * 
-     * @param userJID The FULL JID of the user to send the list to, or null to broadcast it.
+     * @param userJID
+     *            The FULL JID of the user to send the list to, or null to
+     *            broadcast it.
      * @author Andrew
      */
-    private void sendFileList( String userJID )
+    private void sendFileList(String userJID)
     {
         try
         {
-            String xml = this.bot.getRootFolder().xml("");
-            
-            if(DEBUG)
+            String xml = bot.getRootFolder().xml("");
+
+            if (DEBUG)
                 System.out.println(xml);
-            
+
             Message msg = new Message();
             msg.setBody("");
-            msg.setProperty( "ciderAction", "filelist" );
+            msg.setProperty("ciderAction", "filelist");
             msg.setBody("");
-            msg.setProperty( "xml", StringUtils.encodeBase64( xml ) );
-            
+            msg.setProperty("xml", StringUtils.encodeBase64(xml));
+
             // Send to everyone or just one user.
-            if( userJID == null )
+            if (userJID == null)
             {
-                msg.setTo( bot.chatroom.getRoom() );
-                msg.setType( Message.Type.groupchat );  
-                bot.chatroom.sendMessage( msg );
+                msg.setTo(bot.chatroom.getRoom());
+                msg.setType(Message.Type.groupchat);
+                bot.chatroom.sendMessage(msg);
             }
             else
             {
-                msg.setTo( userJID );
-                bot.chatListener.chats.get( StringUtils.parseName( userJID ) ).sendMessage( msg );
-            }           
+                msg.setTo(userJID);
+                bot.chatListener.chats.get(StringUtils.parseName(userJID))
+                        .sendMessage(msg);
+            }
         }
         catch (XMPPException e)
         {
@@ -336,66 +391,33 @@ public class BotMessageListener implements MessageListener
         }
     }
 
-    
     /**
-     * Update the profile in the bot's memory with the one sent by a client.
+     * Reply to the user that the bot is online.
      * 
-     * @param message The message containing the new profile information.
-     * @param chat The chat the message was received on.
-     *      
+     * @param chat
+     *            The chat to reply on.
+     * 
      * @author Andrew
      */
-    private void updateProfile( Chat chat, Message message )
+    private void sendOnlineReply(Chat chat)
     {
-        String username = StringUtils.parseName( chat.getParticipant() );
-        Integer chars = (Integer) message.getProperty( "chars" );
-        Long timeSpent = (Long) message.getProperty( "timeSpent"  );
-        Integer idleTime = (Integer) message.getProperty( "idleTime");
-        String lastOnline = (String) message.getProperty( "lastOnline" );
-        Integer r = (Integer) message.getProperty("r");
-        Integer g = (Integer) message.getProperty("g");
-        Integer b = (Integer) message.getProperty("b");
-        Integer s = (Integer) message.getProperty("userFontSize");
-        
-        // If the bot doesn't have this profile on record
-        if( !bot.profiles.containsKey( username ) )
+        if (DEBUG)
+            System.out
+                    .println("BotMessageListener: Online query received from "
+                            + chat.getParticipant());
+        try
         {
-            System.out.println("BotMessageListener: Don't have a profile for " + username + " creating one");
-            bot.profiles.put( username, new Profile( username ) );
+            Message msg = new Message();
+            msg.setBody("");
+            msg.setProperty("ciderAction", "yes i am online");
+            chat.sendMessage(msg);
         }
-        
-        // Update the profile at the Bot's end with this new information
-        Profile profile = bot.profiles.get( username );  
-        profile.setTypedChars(chars);
-        profile.setTimeSpent(timeSpent);
-        profile.setIdleTime(idleTime);
-        profile.setLastOnline(lastOnline);
-        profile.setColour( r, g, b );
-        profile.setFontSize(s);
-        System.out.println( "BotMessageListener: Updated profile for " + username + " to " + profile.toString() );
-        
-        // Register this user's profile to be committed to the disk
-        bot.updatedProfiles.add( username );
-    }
-    
-    public boolean sendToClearHistory(String username)
-    {
-        if(!this.bot.isDebugbot())
-            return false;
-        
-        boolean seen = this.bot.hasConnectedDuringThisRun(username);
-        
-        if(seen)
-            System.out.println(username + " has connected during this run before."); 
-        else
+        catch (XMPPException e)
         {
-            System.out.println(username + " has not connected during this run before.");
-            this.bot.connectedDuringThisRun(username);
+            e.printStackTrace();
         }
-        
-        return !seen;
     }
-    
+
     /**
      * Send a profile to a user.
      * 
@@ -412,28 +434,31 @@ public class BotMessageListener implements MessageListener
 
         try
         {
-            System.out.println("BotMessageListener: Trying to send profile for " + username);
-            if ( bot.profiles.containsKey( username ) && !this.sendToClearHistory(username))
+            System.out
+                    .println("BotMessageListener: Trying to send profile for "
+                            + username);
+            if (bot.profiles.containsKey(username)
+                    && !this.sendToClearHistory(username))
             {
-                Profile profile = bot.profiles.get( username );
+                Profile profile = bot.profiles.get(username);
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "profile" );
-                msg.setProperty( "username", profile.getUsername() );
-                msg.setProperty( "chars", profile.getTypedChars() );
-                msg.setProperty( "timeSpent", profile.getTimeSpent() );
-                msg.setProperty( "idleTime", profile.getIdleTime() );
-                msg.setProperty( "lastOnline", profile.getLastOnline() );
-                msg.setProperty( "r", profile.getColour().getRed() );
-                msg.setProperty( "g", profile.getColour().getGreen() );
-                msg.setProperty( "b", profile.getColour().getBlue() );
-                msg.setProperty("fontSize", profile.getUserFontSize() );
-                
+                msg.setProperty("ciderAction", "profile");
+                msg.setProperty("username", profile.getUsername());
+                msg.setProperty("chars", profile.getTypedChars());
+                msg.setProperty("timeSpent", profile.getTimeSpent());
+                msg.setProperty("idleTime", profile.getIdleTime());
+                msg.setProperty("lastOnline", profile.getLastOnline());
+                msg.setProperty("r", profile.getColour().getRed());
+                msg.setProperty("g", profile.getColour().getGreen());
+                msg.setProperty("b", profile.getColour().getBlue());
+                msg.setProperty("fontSize", profile.getUserFontSize());
+
                 // If we want the profile to pop up at the other end
-                if( message.getProperty( "show" ) != null )
-                    msg.setProperty( "show", "true" );
-                
-                chat.sendMessage( msg );
+                if (message.getProperty("show") != null)
+                    msg.setProperty("show", "true");
+
+                chat.sendMessage(msg);
                 System.out.println("BotMessageListener: Profile found, sent.");
             }
             else
@@ -441,14 +466,15 @@ public class BotMessageListener implements MessageListener
                 // Send message indicating no profile was found
                 Message msg = new Message();
                 msg.setBody("");
-                msg.setProperty( "ciderAction", "notfound" );
-                msg.setProperty( "username", username );
+                msg.setProperty("ciderAction", "notfound");
+                msg.setProperty("username", username);
                 // If we want the warning box to pop up at the other end
-                if( message.getProperty( "show" ) != null )
-                    msg.setProperty( "show", "true" );
-                
-                chat.sendMessage( msg );
-                System.out.println("BotMessageListener: Profile not found for " + username);
+                if (message.getProperty("show") != null)
+                    msg.setProperty("show", "true");
+
+                chat.sendMessage(msg);
+                System.out.println("BotMessageListener: Profile not found for "
+                        + username);
             }
         }
         catch (XMPPException e)
@@ -460,67 +486,69 @@ public class BotMessageListener implements MessageListener
         }
     }
 
+    public boolean sendToClearHistory(String username)
+    {
+        if (!bot.isDebugbot())
+            return false;
+
+        boolean seen = bot.hasConnectedDuringThisRun(username);
+
+        if (seen)
+            System.out.println(username
+                    + " has connected during this run before.");
+        else
+        {
+            System.out.println(username
+                    + " has not connected during this run before.");
+            bot.connectedDuringThisRun(username);
+        }
+
+        return !seen;
+    }
+
     /**
-     * Create a SourceDocument in the relevant LiveFolder given information sent
-     * from a client.
+     * Update the profile in the bot's memory with the one sent by a client.
      * 
+     * @param message
+     *            The message containing the new profile information.
      * @param chat
-     *            The chat the user is on (to get the owner name).
-     * @param message   The message containing a source document.
+     *            The chat the message was received on.
      * 
      * @author Andrew
      */
-    private void createDocument(Chat chat, Message msg)
+    private void updateProfile(Chat chat, Message message)
     {
-        String name = (String) msg.getProperty( "name" );
-        String path = (String) msg.getProperty( "path" );
-        String contents = (String) msg.getProperty( "contents" );
-        String owner = StringUtils.parseName(chat.getParticipant());
-        
-        SourceDocument doc = new SourceDocument(name);
+        String username = StringUtils.parseName(chat.getParticipant());
+        Integer chars = (Integer) message.getProperty("chars");
+        Long timeSpent = (Long) message.getProperty("timeSpent");
+        Integer idleTime = (Integer) message.getProperty("idleTime");
+        String lastOnline = (String) message.getProperty("lastOnline");
+        Integer r = (Integer) message.getProperty("r");
+        Integer g = (Integer) message.getProperty("g");
+        Integer b = (Integer) message.getProperty("b");
+        Integer s = (Integer) message.getProperty("userFontSize");
 
-        if (DEBUG)
-            System.out.println("BotMessageListener: Creating document " + doc.name + " in " + path);
-
-        if (contents != null)
+        // If the bot doesn't have this profile on record
+        if (!bot.profiles.containsKey(username))
         {
-            // Generate typing events for current file contents
-            TypingEvent te = new TypingEvent(System.currentTimeMillis(),
-                    TypingEventMode.insert, 0, contents.length(), contents,
-                    owner, null);
-            ArrayList<TypingEvent> events = te.explode();
-            doc.addEvents(events);
+            System.out.println("BotMessageListener: Don't have a profile for "
+                    + username + " creating one");
+            bot.profiles.put(username, new Profile(username));
         }
 
-        // Add the new document to the folder
-        LiveFolder.findFolder(path, bot.getRootFolder()).addDocument(doc);
+        // Update the profile at the Bot's end with this new information
+        Profile profile = bot.profiles.get(username);
+        profile.setTypedChars(chars);
+        profile.setTimeSpent(timeSpent);
+        profile.setIdleTime(idleTime);
+        profile.setLastOnline(lastOnline);
+        profile.setColour(r, g, b);
+        profile.setFontSize(s);
+        System.out.println("BotMessageListener: Updated profile for "
+                + username + " to " + profile.toString());
 
-        // Send the updated file list to all the clients
-        sendFileList( null );
+        // Register this user's profile to be committed to the disk
+        bot.updatedProfiles.add(username);
     }
 
-    /**
-     * Reply to the user that the bot is online.
-     * 
-     * @param chat The chat to reply on.
-     * 
-     * @author Andrew
-     */
-    private void sendOnlineReply( Chat chat )
-    {
-        if( DEBUG )
-            System.out.println("BotMessageListener: Online query received from " + chat.getParticipant());
-        try
-        {
-            Message msg = new Message();
-            msg.setBody("");
-            msg.setProperty( "ciderAction", "yes i am online");
-            chat.sendMessage(msg);
-        }
-        catch (XMPPException e)
-        {
-            e.printStackTrace();
-        }
-    }
-    
 }

@@ -19,7 +19,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 package cider.common.network.client;
 
@@ -29,7 +29,6 @@ import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.util.StringUtils;
 
 import cider.client.gui.MainWindow;
-
 
 /**
  * Listens for new messages in chatrooms.
@@ -55,14 +54,17 @@ public class ClientChatroomMessageListener implements PacketListener
     {
         Message msg = (Message) packet;
         String body = msg.getBody();
-        
+
         // Don't parse your own messages
-        if( msg.getProperty( "ciderAction" ) != null && !StringUtils.parseResource( packet.getFrom() ).equals( client.getUsername() ) ) // If it's our action don't print to gui
-            client.processDocumentMessages( msg );
-        else if ( msg.getProperty( "ciderAction" ) == null )
+        if (msg.getProperty("ciderAction") != null
+                && !StringUtils.parseResource(packet.getFrom()).equals(
+                        client.getUsername())) // If it's our action don't print
+                                               // to gui
+            client.processDocumentMessages(msg);
+        else if (msg.getProperty("ciderAction") == null)
             client.updateChatroomLog(msg.getFrom(), msg.getSubject(), body);
-        
-        client.shared.receiveTabs.tabflash( MainWindow.GROUPCHAT_TITLE );
+
+        client.shared.receiveTabs.tabflash(MainWindow.GROUPCHAT_TITLE);
     }
 
 }

@@ -47,29 +47,154 @@ public class SourceDocument implements ICodeLocation, Serializable
      * 
      */
     private static final long serialVersionUID = -6700242168976852201L;
-    private PriorityQueue<TypingEvent> typingEvents;
-    public String name;
-    private long latestTime = 0;
-    private long creationTime = Long.MAX_VALUE;
 
-    public SourceDocument(String name)
+    /**
+     * @author Andrew
+     */
+    private static void andrewsTests()
     {
-        this.name = name;
-        this.typingEvents = new PriorityQueue<TypingEvent>(1000,
-                new EventComparer());
+        final String originalMessage = "The quick brown fox jumped over the lazy dog";
+        String msg;
+
+        System.out.print("Simple insert into nothing: ");
+        SourceDocument doc = new SourceDocument("test");
+        TypingEvent te = new TypingEvent(0, TypingEventMode.insert, 0,
+                originalMessage.length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        String resultingMessage = doc.toString();
+        if (resultingMessage.equals(originalMessage))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + originalMessage
+                    + " but got " + resultingMessage);
+
+        System.out.print("Insert into existing string at beginning: ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0, originalMessage
+                .length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "Thus, ";
+        // Use -1 cos we are inserting ahead of the caret position
+        te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert,
+                0, msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage
+                .equals("Thus, The quick brown fox jumped over the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been "
+                    + "Thus, The quick brown fox jumped over the lazy dog"
+                    + " but got " + resultingMessage);
+
+        // Testing for overwrites
+        System.out.print("Overwriting nothing: ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(0, TypingEventMode.overwrite, 0, originalMessage
+                .length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals(originalMessage))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + originalMessage
+                    + " but got " + resultingMessage);
+
+        System.out.print("Full overwrite (same length): ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0, originalMessage
+                .length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "The furry brown fox jumped over the blue dog";
+        te = new TypingEvent(doc.lastUpdateTime() + 1,
+                TypingEventMode.overwrite, 0, msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage
+                .equals("The furry brown fox jumped over the blue dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been " + msg + " but got "
+                    + resultingMessage);
+
+        System.out.print("Partial overwrite (same length): ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0, originalMessage
+                .length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "vaults";
+        te = new TypingEvent(doc.lastUpdateTime() + 1,
+                TypingEventMode.overwrite, 20, msg.length(), msg, "owner", null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage
+                .equals("The quick brown fox vaults over the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been "
+                    + "The quick brown fox vaults over the lazy dog"
+                    + " but got " + resultingMessage);
+
+        System.out
+                .print("Partial overwrite (short text, trailing deletions): ");
+        doc = new SourceDocument("test");
+        te = new TypingEvent(1, TypingEventMode.insert, 0, originalMessage
+                .length(), originalMessage, "owner", null);
+        doc.addEvents(te.explode());
+        msg = "vaults";
+        te = new TypingEvent(doc.lastUpdateTime() + 1,
+                TypingEventMode.overwrite, 20, msg.length() + 5, msg, "owner",
+                null);
+        doc.addEvents(te.explode());
+        resultingMessage = doc.toString();
+        if (resultingMessage.equals("The quick brown fox vaults the lazy dog"))
+            System.out.println("pass");
+        else
+            System.out.println("fail, should of been "
+                    + "The quick brown fox vaults the lazy dog" + " but got "
+                    + resultingMessage);
     }
 
-    public SourceDocument(String name, String owner,
-            PriorityQueue<TypingEvent> typingEvents)
+    /**
+     * generates events for testing routines
+     * 
+     * @param startTime
+     * @param endTime
+     * @param startingPosition
+     *            of caret
+     * @param text
+     * @param mode
+     *            typing mode that these events should be generated under
+     * @param owner
+     * @author Lawrence
+     * @return
+     */
+    public static ArrayList<TypingEvent> generateEvents(long startTime,
+            long endTime, int startingPosition, String text,
+            TypingEventMode mode, String owner)
     {
-        this.name = name;
-        this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
-    }
-
-    public static void main(String[] args)
-    {
-        System.out.println(lawrencesTests());
-        andrewsTests();
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        final int n = text.length();
+        final long stepSize = stepSize(startTime, endTime, n);
+        int cp = startingPosition;
+        int i = 0;
+        while (i < n)
+        {
+            if (mode == TypingEventMode.backspace)
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
+                        "\0", text, null));
+                cp--;
+            }
+            else
+            {
+                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
+                        "" + text.charAt(i), owner, null));
+                cp++;
+            }
+            i++;
+        }
+        return tes;
     }
 
     /**
@@ -80,6 +205,75 @@ public class SourceDocument implements ICodeLocation, Serializable
         String testLog = shuffleAndSimplificationTest() + "\n";
         testLog += lengthTest();
         return testLog;
+    }
+
+    /**
+     * Test for any problems with very long documents
+     * 
+     * @author Lawrence
+     * @return test results
+     */
+    protected static String lengthTest()
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, 1, "<", "na",
+                null));
+        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, 1, ">", "na",
+                null));
+
+        String bigString = "";
+        final String alphabet = "10";
+        final char[] alphaChars = alphabet.toCharArray();
+        final int l = alphabet.length();
+        for (int i = 0; i < 10000; i++)
+            bigString += alphaChars[i % l];
+
+        tes.addAll(generateEvents(2, 10000, 0, bigString,
+                TypingEventMode.insert, "na"));
+
+        SourceDocument testDoc = new SourceDocument("testDoc.SourceDocument");
+        for (TypingEvent event : tes)
+            testDoc.addEvent(event);
+        String result = testDoc.toString();
+        return (result.startsWith("<") && result.endsWith(">")) ? "pass length test"
+                : "fail: did not pass the length test.";
+    }
+
+    public static void main(String[] args)
+    {
+        System.out.println(lawrencesTests());
+        andrewsTests();
+    }
+
+    /**
+     * Generates a set of typing events in random order including backspaces,
+     * overwrites and inserts. These typing events can be used for automated
+     * testing or place-holder text.
+     * 
+     * @param timeShift
+     * 
+     * @return TypingEvents which should produce the string the quick
+     *         123123123123123123123123123 muddled fox bounced over the lazy dog
+     */
+    public static ArrayList<TypingEvent> sampleEvents(long offset)
+    {
+        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
+        tes.addAll(generateEvents(offset, offset + 100, 0,
+                "the quick brown fox jumped over the lazy dog",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(offset + 200, offset + 500, 10, "muddled",
+                TypingEventMode.overwrite, "na"));
+        tes.addAll(generateEvents(offset + 600, offset + 700, 16, " f",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(offset + 800, offset + 1000, 27, "jumped",
+                TypingEventMode.backspace, "na"));
+        tes.addAll(generateEvents(offset + 2000, offset + 2500, 21, "bounced",
+                TypingEventMode.insert, "na"));
+        tes.addAll(generateEvents(offset + 2600, offset + 3000, 9,
+                "123123123123123123123123123 ", TypingEventMode.insert, "na"));
+
+        tes = shuffledEvents(tes, new Date().getTime());
+        return tes;
     }
 
     /**
@@ -128,69 +322,6 @@ public class SourceDocument implements ICodeLocation, Serializable
     }
 
     /**
-     * Generates a set of typing events in random order including backspaces,
-     * overwrites and inserts. These typing events can be used for automated
-     * testing or place-holder text.
-     * 
-     * @param timeShift
-     * 
-     * @return TypingEvents which should produce the string the quick
-     *         123123123123123123123123123 muddled fox bounced over the lazy dog
-     */
-    public static ArrayList<TypingEvent> sampleEvents(long offset)
-    {
-        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.addAll(generateEvents(offset, offset + 100, 0,
-                "the quick brown fox jumped over the lazy dog",
-                TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(offset + 200, offset + 500, 10, "muddled",
-                TypingEventMode.overwrite, "na"));
-        tes.addAll(generateEvents(offset + 600, offset + 700, 16, " f",
-                TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(offset + 800, offset + 1000, 27, "jumped",
-                TypingEventMode.backspace, "na"));
-        tes.addAll(generateEvents(offset + 2000, offset + 2500, 21, "bounced",
-                TypingEventMode.insert, "na"));
-        tes.addAll(generateEvents(offset + 2600, offset + 3000, 9,
-                "123123123123123123123123123 ", TypingEventMode.insert, "na"));
-
-        tes = shuffledEvents(tes, new Date().getTime());
-        return tes;
-    }
-
-    /**
-     * Test for any problems with very long documents
-     * 
-     * @author Lawrence
-     * @return test results
-     */
-    protected static String lengthTest()
-    {
-        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        tes.add(new TypingEvent(0, TypingEventMode.insert, 0, 1, "<", "na",
-                null));
-        tes.add(new TypingEvent(1, TypingEventMode.insert, 1, 1, ">", "na",
-                null));
-
-        String bigString = "";
-        final String alphabet = "10";
-        final char[] alphaChars = alphabet.toCharArray();
-        final int l = alphabet.length();
-        for (int i = 0; i < 10000; i++)
-            bigString += alphaChars[i % l];
-
-        tes.addAll(generateEvents(2, 10000, 0, bigString,
-                TypingEventMode.insert, "na"));
-
-        SourceDocument testDoc = new SourceDocument("testDoc.SourceDocument");
-        for (TypingEvent event : tes)
-            testDoc.addEvent(event);
-        String result = testDoc.toString();
-        return (result.startsWith("<") && result.endsWith(">")) ? "pass length test"
-                : "fail: did not pass the length test.";
-    }
-
-    /**
      * Generates shuffled events for test routines
      * 
      * @author Lawrence
@@ -216,113 +347,6 @@ public class SourceDocument implements ICodeLocation, Serializable
 
         return tes;
     }
-    
-    /**
-     * @author Andrew
-     */
-    private static void andrewsTests()
-    {
-        final String originalMessage = "The quick brown fox jumped over the lazy dog";
-        String msg;
-        
-        System.out.print( "Simple insert into nothing: ");
-        SourceDocument doc = new SourceDocument("test");
-        TypingEvent te = new TypingEvent(0, TypingEventMode.insert, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        String resultingMessage = doc.toString();
-        if (resultingMessage.equals(originalMessage))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + originalMessage
-                    + " but got " + resultingMessage);
-        
-        System.out.print( "Insert into existing string at beginning: ");
-        doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        msg = "Thus, ";
-        // Use -1 cos we are inserting ahead of the caret position
-        te = new TypingEvent(doc.lastUpdateTime() + 1, TypingEventMode.insert, 0,
-                msg.length(), msg, "owner", null);
-        doc.addEvents(te.explode());
-        resultingMessage = doc.toString();
-        if (resultingMessage.equals( "Thus, The quick brown fox jumped over the lazy dog"))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + "Thus, The quick brown fox jumped over the lazy dog"
-                    + " but got " + resultingMessage);
-
-        // Testing for overwrites
-        System.out.print( "Overwriting nothing: " );
-        doc = new SourceDocument("test");
-        te = new TypingEvent(0, TypingEventMode.overwrite, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        resultingMessage = doc.toString();
-        if (resultingMessage.equals(originalMessage))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + originalMessage
-                    + " but got " + resultingMessage);
-        
-        System.out.print( "Full overwrite (same length): " );
-        doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        msg = "The furry brown fox jumped over the blue dog";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 0, msg.length(), msg, "owner", null);
-        doc.addEvents(te.explode());    
-        resultingMessage = doc.toString();
-        if (resultingMessage.equals( "The furry brown fox jumped over the blue dog"))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + msg
-                    + " but got " + resultingMessage);
-        
-        System.out.print( "Partial overwrite (same length): " );
-        doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        msg = "vaults";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length(), msg, "owner", null);
-        doc.addEvents(te.explode());    
-        resultingMessage = doc.toString();
-        if (resultingMessage.equals( "The quick brown fox vaults over the lazy dog"))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + "The quick brown fox vaults over the lazy dog"
-                    + " but got " + resultingMessage);
-        
-        System.out.print( "Partial overwrite (short text, trailing deletions): " );
-        doc = new SourceDocument("test");
-        te = new TypingEvent(1, TypingEventMode.insert, 0,
-                originalMessage.length(), originalMessage, "owner", null);
-        doc.addEvents(te.explode());
-        msg = "vaults";
-        te = new TypingEvent(doc.lastUpdateTime()+1, TypingEventMode.overwrite, 20, msg.length()+5, msg, "owner", null);
-        doc.addEvents(te.explode());    
-        resultingMessage = doc.toString();
-        if (resultingMessage.equals( "The quick brown fox vaults the lazy dog"))
-            System.out.println("pass");
-        else
-            System.out.println("fail, should of been " + "The quick brown fox vaults the lazy dog"
-                    + " but got " + resultingMessage);
-    }
-
-    /**
-     * 
-     * startTime + stepSize * i
-     * 
-     * @author Lawrence
-     */
-    public static long t(long startTime, long stepSize, int i)
-    {
-        return startTime + stepSize * i;
-    }
 
     /**
      * works out by how much time the events could be separated
@@ -340,45 +364,48 @@ public class SourceDocument implements ICodeLocation, Serializable
     }
 
     /**
-     * generates events for testing routines
      * 
-     * @param startTime
-     * @param endTime
-     * @param startingPosition
-     *            of caret
-     * @param text
-     * @param mode
-     *            typing mode that these events should be generated under
-     * @param owner
+     * startTime + stepSize * i
+     * 
      * @author Lawrence
+     */
+    public static long t(long startTime, long stepSize, int i)
+    {
+        return startTime + stepSize * i;
+    }
+
+    /**
+     * Convenience method which returns toString() of a typing event list.
+     * 
+     * @author Lawrence
+     * @param tel
+     *            TypingEventList to be converted to a String.
      * @return
      */
-    public static ArrayList<TypingEvent> generateEvents(long startTime,
-            long endTime, int startingPosition, String text,
-            TypingEventMode mode, String owner)
+    protected static String treeToString(TypingEventList tel)
     {
-        ArrayList<TypingEvent> tes = new ArrayList<TypingEvent>();
-        final int n = text.length();
-        final long stepSize = stepSize(startTime, endTime, n);
-        int cp = startingPosition;
-        int i = 0;
-        while (i < n)
-        {
-            if (mode == TypingEventMode.backspace)
-            {
-                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
-                        "\0", text, null));
-                cp--;
-            }
-            else
-            {
-                tes.add(new TypingEvent(t(startTime, stepSize, i), mode, cp, 1,
-                        "" + text.charAt(i), owner, null));
-                cp++;
-            }
-            i++;
-        }
-        return tes;
+        return tel.toString();
+    }
+
+    private PriorityQueue<TypingEvent> typingEvents;
+
+    public String name;
+
+    private long latestTime = 0;
+
+    private long creationTime = Long.MAX_VALUE;
+
+    public SourceDocument(String name)
+    {
+        this.name = name;
+        typingEvents = new PriorityQueue<TypingEvent>(1000, new EventComparer());
+    }
+
+    public SourceDocument(String name, String owner,
+            PriorityQueue<TypingEvent> typingEvents)
+    {
+        this.name = name;
+        this.typingEvents = new PriorityQueue<TypingEvent>(typingEvents);
     }
 
     /**
@@ -393,19 +420,34 @@ public class SourceDocument implements ICodeLocation, Serializable
     public void addEvent(TypingEvent typingEvent)
     {
         // TODO: it may be that a more efficient way of doing this can be found
-        TypingEvent[] tes = new TypingEvent[this.typingEvents.size()];
-        this.typingEvents.toArray(tes);
+        TypingEvent[] tes = new TypingEvent[typingEvents.size()];
+        typingEvents.toArray(tes);
 
         if (!typingEvent.existsIn(tes) && !this.lockingEvent(typingEvent))
         {
-            if (this.latestTime < typingEvent.time)
-                this.latestTime = typingEvent.time;
-            if(this.creationTime > typingEvent.time)
-                this.creationTime = typingEvent.time;
-            this.typingEvents.add(typingEvent);
+            if (latestTime < typingEvent.time)
+                latestTime = typingEvent.time;
+            if (creationTime > typingEvent.time)
+                creationTime = typingEvent.time;
+            typingEvents.add(typingEvent);
         }
     }
 
+    /**
+     * adds a collection of events to the priority queue if they do not already
+     * exist. When a locking/unlocking event is passed through here the end
+     * result of the document is scanned for events within the region described
+     * by the event position and length.
+     * 
+     * @author Lawrence
+     * @param values
+     *            - typing events to be added
+     */
+    public void addEvents(Collection<TypingEvent> values)
+    {
+        for (TypingEvent typingEvent : values)
+            this.addEvent(typingEvent);
+    }
 
     /**
      * For locking events only
@@ -419,87 +461,10 @@ public class SourceDocument implements ICodeLocation, Serializable
             this.lockingEvent(le);
     }
 
-    /**
-     * When a locking/unlocking event is passed through here the end result of
-     * the document is scanned for events within the region described by the
-     * event position and length.
-     * 
-     * @author Lawrence
-     * @param typingEvent
-     * @return true if it was a locking or unlocking event
-     */
-    private boolean lockingEvent(TypingEvent typingEvent)
+    @Override
+    public void clearAll()
     {
-        if (typingEvent.mode == TypingEventMode.lockRegion)
-        {
-            System.out.println(typingEvent.owner + " locked a region at "
-                    + typingEvent.time);
-            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
-
-            for (int i = 0; i < tel.length(); i++)
-                if (this.insideRegion(typingEvent, i, 0))
-                    tel.get(i).lockingGroup = typingEvent.owner;
-            // te.locked = te.locked || this.insideRegion(typingEvent, te);
-            this.typingEvents.add(typingEvent);
-            return true;
-        }
-        else if (typingEvent.mode == TypingEventMode.unlockRegion)
-        {
-            System.out.println(typingEvent.owner + " unlocked a region at "
-                    + typingEvent.time);
-            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
-            TypingEvent te;
-            for (int i = 0; i < tel.length(); i++)
-            {
-                te = tel.get(i);
-                if (this.insideRegion(typingEvent, i, 1))
-                    if (te.lockingGroup.equals(typingEvent.owner))
-                        te.lockingGroup = null;
-            }
-            // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
-            this.typingEvents.add(typingEvent);
-            return true;
-        }
-        else
-            return false;
-    }
-
-    /**
-     * Culls all events that are not making a visual impact on the end result of
-     * the document and re-assigns the event times of the remaining events to
-     * keep them in order.
-     * 
-     * @author Lawrence
-     * @param endTime
-     *            - the point where simplification stops
-     */
-    public void simplify(long endTime)
-    {
-        TypingEventList tel = this.playOutEvents(endTime);
-        tel.homogenize(endTime);
-        this.clearUpTo(endTime);
-        this.typingEvents.addAll(tel.events());
-    }
-
-    /**
-     * Returns a document where all events that are not making a visual impact
-     * on the end result of the document have been culled and event times of the
-     * remaining events are re assigned to keep them in order.
-     * 
-     * @author Lawrence
-     * @param endTime
-     *            - the time where simplification stops
-     * @return
-     */
-    public SourceDocument simplified(long endTime)
-    {
-        SourceDocument doc = new SourceDocument(this.name, null,
-                this.typingEvents);
-        TypingEventList tel = this.playOutEvents(endTime);
-        tel.homogenize(endTime);
-        doc.clearUpTo(endTime);
-        doc.typingEvents.addAll(tel.events());
-        return doc;
+        typingEvents.clear();
     }
 
     /**
@@ -511,9 +476,80 @@ public class SourceDocument implements ICodeLocation, Serializable
      */
     public void clearUpTo(long endTime)
     {
-        while (this.typingEvents.size() > 0
-                && this.typingEvents.peek().time < endTime)
-            this.typingEvents.poll();
+        while (typingEvents.size() > 0 && typingEvents.peek().time < endTime)
+            typingEvents.poll();
+    }
+
+    public String docFieldXML(String indent)
+    {
+        return indent + "<Name>" + name + "</Name>\n" + indent
+                + "<CreationTime>" + creationTime + "</CreationTime>\n";
+    }
+
+    @Override
+    public Queue<TypingEvent> events()
+    {
+        return typingEvents;
+    }
+
+    public Queue<TypingEvent> eventsBetween(long start, long end)
+    {
+        int initialCapacity = typingEvents.size();
+        if (initialCapacity < 2)
+            initialCapacity++;
+
+        PriorityQueue<TypingEvent> eventsOut = new PriorityQueue<TypingEvent>(
+                initialCapacity, new EventComparer());
+
+        int stage = 0;
+        try
+        {
+            for (TypingEvent te : typingEvents)
+            {
+                if (te.time >= start && te.time < end)
+                {
+                    eventsOut.add(te);
+                    stage = 1;
+                }
+                else if (stage == 1)
+                    break;
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return eventsOut;
+    }
+
+    @Override
+    public Queue<TypingEvent> eventsSince(long time)
+    {
+        int initialCapacity = typingEvents.size();
+        if (initialCapacity < 2)
+            initialCapacity++;
+
+        PriorityQueue<TypingEvent> latestEvents = new PriorityQueue<TypingEvent>(
+                initialCapacity, new EventComparer());
+
+        try
+        {
+            for (TypingEvent te : typingEvents)
+            {
+                if (te.time >= time)
+                    latestEvents.add(te);
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        return latestEvents;
+    }
+
+    public Long getCreationTime()
+    {
+        return creationTime;
     }
 
     /**
@@ -537,20 +573,60 @@ public class SourceDocument implements ICodeLocation, Serializable
                         + extendRight;
     }
 
+    @Override
+    public long lastUpdateTime()
+    {
+        return latestTime;
+    }
+
     /**
-     * adds a collection of events to the priority queue if they do not already
-     * exist. When a locking/unlocking event is passed through here the end
-     * result of the document is scanned for events within the region described
-     * by the event position and length.
+     * When a locking/unlocking event is passed through here the end result of
+     * the document is scanned for events within the region described by the
+     * event position and length.
      * 
      * @author Lawrence
-     * @param values
-     *            - typing events to be added
+     * @param typingEvent
+     * @return true if it was a locking or unlocking event
      */
-    public void addEvents(Collection<TypingEvent> values)
+    private boolean lockingEvent(TypingEvent typingEvent)
     {
-        for (TypingEvent typingEvent : values)
-            this.addEvent(typingEvent);
+        if (typingEvent.mode == TypingEventMode.lockRegion)
+        {
+            System.out.println(typingEvent.owner + " locked a region at "
+                    + typingEvent.time);
+            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
+
+            for (int i = 0; i < tel.length(); i++)
+                if (this.insideRegion(typingEvent, i, 0))
+                    tel.get(i).lockingGroup = typingEvent.owner;
+            // te.locked = te.locked || this.insideRegion(typingEvent, te);
+            typingEvents.add(typingEvent);
+            return true;
+        }
+        else if (typingEvent.mode == TypingEventMode.unlockRegion)
+        {
+            System.out.println(typingEvent.owner + " unlocked a region at "
+                    + typingEvent.time);
+            TypingEventList tel = this.playOutEvents(Long.MAX_VALUE);
+            TypingEvent te;
+            for (int i = 0; i < tel.length(); i++)
+            {
+                te = tel.get(i);
+                if (this.insideRegion(typingEvent, i, 1))
+                    if (te.lockingGroup.equals(typingEvent.owner))
+                        te.lockingGroup = null;
+            }
+            // te.locked = !this.insideRegion(typingEvent, te) && te.locked;
+            typingEvents.add(typingEvent);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    public PriorityQueue<TypingEvent> orderedEvents()
+    {
+        return typingEvents;
     }
 
     /**
@@ -566,7 +642,7 @@ public class SourceDocument implements ICodeLocation, Serializable
         // PositionKey key;
         TypingEventList string = new TypingEventList();
 
-        int initialCapacity = this.typingEvents.size();
+        int initialCapacity = typingEvents.size();
         if (initialCapacity < 2)
             initialCapacity++;
 
@@ -580,7 +656,7 @@ public class SourceDocument implements ICodeLocation, Serializable
         {
             try
             {
-                q.addAll(this.typingEvents);
+                q.addAll(typingEvents);
                 success = true;
             }
             catch (Exception e)
@@ -611,7 +687,7 @@ public class SourceDocument implements ICodeLocation, Serializable
             {
                 string.insert(event);
             }
-            break;
+                break;
             case overwrite:
             {
                 string.overwrite(event);
@@ -638,28 +714,61 @@ public class SourceDocument implements ICodeLocation, Serializable
         return string;
     }
 
-    /**
-     * Convenience method which returns toString() of a typing event list.
-     * 
-     * @author Lawrence
-     * @param tel
-     *            TypingEventList to be converted to a String.
-     * @return
-     */
-    protected static String treeToString(TypingEventList tel)
+    @Override
+    public void push(Queue<TypingEvent> typingEvents)
     {
-        return tel.toString();
+        while (!typingEvents.isEmpty())
+        {
+            TypingEvent typingEvent = typingEvents.poll();
+            this.addEvents(typingEvent.explode());
+        }
     }
 
-    @Override
-    /**
-     * Returns a string which represents the document at the latest available time,
-     * possibly to be displayed to the user or saved to a file.
-     * 
-     */
-    public String toString()
+    public void setCreationTime(long creationTime)
     {
-        return treeToString(this.playOutEvents(Long.MAX_VALUE));
+        this.creationTime = creationTime;
+    }
+
+    public String shortName()
+    {
+        return name.split("\\.")[0];
+    }
+
+    /**
+     * Returns a document where all events that are not making a visual impact
+     * on the end result of the document have been culled and event times of the
+     * remaining events are re assigned to keep them in order.
+     * 
+     * @author Lawrence
+     * @param endTime
+     *            - the time where simplification stops
+     * @return
+     */
+    public SourceDocument simplified(long endTime)
+    {
+        SourceDocument doc = new SourceDocument(name, null, typingEvents);
+        TypingEventList tel = this.playOutEvents(endTime);
+        tel.homogenize(endTime);
+        doc.clearUpTo(endTime);
+        doc.typingEvents.addAll(tel.events());
+        return doc;
+    }
+
+    /**
+     * Culls all events that are not making a visual impact on the end result of
+     * the document and re-assigns the event times of the remaining events to
+     * keep them in order.
+     * 
+     * @author Lawrence
+     * @param endTime
+     *            - the point where simplification stops
+     */
+    public void simplify(long endTime)
+    {
+        TypingEventList tel = this.playOutEvents(endTime);
+        tel.homogenize(endTime);
+        this.clearUpTo(endTime);
+        typingEvents.addAll(tel.events());
     }
 
     /**
@@ -677,110 +786,13 @@ public class SourceDocument implements ICodeLocation, Serializable
     }
 
     @Override
-    public void push(Queue<TypingEvent> typingEvents)
+    /**
+     * Returns a string which represents the document at the latest available time,
+     * possibly to be displayed to the user or saved to a file.
+     * 
+     */
+    public String toString()
     {
-        while (!typingEvents.isEmpty())
-        {
-            TypingEvent typingEvent = typingEvents.poll();
-            this.addEvents(typingEvent.explode());
-        }
-    }
-
-    @Override
-    public Queue<TypingEvent> events()
-    {
-        return this.typingEvents;
-    }
-
-    @Override
-    public Queue<TypingEvent> eventsSince(long time)
-    {
-        int initialCapacity = this.typingEvents.size();
-        if (initialCapacity < 2)
-            initialCapacity++;
-
-        PriorityQueue<TypingEvent> latestEvents = new PriorityQueue<TypingEvent>(
-                initialCapacity, new EventComparer());
-
-        try
-        {
-            for (TypingEvent te : this.typingEvents)
-            {
-                if (te.time >= time)
-                    latestEvents.add(te);
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return latestEvents;
-    }
-
-    public Queue<TypingEvent> eventsBetween(long start, long end)
-    {
-        int initialCapacity = this.typingEvents.size();
-        if (initialCapacity < 2)
-            initialCapacity++;
-
-        PriorityQueue<TypingEvent> eventsOut = new PriorityQueue<TypingEvent>(
-                initialCapacity, new EventComparer());
-
-        int stage = 0;
-        try
-        {
-            for (TypingEvent te : this.typingEvents)
-            {
-                if (te.time >= start && te.time < end)
-                {
-                    eventsOut.add(te);
-                    stage = 1;
-                }
-                else if (stage == 1)
-                    break;
-            }
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return eventsOut;
-    }
-
-    @Override
-    public long lastUpdateTime()
-    {
-        return this.latestTime;
-    }
-
-    @Override
-    public void clearAll()
-    {
-        this.typingEvents.clear();
-    }
-
-    public PriorityQueue<TypingEvent> orderedEvents()
-    {
-        return this.typingEvents;
-    }
-
-    public String shortName()
-    {
-        return this.name.split("\\.")[0];
-    }
-
-    public Long getCreationTime()
-    {
-        return this.creationTime;
-    }
-
-    public String docFieldXML(String indent)
-    {
-        return indent + "<Name>" + this.name + "</Name>\n" + indent + "<CreationTime>" + this.creationTime + "</CreationTime>\n";
-    }
-
-    public void setCreationTime(long creationTime)
-    {
-        this.creationTime = creationTime;
+        return treeToString(this.playOutEvents(Long.MAX_VALUE));
     }
 }
