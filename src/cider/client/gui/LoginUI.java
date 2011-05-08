@@ -131,6 +131,31 @@ public class LoginUI
      */
     void checkLogin()
     {
+    	if (txtUsername.getText().length() == 0)
+    	{
+    		JOptionPane.showMessageDialog(new JPanel(), "Please enter a username.");
+    		return;
+    	}
+    	if (new Integer(txtPassword.getPassword().length) == 0)
+    	{
+    		JOptionPane.showMessageDialog(new JPanel(), "Please enter a password.");
+    		return;
+    	}
+    	if (txtServiceName.getText().length() == 0)
+    	{
+    		JOptionPane.showMessageDialog(new JPanel(), "Please enter a service name.");
+    		return;
+    	}
+    	if (txtHost.getText().length() == 0)
+    	{
+    		JOptionPane.showMessageDialog(new JPanel(), "Please enter a host.");
+    		return;
+    	}
+    	if (txtPort.getText().length() == 0)
+    	{
+    		JOptionPane.showMessageDialog(new JPanel(), "Please enter a port number.");
+    		return;
+    	}
         if (chkRemember.isSelected() == true)
         {
             saveLoginDetails(txtUsername.getText(), new String(txtPassword
