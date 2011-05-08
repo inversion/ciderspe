@@ -23,8 +23,6 @@
 
 package cider.common.network.client;
 
-import java.awt.Toolkit;
-
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
