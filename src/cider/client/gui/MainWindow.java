@@ -758,37 +758,40 @@ public class MainWindow
         // tabbedPane.setSelectedIndex(--currentTab);
     }
 
-    public void newFile()
+
+	public void newFile()
     {
         String s = (String) JOptionPane.showInputDialog(new JPanel(),
-                "Enter a filepath (\\\\ as separator):", "New File", JOptionPane.PLAIN_MESSAGE);
+                "Enter a filepath (/ as separator):", "New File", JOptionPane.PLAIN_MESSAGE);
         if (s == null)
         {
             return;
         }
 
-    	String[] full = s.split("\\\\");
+    	String full[] = s.split("/");
     	int n = full.length;
     	String name = full[n-1];
     	String path = "";
     	
-    	for (int i=0; i<(n-1); i++)
+    	if (n>1) path = full[0];
+    	
+    	for (int i=1; i<(n-1); i++)
     	{
-    		if (i==0) path = full[0];
-    		else path += "\\" + full[i];
+    		path += "\\";
+			path += full[i];
     	}
     	
     	client.createDocument(name, path, "");
         
     	try {
-			Thread.sleep(1000);
+			Thread.sleep(1500);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
     	//open new file
-        client.openTab(path+name);
+        client.openTab(path + "\\" + name);
     }
 
     // http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
