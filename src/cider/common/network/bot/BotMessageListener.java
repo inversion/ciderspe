@@ -26,7 +26,6 @@ package cider.common.network.bot;
 import java.awt.Color;
 import java.awt.Toolkit;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Queue;
 
 import org.jivesoftware.smack.Chat;
@@ -220,7 +219,6 @@ public class BotMessageListener implements MessageListener
             }
             catch (XMPPException e)
             {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             return;
@@ -267,7 +265,6 @@ public class BotMessageListener implements MessageListener
                     }
                     catch (XMPPException e)
                     {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 } 
@@ -292,7 +289,6 @@ public class BotMessageListener implements MessageListener
                 }
                 catch (XMPPException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -319,7 +315,6 @@ public class BotMessageListener implements MessageListener
             msg.setBody("");
             msg.setProperty( "ciderAction", "filelist" );
             msg.setBody("");
-            // TODO: Smack changes it all to &gt; etc. so using base64 for now
             msg.setProperty( "xml", StringUtils.encodeBase64( xml ) );
             
             // Send to everyone or just one user.

@@ -6,12 +6,12 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
-import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+@SuppressWarnings("serial")
 public class CloseButton extends JButton {
 
 	private boolean rollover = false;

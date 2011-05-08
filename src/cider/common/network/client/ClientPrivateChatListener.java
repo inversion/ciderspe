@@ -84,6 +84,9 @@ public class ClientPrivateChatListener implements ChatManagerListener {
             
             // Update the tab to reference the new chat
             client.tabsToChats.put( usersToTabs.get( name ), chat );
+            
+            // Switch tab to the already opened one
+            client.shared.receiveTabs.setSelectedIndex( client.shared.receiveTabs.indexOfTab( name ) );
         }
         else
         {            

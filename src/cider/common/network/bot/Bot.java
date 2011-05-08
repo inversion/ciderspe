@@ -108,7 +108,6 @@ public class Bot
     
     private CommitTimer commitTimer;
 
-    // TODO: Temporary method of running the bot from the command line.
     public static void main(String[] args)
     {
         boolean debugbot = true;
@@ -301,17 +300,14 @@ public class Bot
                 }
                 catch (FileNotFoundException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 catch (IOException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
                 catch (ClassNotFoundException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }
@@ -386,17 +382,18 @@ public class Bot
             }
             catch (FileNotFoundException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
     }
     
+    @SuppressWarnings("unused")
     @Deprecated
     /**
      * Write all profiles back to disk
@@ -422,12 +419,12 @@ public class Bot
             }
             catch (FileNotFoundException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
             catch (IOException e)
             {
-                // TODO Auto-generated catch block
+                
                 e.printStackTrace();
             }
         }
@@ -530,7 +527,6 @@ public class Bot
     {
         this.sourceFolder = new LiveFolder("root", "Bot");
         // FIXME: t1 is unused
-        @SuppressWarnings("unused")
         SourceDocument t1 = this.sourceFolder.makeDocument("t1.SourceDocument", System.currentTimeMillis());
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
