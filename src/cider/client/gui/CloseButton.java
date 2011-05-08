@@ -34,6 +34,9 @@ import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+/**
+* Deals with the buttons used on editor pane and chat tabs
+*/
 @SuppressWarnings("serial")
 public class CloseButton extends JButton
 {

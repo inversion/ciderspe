@@ -23,13 +23,6 @@
 
 package cider.common.network.bot;
 
-/**
- * Listen for new messages to the chatroom
- * 
- * @author Andrew
- * 
- */
-
 import java.awt.Color;
 import java.util.Date;
 import java.util.Hashtable;
@@ -45,6 +38,12 @@ import org.jivesoftware.smack.util.StringUtils;
 import cider.common.processes.SourceDocument;
 import cider.common.processes.TypingEvent;
 
+/**
+ * Listen for new messages to the chatroom
+ * 
+ * @author Andrew
+ * 
+ */
 public class BotChatroomMessageListener implements PacketListener
 {
 

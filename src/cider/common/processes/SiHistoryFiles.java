@@ -21,6 +21,9 @@ import javax.swing.JPanel;
 
 import cider.client.gui.CiderApplication;
 
+/**
+*
+*/
 public class SiHistoryFiles
 {
     private static boolean working = true;

@@ -33,6 +33,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+/**
+* Class containing the elements for the status bar at the bottom of the main window
+*/
 @SuppressWarnings("serial")
 public class StatusBar extends JPanel
 {
@@ -44,6 +47,9 @@ public class StatusBar extends JPanel
     private int lineNo = 0;
     private int colNo = 0;
 
+    /**
+     *Creates the status bar
+     */
     public StatusBar()
     {
         // GridLayout grid = new GridLayout(1,3);
@@ -80,22 +86,39 @@ public class StatusBar extends JPanel
         this.add(inputBox, BorderLayout.EAST);
     }
 
+    /**
+     * Returns whether in overwrite mode
+     * @return True if in overwrite mode
+     */
     public boolean isOverwrite()
     {
         return overwrite;
     }
 
+    /**
+    * Sets the current column number text in the status bar
+     * @param col the column number
+     */
     public void setColNo(int col)
     {
         colNo = col;
         setCurrentPos(lineNo, colNo);
     }
 
+    /**
+     * Sets the line/column text in the status bar
+     * @param line the line number
+     * @param col the column number
+     */
     public void setCurrentPos(int line, int col)
     {
         lblCurrentPos.setText("Line: " + line + " | Col: " + col);
     }
 
+    /**
+     * Toggles input mode
+     * @param mode Insert/Overwrite
+     */
     public void setInputMode(String mode)
     {
 
@@ -106,12 +129,20 @@ public class StatusBar extends JPanel
         lblInputMode.setText("Input Mode: " + mode + " ");
     }
 
+    /**
+     * Sets the current line number text in the status bar
+     * @param line the line number
+     */
     public void setLineNo(int line)
     {
         lineNo = line;
         setCurrentPos(lineNo, colNo);
     }
 
+    /**
+     * Sets the username text in the status bar
+     * @param name the username text
+     */
     public void setUsername(String name)
     {
         lblUsername.setText(" Logged in as: " + name);

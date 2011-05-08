@@ -24,6 +24,7 @@
 package cider.client.gui;
 
 import java.awt.AWTEvent;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -109,17 +110,38 @@ import cider.documentViewerComponents.EditorTypingArea;
 import cider.documentViewerComponents.SourceDocumentViewer;
 import cider.shared.ClientSharedComponents;
 
+/**
+ * Class containing the main methods of the main window of the application
+ */
 public class MainWindow
 {
     JFrame w;
+    /**
+     * Current directory to work in
+     */
     public String currentDir = System.getProperty("user.dir");
+    /**
+     * Name of a new file
+     */
     public String currentFileName = "Unsaved Document 1";
+    /**
+     * Contents of an empty file
+     */
     public String currentFileContents = "";
 
+    /**
+     * Currently visible tab
+     */
     public int currentTab = 0;
 
     public LoginUI login;
+    /**
+     * 
+     */
     public ClientSharedComponents shared;
+    /**
+     * 
+     */
     public AWTEventListener activityListener;
 
     Client client;
@@ -131,17 +153,28 @@ public class MainWindow
     private String username;
     private ArrayList<String> savedFiles = new ArrayList<String>();
     public static final String GROUPCHAT_TITLE = "Group Chat";
-
+    /**
+     * Chat panel receive area
+     */
     public JPanel receivePanel;
 
+    /**
+     * Chat panel send box
+     */
     public JTextArea messageSendBox;
 
+    /**
+     * Whether line locking is enabled
+     */
     public static boolean LockingEnabled = true;
 
     private DebugWindow debugwindow;
 
     boolean offlineMode = false;
 
+    /**
+     * The status bar object for the bottom of the window
+     */
     public static StatusBar statusBar;
 
     /**
@@ -151,6 +184,9 @@ public class MainWindow
      */
     public long startTime = System.currentTimeMillis();
 
+    /**
+     * User Profile object
+     */
     public Profile myProfile;
 
     private String profilePictureDir;
@@ -513,9 +549,13 @@ public class MainWindow
         w.dispose();
     }
 
+    /**
+     * All the elements added for the window
+     * @return
+     */
     public JPanel mainArea()
     {
-        /* Chat panel stuffs- Alex */
+        /* Chat panel stuffs*/
         Border emptyBorder = BorderFactory.createEmptyBorder();
 
         JSplitPane usersReceive = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -534,8 +574,8 @@ public class MainWindow
         debugwindow.setAutoscrolls(true);
 
         JSplitPane EditorDebugSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                this.sourceEditorSection(), debugwindow/* test */);
-        ;
+                this.sourceEditorSection(), debugwindow);
+
         EditorDebugSplit.setBorder(emptyBorder);
         EditorDebugSplit.setOneTouchExpandable(true);
         EditorDebugSplit.setDividerLocation(800);
@@ -543,9 +583,6 @@ public class MainWindow
         JPanel panel = new JPanel(new BorderLayout());
         dirSourceEditorSelectionSplit = new JSplitPane(
                 JSplitPane.HORIZONTAL_SPLIT, shared.dirView, EditorDebugSplit);
-        // dirSourceEditorSeletionSplit = new
-        // JSplitPane(JSplitPane.HORIZONTAL_SPLIT, dirView,
-        // this.sourceEditorSection());
 
         dirSourceEditorSelectionSplit.setOneTouchExpandable(true);
         dirSourceEditorSelectionSplit.setBorder(emptyBorder);
@@ -905,9 +942,9 @@ public class MainWindow
     }
 
     /**
-     * 
-     * @return The JPanel containing the area where the user provides input to
-     *         the group chat.
+     * The JPanel containing the area where the user provides input to
+     *         the group chat
+     * @return 
      */
     public JPanel pnlSend()
     {
@@ -1366,6 +1403,10 @@ public class MainWindow
         return true;
     }
 
+    /**
+     * Panel for the editor area
+     * @return The editor panel
+     */
     public JPanel sourceEditorSection()
     {
         // tabbedPane.addTab(currentFileName, new SourceEditor(
@@ -1377,7 +1418,11 @@ public class MainWindow
         return panel;
     }
 
-    // TODO: Update chatlog moved to Client for now
+    /**
+     * Creates the JFrame for the main application
+     * @param loginWindow
+     * @param debugApp Whether in debug mode
+     */
     public void startApplication(JFrame loginWindow, boolean debugApp)
     {
         w = new JFrame("CIDEr - Logged in as " + username);
@@ -1385,8 +1430,6 @@ public class MainWindow
 
         // Detect mouse events across whole window
         // Filter only motion events to set not idle
-        // TODO: I could have avoided making idle timer shared cos I didn't
-        // notice this, can fix later if bothered but it works ok atm (Andrew)
         long eventMask = AWTEvent.MOUSE_MOTION_EVENT_MASK;
 
         activityListener = new AWTEventListener()

@@ -108,7 +108,9 @@ public class ETASourceEditorPane extends JScrollPane
         }
     }
 
-    // Keywords for syntax highlighting
+    /**
+     *  Keywords for syntax highlighting
+     */
     public static HashSet<String> keywords = new HashSet<String>();
     protected EditorTypingArea eta;
     private Component tabHandle = null;
@@ -116,7 +118,9 @@ public class ETASourceEditorPane extends JScrollPane
 
     private String path;
 
-    // Mode of input, default to insert at caret
+    /**
+     *  Mode of input, default to insert at caret
+     */
     private TypingEventMode inputMode = TypingEventMode.insert;
 
     public ETASourceEditorPane(final EditorTypingArea eta, Client client,
@@ -145,11 +149,19 @@ public class ETASourceEditorPane extends JScrollPane
                 + client.getClockOffset());
     }
 
+    /**
+     * Returns the editor typing area
+     * @return Editor typing area
+     */
     public EditorTypingArea getEditorTypingArea()
     {
         return eta;
     }
 
+    /**
+     * Returns the editor area tabs
+     * @return The tabs
+     */
     public Component getTabHandle()
     {
         return tabHandle;
@@ -179,6 +191,9 @@ public class ETASourceEditorPane extends JScrollPane
 
     // ////// End of workaround ////////
 
+    /**
+     * Listener for typing into the editor area
+     */
     public KeyListener newKeyListener()
     {
         KeyListener k = new KeyListener()
@@ -660,6 +675,9 @@ public class ETASourceEditorPane extends JScrollPane
         };
     }
 
+    /**
+     * Focus for the currently selected document in the editor pane
+     */
     @Override
     public void requestFocus()
     {
@@ -667,6 +685,10 @@ public class ETASourceEditorPane extends JScrollPane
         super.requestFocus();
     }
 
+    /**
+     * Set the tabhandle
+     * @param tabHandle
+     */
     public void setTabHandle(Component tabHandle)
     {
         this.tabHandle = tabHandle;

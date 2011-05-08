@@ -50,8 +50,16 @@
 
 package cider.client.gui;
 
+/**
+* Class containing encryption methods for saving login details
+*/
 public class passwordEncrypt
 {
+	/**
+	 * Decrypts entered text
+	 * @param input
+	 * @return
+	 */
     public static String decrypt(String input)
     {
         String output = "";
@@ -61,13 +69,15 @@ public class passwordEncrypt
             c = (char) (c - 128);
             output += c;
         }
-        /*
-         * System.out.println("Input : " + input); System.out.println("Output: "
-         * + output);
-         */
+        
         return output;
     }
 
+    /**
+     * Encrypts entered text
+     * @param input
+     * @return
+     */
     public static String encrypt(String input)
     {
         String output = "";
@@ -77,10 +87,7 @@ public class passwordEncrypt
             c = (char) (c + 128);
             output += c;
         }
-        /*
-         * System.out.println("Input : " + input); System.out.println("Output: "
-         * + output);
-         */
+        
         return output;
     }
 }

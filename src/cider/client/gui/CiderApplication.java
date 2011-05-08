@@ -23,10 +23,20 @@
 
 package cider.client.gui;
 
+/**
+ * Entry point to the application
+ */
 public class CiderApplication
 {
+	/**
+	 * whether in debug mode or not
+	 */
     public static boolean debugApp;
 
+    /**
+     * Launch the application
+     * @param args whether in debug mode or not
+     */
     public static void main(String[] args)
     {
         debugApp = true;
@@ -46,12 +56,18 @@ public class CiderApplication
 
     }
 
+    /**
+     * Return to the login screen
+     */
     public void restarted()
     {
         ui = new LoginUI(this);
         this.startCider();
     }
 
+    /**
+     * Display the login screen
+     */
     public void startCider()
     {
         try

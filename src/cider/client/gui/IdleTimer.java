@@ -39,6 +39,9 @@ import cider.common.network.client.Client;
 public class IdleTimer
 {
     private int idleTime = 0;
+    /**
+     * Wheter the user is idle
+     */
     public boolean isIdle = false;
     private Timer timer = new Timer();
     private Client client;
@@ -67,6 +70,9 @@ public class IdleTimer
             timer.scheduleAtFixedRate(increment, 0, 1000);
     }
 
+    /**
+     * At the end of an idle session, update the idle time and change the flag
+     */
     public void activityDetected()
     {
         if (isIdle)
@@ -84,17 +90,27 @@ public class IdleTimer
         return totalIdleTime;
     }
     
+    /**
+     * Sets the idle time back to 0
+     */
     public void resetTotal()
     {
         totalIdleTime = 0;
     }
 
+    /**
+     * Stops the idle timer
+     */
     public void stop()
     {
         timer.cancel();
         timer.purge();
     }
 
+    /**
+     * Checks if the user is idle
+     * @return either true or false
+     */
     public boolean userIsIdle()
     {
         if (isIdle)

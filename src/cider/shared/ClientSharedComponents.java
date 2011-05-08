@@ -42,27 +42,50 @@ import cider.common.processes.Profile;
  * @author Andrew
  * 
  */
-
 public class ClientSharedComponents
 {
-    // The list and count of users online
+	/**
+	 *  The list and count of users online
+	 */
     public DefaultListModel userListModel = new DefaultListModel();
+    
+    /**
+	 * List with the users online
+	 */
     public JList userList = new JList(userListModel);
+    
+    /**
+	 * Label holding the number of users online
+	 */
     public JLabel userCount = new JLabel();
 
-    // Tabs for source editors and table to keep track of them
+    /**
+	 * Tabs for source editors and table to keep track of them
+	 */
     public JTabbedPane tabbedPane = new JTabbedPane();
+    
+    /**
+	 * Hashtable holding the currently open tabs
+	 */
     public Hashtable<String, ETASourceEditorPane> openTabs = new Hashtable<String, ETASourceEditorPane>();
 
-    // The directory tree
+    /**
+	 * The directory tree on the left of the window
+	 */
     public DirectoryViewComponent dirView = new DirectoryViewComponent();
 
-    // Tabs for chat sessions
+    /**
+	 * Tabs for chat sessions
+	 */
     public ChatTabs receiveTabs = new ChatTabs();
 
-    // The client's profile
+    /**
+	 * The client's profile
+	 */
     public Profile profile;
 
-    // Idle timer
+    /**
+	 * The idle timer
+	 */
     public IdleTimer idleTimer;
 }

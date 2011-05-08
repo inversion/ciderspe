@@ -27,6 +27,9 @@ import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+* Writes data to disk on the bot machine
+*/
 public class CommitTimer
 {
     private Timer timer = new Timer();
@@ -58,7 +61,7 @@ public class CommitTimer
         this.bot = bot;
         timer.scheduleAtFixedRate(commitToDisk, 60000, 60000);
     }
-
+    
     protected void stopTimer()
     {
         timer.cancel();

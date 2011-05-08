@@ -29,6 +29,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+/**
+* Panel at the bottom of the main window that shows compiler messages
+*/
 @SuppressWarnings("serial")
 public class DebugWindow extends JPanel
 {
@@ -43,16 +46,28 @@ public class DebugWindow extends JPanel
         this.add(scrollTextArea);
     }
 
+    /**
+     * Returns the text in the debug pane
+     * @return The string to return
+     */
     public String getText()
     {
         return textArea.getText();
     }
 
+    /**
+     * Adds text as a new line to the debug pane
+     * @param text Text to add
+     */
     public void println(String text)
     {
         textArea.setText(textArea.getText() + text + "\n");
     }
 
+    /**
+      * Adds text to the debug pane, replacing existing text
+     * @param text Text to add
+     */
     public void setText(String text)
     {
         textArea.setText(text);

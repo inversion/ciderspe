@@ -43,6 +43,9 @@ import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.common.processes.TimeRegion;
 
+/**
+* Class containing the history viewer tool
+*/
 public class TimeRegionBrowser extends JPanel implements MouseListener,
         MouseMotionListener
 {

@@ -53,8 +53,14 @@ import org.w3c.dom.Node;
 import cider.common.network.client.Client;
 import cider.common.processes.LiveFolder;
 
+/**
+* Panel that holds the directory tree in the main windows
+*/
 public class DirectoryViewComponent extends JPanel
 {
+	/**
+	 * Whether in debug mode
+	 */
     public static boolean DEBUG = true;
 
     /**
@@ -62,6 +68,12 @@ public class DirectoryViewComponent extends JPanel
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * 
+     * @param parent
+     * @param name
+     * @return
+     */
     public static List<Element> getChildrenByTagName(Element parent, String name)
     {
         List<Element> nodeList = new ArrayList<Element>();
@@ -182,7 +194,7 @@ public class DirectoryViewComponent extends JPanel
      * Creates some objects to simulate files and folders etc
      * 
      * @deprecated
-     * @param top
+     * @param top Root node
      */
     @Deprecated
     public void createNodes(DefaultMutableTreeNode top)
@@ -194,18 +206,11 @@ public class DirectoryViewComponent extends JPanel
         category = new DefaultMutableTreeNode("Folder 1");
         top.add(category);
 
-        // book = new DefaultMutableTreeNode(new BookInfo
-        // ("The Java Tutorial: A Short Course on the Basics",
-        // "tutorial.html"));
         for (int i = 0; i < 50; i++)
         {
             book = new DefaultMutableTreeNode("File 1");
             category.add(book);
         }
-        /*
-         * DefaultMutableTreeNode sub = null; sub = new
-         * DefaultMutableTreeNode("SubFile 1"); book.add(sub);
-         */
 
         category = new DefaultMutableTreeNode("Folder 2");
         top.add(category);
@@ -214,6 +219,10 @@ public class DirectoryViewComponent extends JPanel
         category.add(book);
     }
 
+    /**
+     * Returns the directory tree XML representation
+     * @return Root of the tree
+     */
     public LiveFolder getLiveFolder()
     {
         return rootFolder;
@@ -242,35 +251,22 @@ public class DirectoryViewComponent extends JPanel
         }
     }
 
+    /**
+     * Reloads the directory viewer
+     */
     public void refresh()
     {
         ((DefaultTreeModel) tree.getModel()).reload();
     }
 
+    /**
+     * Sets the client for the directory viewer
+     * @param client
+     */
     public void setClient(Client client)
     {
         this.client = client;
     }
-
-    // TODO: Moved deprecated stuff to end
-
-    /*
-     * // Flip the keys and values of a hash and return a new one private
-     * Hashtable flipHash( Hashtable h ) { Object[] keys = h.keySet().toArray();
-     * Hashtable newHash = new Hashtable( keys.length );
-     * 
-     * for( int i = 0; i < keys.length; i++ ) newHash.put( h.get( keys[i] ),
-     * keys[i] );
-     * 
-     * return newHash; }
-     */
-
-    /*
-     * public static void main(String[] args) { JFrame w = new JFrame();
-     * w.add(new DirectoryViewComponent()); w.setLocationByPlatform(true);
-     * w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); w.setPreferredSize(new
-     * Dimension(400, 800)); w.setVisible(true); }
-     */
 
     private void subFolders(Element docEle, DefaultMutableTreeNode parent,
             LiveFolder parentFolder)

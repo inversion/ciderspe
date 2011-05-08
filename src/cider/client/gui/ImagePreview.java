@@ -35,6 +35,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 
+/**
+* Viewer for the profile image selection
+*/
 public class ImagePreview extends JPanel implements PropertyChangeListener
 {
     private static final long serialVersionUID = 2071277738527711801L;
@@ -52,6 +55,9 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
         bg = getBackground();
     }
 
+    /**
+     * Loads the selected image from the file chooser
+     */
     public void loadImage()
     {
         if (f == null)
@@ -76,6 +82,9 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
         }
     }
 
+    /**
+     * Draws the selected image
+     */
     @Override
     public void paintComponent(Graphics g)
     {
@@ -86,6 +95,9 @@ public class ImagePreview extends JPanel implements PropertyChangeListener
 
     }
 
+    /**
+     * File chooser for the profile image
+     */
     public void propertyChange(PropertyChangeEvent evt)
     {
         String name = evt.getPropertyName();

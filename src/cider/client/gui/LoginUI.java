@@ -67,6 +67,9 @@ import cider.common.processes.Profile;
 import cider.common.processes.SiHistoryFiles;
 import cider.shared.ClientSharedComponents;
 
+/**
+ * Class containing the login window the user first sees when running the application
+ */
 public class LoginUI
 {
     /**
@@ -83,6 +86,9 @@ public class LoginUI
     private int Retrieved = 0;
     private int NotPort;
 
+    /**
+     * Used for fetching/saving login details
+     */
     public String currentDir = "src\\cider\\client\\gui\\";
     static JFrame login;
 
@@ -583,6 +589,10 @@ public class LoginUI
         ciderApplication = null;
     }
 
+    /**
+     * Performs the login when the button is pressed
+     * @return
+     */
     public ActionListener newAction()
     {
         ActionListener AL = new ActionListener()

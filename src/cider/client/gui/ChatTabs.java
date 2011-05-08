@@ -108,6 +108,10 @@ public class ChatTabs extends JTabbedPane
 
     private HashMap<String, TabFlashListener> usersToTabs = new HashMap<String, TabFlashListener>();
 
+    /**
+     * Removes a tab from the editor pane
+     * @param name Name of the tab to remove
+     */
     public void removeTab(String name)
     {
         if (!usersToTabs.containsKey(name))
@@ -119,6 +123,10 @@ public class ChatTabs extends JTabbedPane
         usersToTabs.remove(name);
     }
 
+    /**
+     * Makes a tab flash
+     * @param name Name of the tab to flash
+     */
     public void tabflash(String name)
     {
         TabFlashListener tabflash;
@@ -137,6 +145,10 @@ public class ChatTabs extends JTabbedPane
         tabflash.start();
     }
 
+    /**
+     * Makes a tab stop flashing
+     * @param name Name of the tab to stop
+     */
     public void tabflashstop(String name)
     {
         if (usersToTabs.containsKey(name))

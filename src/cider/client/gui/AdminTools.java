@@ -27,6 +27,13 @@
  *
  */
 
+/**
+ * Class containing the methods to setup the client and bot config files
+ */
+
+/**
+ * Class containing the methods to setup the client and bot config files
+ */
 package cider.client.gui;
 
 import java.awt.Component;
@@ -53,11 +60,17 @@ import javax.swing.JTextField;
 import javax.swing.JWindow;
 import javax.swing.UIManager;
 
+/**
+ * Class containing the methods to setup the client and bot config files
+ */
 public class AdminTools
 {
+	/**
+	 * Calls window creation and attempts to display it
+	 * @param args
+	 */
     public static void main(String[] args)
     {
-        // Calls window creation and attempts to display it
         AdminTools ui = new AdminTools();
 
         try
@@ -70,7 +83,9 @@ public class AdminTools
         }
     }
 
-    // Class creates window
+    /**
+     *  Class creates window
+     */
     public String currentDir = "src\\cider\\client\\gui\\";
     static JFrame admintool;
 
@@ -222,6 +237,9 @@ public class AdminTools
         }
     }
 
+    /**
+     * Creates the JFrame for the admin tools window
+     */
     public void displayAdTools()
     {
         admintool = new JFrame();
@@ -448,8 +466,11 @@ public class AdminTools
 
     }
 
+    /**
+     *  Listens for button presses
+     * @return
+     */
     public ActionListener newAction()
-    // Listens for button presses
     {
         ActionListener AL = new ActionListener()
         {
