@@ -639,8 +639,15 @@ public class Client
     public void openTabFor(Object[] path)
     {
         String strPath = this.getPathToSourceDocument(path, 1);
+        openTab(strPath);
+        
+    }
+    
+    public void openTab(String strPath)
+    {
         System.out.println(strPath);
-        SourceDocument doc = this.liveFolder.path(strPath);
+        
+    	SourceDocument doc = this.liveFolder.path(strPath);
         this.currentDoc = doc;
         if (!shared.openTabs.containsKey(strPath))
         {

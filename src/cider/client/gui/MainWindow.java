@@ -761,21 +761,34 @@ public class MainWindow
     public void newFile()
     {
         String s = (String) JOptionPane.showInputDialog(new JPanel(),
-                "Enter a filename:", "New File", JOptionPane.PLAIN_MESSAGE);
+                "Enter a filepath (\\\\ as separator):", "New File", JOptionPane.PLAIN_MESSAGE);
         if (s == null)
         {
             return;
         }
-        // LiveFolder liveFolder = new LiveFolder(username,
-        // this.client.getLiveFolder());
-        // liveFolder.makeDocument(s);
-        // TODO: create directory tree object with 's' then open it
-        JLabel TEMP = new JLabel("blah blah blah");
-        shared.tabbedPane.addTab(s, TEMP);// new
-                                          // SourceEditor(currentFileContents,
-        // currentDir)); //new SourceEditor("",
-        // "\\."));
-        shared.tabbedPane.setSelectedIndex(shared.tabbedPane.getTabCount() - 1);
+
+    	String[] full = s.split("\\\\");
+    	int n = full.length;
+    	String name = full[n-1];
+    	String path = "";
+    	
+    	for (int i=0; i<(n-1); i++)
+    	{
+    		if (i==0) path = full[0];
+    		else path += "\\" + full[i];
+    	}
+    	
+    	client.createDocument(name, path, "");
+        
+    	try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
+    	//open new file
+        client.openTab(path+name);
     }
 
     // http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
