@@ -55,7 +55,8 @@ public class ClientMessageListener implements MessageListener, ActionListener
         this.client = client;
     }
 
-    @Override
+    @SuppressWarnings("static-access")
+	@Override
     public void processMessage(Chat chat, Message message)
     {
         String body = message.getBody();
@@ -107,13 +108,13 @@ public class ClientMessageListener implements MessageListener, ActionListener
             if( username.equals( client.getUsername() ) )
             {
                 System.out.println( "ClientMessageListener: Updating own profile..." );
-                client.profile.uname = username;
-                client.profile.typedChars = chars;
-                client.profile.timeSpent = timeSpent;
-                client.profile.idleTime = idleTime;
-                client.profile.lastOnline = lastOnline;
+                client.profile.setUsername(username);
+                client.profile.setTypedChars(chars);
+                client.profile.setTimeSpent(timeSpent);
+                client.profile.setIdleTime(idleTime);
+                client.profile.setLastOnline(lastOnline);
                 client.profile.setColour( r, g, b );
-                client.colours.put(username, client.profile.userColour);
+                client.colours.put(username, client.profile.getColour());
                 client.shared.userList.repaint();
                 
                 // If we want the profile to pop up
@@ -123,10 +124,10 @@ public class ClientMessageListener implements MessageListener, ActionListener
             else
             {
                 Profile profile = new Profile( username );
-                profile.typedChars = chars;
-                profile.timeSpent = timeSpent;
-                profile.idleTime = idleTime;
-                profile.lastOnline = lastOnline;
+                profile.setTypedChars(chars);
+                profile.setTimeSpent(timeSpent);
+                profile.setIdleTime(idleTime);
+                profile.setLastOnline(lastOnline);
                 profile.setColour( r, g, b );
                 
                 // If we want the profile to pop up
