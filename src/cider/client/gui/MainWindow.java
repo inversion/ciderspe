@@ -655,7 +655,7 @@ public class MainWindow
         addMenuItem(menu, "My Profile", -1, aL);
         addMenuItem(menu, "Change Profile Colour", -1, aL);
         addMenuItem(menu, "Change Profile Picture", -1, aL);
-        addMenuItem(menu, "Change Font Size NYI FIXME", -1, aL);
+        //addMenuItem(menu, "Change Font Size NYI FIXME", -1, aL);
         // addMenuItem(menu, "Change Username", -1, aL);
         addMenuItem(menu, "Reset My Profile", -1, aL);
 
