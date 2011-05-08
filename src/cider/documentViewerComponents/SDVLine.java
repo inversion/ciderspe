@@ -26,7 +26,6 @@ package cider.documentViewerComponents;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.util.LinkedList;
-import java.util.regex.Pattern;
 
 import cider.client.gui.ETASourceEditorPane;
 import cider.common.network.client.Client;
@@ -41,17 +40,6 @@ import cider.common.processes.TypingEventList;
  */
 public class SDVLine
 {
-    /**
-     * convenience method to find out whether a string is representing a double
-     * 
-     * @param string
-     * @return
-     * @author Lawrence
-     */
-    public static boolean isDouble(String string)
-    {
-        return doublePattern.matcher(string).matches();
-    }
 
     /**
      * Replaces in an area of a color array
@@ -81,8 +69,6 @@ public class SDVLine
     Color[] colors;
 
     SourceDocumentViewer sdv;
-
-    private static Pattern doublePattern = Pattern.compile("-?\\d+(\\.\\d*)?");
 
     /**
      * 
@@ -143,9 +129,10 @@ public class SDVLine
                         sdv.getKeyWord().add(i);
                         sdv.getKeyWord().add(i + length);
                     }
-                    if (isDouble(str))
+                    if ( isParsableToNum(str) == true)
                         customColor = new Color(0, 100, 0);
-                    wash(colors, customColor, i, i + length);
+                    	wash(colors, customColor, i, i + length);
+                    	customColor = new Color(255,255,255);
                     if (str.startsWith("//") == true)
                     {
                         wash(colors, Color.RED, i, i + length);
@@ -169,6 +156,20 @@ public class SDVLine
         }
     }
 
+    public boolean isParsableToNum(String str)
+    {
+    	try
+    	{
+    		Float.parseFloat(str);
+    		return true;
+    	}
+    	catch(NumberFormatException nfe)
+    	{
+    		return false;
+    	}
+    	
+    }
+    
     public int getLineNumber()
     {
         return lineNum;
