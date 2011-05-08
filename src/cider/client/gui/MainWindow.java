@@ -261,7 +261,7 @@ public class MainWindow
             photo = new ImageIcon(urlImage);
         }
         img = photo.getImage();
-        img = img.getScaledInstance(200, 200, Image.SCALE_SMOOTH);
+        img = img.getScaledInstance(150, 200, Image.SCALE_SMOOTH);
         photo = new ImageIcon(img);
 
         JLabel userPhoto = new JLabel(photo);
