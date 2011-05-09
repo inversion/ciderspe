@@ -612,7 +612,7 @@ public class SourceDocument implements ICodeLocation, Serializable
             for (int i = 0; i < tel.length(); i++)
             {
                 te = tel.get(i);
-                if (this.insideRegion(typingEvent, i, 1))
+                if (this.insideRegion(typingEvent, i, 1) && typingEvent.owner != null && te.lockingGroup != null)
                     if (te.lockingGroup.equals(typingEvent.owner))
                         te.lockingGroup = null;
             }
