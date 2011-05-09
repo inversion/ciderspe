@@ -54,16 +54,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 
+import javax.lang.model.SourceVersion;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -94,6 +97,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.tools.JavaCompiler;
+import javax.tools.Tool;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
@@ -119,7 +123,7 @@ public class MainWindow
     /**
      * Current directory to work in
      */
-    public String currentDir = System.getProperty("user.dir");
+    public String currentDir;
     /**
      * Name of a new file
      */
@@ -223,6 +227,15 @@ public class MainWindow
         login = loginUI;
 
         client = c;
+        try
+        {
+            currentDir = new File( "." ).getCanonicalPath();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         receivePanel = pnlReceive();
         shared.dirView.setClient(client);
@@ -356,8 +369,11 @@ public class MainWindow
     // Credit: http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
     void compileFile()
     {
+        if( client.getCurrentDocument() == null )
+            return;
         JFileChooser fc = new JFileChooser();
-        File f = new File(client.getCurrentDocument().name + ".java");
+        fc.setCurrentDirectory( new File( currentDir ) );
+        File f = new File(client.getCurrentDocument().name);
         fc.setSelectedFile(f);
 
         int watdo = fc.showSaveDialog(null);
@@ -366,12 +382,21 @@ public class MainWindow
             return;
         }
 
-        currentFileName = fc.getSelectedFile().getName();
-        currentDir = fc.getSelectedFile().getAbsolutePath();
+        try
+        {
+            currentFileName = f.getAbsolutePath();
+            f.createNewFile();
+        }
+        catch (IOException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+//        currentDir = fc.getSelectedFile().getAbsolutePath();
 
         try
         {
-            FileWriter fstream = new FileWriter(currentDir);
+            FileWriter fstream = new FileWriter( currentFileName );
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(client.getCurrentDocument().toString());
             out.close();
@@ -383,7 +408,7 @@ public class MainWindow
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         OutputStream baos = new ByteArrayOutputStream();
-        int results = javac.run(System.in, System.out, baos, currentDir);
+        int results = javac.run(System.in, System.out, baos, currentFileName);
 
         if (results == 0)
         {
@@ -451,16 +476,12 @@ public class MainWindow
     }
 
     // FIXME!
-    public String[] getCommands()
+    public String[] getCommands( String name )
     {
         if (isWindows())
         {
-            return new String[] { "cmd.exe", "/C",
-                    "start " + currentDir + /*
-                                             * "java" +
-                                             * "\\test"this.sourceFile.getParentFile
-                                             * ().getPath() +
-                                             */"\\runHello.bat" };
+            return new String[] { "cmd /C start cmd /K cd \"" + currentDir +
+                    "\\", "&", "java " + name };
         }
         else if (isUnix())
         {
@@ -1207,16 +1228,21 @@ public class MainWindow
     {
         try
         {
+            Process p;
             String line;
             // int i = 0;
-            Process p = Runtime.getRuntime().exec(this.getCommands());
-            BufferedReader input = new BufferedReader(new InputStreamReader(p
-                    .getInputStream()));
-            while ((line = input.readLine()) != null)
-            {
-                debugwindow.println(line);
-            }
-            input.close();
+            String name = client.getCurrentDocument().name.replace( ".java", "" );
+            if( isWindows() )
+             p = Runtime.getRuntime().exec( "cmd /C start cmd /K \"cd \"" + currentDir +
+                    "\" && java " + name + "\"" );
+//            BufferedReader input = new BufferedReader(new InputStreamReader(p
+//                    .getInputStream()));
+//            System.out.println( p.getInputStream().available() );
+//            while ((line = input.readLine()) != null)
+//            {
+//                debugwindow.println(line);
+//            }
+//            input.close();
         }
         catch (Exception e)
         {
