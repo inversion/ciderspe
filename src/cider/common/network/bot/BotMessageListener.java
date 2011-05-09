@@ -408,8 +408,7 @@ public class BotMessageListener implements MessageListener
             System.out
                     .println("BotMessageListener: Trying to send profile for "
                             + username);
-            if (bot.profiles.containsKey(username)
-                    && !this.sendToClearHistory(username))
+            if (bot.profiles.containsKey(username))
             {
                 Profile profile = bot.profiles.get(username);
                 Message msg = new Message();
@@ -456,17 +455,21 @@ public class BotMessageListener implements MessageListener
 
                 chat.sendMessage(msg);
                 System.out.println("BotMessageListener: Profile CREATED, sent.");
-                /*
+            }
+            
+            if(this.sendToClearHistory(username))
+            {
+                Message msg = new Message();
                 msg.setBody("");
-                msg.setProperty("ciderAction", "notfound");
+                msg.setProperty("ciderAction", "clearhistory");
                 msg.setProperty("username", username);
                 // If we want the warning box to pop up at the other end
                 if (message.getProperty("show") != null)
                     msg.setProperty("show", "false");
 
                 chat.sendMessage(msg);
-                System.out.println("BotMessageListener: Profile not found for "
-                        + username);*/
+                System.out.println("BotMessageListener: Clear history for "
+                        + username);
             }
         }
         catch (XMPPException e)

@@ -26,6 +26,7 @@ package cider.client.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.PriorityQueue;
@@ -45,9 +46,10 @@ import cider.common.processes.TimeBorderList;
 import cider.common.processes.TimeRegion;
 import cider.common.processes.TypingEvent;
 import cider.documentViewerComponents.DocumentHistoryViewer;
+
 /**
-* Class containing the history viewer tool
-*/
+ * Class containing the history viewer tool
+ */
 @SuppressWarnings("serial")
 public class DHVSourceHistoryPane extends JPanel
 {
@@ -146,23 +148,23 @@ public class DHVSourceHistoryPane extends JPanel
     {
         this.dhv = dhv;
 
-        if (documentScrollPane != null)
-            this.remove(documentScrollPane);
+        if (this.documentScrollPane != null)
+            this.remove(this.documentScrollPane);
 
-        documentScrollPane = new JScrollPane(dhv);
-        this.add(documentScrollPane, BorderLayout.CENTER);
+        this.documentScrollPane = new JScrollPane(dhv);
+        this.add(this.documentScrollPane, BorderLayout.CENTER);
     }
 
     public void setTimeRegionBrowser(final TimeRegionBrowser trb)
     {
         this.trb = trb;
-        if (regionBrowserScrollPane != null)
-            westPanel.remove(regionBrowserScrollPane);
+        if (this.regionBrowserScrollPane != null)
+            this.westPanel.remove(this.regionBrowserScrollPane);
 
-        regionBrowserScrollPane = new JScrollPane(trb);
-        regionBrowserScrollPane
+        this.regionBrowserScrollPane = new JScrollPane(trb);
+        this.regionBrowserScrollPane
                 .setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        westPanel.add(regionBrowserScrollPane, BorderLayout.WEST);
+        this.westPanel.add(regionBrowserScrollPane, BorderLayout.WEST);
 
         trb.addActionListener(new ActionListener()
         {
@@ -178,8 +180,18 @@ public class DHVSourceHistoryPane extends JPanel
                     dhv.useEventsFrom(currentRegion);
                     long t = (Long) e.getSource();
                     dhv.updateText(t);
+
                     break;
                 }
+                case TimeRegionBrowser.EYE_RELEASED:
+                {
+                    long t = (Long) e.getSource();
+                    int y = trb.timeToYPixel(t)
+                            - regionBrowserScrollPane.getHeight() / 2;
+                    regionBrowserScrollPane.getVerticalScrollBar().setValue(y);
+                    break;
+                }
+
                 case TimeRegionBrowser.SELECTION:
                 {
                     downloadRegion.setEnabled(trb.getSelectionLength() > 0
@@ -190,5 +202,12 @@ public class DHVSourceHistoryPane extends JPanel
             }
 
         });
+    }
+
+    public void scrollRegionBrowserToEnd()
+    {
+        this.regionBrowserScrollPane.getVerticalScrollBar().setValue(
+                this.regionBrowserScrollPane.getVerticalScrollBar()
+                        .getMaximum());
     }
 }
