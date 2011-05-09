@@ -163,7 +163,7 @@ public class LoginUI
         }
         else
         {
-            String fileName = "login.txt";
+            String fileName = currentDir + "login.txt";
             File file = new File(fileName);
 
             try
