@@ -409,14 +409,16 @@ public class Bot
     {
         sourceFolder = new LiveFolder("root", "Bot");
         // FIXME: t1 is unused
-        SourceDocument t1 = sourceFolder.makeDocument("t1.SourceDocument",
+        SourceDocument t1 = sourceFolder.makeDocument("T1.java",
                 System.currentTimeMillis());
         // Queue<TypingEvent> tes = new LinkedList<TypingEvent>();
         // tes.addAll(SourceDocument.generateEvents(0, 1000, 0, "Created at "
         // + System.currentTimeMillis(), TypingEventMode.insert, "bot"));
         // t1.push(tes);
         sourceFolder.makeFolder("testFolder").makeFolder("test2").makeDocument(
-                "test2Doc.SourceDocument", System.currentTimeMillis());
+                "T2.java", System.currentTimeMillis());
+        sourceFolder.makeDocument("Example.java", System.currentTimeMillis());
+        sourceFolder.makeDocument("AnotherTest.java", System.currentTimeMillis());
     }
 
     @SuppressWarnings("unused")
