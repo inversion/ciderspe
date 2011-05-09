@@ -654,8 +654,9 @@ public class Client
 
                     System.out.println("Close " + s1);
 
-                    shared.openTabs.get(s1).removeAll();
+                    shared.openTabs.get(s1).close();
                     shared.openTabs.remove(s1);
+                    currentDoc = null;
                     // shared.tabbedPane.setSelectedIndex( --parent.currentTab
                     // );
                     shared.tabbedPane.remove(shared.tabbedPane.indexOfTab(s1));
