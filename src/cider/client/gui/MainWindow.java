@@ -57,6 +57,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -685,6 +687,8 @@ public class MainWindow
         menu = new JMenu("Help");
         menuBar.add(menu);
 
+        addMenuItem(menu, "CIDEr Homepage", -1, aL);
+        addMenuItem(menu, "User Guide", -1, aL);        
         addMenuItem(menu, "About", -1, aL);
 
         // the DEV(eloper) menu is for us to test back-end things such as saving
@@ -868,6 +872,38 @@ public class MainWindow
                     myProfile.setFontSize(Integer.parseInt(s));
                     SourceDocumentViewer.fontSize = Integer.parseInt(s);
                     // SourceDocumentViewer.REFRESH ALL PLEASE
+                }
+                else if (action.equals("CIDEr Homepage"))
+                {
+                	try 
+                	{
+                		URI uri = new URI("http://www.ciderspe.com");
+                		java.awt.Desktop.getDesktop().browse(uri);
+                	} 
+                	catch (URISyntaxException e1) 
+                	{
+                		e1.printStackTrace();
+                	} 
+                	catch (IOException e1) 
+                	{
+                		e1.printStackTrace();
+                	}
+                }
+                else if (action.equals("User Guide"))
+                {
+                	try 
+                	{
+                		URI uri = new URI("http://www.ciderspe.com/downloads/CIDEr_USER_GUIDE.pdf");
+                		java.awt.Desktop.getDesktop().browse(uri);
+                	} 
+                	catch (URISyntaxException e1) 
+                	{
+                		e1.printStackTrace();
+                	} 
+                	catch (IOException e1) 
+                	{
+                		e1.printStackTrace();
+                	}
                 }
             }
         };
@@ -1737,7 +1773,7 @@ public class MainWindow
         }
     }
 
-    private static boolean DEBUG = true;
+    private static boolean DEBUG = false;
 
     /**
      * Adds an item to the dropdown menu specified in the parameters.

@@ -85,10 +85,6 @@ public class LoginUI
 
     private int NotPort;
 
-    /**
-     * Used for fetching/saving login details
-     */
-    public String currentDir = "src\\cider\\client\\gui\\";
     static JFrame login;
 
     private JWindow connecting;
@@ -163,7 +159,7 @@ public class LoginUI
         }
         else
         {
-            String fileName = currentDir + "login.txt";
+            String fileName = "login.txt";
             File file = new File(fileName);
 
             try
@@ -274,14 +270,10 @@ public class LoginUI
     Thread connectMainWindow()
     {
         // On connect, close login and connect JFrames, run MainWindow
-
-        // System.out.println(passwordEncrypt.encrypt(new
-        // String(txtPassword.getPassword())));
         NotPort = 0;
         final Client client;
         try
         {
-
             final ClientSharedComponents sharedComponents = new ClientSharedComponents();
             sharedComponents.profile = new Profile(txtUsername.getText());
 
@@ -517,7 +509,7 @@ public class LoginUI
     {
         try
         {
-            FileReader fstream = new FileReader(currentDir + "login.txt");
+            FileReader fstream = new FileReader("login.txt");
             BufferedReader in = new BufferedReader(fstream);
 
             String line;
@@ -605,7 +597,7 @@ public class LoginUI
             String txtServiceName, String txtHost, String txtPort)
     {
         System.out.println("Saving login details for '" + txtUsername
-                + "' in directory: " + currentDir);
+                + "' in directory: ");
         try
         {
         	File f = new File("login.txt");

@@ -96,7 +96,10 @@ public class ClientPrivateChatListener implements ChatManagerListener
         {
             // Create a new tab for this chat
             JScrollPane newTab = client.createChatTab(name);
-
+            client.shared.receiveTabs
+            .setSelectedIndex(client.shared.receiveTabs
+                    .indexOfTab(name));
+            
             client.tabsToChats.put(newTab, chat);
             usersToTabs.put(name, newTab);
             usersToChats.put(name, chat);

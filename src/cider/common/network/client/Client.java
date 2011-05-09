@@ -676,7 +676,8 @@ public class Client
             sourceEditor.setTabHandle(shared.tabbedPane.add(sourceEditor));
             shared.tabbedPane.setTabComponentAt(
                     shared.tabbedPane.getTabCount() - 1, pnl);
-
+            shared.tabbedPane.setSelectedIndex(shared.tabbedPane.getTabCount() - 1);
+            
             shared.openTabs.put(strPath, sourceEditor);
             this.pullEventsFromBot(strPath, System.currentTimeMillis()
                     + this.getClockOffset(), true);

@@ -40,7 +40,7 @@ public class IdleTimer
 {
     private int idleTime = 0;
     /**
-     * Wheter the user is idle
+     * Whether the user is idle
      */
     public boolean isIdle = false;
     private Timer timer = new Timer();
@@ -53,7 +53,8 @@ public class IdleTimer
         public void run()
         {
             idleTime++;
-            if (idleTime == 10)
+            //time in seconds
+            if (idleTime == 300)
             {
                 isIdle = true;
                 client.sendIdlePresence();
