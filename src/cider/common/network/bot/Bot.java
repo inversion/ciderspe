@@ -50,6 +50,7 @@ import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 
+import cider.client.gui.CiderApplication;
 import cider.common.network.ConfigurationReader;
 import cider.common.processes.LiveFolder;
 import cider.common.processes.Profile;
@@ -71,6 +72,15 @@ public class Bot
     public static void main(String[] args)
     {
         boolean debugbot = true;
+        try
+        {
+            CiderApplication.versionCheck();
+        }
+        catch (IOException e)
+        {
+            System.out.println("Warning: Couldn't connect to check version.");
+        }
+        
 
         for (String arg : args)
             if (arg.equals("-debugbot=true"))
