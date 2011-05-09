@@ -44,8 +44,8 @@ import cider.common.processes.TimeBorderList;
 import cider.common.processes.TimeRegion;
 
 /**
-* Class containing the history viewer tool
-*/
+ * Class containing the history viewer tool
+ */
 public class TimeRegionBrowser extends JPanel implements MouseListener,
         MouseMotionListener
 {
@@ -72,11 +72,12 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
                                                                        // Color(128,
                                                                        // 128,
                                                                        // 255);
-    private static final Color selectionColor = new Color(highlightColor
-            .getRed(), highlightColor.getGreen(), highlightColor.getBlue() / 2,
-            highlightColor.getAlpha() / 3);
+    private static final Color selectionColor = new Color(
+            highlightColor.getRed(), highlightColor.getGreen(),
+            highlightColor.getBlue() / 2, highlightColor.getAlpha() / 3);
     public static final int EYE_MOVED = 0;
     public static final int SELECTION = 1;
+    protected static final int EYE_RELEASED = 2;
 
     public TimeRegionBrowser(TimeBorderList tbl, int width, int height)
     {
@@ -267,7 +268,13 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     @Override
     public void mouseReleased(MouseEvent arg0)
     {
-        movingEye = false;
+        if (movingEye)
+        {
+            for (ActionListener al : actionListeners)
+                al.actionPerformed(new ActionEvent(eyePosition, EYE_RELEASED,
+                        "Eye Eeleased"));
+            movingEye = false;
+        }
         selecting = 0;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
     }
@@ -329,8 +336,8 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
     {
         this.scale = scale;
         latestTime = tbl.getEndTime();
-        Dimension size = new Dimension(this.getWidth(), this
-                .timeToYPixel(latestTime));
+        Dimension size = new Dimension(this.getWidth(),
+                this.timeToYPixel(latestTime));
         this.setMinimumSize(size);
         this.setMaximumSize(size);
         this.setSize(size);
@@ -370,5 +377,17 @@ public class TimeRegionBrowser extends JPanel implements MouseListener,
             return 0;
         else
             return (long) ((pix / scale) + tbl.getFirstTime());
+    }
+
+    public void setEyePosition(long t)
+    {
+        this.eyePosition = t;
+        for (ActionListener al : actionListeners)
+        {
+            al.actionPerformed(new ActionEvent(eyePosition, EYE_MOVED,
+                    "Eye Moved"));
+            al.actionPerformed(new ActionEvent(eyePosition, EYE_RELEASED,
+                    "Eye Eeleased"));
+        }
     }
 }
