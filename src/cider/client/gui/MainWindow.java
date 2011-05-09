@@ -104,6 +104,7 @@ import cider.common.processes.DocumentProperties;
 import cider.common.processes.ImportFiles;
 import cider.common.processes.Profile;
 import cider.common.processes.SourceDocument;
+import cider.common.processes.TimeBorder;
 import cider.common.processes.TimeBorderList;
 import cider.documentViewerComponents.DocumentHistoryViewer;
 import cider.documentViewerComponents.EditorTypingArea;
@@ -1562,18 +1563,12 @@ public class MainWindow
         try
         {
             DocumentProperties docProperties;
-            if (DEBUG)
-                docProperties = new DocumentProperties("t1",
-                        "t1.SourceDocument");
-            else
-                docProperties = client.currentDocumentProperties;
+            docProperties = client.currentDocumentProperties;
 
             DocumentHistoryViewer dhv = new DocumentHistoryViewer(
                     new SourceDocument(docProperties.name), client);
-            if (DEBUG)
-                dhv.setDefaultColor(Color.BLACK);
-            else
-                dhv.setDefaultColor(Color.WHITE);
+
+            dhv.setDefaultColor(Color.WHITE);
 
             dhv.updateText();
             dhv.setWaiting(false);
@@ -1581,40 +1576,33 @@ public class MainWindow
             TimeBorderList tbl = new TimeBorderList(docProperties);
 
             ArrayList<Long> borderTimes = new ArrayList<Long>();
+            System.out.println(docProperties.creationTime);
             borderTimes.add(docProperties.creationTime);
             tbl.loadLocalBorderTimes(borderTimes);
+            long endTime = System.currentTimeMillis() + client.getClockOffset();
+            tbl.addTimeBorder(new TimeBorder(client.currentDocumentProperties, endTime, true));
             tbl.loadLocalEvents();
-
-            /*
-             * SourceDocument doc = new SourceDocument(documentID.name);
-             * 
-             * if (this.offlineMode) { TimeBorder border = new
-             * TimeBorder(documentID, 1000, doc.orderedEvents());
-             * tbl.addTimeBorder(border);
-             * doc.addEvents(SourceDocument.sampleEvents(1000)); border = new
-             * TimeBorder(documentID, 4000, doc.orderedEvents()); border.fullSet
-             * = true; tbl.addTimeBorder(border); } else {
-             * tbl.useTimeBordersFrom(this.currentFileName, this.client); }
-             */
-
             tbl.createRegions();
             TimeRegionBrowser trb = new TimeRegionBrowser(tbl, 128, 600);
 
-            DHVSourceHistoryPane app = new DHVSourceHistoryPane(128);
-            app.setDocumentHistoryViewer(dhv);
-            app.setTimeRegionBrowser(trb);
+            DHVSourceHistoryPane shp = new DHVSourceHistoryPane(128);
+            shp.setDocumentHistoryViewer(dhv);
+            shp.setTimeRegionBrowser(trb);
 
             JDialog w = new JDialog(this.w, false);
             w.setTitle(docProperties.path + " History");
             w.setPreferredSize(new Dimension(600, 600));
             w.setLayout(new BorderLayout());
-            w.add(app);
+            w.add(shp);
             w.pack();
 
             trb.setScale(TimeRegionBrowser.defaultScale);
 
             w.setVisible(true);
             w.setAlwaysOnTop(true);
+            
+            trb.setEyePosition(System.currentTimeMillis() + client.getClockOffset() - 1);
+            shp.scrollRegionBrowserToEnd();
 
         }
         catch (Exception e)

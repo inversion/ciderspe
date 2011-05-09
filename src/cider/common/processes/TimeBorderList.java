@@ -157,15 +157,9 @@ public class TimeBorderList
                     .getBorderTimes(documentProperties.path));
 
             if (borderTimes != null && borderTimes.size() > 1)
-            {
-                boolean fullSet = true;
                 for (long t : borderTimes)
-                {
                     this.addTimeBorder(new TimeBorder(documentProperties, t,
-                            fullSet));
-                    fullSet = !fullSet;
-                }
-            }
+                            false));
         }
         catch (Exception e)
         {

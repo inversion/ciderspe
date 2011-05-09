@@ -169,8 +169,10 @@ public class SiHistoryFiles
                 Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
                 borderQueue.poll();
                 border = borderQueue.poll().getValue();
-
+                boolean lastBorder = false;
                 String prevLine = null;
+                boolean o;
+                boolean c;
 
                 while ((strLine = br.readLine()) != null)
                 {
@@ -184,8 +186,9 @@ public class SiHistoryFiles
                         prevLine = strLine + "\n";
                     else
                     {
-                        if (!strLine.startsWith(opened)
-                                && !strLine.startsWith(closed))
+                        o = strLine.startsWith(opened);
+                        c = strLine.startsWith(closed);
+                        if (!o && !c)
                         {
                             te = new TypingEvent(strLine);
                             if (te.text.equals("\n"))
@@ -198,16 +201,21 @@ public class SiHistoryFiles
                         }
                         else
                         {
+                            if(o)
+                                border.fullSet = false;
+                            else if(c)
+                                border.fullSet = true;
+                                
                             System.out.println("Border "
                                     + readBorderTime(strLine, a, b) + "\t"
                                     + strLine);
                             if (borderQueue.size() > 0)
                                 border = borderQueue.poll().getValue();
-                            else
-                                return;
                         }
                     }
                 }
+                
+                border.fullSet = true;
             }
             else
                 notWorking("get history events");
