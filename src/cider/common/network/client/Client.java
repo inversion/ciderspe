@@ -482,7 +482,7 @@ public class Client
      *            The name of the document to create.
      * @param path
      *            The path of the folder to create the document in relative to
-     *            the root, use backslash to separate dirs.
+     *            the root, use dorward slash to separate dirs.
      * @param contents
      *            Contents of the file, if null a blank file is created.
      * 
@@ -496,6 +496,8 @@ public class Client
 
         try
         {
+        	if( path.contains( "\\" ) )
+        		path = path.replaceAll( "\\\\", "/" );
             Message msg = new Message();
             msg.setBody("");
             msg.setProperty("ciderAction", "createDoc");

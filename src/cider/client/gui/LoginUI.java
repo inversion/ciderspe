@@ -163,7 +163,7 @@ public class LoginUI
         }
         else
         {
-            String fileName = currentDir + "login.txt";
+            String fileName = "login.txt";
             File file = new File(fileName);
 
             try
@@ -543,8 +543,7 @@ public class LoginUI
         }
         catch (FileNotFoundException e)
         {
-            // System.out.println("File not found");
-            e.printStackTrace();
+        	System.out.println( "Existing login details not found..." );
         }
         catch (IOException e)
         {

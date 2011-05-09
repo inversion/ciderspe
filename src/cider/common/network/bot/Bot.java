@@ -121,7 +121,7 @@ public class Bot
 
     private HashSet<String> connectedDuringThisRun = new HashSet<String>();
 
-    private boolean debugbot = true;
+    private boolean debugbot = false;
 
     // Documents that have been changed or created during this execution
     protected HashMap<String, SourceDocument> updatedDocs;
