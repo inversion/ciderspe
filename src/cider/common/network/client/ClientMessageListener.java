@@ -94,11 +94,11 @@ public class ClientMessageListener implements MessageListener, ActionListener
             Integer b = (Integer) message.getProperty("b");
             client.incomingColour = new Color(r, g, b);
         }
-        else if (ciderAction.equals("notfound"))
+        else if (ciderAction.equals("clearhistory"))
         {
             if (message.getProperty("show") != null)
                 JOptionPane.showMessageDialog(null,
-                        "No profile was found on the server for "
+                        "Clear history for "
                                 + message.getProperty("username"));
 
             if (client.getUsername().equals(message.getProperty("username")))
