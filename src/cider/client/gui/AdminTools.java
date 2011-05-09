@@ -71,6 +71,14 @@ public class AdminTools
 	 */
     public static void main(String[] args)
     {
+        try
+        {
+            CiderApplication.versionCheck();
+        }
+        catch (IOException e1)
+        {
+            System.out.println("Warning: Couldn't connect to check version.");
+        }
         AdminTools ui = new AdminTools();
 
         try
