@@ -60,12 +60,16 @@ public class LiveFolder
     {
         String part;
         // Trim trailing slash
-        if (path.endsWith("\\"))
+        if (path.endsWith("/"))
             path = path.substring(0, path.length() - 1);
+        
+        // Trim beginning slash
+        if( path.startsWith("/"))
+        	path = path.substring( 1 );
 
         while (path.length() > 0)
         {
-            if (path.indexOf("\\") == -1)
+            if (path.indexOf("/") == -1)
             {
                 if (current.getFolder(path) == null)
                     current.makeFolder(path);
@@ -73,7 +77,7 @@ public class LiveFolder
             }
             else
             {
-                part = path.substring(0, path.indexOf("\\"));
+                part = path.substring(0, path.indexOf("/"));
                 if (current.getFolder(part) == null)
                     current = current.makeFolder(part);
                 else

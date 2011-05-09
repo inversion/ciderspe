@@ -888,21 +888,32 @@ public class MainWindow
         {
             return;
         }
+//
+//        String full[] = s.split("/");
+//        int n = full.length;
+//        String name = full[n - 1];
+//        String path = "";
+//
+//        if (n > 1)
+//            path = full[0];
+//
+//        for (int i = 1; i < (n - 1); i++)
+//        {
+//            path += "\\";
+//            path += full[i];
+//        }
 
-        String full[] = s.split("/");
-        int n = full.length;
-        String name = full[n - 1];
-        String path = "";
-
-        if (n > 1)
-            path = full[0];
-
-        for (int i = 1; i < (n - 1); i++)
+        String path, name;
+        if( s.indexOf( "/" ) == -1 )
         {
-            path += "\\";
-            path += full[i];
+        	path = "";
+        	name = s;
         }
-
+        else
+        {
+	        name = s.substring( s.lastIndexOf("/") + 1 );
+	        path = s.substring(0, s.lastIndexOf("/") );
+        }
         client.createDocument(name, path, "");
 
         try
@@ -913,7 +924,7 @@ public class MainWindow
         {
             e.printStackTrace();
         }
-        client.openTab(path + "\\" + name);
+        client.openTab(s);
     }
 
     /**
@@ -1223,7 +1234,7 @@ public class MainWindow
     }
 
     /**
-     * Runs a file using the command javac FIXME
+     * Runs a file using the command javac
      */
     void runFile()
     {
@@ -1236,6 +1247,12 @@ public class MainWindow
             if( isWindows() )
              p = Runtime.getRuntime().exec( "cmd /C start cmd /K \"cd \"" + currentDir +
                     "\" && java " + name + "\"" );
+            else if( isUnix() )
+            {
+            	System.out.println("xterm -hold -e cd \"" + currentDir + "\" && \"java " + name + "\"" );
+            	p = Runtime.getRuntime().exec( "xterm -hold -e cd \"" + currentDir + "\" && \"java " + name + "\"" );
+            }
+            	
 //            BufferedReader input = new BufferedReader(new InputStreamReader(p
 //                    .getInputStream()));
 //            System.out.println( p.getInputStream().available() );
