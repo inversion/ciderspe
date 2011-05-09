@@ -169,6 +169,7 @@ public class SiHistoryFiles
                 Queue<Entry<Long, TimeBorder>> borderQueue = tbl.borderList();
                 borderQueue.poll();
                 border = borderQueue.poll().getValue();
+                @SuppressWarnings("unused")
                 boolean lastBorder = false;
                 String prevLine = null;
                 boolean o;

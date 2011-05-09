@@ -24,7 +24,6 @@
 package cider.client.gui;
 
 import java.awt.AWTEvent;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -47,17 +46,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -65,12 +59,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 
-import javax.lang.model.SourceVersion;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -101,7 +93,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.tools.JavaCompiler;
-import javax.tools.Tool;
 import javax.tools.ToolProvider;
 
 import org.jivesoftware.smack.XMPPException;
@@ -1278,8 +1269,8 @@ public class MainWindow
     {
         try
         {
+            @SuppressWarnings("unused")
             Process p;
-            String line;
             // int i = 0;
             String name = client.getCurrentDocument().name.replace( ".java", "" );
             if( isWindows() )

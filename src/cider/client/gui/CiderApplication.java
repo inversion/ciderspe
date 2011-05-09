@@ -40,7 +40,7 @@ public class CiderApplication
     /**
      * Version of the CIDER application
      */
-    public static final double VERSION = 0.2;
+    public static final double VERSION = 1.0;
     
 	/**
 	 * whether in debug mode or not
