@@ -693,4 +693,11 @@ public class ETASourceEditorPane extends JScrollPane
     {
         this.tabHandle = tabHandle;
     }
+
+    public void close()
+    {
+        this.eta.getSourceDocument().clearAll();
+        this.eta = null;
+        this.removeAll();
+    }
 }
