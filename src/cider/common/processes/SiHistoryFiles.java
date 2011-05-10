@@ -27,9 +27,9 @@ import cider.client.gui.CiderApplication;
 public class SiHistoryFiles
 {
     private static boolean working = true;
+    private static char nativeSeparater = '\\';
     private static boolean showStackTrace = CiderApplication.debugApp;
-    public static final String localEventFolderPath = System.getenv("APPDATA")
-            + "\\cider\\localhistory\\";
+    public static final String localEventFolderPath = "localhistory" + File.separatorChar;
     private static final String opened = "Opened ";
     private static final String closed = "Closed ";
 
@@ -39,7 +39,7 @@ public class SiHistoryFiles
         {
             try
             {
-                File file = new File(SiHistoryFiles.localEventFolderPath + "\\");
+                File file = new File(SiHistoryFiles.localEventFolderPath);
                 deleteSubFiles(file);
             }
             catch (Exception e)
@@ -73,6 +73,8 @@ public class SiHistoryFiles
     private static Set<String> eventTimesExistsInFile(String documentPath,
             Set<String> times) throws IOException
     {
+        documentPath = new String(documentPath);
+        documentPath.replace(nativeSeparater, File.separatorChar);
         FileInputStream fstream = new FileInputStream(localEventFolderPath
                 + documentPath);
         DataInputStream in = new DataInputStream(fstream);
@@ -118,6 +120,8 @@ public class SiHistoryFiles
             {
                 ArrayList<Long> times = new ArrayList<Long>();
                 FileInputStream fstream;
+                path = new String(path);
+                path.replace(nativeSeparater, File.separatorChar);
                 fstream = new FileInputStream(localEventFolderPath + path);
                 DataInputStream in = new DataInputStream(fstream);
                 BufferedReader br = new BufferedReader(
@@ -157,6 +161,8 @@ public class SiHistoryFiles
             if (working)
             {
                 FileInputStream fstream;
+                path = new String(path);
+                path.replace(nativeSeparater, File.separatorChar);
                 fstream = new FileInputStream(localEventFolderPath + path);
                 DataInputStream in = new DataInputStream(fstream);
                 BufferedReader br = new BufferedReader(
@@ -238,6 +244,8 @@ public class SiHistoryFiles
         {
             if (working)
             {
+                path = new String(path);
+                path.replace(nativeSeparater, File.separatorChar);
                 f = openFileForWriting(path);
                 FileWriter fstream = new FileWriter(f, true);
                 BufferedWriter out = new BufferedWriter(fstream);
@@ -264,6 +272,7 @@ public class SiHistoryFiles
         {
             if (working)
             {
+                path.replace(nativeSeparater, File.separatorChar);
                 f = openFileForWriting(path);
                 FileWriter fstream = new FileWriter(f, true);
                 BufferedWriter out = new BufferedWriter(fstream);
@@ -295,6 +304,8 @@ public class SiHistoryFiles
     private static File openFileForWriting(String documentPath)
             throws IOException
     {
+        documentPath = new String(documentPath);
+        documentPath.replace(nativeSeparater, File.separatorChar);
         File f = new File(localEventFolderPath + documentPath);
         new File(f.getParent()).mkdirs();
         f.createNewFile();
@@ -322,6 +333,8 @@ public class SiHistoryFiles
         {
             if (working)
             {
+                documentPath = new String(documentPath);
+                documentPath.replace(nativeSeparater, File.separatorChar);
                 File f = openFileForWriting(documentPath);
                 Set<String> matches = eventTimesExistsInFile(documentPath,
                         times(typingEvents));
