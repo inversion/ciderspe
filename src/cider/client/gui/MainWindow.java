@@ -149,6 +149,7 @@ public class MainWindow
     public JSplitPane dirSourceEditorSelectionSplit;
 
     private JSplitPane editorChatSplit;
+    
 
     private String username;
     private ArrayList<String> savedFiles = new ArrayList<String>();
@@ -388,37 +389,52 @@ public class MainWindow
     }
 
     // Credit: http://www.java2s.com/Code/Java/JDK-6/CompileaJavacode.htm
-    void compileFile()
+    boolean compileFile()
     {
         if( client.getCurrentDocument() == null )
-            return;
-        JFileChooser fc = new JFileChooser();
-        fc.setCurrentDirectory( new File( currentDir ) );
-        File f = new File(client.getCurrentDocument().name);
-        fc.setSelectedFile(f);
-
-        int watdo = fc.showSaveDialog(null);
-        if (watdo != JFileChooser.APPROVE_OPTION)
         {
-            return;
+        	JOptionPane.showMessageDialog(new JPanel(), "Please open a document before compiling.");
+            return false;
         }
-
+        System.out.println(client.getCurrentDocument().name);
+//        if (!compiled.contains(client.getCurrentDocument().name))
+//        {
+//        	JFileChooser fc = new JFileChooser();
+//        	fc.setCurrentDirectory( new File( currentDir ) );
+//        	File f = new File(client.getCurrentDocument().name);
+//        	fc.setSelectedFile(f);
+//
+//	        int watdo = fc.showSaveDialog(null);
+//	        if (watdo != JFileChooser.APPROVE_OPTION)
+//	        {
+//	            return false;
+//	        }
+//
+//	        try
+//	        {
+//	            currentFileName = f.getAbsolutePath();
+//	            f.createNewFile();
+//	        }
+//	        catch (IOException e)
+//	        {
+//	            // TODO Auto-generated catch block
+//	            e.printStackTrace();
+//	        }
+//
+//        	compiled.add(currentFileName);
+//        }
+	//        currentDir = fc.getSelectedFile().getAbsolutePath();
         try
         {
-            currentFileName = f.getAbsolutePath();
-            f.createNewFile();
-        }
-        catch (IOException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-//        currentDir = fc.getSelectedFile().getAbsolutePath();
-
-        try
-        {
-            FileWriter fstream = new FileWriter( currentFileName );
+        	String fname = client.getCurrentDocument().name;
+        	if (!fname.endsWith(".java"))
+        		fname = fname + ".java";
+        	currentFileName = fname;
+        	(new File("compiled")).mkdir();
+        	File f = new File("compiled" + System.getProperty("file.separator") + fname);
+            FileWriter fstream = new FileWriter( f );
             BufferedWriter out = new BufferedWriter(fstream);
+            System.out.println(client.getCurrentDocument().toString());
             out.write(client.getCurrentDocument().toString());
             out.close();
         }
@@ -429,17 +445,25 @@ public class MainWindow
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
         OutputStream baos = new ByteArrayOutputStream();
-        int results = javac.run(System.in, System.out, baos, currentFileName);
+        System.out.println(currentFileName);
+        int results = javac.run(System.in, System.out, baos, "compiled" + System.getProperty("file.separator") + currentFileName);
 
         if (results == 0)
         {
-            debugwindow.println("Compilation Successful");
+            debugwindow.println("-------------------------------------------\n" +
+            		"Compilation Successful");
+            debugwindow.println(baos.toString());
+            debugwindow.println("-------------------------------------------");
+            return true;
         }
         else
         {
-            debugwindow.println("Compilation failed");
+            debugwindow.println("-------------------------------------------\n" +
+            		"Compilation failed");
+            debugwindow.println(baos.toString());
+            debugwindow.println("-------------------------------------------");
+            return false;
         }
-        debugwindow.println(baos.toString());
     }
 
     /**
@@ -839,8 +863,8 @@ public class MainWindow
                 }
                 else if (action.equals("Run"))
                 {
-                    compileFile();
-                    runFile();
+                    if (compileFile())
+                    	runFile();
                 }
                 else if (action.equals("Syntax Highlighting"))
                 {
@@ -1297,17 +1321,26 @@ public class MainWindow
         {
             @SuppressWarnings("unused")
             Process p;
+            File dir = new File(".");
+            String directory = dir.getCanonicalPath() +System.getProperty("file.separator")+"compiled";
             // int i = 0;
             String name = client.getCurrentDocument().name.replace( ".java", "" );
+            String command = null;
             if( isWindows() )
-             p = Runtime.getRuntime().exec( "cmd /C start cmd /K \"cd \"" + currentDir +
-                    "\" && java " + name + "\"" );
+             command =  "cmd /C start cmd /K \"cd \"" + directory +
+                    "\" && java " + name + "\"";
             else if( isUnix() )
             {
-            	System.out.println("xterm -hold -e cd \"" + currentDir + "\" && \"java " + name + "\"" );
-            	p = Runtime.getRuntime().exec( "xterm -hold -e cd \"" + currentDir + "\" && \"java " + name + "\"" );
+            	command = "xterm -hold -e cd \"" + directory + 
+            	"\" && \"java " + name + "\"" ;
             }
-            	
+            else
+            {
+            	JOptionPane.showMessageDialog(new JPanel(),	"Compiler Error: Your operating system is not compatible; please report this bug!");
+            	return;
+            }
+            System.out.println(directory);
+            p = Runtime.getRuntime().exec(command);
 //            BufferedReader input = new BufferedReader(new InputStreamReader(p
 //                    .getInputStream()));
 //            System.out.println( p.getInputStream().available() );
