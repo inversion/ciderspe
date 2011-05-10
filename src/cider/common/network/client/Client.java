@@ -686,7 +686,6 @@ public class Client
         }
         else
         {
-        	System.out.println(strPath);
         	shared.tabbedPane.setSelectedIndex(shared.tabbedPane.indexOfTab(strPath));
         }
     }
