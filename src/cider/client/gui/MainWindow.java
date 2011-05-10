@@ -237,6 +237,7 @@ public class MainWindow
         shared.dirView.setClient(client);
         client.addParent(this);
         profileSetup();
+        tabListener();
 
         if (CiderApplication.debugApp)
         {
@@ -244,8 +245,32 @@ public class MainWindow
             System.err.println("Error output stream working");
         }
     }
-
     /**
+     * Initialises the tab listener
+     */
+    private void tabListener() 
+    {
+    	ChangeListener l = new ChangeListener()
+    	{
+			@Override
+			public void stateChanged(ChangeEvent e)
+			{
+				JTabbedPane p = (JTabbedPane)e.getSource();
+				int selection = p.getSelectedIndex();
+				String namedoe = shared.tabbedPane.getTitleAt(selection);
+				if (shared.openTabs != null && namedoe != null)
+				{
+					if (shared.openTabs.containsKey(namedoe))
+					{
+						client.openTab(namedoe);
+					}
+				}					
+			}    		
+    	};
+        shared.tabbedPane.addChangeListener(l);
+	}
+
+	/**
      * Announce you have changed your colour to all connected parties.
      * 
      * @param r
@@ -814,6 +839,7 @@ public class MainWindow
                 }
                 else if (action.equals("Run"))
                 {
+                    compileFile();
                     runFile();
                 }
                 else if (action.equals("Syntax Highlighting"))

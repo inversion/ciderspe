@@ -63,6 +63,7 @@ public class DirectoryViewSelectionListener implements TreeSelectionListener
         // If the path is null it's a dir
         if (node != null && node.isLeaf())
         {
+        	System.out.println("opentabfor " + node.getUserObjectPath());
             client.openTabFor(node.getUserObjectPath());
             // client.directKeyboardInputTo(node.getUserObjectPath());
         }

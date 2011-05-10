@@ -629,8 +629,6 @@ public class Client
 
     public void openTab(String strPath)
     {
-        System.out.println(strPath);
-
         SourceDocument doc = liveFolder.path(strPath);
         currentDoc = doc;
         if (!shared.openTabs.containsKey(strPath))
@@ -686,11 +684,17 @@ public class Client
                     strPath);
             currentDocumentProperties.creationTime = doc.getCreationTime();
         }
+        else
+        {
+        	System.out.println(strPath);
+        	shared.tabbedPane.setSelectedIndex(shared.tabbedPane.indexOfTab(strPath));
+        }
     }
 
     public void openTabFor(Object[] path)
     {
         String strPath = this.getPathToSourceDocument(path, 1);
+        System.out.println(strPath);
         openTab(strPath);
 
     }
