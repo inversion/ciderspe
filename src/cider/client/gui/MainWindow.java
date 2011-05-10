@@ -424,13 +424,14 @@ public class MainWindow
 //        	compiled.add(currentFileName);
 //        }
 	//        currentDir = fc.getSelectedFile().getAbsolutePath();
+
+    	(new File("compiled")).mkdir();
         try
         {
         	String fname = client.getCurrentDocument().name;
         	if (!fname.endsWith(".java"))
         		fname = fname + ".java";
         	currentFileName = fname;
-        	(new File("compiled")).mkdir();
         	File f = new File("compiled" + System.getProperty("file.separator") + fname);
             FileWriter fstream = new FileWriter( f );
             BufferedWriter out = new BufferedWriter(fstream);
@@ -465,7 +466,49 @@ public class MainWindow
             return false;
         }
     }
-
+    /**
+     * Runs a file using the command javac
+     */
+    void runFile()
+    {
+        try
+        {
+            @SuppressWarnings("unused")
+            Process p;
+            File dir = new File(".");
+            String directory = dir.getCanonicalPath() +System.getProperty("file.separator")+"compiled";
+            // int i = 0;
+            String name = client.getCurrentDocument().name.replace( ".java", "" );
+            String command = null;
+            if( isWindows() )
+             command =  "cmd /C start cmd /K \"cd \"" + directory +
+                    "\" && java " + name + "\"";
+            else if( isUnix() )
+            {
+            	command = "xterm -hold -e cd \"" + directory + 
+            	"\" && \"java " + name + "\"" ;
+            }
+            else
+            {
+            	JOptionPane.showMessageDialog(new JPanel(),	"Compiler Error: Your operating system is not compatible; please report this bug!");
+            	return;
+            }
+            System.out.println(directory);
+            p = Runtime.getRuntime().exec(command);
+//            BufferedReader input = new BufferedReader(new InputStreamReader(p
+//                    .getInputStream()));
+//            System.out.println( p.getInputStream().available() );
+//            while ((line = input.readLine()) != null)
+//            {
+//                debugwindow.println(line);
+//            }
+//            input.close();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
     /**
      * Converts a SourceDocument into a text file that is saved where the user
      * specifies.
@@ -1312,49 +1355,7 @@ public class MainWindow
         }
     }
 
-    /**
-     * Runs a file using the command javac
-     */
-    void runFile()
-    {
-        try
-        {
-            @SuppressWarnings("unused")
-            Process p;
-            File dir = new File(".");
-            String directory = dir.getCanonicalPath() +System.getProperty("file.separator")+"compiled";
-            // int i = 0;
-            String name = client.getCurrentDocument().name.replace( ".java", "" );
-            String command = null;
-            if( isWindows() )
-             command =  "cmd /C start cmd /K \"cd \"" + directory +
-                    "\" && java " + name + "\"";
-            else if( isUnix() )
-            {
-            	command = "xterm -hold -e cd \"" + directory + 
-            	"\" && \"java " + name + "\"" ;
-            }
-            else
-            {
-            	JOptionPane.showMessageDialog(new JPanel(),	"Compiler Error: Your operating system is not compatible; please report this bug!");
-            	return;
-            }
-            System.out.println(directory);
-            p = Runtime.getRuntime().exec(command);
-//            BufferedReader input = new BufferedReader(new InputStreamReader(p
-//                    .getInputStream()));
-//            System.out.println( p.getInputStream().available() );
-//            while ((line = input.readLine()) != null)
-//            {
-//                debugwindow.println(line);
-//            }
-//            input.close();
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-    }
+
 
     /**
      * Using this, users can select a picture for their profile.
